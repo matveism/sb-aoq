@@ -49,7 +49,7 @@
     #leftText { font-weight: bold; font-size: 15px; }
     #rightArea { font-size: 14px; }
 
-    /* MAIN BUTTONS (SCAN / ENTER NEXT) */
+    /* MAIN BUTTONS (SCAN) */
     .mainButton {
       width: calc(100% - 20px);
       height: 48px;
@@ -69,7 +69,6 @@
     }
 
     #scanButton { display: block; }
-    #enterNextButton { display: none; }
 
     /* SCAN FRAME */
     #scanFrame {
@@ -146,7 +145,7 @@
       flex-shrink: 0;
     }
 
-    /* ESC | ENTER BAR */
+    /* ESC | SAVE BAR - Changed ENTER to SAVE */
     #labelButtons {
       height: 32px;
       display: flex;
@@ -208,12 +207,12 @@
       border-color: #0F5F1C;
     }
 
-    /* NUMERIC KEYPAD - CONSISTENT SIZING */
+    /* NUMERIC KEYPAD - REMOVED ENTER BUTTON */
     #numericPad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      padding: 0 15px 0 15px;
+      padding: 0 15px 15px 15px;
     }
 
     #numericPad button {
@@ -239,29 +238,15 @@
       box-shadow: 0 1px 0 #0B0F1A;
     }
 
-    #numericPad button.zero {
-      grid-column: span 1;
-    }
-
     #numericPad button.backspace {
       background-color: #111d33;
       font-size: 18px;
     }
 
-    #numericPad button.enter {
-      background-color: #0A8A2A;
-      border-color: #0F5F1C;
-      grid-column: span 3;
-      font-size: 18px;
-      padding: 12px 0;
-      height: 48px;
-      margin: 0;
-    }
-
-    /* QWERTY KEYPAD - CONSISTENT SIZING */
+    /* QWERTY KEYPAD */
     #qwertyPad {
       display: none;
-      padding: 0 10px 0 10px;
+      padding: 0 10px 15px 10px;
     }
 
     .row {
@@ -307,10 +292,10 @@
       border-color: #0F5F1C;
     }
 
-    /* SYMBOL KEYPAD - CONSISTENT SIZING */
+    /* SYMBOL KEYPAD */
     #symbolPad {
       display: none;
-      padding: 0 10px 0 10px;
+      padding: 0 10px 15px 10px;
     }
 
     #symbolPad .row button {
@@ -350,7 +335,7 @@
       border-color: #0F5F1C;
     }
 
-    /* STATUS SCREEN */
+    /* STATUS SCREEN - UPDATED */
     #statusScreen {
       display: none;
       flex-direction: column;
@@ -513,6 +498,7 @@
       document.getElementById("beep").play().catch(e => console.log("Audio play failed"));
 
       scanCount++;
+      // Format: just the number and code, no arrow
       const line = scanCount + " " + code;
 
       const box = document.getElementById("labelBox");
@@ -526,19 +512,29 @@
       document.getElementById("labelBox").innerHTML = "";
     }
 
+    /* SAVE button now just returns to main screen with status applied */
+    function saveAndReturn() {
+      if (selectedStatus) {
+        // Just return to main screen, no popup, no arrow in label box
+        goBackToScan();
+      } else {
+        // If no status selected, just go back
+        goBackToScan();
+      }
+    }
+
     /* ENTER → SELECT STATUS */
     function goToStatus() {
       document.getElementById("labelBlock").style.display = "none";
       document.getElementById("scanButton").style.display = "none";
       document.getElementById("keypadWrapper").style.display = "none";
-      document.getElementById("enterNextButton").style.display = "none";
 
       document.getElementById("leftText").innerHTML = "SELECT STATUS";
 
       document.getElementById("statusScreen").style.display = "flex";
     }
 
-    /* When courier selects a status */
+    /* When courier selects a status - NO ARROW ADDED TO LABEL BOX */
     function chooseStatus(status) {
       selectedStatus = status;
       document.getElementById("statusScreen").style.display = "none";
@@ -549,14 +545,8 @@
       document.getElementById("scanButton").style.display = "block";
       document.getElementById("keypadWrapper").style.display = "block";
       
-      const nextBtn = document.getElementById("enterNextButton");
-      nextBtn.innerHTML = "ENTER (" + status + ")";
-      nextBtn.style.display = "block";
-      
-      // Add status to label box
-      const box = document.getElementById("labelBox");
-      box.innerHTML += "→ " + status + "\n";
-      box.scrollTop = box.scrollHeight;
+      // NO STATUS ADDED TO LABEL BOX - REMOVED THAT LINE
+      // Just return to scanner with status selected
     }
 
     function goBackToScan() {
@@ -564,7 +554,6 @@
       document.getElementById("labelBlock").style.display = "flex";
       document.getElementById("scanButton").style.display = "block";
       document.getElementById("keypadWrapper").style.display = "block";
-      document.getElementById("enterNextButton").style.display = selectedStatus ? "block" : "none";
       document.getElementById("leftText").innerHTML = "SCAN BARCODE";
     }
 
@@ -610,10 +599,6 @@
       let t = document.getElementById("labelBox").innerHTML;
       document.getElementById("labelBox").innerHTML = t.slice(0, -1);
     }
-
-    function enterFinal() {
-      alert("Final entry with status: " + selectedStatus);
-    }
   </script>
 
 </head>
@@ -643,7 +628,7 @@
       <div id="labelButtons">
         <span onclick="clearScans()">ESC</span>
         <span id="divider">|</span>
-        <span onclick="goToStatus()">ENTER</span>
+        <span onclick="goToStatus()">SAVE</span>  <!-- Changed from ENTER to SAVE -->
       </div>
 
       <!-- KEYPAD WRAPPER - NOW AT BOTTOM WITH PROPER SPACING -->
@@ -656,7 +641,7 @@
           <button id="tabSymbol" onclick="showSymbol()">SYM</button>
         </div>
 
-        <!-- NUMERIC KEYPAD -->
+        <!-- NUMERIC KEYPAD - NO ENTER BUTTON -->
         <div id="numericPad">
           <button onclick="typeChar('1')">1</button>
           <button onclick="typeChar('2')">2</button>
@@ -673,8 +658,6 @@
           <button onclick="typeChar('.')">.</button>
           <button onclick="typeChar('0')">0</button>
           <button class="backspace" onclick="backspace()">⌫</button>
-          
-          <button class="enter" onclick="goToStatus()">ENTER</button>
         </div>
 
         <!-- QWERTY KEYPAD -->
@@ -716,7 +699,6 @@
             <button class="special" onclick="showSymbol()">?123</button>
             <button class="space" onclick="typeChar(' ')">space</button>
             <button class="special" onclick="typeChar('.')">.</button>
-            <button class="enter" onclick="goToStatus()">↵</button>
           </div>
         </div>
 
@@ -762,7 +744,6 @@
             <button class="special" onclick="showQwerty()">ABC</button>
             <button class="space" onclick="typeChar(' ')">space</button>
             <button class="special" onclick="backspace()">⌫</button>
-            <button class="enter" onclick="goToStatus()">↵</button>
           </div>
         </div>
 
@@ -782,9 +763,6 @@
       <div class="statusBtn" onclick="chooseStatus('Delivered')">Delivered</div>
       <div class="statusBtn back" onclick="goBackToScan()">BACK TO SCANNER</div>
     </div>
-
-    <!-- ENTER BUTTON AFTER STATUS SELECT -->
-    <div id="enterNextButton" class="mainButton" onclick="enterFinal()">ENTER</div>
 
     <!-- BEEP -->
     <audio id="beep" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA="></audio>
