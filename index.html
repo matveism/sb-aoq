@@ -97,12 +97,31 @@
       overflow: hidden;
     }
 
-    /* video preview inside frame */
+    /* video preview */
     #preview {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      /* FIXED: removed mirror */
+    }
+
+    /* LASER LINE */
+    #laser {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: rgba(255,0,0,0.8);
+      box-shadow: 0 0 6px red;
+      animation: laserMove 2s linear infinite;
+      display: none;
+      z-index: 5;
+    }
+
+    @keyframes laserMove {
+      0%   { top: 0; }
+      50%  { top: 158px; }
+      100% { top: 0; }
     }
 
     /* Corner angles */
@@ -140,6 +159,7 @@
   <script>
     var stream = null;
     var scanning = false;
+    var codeReader = null;
 
     function updateTime() {
       var now = new Date();
@@ -151,53 +171,63 @@
     setInterval(updateTime, 1000);
     window.onload = updateTime;
 
-    function startScan() {
+    async function startScan() {
       if (scanning) return;
       scanning = true;
 
-      var frame = document.getElementById("scanFrame");
-      var label = document.getElementById("barcodeLabel");
-      label.style.display = "none";
-      frame.style.display = "block";
+      document.getElementById("barcodeLabel").style.display = "none";
+      document.getElementById("scanFrame").style.display = "block";
+      document.getElementById("laser").style.display = "block";
 
-      navigator.mediaDevices.getUserMedia({
+      // Start camera
+      stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" }
-      }).then(function (s) {
-        stream = s;
-        var video = document.getElementById("preview");
-        video.srcObject = stream;
-        video.play();
-
-        // Simulated decode (replace with real decoder)
-        setTimeout(function () {
-          onBarcodeDecoded("420998112233");
-        }, 2000);
-
-      }).catch(function (err) {
-        console.log("Camera error:", err);
-        scanning = false;
-        frame.style.display = "none";
       });
+
+      const video = document.getElementById("preview");
+      video.srcObject = stream;
+      await video.play();
+
+      // ZXing-JS decoder
+      codeReader = new ZXing.BrowserMultiFormatReader();
+
+      try {
+        const result = await codeReader.decodeFromVideoElement(video);
+        onBarcodeDecoded(result.text);
+      } catch (err) {
+        console.log("Decode error:", err);
+      }
     }
 
     function stopCamera() {
       if (stream) {
-        stream.getTracks().forEach(function (t) { t.stop(); });
+        stream.getTracks().forEach(t => t.stop());
         stream = null;
+      }
+      if (codeReader) {
+        codeReader.reset();
       }
     }
 
     function onBarcodeDecoded(code) {
       stopCamera();
-      document.getElementById("scanFrame").style.display = "none";
 
-      var label = document.getElementById("barcodeLabel");
+      document.getElementById("scanFrame").style.display = "none";
+      document.getElementById("laser").style.display = "none";
+
+      // Play beep
+      document.getElementById("beep").play();
+
+      const label = document.getElementById("barcodeLabel");
       label.style.display = "flex";
       label.innerHTML = "# BARCODE ID: " + code;
 
       scanning = false;
     }
   </script>
+
+  <!-- ZXing-JS -->
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
 
 </head>
 
@@ -216,6 +246,7 @@
 
     <div id="scanFrame">
       <video id="preview" playsinline></video>
+      <div id="laser"></div>
       <div class="corner tl"></div>
       <div class="corner tr"></div>
       <div class="corner bl"></div>
@@ -223,6 +254,9 @@
     </div>
 
     <div id="barcodeLabel"></div>
+
+    <!-- BEEP SOUND -->
+    <audio id="beep" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA="></audio>
 
   </div>
 
