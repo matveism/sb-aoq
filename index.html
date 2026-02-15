@@ -11,7 +11,7 @@
     body {
       margin: 0;
       padding: 0;
-      background: #2A4B6E;
+      background: #000;
       display: flex;
       justify-content: center;
       align-items: flex-start;
@@ -22,7 +22,7 @@
     #phone {
       width: 360px;
       height: 640px;
-      background-color: #2A4B6E;
+      background-color: #0B173B;
       font-family: "Courier New", monospace;
       color: #FFFFFF;
       overflow-y: auto;
@@ -32,36 +32,51 @@
       flex-direction: column;
     }
 
-    /* HEADER - fixed at top */
+    /* GLASSY MESH */
+    #pattern {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      background-image:
+        linear-gradient(to bottom,
+          rgba(255,255,255,0.08) 0%,
+          rgba(255,255,255,0.00) 40%,
+          rgba(255,255,255,0.06) 60%,
+          rgba(255,255,255,0.00) 100%
+        ),
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.00) 60%);
+      background-size: 100% 100%, 32px 32px, 32px 32px, 100% 100%;
+      opacity: 0.35;
+      z-index: 1;
+    }
+
+    /* HEADER */
     #header {
       width: 100%;
       height: 32px;
-      background-color: #4989AB;
-      border-bottom: 1px solid #1A2C3E;
+      background-color: #1A2C55;
+      border-bottom: 1px solid #000;
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 0 10px;
       box-sizing: border-box;
+      position: relative;
+      z-index: 2;
       flex-shrink: 0;
     }
 
-    #leftText { 
-      font-weight: bold; 
-      font-size: 15px; 
-      color: #FFFFFF;
-    }
-    
-    #rightArea { 
-      font-size: 14px;
-      color: #FFFFFF;
-    }
+    #leftText { font-weight: bold; font-size: 15px; }
+    #rightArea { font-size: 14px; }
 
-    /* MAIN BUTTONS (SCAN) */
-    .mainButton {
+    /* SCAN BUTTON */
+    #scanButton {
       width: calc(100% - 20px);
       height: 48px;
-      background-color: #1C5432;
+      background-color: #0A8A2A;
       border: 2px solid #0F5F1C;
       color: #FFFFFF;
       font-size: 20px;
@@ -70,31 +85,32 @@
       line-height: 48px;
       margin: 12px auto 0 auto;
       border-radius: 4px;
+      position: relative;
+      z-index: 2;
       box-shadow: 0 0 6px rgba(0,0,0,0.4);
-      display: none;
       cursor: pointer;
       flex-shrink: 0;
     }
-
-    #scanButton { display: block; }
 
     /* SCAN FRAME */
     #scanFrame {
       width: 280px;
       height: 160px;
-      border: 2px solid #6A9AC0;
+      border: 2px solid rgba(255,255,255,0.4);
       margin: 20px auto 0 auto;
       position: relative;
       display: none;
+      z-index: 3;
       overflow: hidden;
       flex-shrink: 0;
-      background-color: #000;
     }
 
+    /* video preview inside frame */
     #preview {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transform: scaleX(-1); /* mirror like camera */
     }
 
     /* LASER */
@@ -117,13 +133,46 @@
       100% { top: 0; }
     }
 
-    /* LABEL BLOCK - takes remaining space */
+    /* Corner angles */
+    .corner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid #00FFAA;
+      position: absolute;
+      pointer-events: none;
+    }
+    .tl { top: -3px; left: -3px; border-right: none; border-bottom: none; }
+    .tr { top: -3px; right: -3px; border-left: none; border-bottom: none; }
+    .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
+    .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
+
+    /* BARCODE ID LABEL (SHRUNK LIKE HEADER) */
+    #barcodeLabel {
+      width: 100%;
+      height: 32px;
+      background-color: #1A2C55;
+      border-top: 1px solid #000;
+      border-bottom: 1px solid #000;
+      display: none;
+      align-items: center;
+      padding-left: 10px;
+      font-weight: bold;
+      font-size: 15px;
+      box-sizing: border-box;
+      margin-top: 12px;
+      z-index: 2;
+      position: relative;
+    }
+
+    /* LABEL BLOCK */
     #labelBlock {
       width: 100%;
       display: flex;
       flex-direction: column;
-      background-color: #2A4B6E;
+      background-color: transparent;
       flex: 1;
+      position: relative;
+      z-index: 2;
     }
 
     #labelTitle {
@@ -133,11 +182,10 @@
       padding-left: 10px;
       font-weight: bold;
       font-size: 15px;
-      background-color: #1A3A5A;
-      border-top: 1px solid #1A2C3E;
-      border-bottom: 1px solid #1A2C3E;
+      background-color: #1A2C55;
+      border-top: 1px solid #000;
+      border-bottom: 1px solid #000;
       flex-shrink: 0;
-      color: #FFFFFF;
     }
 
     #labelBox {
@@ -145,8 +193,8 @@
       min-height: 40px;
       max-height: 100px;
       margin: 8px auto 0 auto;
-      border: 2px solid #4989AB;
-      background-color: #1A3A5A;
+      border: 2px solid #FFFFFF;
+      background-color: rgba(0,0,0,0.3);
       padding: 6px 10px;
       font-size: 16px;
       font-weight: bold;
@@ -154,7 +202,7 @@
       overflow-y: auto;
       word-wrap: break-word;
       flex-shrink: 0;
-      color: #FFFFFF;
+      backdrop-filter: blur(2px);
     }
 
     /* ESC | ENTER BAR */
@@ -163,9 +211,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background-color: #1A3A5A;
-      border-top: 1px solid #1A2C3E;
-      border-bottom: 1px solid #1A2C3E;
+      background-color: #111d33;
+      border-top: 1px solid #000;
+      border-bottom: 1px solid #000;
       margin-top: 8px;
       padding: 0 25px;
       font-weight: bold;
@@ -176,27 +224,23 @@
 
     #labelButtons span {
       cursor: pointer;
-      color: #FFFFFF;
-    }
-
-    #labelButtons span:active {
-      color: #1C5432;
     }
 
     #divider {
       flex: 1;
       text-align: center;
       opacity: 0.6;
-      color: #FFFFFF !important;
     }
 
-    /* KEYPAD WRAPPER - pushed to bottom */
+    /* KEYPAD WRAPPER */
     #keypadWrapper {
       width: 100%;
-      background-color: #2A4B6E;
+      background-color: transparent;
       margin-top: auto;
       padding-top: 20px;
       padding-bottom: 0;
+      position: relative;
+      z-index: 2;
     }
 
     /* KEYPAD TABS */
@@ -210,8 +254,8 @@
       flex: 1;
       margin: 0 4px;
       padding: 8px 0;
-      background-color: #1A3A5A;
-      border: 1px solid #4989AB;
+      background-color: #1A2C55;
+      border: 1px solid #FFFFFF;
       border-radius: 4px;
       color: #FFFFFF;
       font-size: 14px;
@@ -221,9 +265,8 @@
     }
 
     #keyTabs button.active {
-      background-color: #1C5432;
-      border-color: #1C5432;
-      color: #FFFFFF;
+      background-color: #0A8A2A;
+      border-color: #0F5F1C;
     }
 
     /* NUMERIC KEYPAD */
@@ -235,8 +278,8 @@
     }
 
     #numericPad button {
-      background-color: #1A3A5A;
-      border: 1px solid #4989AB;
+      background-color: #1A2C55;
+      border: 1px solid #FFFFFF;
       border-radius: 4px;
       color: #FFFFFF;
       font-size: 20px;
@@ -246,7 +289,7 @@
       text-align: center;
       cursor: pointer;
       font-family: "Courier New", monospace;
-      box-shadow: 0 2px 0 #0A1A2A;
+      box-shadow: 0 2px 0 #0B0F1A;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -254,13 +297,12 @@
 
     #numericPad button:active {
       transform: translateY(1px);
-      box-shadow: 0 1px 0 #0A1A2A;
-      background-color: #1C5432;
-      color: #FFFFFF;
+      box-shadow: 0 1px 0 #0B0F1A;
+      background-color: #0A8A2A;
     }
 
     #numericPad button.backspace {
-      background-color: #0A2A4A;
+      background-color: #111d33;
       font-size: 18px;
     }
 
@@ -278,8 +320,8 @@
 
     .row button {
       flex: 1;
-      background-color: #1A3A5A;
-      border: 1px solid #4989AB;
+      background-color: #1A2C55;
+      border: 1px solid #FFFFFF;
       border-radius: 4px;
       color: #FFFFFF;
       font-size: 16px;
@@ -292,18 +334,17 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 0 #0A1A2A;
+      box-shadow: 0 2px 0 #0B0F1A;
     }
 
     .row button:active {
       transform: translateY(1px);
-      box-shadow: 0 1px 0 #0A1A2A;
-      background-color: #1C5432;
-      color: #FFFFFF;
+      box-shadow: 0 1px 0 #0B0F1A;
+      background-color: #0A8A2A;
     }
 
     .row button.special {
-      background-color: #0A2A4A;
+      background-color: #111d33;
     }
 
     .row button.space {
@@ -318,8 +359,8 @@
 
     #symbolPad .row button {
       flex: 1;
-      background-color: #1A3A5A;
-      border: 1px solid #4989AB;
+      background-color: #1A2C55;
+      border: 1px solid #FFFFFF;
       border-radius: 4px;
       color: #FFFFFF;
       font-size: 16px;
@@ -332,18 +373,17 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 0 #0A1A2A;
+      box-shadow: 0 2px 0 #0B0F1A;
     }
 
     #symbolPad .row button:active {
       transform: translateY(1px);
-      box-shadow: 0 1px 0 #0A1A2A;
-      background-color: #1C5432;
-      color: #FFFFFF;
+      box-shadow: 0 1px 0 #0B0F1A;
+      background-color: #0A8A2A;
     }
 
     #symbolPad .row button.special {
-      background-color: #0A2A4A;
+      background-color: #111d33;
     }
 
     #symbolPad .row button.space {
@@ -361,14 +401,15 @@
       padding: 0 20px 20px 20px;
       flex: 1;
       overflow-y: auto;
-      background-color: #2A4B6E;
+      position: relative;
+      z-index: 2;
     }
 
     .statusBtn {
       width: 100%;
       padding: 12px;
-      border: 1px solid #4989AB;
-      background-color: #1A3A5A;
+      border: 1px solid #FFFFFF;
+      background: rgba(26,44,85,0.8);
       color: #FFFFFF;
       font-size: 16px;
       text-align: center;
@@ -380,21 +421,16 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-    }
-
-    .statusBtn:hover {
-      background-color: #2A4A6A;
+      backdrop-filter: blur(2px);
     }
 
     .statusBtn:active {
-      background-color: #1C5432;
-      color: #FFFFFF;
+      background-color: #0A8A2A;
     }
 
     .statusBtn.back {
-      background-color: #0A2A4A;
+      background-color: #111d33;
       margin-top: 10px;
-      border-color: #4989AB;
     }
 
     /* SUCCESS POPUP */
@@ -405,15 +441,16 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(42, 75, 110, 0.9);
+      background-color: rgba(11,23,59,0.9);
       z-index: 1000;
       justify-content: center;
       align-items: center;
+      backdrop-filter: blur(4px);
     }
 
     .popup-content {
-      background-color: #1A3A5A;
-      border: 2px solid #1C5432;
+      background-color: #1A2C55;
+      border: 2px solid #0A8A2A;
       border-radius: 10px;
       padding: 30px;
       text-align: center;
@@ -424,7 +461,7 @@
       width: 80px;
       height: 80px;
       margin: 0 auto 20px auto;
-      background-color: #1C5432;
+      background-color: #0A8A2A;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -443,7 +480,7 @@
     }
 
     .popup-submessage {
-      color: #4989AB;
+      color: #00FFAA;
       font-size: 14px;
       font-family: "Courier New", monospace;
     }
@@ -465,11 +502,11 @@
     }
 
     #phone::-webkit-scrollbar-track {
-      background: #2A4B6E;
+      background: #0B173B;
     }
 
     #phone::-webkit-scrollbar-thumb {
-      background: #4989AB;
+      background: #1A2C55;
     }
 
     #labelBox::-webkit-scrollbar {
@@ -477,11 +514,11 @@
     }
 
     #labelBox::-webkit-scrollbar-track {
-      background: #1A3A5A;
+      background: transparent;
     }
 
     #labelBox::-webkit-scrollbar-thumb {
-      background: #4989AB;
+      background: #1A2C55;
     }
 
     button {
@@ -589,13 +626,11 @@
       document.getElementById("scanFrame").style.display = "none";
       document.getElementById("laser").style.display = "none";
 
-      // Play beep sound
       playBeep();
 
       scanCount++;
       const line = scanCount + " " + code;
 
-      // Store scan data
       currentScans.push({
         number: scanCount,
         code: code,
@@ -607,14 +642,12 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    /* ESC clears all */
     function clearScans() {
       scanCount = 0;
       currentScans = [];
       document.getElementById("labelBox").innerHTML = "";
     }
 
-    /* ENTER → SELECT STATUS */
     function goToStatus() {
       document.getElementById("labelBlock").style.display = "none";
       document.getElementById("scanButton").style.display = "none";
@@ -625,26 +658,19 @@
       document.getElementById("statusScreen").style.display = "flex";
     }
 
-    /* When courier selects a status */
     function chooseStatus(status) {
       selectedStatus = status;
       
-      // Send data to Google Sheets
       sendToGoogleSheets(status);
-      
-      // Show success popup
       showSuccessPopup(status);
       
-      // Clear current scans after successful submission
       setTimeout(() => {
         clearScans();
         goBackToScan();
       }, 2000);
     }
 
-    /* Send data to Google Sheets */
     function sendToGoogleSheets(status) {
-      // Prepare the data
       const data = {
         scans: currentScans,
         status: status,
@@ -652,10 +678,8 @@
         deviceInfo: navigator.userAgent
       };
 
-      // Google Sheets Web App URL - REPLACE WITH YOUR ACTUAL URL
       const googleSheetsURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
       
-      // Send data using fetch
       fetch(googleSheetsURL, {
         method: 'POST',
         mode: 'no-cors',
@@ -674,7 +698,6 @@
       console.log('Sending to Google Sheets:', data);
     }
 
-    /* Show success popup with green checkmark */
     function showSuccessPopup(status) {
       const popup = document.getElementById('successPopup');
       const statusMsg = document.getElementById('popupStatus');
@@ -685,7 +708,6 @@
       
       popup.style.display = 'flex';
       
-      // Auto hide after 2 seconds
       setTimeout(() => {
         popup.style.display = 'none';
       }, 2000);
@@ -699,7 +721,6 @@
       document.getElementById("leftText").innerHTML = "SCAN BARCODE";
     }
 
-    /* KEYPAD SWITCHING */
     function showNumeric() {
       document.getElementById("numericPad").style.display = "grid";
       document.getElementById("qwertyPad").style.display = "none";
@@ -730,7 +751,6 @@
       document.getElementById("tabNumeric").classList.remove("active");
     }
 
-    /* TYPE INTO LABEL BOX */
     function typeChar(c) {
       const box = document.getElementById("labelBox");
       box.innerHTML += c;
@@ -748,17 +768,23 @@
 <body>
 
   <div id="phone">
+    <!-- GLASSY MESH PATTERN -->
+    <div id="pattern"></div>
 
     <div id="header">
       <div id="leftText">SCAN BARCODE</div>
       <div id="rightArea"></div>
     </div>
 
-    <div id="scanButton" class="mainButton" onclick="startScan()">SCAN</div>
+    <div id="scanButton" onclick="startScan()">SCAN</div>
 
     <div id="scanFrame">
       <video id="preview" playsinline></video>
       <div id="laser"></div>
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
     </div>
 
     <!-- LABEL BLOCK -->
@@ -906,7 +932,7 @@
       <div class="statusBtn back" onclick="goBackToScan()">BACK TO SCANNER</div>
     </div>
 
-    <!-- SUCCESS POPUP WITH GREEN CHECKMARK -->
+    <!-- SUCCESS POPUP -->
     <div id="successPopup">
       <div class="popup-content">
         <div class="checkmark">✓</div>
