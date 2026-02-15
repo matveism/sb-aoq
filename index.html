@@ -25,11 +25,14 @@
       background-color: #0B173B;
       font-family: "Courier New", monospace;
       color: #FFFFFF;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* HEADER */
+    /* HEADER - fixed at top */
     #header {
       width: 100%;
       height: 32px;
@@ -40,7 +43,7 @@
       align-items: center;
       padding: 0 10px;
       box-sizing: border-box;
-      z-index: 2;
+      flex-shrink: 0;
     }
 
     #leftText { font-weight: bold; font-size: 15px; }
@@ -61,9 +64,12 @@
       border-radius: 4px;
       box-shadow: 0 0 6px rgba(0,0,0,0.4);
       display: none;
+      cursor: pointer;
+      flex-shrink: 0;
     }
 
-    #scanButton { display: block; } /* visible at start */
+    #scanButton { display: block; }
+    #enterNextButton { display: none; }
 
     /* SCAN FRAME */
     #scanFrame {
@@ -74,6 +80,7 @@
       position: relative;
       display: none;
       overflow: hidden;
+      flex-shrink: 0;
     }
 
     #preview {
@@ -102,13 +109,13 @@
       100% { top: 0; }
     }
 
-    /* LABEL BLOCK */
+    /* LABEL BLOCK - takes remaining space */
     #labelBlock {
       width: 100%;
       display: flex;
       flex-direction: column;
-      margin-top: 12px;
       background-color: #0B173B;
+      flex: 1;
     }
 
     #labelTitle {
@@ -121,17 +128,22 @@
       background-color: #1A2C55;
       border-top: 1px solid #000;
       border-bottom: 1px solid #000;
+      flex-shrink: 0;
     }
 
     #labelBox {
       width: calc(100% - 20px);
       min-height: 40px;
+      max-height: 100px;
       margin: 8px auto 0 auto;
       border: 2px solid #FFFFFF;
       padding: 6px 10px;
       font-size: 16px;
       font-weight: bold;
       white-space: pre-line;
+      overflow-y: auto;
+      word-wrap: break-word;
+      flex-shrink: 0;
     }
 
     /* ESC | ENTER BAR */
@@ -148,6 +160,11 @@
       font-weight: bold;
       font-size: 15px;
       box-shadow: inset 0 1px 2px rgba(0,0,0,0.6);
+      flex-shrink: 0;
+    }
+
+    #labelButtons span {
+      cursor: pointer;
     }
 
     #divider {
@@ -156,26 +173,248 @@
       opacity: 0.6;
     }
 
+    /* KEYPAD WRAPPER - pushed to bottom */
+    #keypadWrapper {
+      width: 100%;
+      background-color: #0B173B;
+      margin-top: auto;
+      padding-top: 20px;
+      padding-bottom: 0;
+    }
+
+    /* KEYPAD TABS */
+    #keyTabs {
+      display: flex;
+      justify-content: space-around;
+      margin: 0 10px 10px 10px;
+    }
+
+    #keyTabs button {
+      flex: 1;
+      margin: 0 4px;
+      padding: 8px 0;
+      background-color: #1A2C55;
+      border: 1px solid #FFFFFF;
+      border-radius: 4px;
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: "Courier New", monospace;
+    }
+
+    #keyTabs button.active {
+      background-color: #0A8A2A;
+      border-color: #0F5F1C;
+    }
+
+    /* NUMERIC KEYPAD - CONSISTENT SIZING */
+    #numericPad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 0 15px 0 15px;
+    }
+
+    #numericPad button {
+      background-color: #1A2C55;
+      border: 1px solid #FFFFFF;
+      border-radius: 4px;
+      color: #FFFFFF;
+      font-size: 20px;
+      font-weight: bold;
+      padding: 12px 0;
+      height: 48px;
+      text-align: center;
+      cursor: pointer;
+      font-family: "Courier New", monospace;
+      box-shadow: 0 2px 0 #0B0F1A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #numericPad button:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 0 #0B0F1A;
+    }
+
+    #numericPad button.zero {
+      grid-column: span 1;
+    }
+
+    #numericPad button.backspace {
+      background-color: #111d33;
+      font-size: 18px;
+    }
+
+    #numericPad button.enter {
+      background-color: #0A8A2A;
+      border-color: #0F5F1C;
+      grid-column: span 3;
+      font-size: 18px;
+      padding: 12px 0;
+      height: 48px;
+      margin: 0;
+    }
+
+    /* QWERTY KEYPAD - CONSISTENT SIZING */
+    #qwertyPad {
+      display: none;
+      padding: 0 10px 0 10px;
+    }
+
+    .row {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .row button {
+      flex: 1;
+      background-color: #1A2C55;
+      border: 1px solid #FFFFFF;
+      border-radius: 4px;
+      color: #FFFFFF;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 12px 0;
+      height: 48px;
+      text-align: center;
+      cursor: pointer;
+      font-family: "Courier New", monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 0 #0B0F1A;
+    }
+
+    .row button:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 0 #0B0F1A;
+    }
+
+    .row button.special {
+      background-color: #111d33;
+    }
+
+    .row button.space {
+      flex: 3;
+    }
+
+    .row button.enter {
+      background-color: #0A8A2A;
+      border-color: #0F5F1C;
+    }
+
+    /* SYMBOL KEYPAD - CONSISTENT SIZING */
+    #symbolPad {
+      display: none;
+      padding: 0 10px 0 10px;
+    }
+
+    #symbolPad .row button {
+      flex: 1;
+      background-color: #1A2C55;
+      border: 1px solid #FFFFFF;
+      border-radius: 4px;
+      color: #FFFFFF;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 12px 0;
+      height: 48px;
+      text-align: center;
+      cursor: pointer;
+      font-family: "Courier New", monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 0 #0B0F1A;
+    }
+
+    #symbolPad .row button:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 0 #0B0F1A;
+    }
+
+    #symbolPad .row button.special {
+      background-color: #111d33;
+    }
+
+    #symbolPad .row button.space {
+      flex: 3;
+    }
+
+    #symbolPad .row button.enter {
+      background-color: #0A8A2A;
+      border-color: #0F5F1C;
+    }
+
     /* STATUS SCREEN */
     #statusScreen {
       display: none;
       flex-direction: column;
       align-items: center;
-      margin-top: 40px;
-      gap: 12px;
+      margin-top: 20px;
+      margin-bottom: 0;
+      gap: 8px;
+      padding: 0 20px 20px 20px;
+      flex: 1;
+      overflow-y: auto;
     }
 
     .statusBtn {
-      width: 220px;
-      padding: 10px;
+      width: 100%;
+      padding: 12px;
       border: 1px solid #FFFFFF;
       background: transparent;
       color: #FFFFFF;
       font-size: 16px;
       text-align: center;
       border-radius: 4px;
+      cursor: pointer;
+      font-family: "Courier New", monospace;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
+    .statusBtn:hover {
+      background-color: #1A2C55;
+    }
+
+    .statusBtn.back {
+      background-color: #111d33;
+      margin-top: 10px;
+    }
+
+    /* Scrollbar styling */
+    #phone::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    #phone::-webkit-scrollbar-track {
+      background: #0B173B;
+    }
+
+    #phone::-webkit-scrollbar-thumb {
+      background: #1A2C55;
+    }
+
+    #labelBox::-webkit-scrollbar {
+      width: 2px;
+    }
+
+    #labelBox::-webkit-scrollbar-thumb {
+      background: #1A2C55;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
   </style>
 
   <!-- jsQR -->
@@ -185,6 +424,8 @@
     let stream = null;
     let scanning = false;
     let scanCount = 0;
+    let animationFrame = null;
+    let selectedStatus = '';
 
     function updateTime() {
       const now = new Date();
@@ -194,7 +435,11 @@
       document.getElementById("rightArea").innerHTML = h + ":" + m;
     }
     setInterval(updateTime, 1000);
-    window.onload = updateTime;
+
+    window.onload = function() {
+      updateTime();
+      showNumeric();
+    };
 
     async function startScan() {
       if (scanning) return;
@@ -203,40 +448,55 @@
       document.getElementById("scanFrame").style.display = "block";
       document.getElementById("laser").style.display = "block";
 
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }
-      });
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" }
+        });
 
-      const video = document.getElementById("preview");
-      video.srcObject = stream;
-      await video.play();
+        const video = document.getElementById("preview");
+        video.srcObject = stream;
+        await video.play();
 
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
-      function tick() {
-        if (!scanning) return;
+        function tick() {
+          if (!scanning || !video.videoWidth) {
+            animationFrame = requestAnimationFrame(tick);
+            return;
+          }
 
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
 
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const qr = jsQR(imageData.data, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const qr = jsQR(imageData.data, canvas.width, canvas.height);
 
-        if (qr) {
-          onBarcodeDecoded(qr.data);
-          return;
+          if (qr) {
+            onBarcodeDecoded(qr.data);
+            return;
+          }
+
+          animationFrame = requestAnimationFrame(tick);
         }
 
-        requestAnimationFrame(tick);
+        tick();
+      } catch (err) {
+        console.error("Camera error:", err);
+        scanning = false;
+        document.getElementById("scanFrame").style.display = "none";
+        document.getElementById("laser").style.display = "none";
+        alert("Could not access camera");
       }
-
-      tick();
     }
 
     function stopCamera() {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+      }
       if (stream) {
         stream.getTracks().forEach(t => t.stop());
         stream = null;
@@ -250,13 +510,14 @@
       document.getElementById("scanFrame").style.display = "none";
       document.getElementById("laser").style.display = "none";
 
-      document.getElementById("beep").play();
+      document.getElementById("beep").play().catch(e => console.log("Audio play failed"));
 
       scanCount++;
       const line = scanCount + " " + code;
 
       const box = document.getElementById("labelBox");
       box.innerHTML += line + "\n";
+      box.scrollTop = box.scrollHeight;
     }
 
     /* ESC clears all */
@@ -269,6 +530,8 @@
     function goToStatus() {
       document.getElementById("labelBlock").style.display = "none";
       document.getElementById("scanButton").style.display = "none";
+      document.getElementById("keypadWrapper").style.display = "none";
+      document.getElementById("enterNextButton").style.display = "none";
 
       document.getElementById("leftText").innerHTML = "SELECT STATUS";
 
@@ -277,13 +540,80 @@
 
     /* When courier selects a status */
     function chooseStatus(status) {
+      selectedStatus = status;
       document.getElementById("statusScreen").style.display = "none";
-
+      
+      document.getElementById("leftText").innerHTML = "SCAN BARCODE";
+      
+      document.getElementById("labelBlock").style.display = "flex";
+      document.getElementById("scanButton").style.display = "block";
+      document.getElementById("keypadWrapper").style.display = "block";
+      
       const nextBtn = document.getElementById("enterNextButton");
       nextBtn.innerHTML = "ENTER (" + status + ")";
       nextBtn.style.display = "block";
+      
+      // Add status to label box
+      const box = document.getElementById("labelBox");
+      box.innerHTML += "→ " + status + "\n";
+      box.scrollTop = box.scrollHeight;
     }
 
+    function goBackToScan() {
+      document.getElementById("statusScreen").style.display = "none";
+      document.getElementById("labelBlock").style.display = "flex";
+      document.getElementById("scanButton").style.display = "block";
+      document.getElementById("keypadWrapper").style.display = "block";
+      document.getElementById("enterNextButton").style.display = selectedStatus ? "block" : "none";
+      document.getElementById("leftText").innerHTML = "SCAN BARCODE";
+    }
+
+    /* KEYPAD SWITCHING */
+    function showNumeric() {
+      document.getElementById("numericPad").style.display = "grid";
+      document.getElementById("qwertyPad").style.display = "none";
+      document.getElementById("symbolPad").style.display = "none";
+      
+      document.getElementById("tabNumeric").classList.add("active");
+      document.getElementById("tabQwerty").classList.remove("active");
+      document.getElementById("tabSymbol").classList.remove("active");
+    }
+
+    function showQwerty() {
+      document.getElementById("numericPad").style.display = "none";
+      document.getElementById("qwertyPad").style.display = "block";
+      document.getElementById("symbolPad").style.display = "none";
+      
+      document.getElementById("tabQwerty").classList.add("active");
+      document.getElementById("tabNumeric").classList.remove("active");
+      document.getElementById("tabSymbol").classList.remove("active");
+    }
+
+    function showSymbol() {
+      document.getElementById("numericPad").style.display = "none";
+      document.getElementById("qwertyPad").style.display = "none";
+      document.getElementById("symbolPad").style.display = "block";
+      
+      document.getElementById("tabSymbol").classList.add("active");
+      document.getElementById("tabQwerty").classList.remove("active");
+      document.getElementById("tabNumeric").classList.remove("active");
+    }
+
+    /* TYPE INTO LABEL BOX */
+    function typeChar(c) {
+      const box = document.getElementById("labelBox");
+      box.innerHTML += c;
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function backspace() {
+      let t = document.getElementById("labelBox").innerHTML;
+      document.getElementById("labelBox").innerHTML = t.slice(0, -1);
+    }
+
+    function enterFinal() {
+      alert("Final entry with status: " + selectedStatus);
+    }
   </script>
 
 </head>
@@ -315,7 +645,130 @@
         <span id="divider">|</span>
         <span onclick="goToStatus()">ENTER</span>
       </div>
-    </div>
+
+      <!-- KEYPAD WRAPPER - NOW AT BOTTOM WITH PROPER SPACING -->
+      <div id="keypadWrapper">
+
+        <!-- KEYPAD TABS -->
+        <div id="keyTabs">
+          <button id="tabQwerty" onclick="showQwerty()">ABC</button>
+          <button id="tabNumeric" onclick="showNumeric()" class="active">123</button>
+          <button id="tabSymbol" onclick="showSymbol()">SYM</button>
+        </div>
+
+        <!-- NUMERIC KEYPAD -->
+        <div id="numericPad">
+          <button onclick="typeChar('1')">1</button>
+          <button onclick="typeChar('2')">2</button>
+          <button onclick="typeChar('3')">3</button>
+          
+          <button onclick="typeChar('4')">4</button>
+          <button onclick="typeChar('5')">5</button>
+          <button onclick="typeChar('6')">6</button>
+          
+          <button onclick="typeChar('7')">7</button>
+          <button onclick="typeChar('8')">8</button>
+          <button onclick="typeChar('9')">9</button>
+          
+          <button onclick="typeChar('.')">.</button>
+          <button onclick="typeChar('0')">0</button>
+          <button class="backspace" onclick="backspace()">⌫</button>
+          
+          <button class="enter" onclick="goToStatus()">ENTER</button>
+        </div>
+
+        <!-- QWERTY KEYPAD -->
+        <div id="qwertyPad">
+          <div class="row">
+            <button onclick="typeChar('q')">q</button>
+            <button onclick="typeChar('w')">w</button>
+            <button onclick="typeChar('e')">e</button>
+            <button onclick="typeChar('r')">r</button>
+            <button onclick="typeChar('t')">t</button>
+            <button onclick="typeChar('y')">y</button>
+            <button onclick="typeChar('u')">u</button>
+            <button onclick="typeChar('i')">i</button>
+            <button onclick="typeChar('o')">o</button>
+            <button onclick="typeChar('p')">p</button>
+          </div>
+          <div class="row">
+            <button onclick="typeChar('a')">a</button>
+            <button onclick="typeChar('s')">s</button>
+            <button onclick="typeChar('d')">d</button>
+            <button onclick="typeChar('f')">f</button>
+            <button onclick="typeChar('g')">g</button>
+            <button onclick="typeChar('h')">h</button>
+            <button onclick="typeChar('j')">j</button>
+            <button onclick="typeChar('k')">k</button>
+            <button onclick="typeChar('l')">l</button>
+          </div>
+          <div class="row">
+            <button class="special" onclick="typeChar('z')">z</button>
+            <button class="special" onclick="typeChar('x')">x</button>
+            <button class="special" onclick="typeChar('c')">c</button>
+            <button class="special" onclick="typeChar('v')">v</button>
+            <button class="special" onclick="typeChar('b')">b</button>
+            <button class="special" onclick="typeChar('n')">n</button>
+            <button class="special" onclick="typeChar('m')">m</button>
+            <button class="special" onclick="backspace()">⌫</button>
+          </div>
+          <div class="row">
+            <button class="special" onclick="showSymbol()">?123</button>
+            <button class="space" onclick="typeChar(' ')">space</button>
+            <button class="special" onclick="typeChar('.')">.</button>
+            <button class="enter" onclick="goToStatus()">↵</button>
+          </div>
+        </div>
+
+        <!-- SYMBOL KEYPAD -->
+        <div id="symbolPad">
+          <div class="row">
+            <button onclick="typeChar('@')">@</button>
+            <button onclick="typeChar('#')">#</button>
+            <button onclick="typeChar('$')">$</button>
+            <button onclick="typeChar('%')">%</button>
+            <button onclick="typeChar('&')">&</button>
+            <button onclick="typeChar('*')">*</button>
+            <button onclick="typeChar('(')">(</button>
+            <button onclick="typeChar(')')">)</button>
+            <button onclick="typeChar('-')">-</button>
+            <button onclick="typeChar('+')">+</button>
+          </div>
+          <div class="row">
+            <button onclick="typeChar('!')">!</button>
+            <button onclick="typeChar('?')">?</button>
+            <button onclick="typeChar('/')">/</button>
+            <button onclick="typeChar(':')">:</button>
+            <button onclick="typeChar(';')">;</button>
+            <button onclick="typeChar('"')">"</button>
+            <button onclick="typeChar("'")">'</button>
+            <button onclick="typeChar(',')">,</button>
+            <button onclick="typeChar('.')">.</button>
+            <button onclick="typeChar('~')">~</button>
+          </div>
+          <div class="row">
+            <button onclick="typeChar('_')">_</button>
+            <button onclick="typeChar('=')">=</button>
+            <button onclick="typeChar('<')">&lt;</button>
+            <button onclick="typeChar('>')">&gt;</button>
+            <button onclick="typeChar('[')">[</button>
+            <button onclick="typeChar(']')">]</button>
+            <button onclick="typeChar('{')">{</button>
+            <button onclick="typeChar('}')">}</button>
+            <button onclick="typeChar('\\')">\</button>
+            <button onclick="typeChar('|')">|</button>
+          </div>
+          <div class="row">
+            <button class="special" onclick="showQwerty()">ABC</button>
+            <button class="space" onclick="typeChar(' ')">space</button>
+            <button class="special" onclick="backspace()">⌫</button>
+            <button class="enter" onclick="goToStatus()">↵</button>
+          </div>
+        </div>
+
+      </div> <!-- END KEYPAD WRAPPER -->
+
+    </div> <!-- END LABEL BLOCK -->
 
     <!-- STATUS SCREEN -->
     <div id="statusScreen">
@@ -327,10 +780,11 @@
       <div class="statusBtn" onclick="chooseStatus('Local Scan')">Local Scan</div>
       <div class="statusBtn" onclick="chooseStatus('Out For Delivery')">Out For Delivery</div>
       <div class="statusBtn" onclick="chooseStatus('Delivered')">Delivered</div>
+      <div class="statusBtn back" onclick="goBackToScan()">BACK TO SCANNER</div>
     </div>
 
     <!-- ENTER BUTTON AFTER STATUS SELECT -->
-    <div id="enterNextButton" class="mainButton">ENTER</div>
+    <div id="enterNextButton" class="mainButton" onclick="enterFinal()">ENTER</div>
 
     <!-- BEEP -->
     <audio id="beep" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA="></audio>
