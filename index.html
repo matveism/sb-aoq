@@ -136,25 +136,58 @@
     .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
     .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
 
-    /* BARCODE LABEL */
-    #barcodeLabel {
+    /* LABEL BLOCK (VISIBLE IMMEDIATELY) */
+    #labelBlock {
       width: 100%;
+      display: flex; /* ← ALWAYS VISIBLE */
+      flex-direction: column;
+      margin-top: 12px;
+      background-color: #0B173B;
+      z-index: 2;
+    }
+
+    #labelTitle {
       height: 32px;
-      background-color: #1A2C55;
-      border-top: 1px solid #000;
-      border-bottom: 1px solid #000;
-      display: none;
+      display: flex;
       align-items: center;
       padding-left: 10px;
       font-weight: bold;
       font-size: 15px;
-      box-sizing: border-box;
-      margin-top: 12px;
-      z-index: 2;
-      position: relative;
+      background-color: #1A2C55;
+      border-top: 1px solid #000;
+      border-bottom: 1px solid #000;
+    }
+
+    #labelBox {
+      width: calc(100% - 20px);
+      height: 40px;
+      margin: 8px auto 0 auto;
+      border: 2px solid #FFFFFF;
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      font-family: "Courier New", monospace;
+      color: #FFFFFF;
+    }
+
+    #labelButtons {
+      height: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      margin-top: 8px;
+    }
+
+    .lb {
+      font-weight: bold;
+      font-size: 15px;
     }
   </style>
 
+  <!-- jsQR -->
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
   <script>
@@ -175,7 +208,6 @@
       if (scanning) return;
       scanning = true;
 
-      document.getElementById("barcodeLabel").style.display = "none";
       document.getElementById("scanFrame").style.display = "block";
       document.getElementById("laser").style.display = "block";
 
@@ -228,9 +260,8 @@
 
       document.getElementById("beep").play();
 
-      const label = document.getElementById("barcodeLabel");
-      label.style.display = "flex";
-      label.innerHTML = "# BARCODE ID: " + code;
+      // Fill inside box with scanned value
+      document.getElementById("labelBox").innerHTML = "1 " + code;
     }
   </script>
 
@@ -258,7 +289,15 @@
       <div class="corner br"></div>
     </div>
 
-    <div id="barcodeLabel"></div>
+    <!-- LABEL BLOCK (VISIBLE IMMEDIATELY, EMPTY BOX) -->
+    <div id="labelBlock">
+      <div id="labelTitle"># LABEL ID</div>
+      <div id="labelBox"></div>
+      <div id="labelButtons">
+        <div class="lb">ESC</div>
+        <div class="lb">ENTER</div>
+      </div>
+    </div>
 
     <!-- BEEP -->
     <audio id="beep" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA="></audio>
