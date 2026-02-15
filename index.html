@@ -29,26 +29,6 @@
       position: relative;
     }
 
-    /* GLASSY MESH */
-    #pattern {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      background-image:
-        linear-gradient(to bottom,
-          rgba(255,255,255,0.08) 0%,
-          rgba(255,255,255,0.00) 40%,
-          rgba(255,255,255,0.06) 60%,
-          rgba(255,255,255,0.00) 100%
-        ),
-        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.00) 60%);
-      background-size: 100% 100%, 32px 32px, 32px 32px, 100% 100%;
-      opacity: 0.35;
-    }
-
     /* HEADER */
     #header {
       width: 100%;
@@ -60,7 +40,6 @@
       align-items: center;
       padding: 0 10px;
       box-sizing: border-box;
-      position: relative;
       z-index: 2;
     }
 
@@ -80,8 +59,6 @@
       line-height: 48px;
       margin: 12px auto 0 auto;
       border-radius: 4px;
-      position: relative;
-      z-index: 2;
       box-shadow: 0 0 6px rgba(0,0,0,0.4);
     }
 
@@ -93,7 +70,6 @@
       margin: 20px auto 0 auto;
       position: relative;
       display: none;
-      z-index: 3;
       overflow: hidden;
     }
 
@@ -123,19 +99,6 @@
       100% { top: 0; }
     }
 
-    /* Corners */
-    .corner {
-      width: 20px;
-      height: 20px;
-      border: 3px solid #00FFAA;
-      position: absolute;
-      pointer-events: none;
-    }
-    .tl { top: -3px; left: -3px; border-right: none; border-bottom: none; }
-    .tr { top: -3px; right: -3px; border-left: none; border-bottom: none; }
-    .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
-    .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
-
     /* LABEL BLOCK */
     #labelBlock {
       width: 100%;
@@ -143,7 +106,6 @@
       flex-direction: column;
       margin-top: 12px;
       background-color: #0B173B;
-      z-index: 2;
     }
 
     #labelTitle {
@@ -166,25 +128,23 @@
       padding: 6px 10px;
       font-size: 16px;
       font-weight: bold;
-      font-family: "Courier New", monospace;
-      color: #FFFFFF;
       white-space: pre-line;
     }
 
-    /* ESC | ENTER BAR — courier device style */
+    /* ESC | ENTER BAR */
     #labelButtons {
       height: 32px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background-color: #111d33; /* darker */
+      background-color: #111d33;
       border-top: 1px solid #000;
       border-bottom: 1px solid #000;
       margin-top: 8px;
       padding: 0 25px;
       font-weight: bold;
       font-size: 15px;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.6); /* inner bevel */
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.6);
     }
 
     #labelButtons span {
@@ -192,7 +152,6 @@
       transition: transform 0.1s ease, background 0.1s ease;
     }
 
-    /* Pressed state */
     #labelButtons span:active {
       transform: translateY(1px);
       background: rgba(255,255,255,0.1);
@@ -203,6 +162,27 @@
       text-align: center;
       opacity: 0.6;
     }
+
+    /* STATUS SCREEN */
+    #statusScreen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 40px;
+      gap: 12px;
+    }
+
+    .statusBtn {
+      width: 220px;
+      padding: 10px;
+      border: 1px solid #FFFFFF;
+      background: transparent;
+      color: #FFFFFF;
+      font-size: 16px;
+      text-align: center;
+      border-radius: 4px;
+    }
+
   </style>
 
   <!-- jsQR -->
@@ -285,6 +265,23 @@
       const box = document.getElementById("labelBox");
       box.innerHTML += line + "\n";
     }
+
+    /* ESC clears all */
+    function clearScans() {
+      scanCount = 0;
+      document.getElementById("labelBox").innerHTML = "";
+    }
+
+    /* ENTER → NEXT SECTION */
+    function goToStatus() {
+      document.getElementById("labelBlock").style.display = "none";
+      document.getElementById("scanButton").style.display = "none";
+
+      document.getElementById("leftText").innerHTML = "SELECT STATUS";
+
+      document.getElementById("statusScreen").style.display = "flex";
+    }
+
   </script>
 
 </head>
@@ -292,8 +289,6 @@
 <body>
 
   <div id="phone">
-
-    <div id="pattern"></div>
 
     <div id="header">
       <div id="leftText">SCAN BARCODE</div>
@@ -305,10 +300,6 @@
     <div id="scanFrame">
       <video id="preview" playsinline></video>
       <div id="laser"></div>
-      <div class="corner tl"></div>
-      <div class="corner tr"></div>
-      <div class="corner bl"></div>
-      <div class="corner br"></div>
     </div>
 
     <!-- LABEL BLOCK -->
@@ -318,10 +309,22 @@
       <div id="labelBox"></div>
 
       <div id="labelButtons">
-        <span class="lb">ESC</span>
+        <span onclick="clearScans()">ESC</span>
         <span id="divider">|</span>
-        <span class="lb">ENTER</span>
+        <span onclick="goToStatus()">ENTER</span>
       </div>
+    </div>
+
+    <!-- STATUS SCREEN -->
+    <div id="statusScreen">
+      <div class="statusBtn">Data Received</div>
+      <div class="statusBtn">Picked Up</div>
+      <div class="statusBtn">Depart Post Office</div>
+      <div class="statusBtn">Arrival Scan</div>
+      <div class="statusBtn">Departure Scan</div>
+      <div class="statusBtn">Local Scan</div>
+      <div class="statusBtn">Out For Delivery</div>
+      <div class="statusBtn">Delivered</div>
     </div>
 
     <!-- BEEP -->
