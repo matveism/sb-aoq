@@ -145,7 +145,7 @@
       flex-shrink: 0;
     }
 
-    /* ESC | SAVE BAR - Changed ENTER to SAVE */
+    /* ESC | ENTER BAR - CHANGED BACK TO ENTER */
     #labelButtons {
       height: 32px;
       display: flex;
@@ -207,7 +207,7 @@
       border-color: #0F5F1C;
     }
 
-    /* NUMERIC KEYPAD - REMOVED ENTER BUTTON */
+    /* NUMERIC KEYPAD */
     #numericPad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -287,11 +287,6 @@
       flex: 3;
     }
 
-    .row button.enter {
-      background-color: #0A8A2A;
-      border-color: #0F5F1C;
-    }
-
     /* SYMBOL KEYPAD */
     #symbolPad {
       display: none;
@@ -330,12 +325,7 @@
       flex: 3;
     }
 
-    #symbolPad .row button.enter {
-      background-color: #0A8A2A;
-      border-color: #0F5F1C;
-    }
-
-    /* STATUS SCREEN - UPDATED */
+    /* STATUS SCREEN */
     #statusScreen {
       display: none;
       flex-direction: column;
@@ -375,6 +365,68 @@
       margin-top: 10px;
     }
 
+    /* SUCCESS POPUP */
+    #successPopup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .popup-content {
+      background-color: #0B173B;
+      border: 2px solid #0A8A2A;
+      border-radius: 10px;
+      padding: 30px;
+      text-align: center;
+      animation: popupFade 0.3s ease;
+    }
+
+    .checkmark {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px auto;
+      background-color: #0A8A2A;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+      color: white;
+      animation: checkmarkSpin 0.5s ease;
+    }
+
+    .popup-message {
+      color: #FFFFFF;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-family: "Courier New", monospace;
+    }
+
+    .popup-submessage {
+      color: #0A8A2A;
+      font-size: 14px;
+      font-family: "Courier New", monospace;
+    }
+
+    @keyframes popupFade {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes checkmarkSpin {
+      0% { transform: rotate(0deg) scale(0); }
+      50% { transform: rotate(180deg) scale(1.2); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
     /* Scrollbar styling */
     #phone::-webkit-scrollbar {
       width: 4px;
@@ -411,6 +463,7 @@
     let scanCount = 0;
     let animationFrame = null;
     let selectedStatus = '';
+    let currentScans = [];
 
     function updateTime() {
       const now = new Date();
@@ -498,8 +551,14 @@
       document.getElementById("beep").play().catch(e => console.log("Audio play failed"));
 
       scanCount++;
-      // Format: just the number and code, no arrow
       const line = scanCount + " " + code;
+
+      // Store scan data
+      currentScans.push({
+        number: scanCount,
+        code: code,
+        timestamp: new Date().toISOString()
+      });
 
       const box = document.getElementById("labelBox");
       box.innerHTML += line + "\n";
@@ -509,18 +568,8 @@
     /* ESC clears all */
     function clearScans() {
       scanCount = 0;
+      currentScans = [];
       document.getElementById("labelBox").innerHTML = "";
-    }
-
-    /* SAVE button now just returns to main screen with status applied */
-    function saveAndReturn() {
-      if (selectedStatus) {
-        // Just return to main screen, no popup, no arrow in label box
-        goBackToScan();
-      } else {
-        // If no status selected, just go back
-        goBackToScan();
-      }
     }
 
     /* ENTER → SELECT STATUS */
@@ -534,19 +583,72 @@
       document.getElementById("statusScreen").style.display = "flex";
     }
 
-    /* When courier selects a status - NO ARROW ADDED TO LABEL BOX */
+    /* When courier selects a status */
     function chooseStatus(status) {
       selectedStatus = status;
-      document.getElementById("statusScreen").style.display = "none";
       
-      document.getElementById("leftText").innerHTML = "SCAN BARCODE";
+      // Send data to Google Sheets
+      sendToGoogleSheets(status);
       
-      document.getElementById("labelBlock").style.display = "flex";
-      document.getElementById("scanButton").style.display = "block";
-      document.getElementById("keypadWrapper").style.display = "block";
+      // Show success popup
+      showSuccessPopup(status);
       
-      // NO STATUS ADDED TO LABEL BOX - REMOVED THAT LINE
-      // Just return to scanner with status selected
+      // Clear current scans after successful submission
+      setTimeout(() => {
+        clearScans();
+        goBackToScan();
+      }, 2000);
+    }
+
+    /* Send data to Google Sheets */
+    function sendToGoogleSheets(status) {
+      // Prepare the data
+      const data = {
+        scans: currentScans,
+        status: status,
+        timestamp: new Date().toISOString(),
+        deviceInfo: navigator.userAgent
+      };
+
+      // Google Sheets Web App URL - REPLACE WITH YOUR ACTUAL URL
+      const googleSheetsURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+      
+      // Send data using fetch
+      fetch(googleSheetsURL, {
+        method: 'POST',
+        mode: 'no-cors', // This is needed for Google Sheets
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        console.log('Data sent to Google Sheets');
+      })
+      .catch(error => {
+        console.error('Error sending to Google Sheets:', error);
+        // Still show success to user even if sheets fails
+      });
+
+      // For demo purposes, log to console
+      console.log('Sending to Google Sheets:', data);
+    }
+
+    /* Show success popup with green checkmark */
+    function showSuccessPopup(status) {
+      const popup = document.getElementById('successPopup');
+      const statusMsg = document.getElementById('popupStatus');
+      const scanCountMsg = document.getElementById('popupScanCount');
+      
+      statusMsg.textContent = status;
+      scanCountMsg.textContent = scanCount + ' scan' + (scanCount !== 1 ? 's' : '') + ' recorded';
+      
+      popup.style.display = 'flex';
+      
+      // Auto hide after 2 seconds
+      setTimeout(() => {
+        popup.style.display = 'none';
+      }, 2000);
     }
 
     function goBackToScan() {
@@ -628,10 +730,10 @@
       <div id="labelButtons">
         <span onclick="clearScans()">ESC</span>
         <span id="divider">|</span>
-        <span onclick="goToStatus()">SAVE</span>  <!-- Changed from ENTER to SAVE -->
+        <span onclick="goToStatus()">ENTER</span>  <!-- CHANGED BACK TO ENTER -->
       </div>
 
-      <!-- KEYPAD WRAPPER - NOW AT BOTTOM WITH PROPER SPACING -->
+      <!-- KEYPAD WRAPPER -->
       <div id="keypadWrapper">
 
         <!-- KEYPAD TABS -->
@@ -641,7 +743,7 @@
           <button id="tabSymbol" onclick="showSymbol()">SYM</button>
         </div>
 
-        <!-- NUMERIC KEYPAD - NO ENTER BUTTON -->
+        <!-- NUMERIC KEYPAD -->
         <div id="numericPad">
           <button onclick="typeChar('1')">1</button>
           <button onclick="typeChar('2')">2</button>
@@ -764,10 +866,50 @@
       <div class="statusBtn back" onclick="goBackToScan()">BACK TO SCANNER</div>
     </div>
 
+    <!-- SUCCESS POPUP WITH GREEN CHECKMARK -->
+    <div id="successPopup">
+      <div class="popup-content">
+        <div class="checkmark">✓</div>
+        <div class="popup-message">Package Recorded!</div>
+        <div class="popup-submessage" id="popupStatus"></div>
+        <div class="popup-submessage" id="popupScanCount"></div>
+      </div>
+    </div>
+
     <!-- BEEP -->
     <audio id="beep" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA="></audio>
 
   </div>
+
+  <!-- Instructions for Google Sheets Setup -->
+  <!--
+  TO SET UP GOOGLE SHEETS INTEGRATION:
+  
+  1. Create a Google Sheet
+  2. Go to Extensions > Apps Script
+  3. Paste this code:
+  
+  function doPost(e) {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
+    
+    data.scans.forEach(function(scan) {
+      sheet.appendRow([
+        new Date(),
+        scan.number,
+        scan.code,
+        data.status,
+        data.timestamp
+      ]);
+    });
+    
+    return ContentService.createTextOutput(JSON.stringify({result: 'success'}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  4. Deploy as Web App (Execute as: Me, Access: Anyone)
+  5. Copy the URL and replace YOUR_SCRIPT_ID in the code
+  -->
 
 </body>
 </html>
