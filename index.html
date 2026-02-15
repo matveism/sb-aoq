@@ -11,7 +11,7 @@
     body {
       margin: 0;
       padding: 0;
-      background: #000;
+      background: #2A4B6E;
       display: flex;
       justify-content: center;
       align-items: flex-start;
@@ -22,7 +22,7 @@
     #phone {
       width: 360px;
       height: 640px;
-      background-color: #0B173B;
+      background-color: #2A4B6E;
       font-family: "Courier New", monospace;
       color: #FFFFFF;
       overflow-y: auto;
@@ -36,8 +36,8 @@
     #header {
       width: 100%;
       height: 32px;
-      background-color: #1A2C55;
-      border-bottom: 1px solid #000;
+      background-color: #4989AB;
+      border-bottom: 1px solid #1A2C3E;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -46,14 +46,22 @@
       flex-shrink: 0;
     }
 
-    #leftText { font-weight: bold; font-size: 15px; }
-    #rightArea { font-size: 14px; }
+    #leftText { 
+      font-weight: bold; 
+      font-size: 15px; 
+      color: #FFFFFF;
+    }
+    
+    #rightArea { 
+      font-size: 14px;
+      color: #FFFFFF;
+    }
 
     /* MAIN BUTTONS (SCAN) */
     .mainButton {
       width: calc(100% - 20px);
       height: 48px;
-      background-color: #0A8A2A;
+      background-color: #1C5432;
       border: 2px solid #0F5F1C;
       color: #FFFFFF;
       font-size: 20px;
@@ -74,12 +82,13 @@
     #scanFrame {
       width: 280px;
       height: 160px;
-      border: 2px solid rgba(255,255,255,0.4);
+      border: 2px solid #6A9AC0;
       margin: 20px auto 0 auto;
       position: relative;
       display: none;
       overflow: hidden;
       flex-shrink: 0;
+      background-color: #000;
     }
 
     #preview {
@@ -113,7 +122,7 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      background-color: #0B173B;
+      background-color: #2A4B6E;
       flex: 1;
     }
 
@@ -124,10 +133,11 @@
       padding-left: 10px;
       font-weight: bold;
       font-size: 15px;
-      background-color: #1A2C55;
-      border-top: 1px solid #000;
-      border-bottom: 1px solid #000;
+      background-color: #1A3A5A;
+      border-top: 1px solid #1A2C3E;
+      border-bottom: 1px solid #1A2C3E;
       flex-shrink: 0;
+      color: #FFFFFF;
     }
 
     #labelBox {
@@ -135,7 +145,8 @@
       min-height: 40px;
       max-height: 100px;
       margin: 8px auto 0 auto;
-      border: 2px solid #FFFFFF;
+      border: 2px solid #4989AB;
+      background-color: #1A3A5A;
       padding: 6px 10px;
       font-size: 16px;
       font-weight: bold;
@@ -143,17 +154,18 @@
       overflow-y: auto;
       word-wrap: break-word;
       flex-shrink: 0;
+      color: #FFFFFF;
     }
 
-    /* ESC | ENTER BAR - CHANGED BACK TO ENTER */
+    /* ESC | ENTER BAR */
     #labelButtons {
       height: 32px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background-color: #111d33;
-      border-top: 1px solid #000;
-      border-bottom: 1px solid #000;
+      background-color: #1A3A5A;
+      border-top: 1px solid #1A2C3E;
+      border-bottom: 1px solid #1A2C3E;
       margin-top: 8px;
       padding: 0 25px;
       font-weight: bold;
@@ -164,18 +176,24 @@
 
     #labelButtons span {
       cursor: pointer;
+      color: #FFFFFF;
+    }
+
+    #labelButtons span:active {
+      color: #1C5432;
     }
 
     #divider {
       flex: 1;
       text-align: center;
       opacity: 0.6;
+      color: #FFFFFF !important;
     }
 
     /* KEYPAD WRAPPER - pushed to bottom */
     #keypadWrapper {
       width: 100%;
-      background-color: #0B173B;
+      background-color: #2A4B6E;
       margin-top: auto;
       padding-top: 20px;
       padding-bottom: 0;
@@ -192,8 +210,8 @@
       flex: 1;
       margin: 0 4px;
       padding: 8px 0;
-      background-color: #1A2C55;
-      border: 1px solid #FFFFFF;
+      background-color: #1A3A5A;
+      border: 1px solid #4989AB;
       border-radius: 4px;
       color: #FFFFFF;
       font-size: 14px;
@@ -203,8 +221,9 @@
     }
 
     #keyTabs button.active {
-      background-color: #0A8A2A;
-      border-color: #0F5F1C;
+      background-color: #1C5432;
+      border-color: #1C5432;
+      color: #FFFFFF;
     }
 
     /* NUMERIC KEYPAD */
@@ -216,8 +235,8 @@
     }
 
     #numericPad button {
-      background-color: #1A2C55;
-      border: 1px solid #FFFFFF;
+      background-color: #1A3A5A;
+      border: 1px solid #4989AB;
       border-radius: 4px;
       color: #FFFFFF;
       font-size: 20px;
@@ -227,7 +246,7 @@
       text-align: center;
       cursor: pointer;
       font-family: "Courier New", monospace;
-      box-shadow: 0 2px 0 #0B0F1A;
+      box-shadow: 0 2px 0 #0A1A2A;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -235,11 +254,13 @@
 
     #numericPad button:active {
       transform: translateY(1px);
-      box-shadow: 0 1px 0 #0B0F1A;
+      box-shadow: 0 1px 0 #0A1A2A;
+      background-color: #1C5432;
+      color: #FFFFFF;
     }
 
     #numericPad button.backspace {
-      background-color: #111d33;
+      background-color: #0A2A4A;
       font-size: 18px;
     }
 
@@ -257,8 +278,8 @@
 
     .row button {
       flex: 1;
-      background-color: #1A2C55;
-      border: 1px solid #FFFFFF;
+      background-color: #1A3A5A;
+      border: 1px solid #4989AB;
       border-radius: 4px;
       color: #FFFFFF;
       font-size: 16px;
@@ -271,16 +292,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 0 #0B0F1A;
+      box-shadow: 0 2px 0 #0A1A2A;
     }
 
     .row button:active {
       transform: translateY(1px);
-      box-shadow: 0 1px 0 #0B0F1A;
+      box-shadow: 0 1px 0 #0A1A2A;
+      background-color: #1C5432;
+      color: #FFFFFF;
     }
 
     .row button.special {
-      background-color: #111d33;
+      background-color: #0A2A4A;
     }
 
     .row button.space {
@@ -295,8 +318,8 @@
 
     #symbolPad .row button {
       flex: 1;
-      background-color: #1A2C55;
-      border: 1px solid #FFFFFF;
+      background-color: #1A3A5A;
+      border: 1px solid #4989AB;
       border-radius: 4px;
       color: #FFFFFF;
       font-size: 16px;
@@ -309,16 +332,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 0 #0B0F1A;
+      box-shadow: 0 2px 0 #0A1A2A;
     }
 
     #symbolPad .row button:active {
       transform: translateY(1px);
-      box-shadow: 0 1px 0 #0B0F1A;
+      box-shadow: 0 1px 0 #0A1A2A;
+      background-color: #1C5432;
+      color: #FFFFFF;
     }
 
     #symbolPad .row button.special {
-      background-color: #111d33;
+      background-color: #0A2A4A;
     }
 
     #symbolPad .row button.space {
@@ -336,13 +361,14 @@
       padding: 0 20px 20px 20px;
       flex: 1;
       overflow-y: auto;
+      background-color: #2A4B6E;
     }
 
     .statusBtn {
       width: 100%;
       padding: 12px;
-      border: 1px solid #FFFFFF;
-      background: transparent;
+      border: 1px solid #4989AB;
+      background-color: #1A3A5A;
       color: #FFFFFF;
       font-size: 16px;
       text-align: center;
@@ -357,12 +383,18 @@
     }
 
     .statusBtn:hover {
-      background-color: #1A2C55;
+      background-color: #2A4A6A;
+    }
+
+    .statusBtn:active {
+      background-color: #1C5432;
+      color: #FFFFFF;
     }
 
     .statusBtn.back {
-      background-color: #111d33;
+      background-color: #0A2A4A;
       margin-top: 10px;
+      border-color: #4989AB;
     }
 
     /* SUCCESS POPUP */
@@ -373,15 +405,15 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.8);
+      background-color: rgba(42, 75, 110, 0.9);
       z-index: 1000;
       justify-content: center;
       align-items: center;
     }
 
     .popup-content {
-      background-color: #0B173B;
-      border: 2px solid #0A8A2A;
+      background-color: #1A3A5A;
+      border: 2px solid #1C5432;
       border-radius: 10px;
       padding: 30px;
       text-align: center;
@@ -392,7 +424,7 @@
       width: 80px;
       height: 80px;
       margin: 0 auto 20px auto;
-      background-color: #0A8A2A;
+      background-color: #1C5432;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -411,7 +443,7 @@
     }
 
     .popup-submessage {
-      color: #0A8A2A;
+      color: #4989AB;
       font-size: 14px;
       font-family: "Courier New", monospace;
     }
@@ -433,19 +465,23 @@
     }
 
     #phone::-webkit-scrollbar-track {
-      background: #0B173B;
+      background: #2A4B6E;
     }
 
     #phone::-webkit-scrollbar-thumb {
-      background: #1A2C55;
+      background: #4989AB;
     }
 
     #labelBox::-webkit-scrollbar {
       width: 2px;
     }
 
+    #labelBox::-webkit-scrollbar-track {
+      background: #1A3A5A;
+    }
+
     #labelBox::-webkit-scrollbar-thumb {
-      background: #1A2C55;
+      background: #4989AB;
     }
 
     button {
@@ -465,11 +501,16 @@
     let selectedStatus = '';
     let currentScans = [];
 
+    function playBeep() {
+      const beep = document.getElementById('beep');
+      beep.currentTime = 0;
+      beep.play().catch(e => console.log('Beep failed:', e));
+    }
+
     function updateTime() {
       const now = new Date();
-      const h = now.getHours();
-      let m = now.getMinutes();
-      if (m < 10) m = "0" + m;
+      const h = now.getHours().toString().padStart(2, '0');
+      const m = now.getMinutes().toString().padStart(2, '0');
       document.getElementById("rightArea").innerHTML = h + ":" + m;
     }
     setInterval(updateTime, 1000);
@@ -548,7 +589,8 @@
       document.getElementById("scanFrame").style.display = "none";
       document.getElementById("laser").style.display = "none";
 
-      document.getElementById("beep").play().catch(e => console.log("Audio play failed"));
+      // Play beep sound
+      playBeep();
 
       scanCount++;
       const line = scanCount + " " + code;
@@ -616,7 +658,7 @@
       // Send data using fetch
       fetch(googleSheetsURL, {
         method: 'POST',
-        mode: 'no-cors', // This is needed for Google Sheets
+        mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -627,10 +669,8 @@
       })
       .catch(error => {
         console.error('Error sending to Google Sheets:', error);
-        // Still show success to user even if sheets fails
       });
 
-      // For demo purposes, log to console
       console.log('Sending to Google Sheets:', data);
     }
 
@@ -730,7 +770,7 @@
       <div id="labelButtons">
         <span onclick="clearScans()">ESC</span>
         <span id="divider">|</span>
-        <span onclick="goToStatus()">ENTER</span>  <!-- CHANGED BACK TO ENTER -->
+        <span onclick="goToStatus()">ENTER</span>
       </div>
 
       <!-- KEYPAD WRAPPER -->
@@ -877,39 +917,9 @@
     </div>
 
     <!-- BEEP -->
-    <audio id="beep" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA="></audio>
+    <audio id="beep" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=" preload="auto"></audio>
 
   </div>
-
-  <!-- Instructions for Google Sheets Setup -->
-  <!--
-  TO SET UP GOOGLE SHEETS INTEGRATION:
-  
-  1. Create a Google Sheet
-  2. Go to Extensions > Apps Script
-  3. Paste this code:
-  
-  function doPost(e) {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var data = JSON.parse(e.postData.contents);
-    
-    data.scans.forEach(function(scan) {
-      sheet.appendRow([
-        new Date(),
-        scan.number,
-        scan.code,
-        data.status,
-        data.timestamp
-      ]);
-    });
-    
-    return ContentService.createTextOutput(JSON.stringify({result: 'success'}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-  
-  4. Deploy as Web App (Execute as: Me, Access: Anyone)
-  5. Copy the URL and replace YOUR_SCRIPT_ID in the code
-  -->
 
 </body>
 </html>
