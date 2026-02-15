@@ -102,7 +102,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: scaleX(-1); /* mirror like camera */
+      /* FIXED: removed mirror */
     }
 
     /* Corner angles */
@@ -118,7 +118,7 @@
     .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
     .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
 
-    /* BARCODE ID LABEL (SHRUNK LIKE HEADER) */
+    /* BARCODE ID LABEL */
     #barcodeLabel {
       width: 100%;
       height: 32px;
@@ -168,10 +168,9 @@
         video.srcObject = stream;
         video.play();
 
-        // TODO: integrate real decoder here (QuaggaJS, ZXing, etc.)
-        // For now, simulate decode after 2 seconds:
+        // Simulated decode (replace with real decoder)
         setTimeout(function () {
-          onBarcodeDecoded(decodedValue);
+          onBarcodeDecoded("420998112233");
         }, 2000);
 
       }).catch(function (err) {
