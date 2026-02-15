@@ -2,142 +2,128 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Scanner UI</title>
-
-  <meta name="viewport"
-        content="width=360, height=640, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Scanner UI · Complete</title>
+  <meta name="viewport" content="width=360, height=640, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
   <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
     body {
       margin: 0;
       padding: 0;
       background: #000;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
-      height: 100vh;
-      overflow: hidden;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Courier New', Courier, monospace;
     }
 
     #phone {
       width: 360px;
       height: 640px;
-      background-color: #0B173B;
-      font-family: "Courier New", monospace;
-      color: #FFFFFF;
-      overflow-y: auto;
-      overflow-x: hidden;
+      background: linear-gradient(180deg, #7ba3c9 0%, #5a8bb8 30%, #4a7aa8 60%, #3a6a98 100%);
+      color: #ffffff;
       position: relative;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
-    /* GLASSY MESH */
-    #pattern {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      background-image:
-        linear-gradient(to bottom,
-          rgba(255,255,255,0.08) 0%,
-          rgba(255,255,255,0.00) 40%,
-          rgba(255,255,255,0.06) 60%,
-          rgba(255,255,255,0.00) 100%
-        ),
-        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.00) 60%);
-      background-size: 100% 100%, 32px 32px, 32px 32px, 100% 100%;
-      opacity: 0.35;
-      z-index: 1;
-    }
-
-    /* HEADER */
     #header {
       width: 100%;
-      height: 32px;
-      background-color: #1A2C55;
-      border-bottom: 1px solid #000;
+      height: 38px;
+      background: linear-gradient(180deg, #8bb4d4 0%, #6a9cc4 100%);
+      border-bottom: 2px solid #4a7a9a;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 10px;
-      box-sizing: border-box;
-      position: relative;
+      padding: 0 12px;
+      font-weight: bold;
+      font-size: 16px;
       z-index: 2;
       flex-shrink: 0;
     }
 
-    #leftText { font-weight: bold; font-size: 15px; }
-    #rightArea { font-size: 14px; }
+    #leftText { color: #ffffff; }
+    #rightArea { 
+      color: #ffffff;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-    /* SCAN BUTTON */
     #scanButton {
-      width: calc(100% - 20px);
-      height: 48px;
-      background-color: #0A8A2A;
-      border: 2px solid #0F5F1C;
-      color: #FFFFFF;
-      font-size: 20px;
+      width: calc(100% - 24px);
+      height: 50px;
+      background: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%);
+      border: 2px solid #2E7D32;
+      color: #ffffff;
+      font-size: 22px;
       font-weight: bold;
       text-align: center;
       line-height: 48px;
-      margin: 12px auto 0 auto;
-      border-radius: 4px;
-      position: relative;
+      margin: 12px auto 8px auto;
+      border-radius: 6px;
       z-index: 2;
-      box-shadow: 0 0 6px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 0 #1B5E20;
       cursor: pointer;
       flex-shrink: 0;
     }
+    #scanButton:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #1B5E20;
+    }
 
-    /* SCAN FRAME */
     #scanFrame {
       width: 280px;
       height: 160px;
-      border: 2px solid rgba(255,255,255,0.4);
-      margin: 20px auto 0 auto;
+      border: 2px solid rgba(255,255,255,0.5);
+      margin: 4px auto 0 auto;
       position: relative;
       display: none;
       z-index: 3;
       overflow: hidden;
       flex-shrink: 0;
+      background: rgba(0,0,0,0.3);
     }
 
-    /* video preview inside frame */
     #preview {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: scaleX(-1); /* mirror like camera */
+      transform: scaleX(-1);
+      display: block;
     }
 
-    /* LASER */
     #laser {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 2px;
-      background: rgba(255,0,0,0.8);
-      box-shadow: 0 0 6px red;
-      animation: laserMove 2s linear infinite;
+      background: #ff3333;
+      box-shadow: 0 0 10px #ff0000;
+      animation: laserMove 1.8s linear infinite;
       display: none;
       z-index: 5;
     }
-
     @keyframes laserMove {
       0%   { top: 0; }
       50%  { top: 158px; }
       100% { top: 0; }
     }
 
-    /* Corner angles */
     .corner {
-      width: 20px;
-      height: 20px;
-      border: 3px solid #00FFAA;
+      width: 22px;
+      height: 22px;
+      border: 3px solid #3498db;
       position: absolute;
       pointer-events: none;
     }
@@ -146,634 +132,473 @@
     .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
     .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
 
-    /* BARCODE ID LABEL (SHRUNK LIKE HEADER) */
-    #barcodeLabel {
-      width: 100%;
-      height: 32px;
-      background-color: #1A2C55;
-      border-top: 1px solid #000;
-      border-bottom: 1px solid #000;
-      display: none;
-      align-items: center;
-      padding-left: 10px;
-      font-weight: bold;
-      font-size: 15px;
-      box-sizing: border-box;
-      margin-top: 12px;
-      z-index: 2;
-      position: relative;
-    }
-
-    /* LABEL BLOCK */
     #labelBlock {
-      width: 100%;
       display: flex;
       flex-direction: column;
-      background-color: transparent;
       flex: 1;
-      position: relative;
+      min-height: 0;
+      width: 100%;
       z-index: 2;
+      margin-top: 4px;
     }
 
     #labelTitle {
       height: 32px;
+      background: linear-gradient(180deg, #6a9ac8 0%, #5a8ab8 100%);
+      border: 1px solid #4a7a98;
       display: flex;
       align-items: center;
-      padding-left: 10px;
+      padding-left: 12px;
+      margin: 0 12px;
       font-weight: bold;
-      font-size: 15px;
-      background-color: #1A2C55;
-      border-top: 1px solid #000;
-      border-bottom: 1px solid #000;
+      font-size: 14px;
+      color: #ffffff;
       flex-shrink: 0;
     }
 
     #labelBox {
-      width: calc(100% - 20px);
-      min-height: 40px;
-      max-height: 100px;
-      margin: 8px auto 0 auto;
-      border: 2px solid #FFFFFF;
-      background-color: rgba(0,0,0,0.3);
-      padding: 6px 10px;
-      font-size: 16px;
+      width: calc(100% - 24px);
+      min-height: 80px;
+      max-height: 120px;
+      margin: 0 auto;
+      border: 3px inset #888;
+      background: linear-gradient(180deg, #c8d8c8 0%, #a8c8a8 100%);
+      padding: 10px 12px;
+      font-size: 17px;
       font-weight: bold;
+      color: #1a3a1a;
       white-space: pre-line;
       overflow-y: auto;
-      word-wrap: break-word;
+      word-break: break-all;
       flex-shrink: 0;
-      backdrop-filter: blur(2px);
+      line-height: 1.4;
+      font-family: 'Courier New', monospace;
     }
 
-    /* ESC | ENTER BAR */
     #labelButtons {
-      height: 32px;
+      height: 42px;
+      background: linear-gradient(180deg, #5a8ab8 0%, #4a7aa8 100%);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background-color: #111d33;
-      border-top: 1px solid #000;
-      border-bottom: 1px solid #000;
-      margin-top: 8px;
-      padding: 0 25px;
+      border-radius: 4px;
+      border: 1px solid #3a6a98;
+      margin: 8px 12px 0 12px;
+      padding: 0 30px;
       font-weight: bold;
-      font-size: 15px;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.6);
+      font-size: 18px;
+      color: #ffffff;
       flex-shrink: 0;
     }
-
     #labelButtons span {
       cursor: pointer;
+      padding: 4px 12px;
+      background: transparent;
     }
-
-    #divider {
-      flex: 1;
-      text-align: center;
-      opacity: 0.6;
-    }
-
-    /* KEYPAD WRAPPER */
-    #keypadWrapper {
-      width: 100%;
-      background-color: transparent;
-      margin-top: auto;
-      padding-top: 20px;
-      padding-bottom: 0;
-      position: relative;
-      z-index: 2;
-    }
-
-    /* KEYPAD TABS */
-    #keyTabs {
-      display: flex;
-      justify-content: space-around;
-      margin: 0 10px 10px 10px;
-    }
-
-    #keyTabs button {
-      flex: 1;
-      margin: 0 4px;
-      padding: 8px 0;
-      background-color: #1A2C55;
-      border: 1px solid #FFFFFF;
+    #labelButtons span:active {
+      background: #27ae60;
       border-radius: 4px;
-      color: #FFFFFF;
+    }
+    #divider {
+      color: rgba(255,255,255,0.5);
+      padding: 0 !important;
+    }
+
+    #navBar {
+      height: 36px;
+      background: linear-gradient(180deg, #4a7aa8 0%, #3a6a98 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 4px;
+      border: 1px solid #2a5a88;
+      margin: 8px 12px 0 12px;
+      padding: 0 16px;
+      font-weight: bold;
       font-size: 14px;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+    #navBar button {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 20px;
       font-weight: bold;
       cursor: pointer;
-      font-family: "Courier New", monospace;
+      padding: 4px 8px;
+    }
+    #navBar button:active {
+      color: #4CAF50;
     }
 
+    #keypadWrapper {
+      width: 100%;
+      background: linear-gradient(180deg, #6a9ac8 0%, #5a8ab8 100%);
+      border-top: 2px solid #4a7a98;
+      margin-top: 8px;
+      flex-shrink: 0;
+      z-index: 2;
+      padding-bottom: 8px;
+    }
+
+    #keyTabs {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px 6px 12px;
+    }
+    #keyTabs button {
+      flex: 1;
+      background: #9ca8b4;
+      border: 2px solid #7a8694;
+      border-radius: 30px;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: bold;
+      padding: 8px 0;
+      cursor: pointer;
+    }
     #keyTabs button.active {
-      background-color: #0A8A2A;
-      border-color: #0F5F1C;
+      background: #4CAF50;
+      border-color: #2E7D32;
+    }
+    #keyTabs button:active {
+      background: #66BB6A;
     }
 
-    /* NUMERIC KEYPAD */
     #numericPad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      padding: 0 15px 15px 15px;
+      padding: 6px 15px 8px 15px;
     }
-
     #numericPad button {
-      background-color: #1A2C55;
-      border: 1px solid #FFFFFF;
-      border-radius: 4px;
-      color: #FFFFFF;
-      font-size: 20px;
+      background: linear-gradient(180deg, #6a8aaa 0%, #5a7a9a 100%);
+      border: 1px solid #4a6a8a;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 22px;
       font-weight: bold;
-      padding: 12px 0;
       height: 48px;
-      text-align: center;
-      cursor: pointer;
-      font-family: "Courier New", monospace;
-      box-shadow: 0 2px 0 #0B0F1A;
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #3a5a7a;
     }
-
     #numericPad button:active {
-      transform: translateY(1px);
-      box-shadow: 0 1px 0 #0B0F1A;
-      background-color: #0A8A2A;
+      transform: translateY(2px);
+      background: #4CAF50;
     }
-
     #numericPad button.backspace {
-      background-color: #111d33;
-      font-size: 18px;
+      background: linear-gradient(180deg, #5a7a9a 0%, #4a6a8a 100%);
     }
 
-    /* QWERTY KEYPAD */
-    #qwertyPad {
+    #qwertyPad, #symbolPad {
       display: none;
-      padding: 0 10px 15px 10px;
+      padding: 0 8px 12px 8px;
     }
-
     .row {
       display: flex;
       gap: 4px;
       margin-bottom: 4px;
+      justify-content: center;
     }
-
     .row button {
       flex: 1;
-      background-color: #1A2C55;
-      border: 1px solid #FFFFFF;
-      border-radius: 4px;
-      color: #FFFFFF;
+      max-width: 32px;
+      background: linear-gradient(180deg, #6a8aaa 0%, #5a7a9a 100%);
+      border: 1px solid #4a6a8a;
+      border-radius: 6px;
+      color: #ffffff;
       font-size: 16px;
       font-weight: bold;
-      padding: 12px 0;
-      height: 48px;
-      text-align: center;
-      cursor: pointer;
-      font-family: "Courier New", monospace;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 0 #0B0F1A;
+      cursor: pointer;
+      box-shadow: 0 2px 0 #3a5a7a;
     }
-
     .row button:active {
-      transform: translateY(1px);
-      box-shadow: 0 1px 0 #0B0F1A;
-      background-color: #0A8A2A;
+      transform: translateY(2px);
+      background: #4CAF50;
     }
-
     .row button.special {
-      background-color: #111d33;
+      background: linear-gradient(180deg, #5a7a9a 0%, #4a6a8a 100%);
+      max-width: 50px;
     }
-
-    .row button.space {
+    .row button.space { 
       flex: 3;
+      max-width: 200px;
     }
 
-    /* SYMBOL KEYPAD */
-    #symbolPad {
-      display: none;
-      padding: 0 10px 15px 10px;
-    }
-
-    #symbolPad .row button {
-      flex: 1;
-      background-color: #1A2C55;
-      border: 1px solid #FFFFFF;
-      border-radius: 4px;
-      color: #FFFFFF;
-      font-size: 16px;
-      font-weight: bold;
-      padding: 12px 0;
-      height: 48px;
-      text-align: center;
-      cursor: pointer;
-      font-family: "Courier New", monospace;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 0 #0B0F1A;
-    }
-
-    #symbolPad .row button:active {
-      transform: translateY(1px);
-      box-shadow: 0 1px 0 #0B0F1A;
-      background-color: #0A8A2A;
-    }
-
-    #symbolPad .row button.special {
-      background-color: #111d33;
-    }
-
-    #symbolPad .row button.space {
-      flex: 3;
-    }
-
-    /* STATUS SCREEN */
     #statusScreen {
       display: none;
       flex-direction: column;
-      align-items: center;
-      margin-top: 20px;
-      margin-bottom: 0;
-      gap: 8px;
-      padding: 0 20px 20px 20px;
-      flex: 1;
+      position: absolute;
+      top: 38px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(58, 106, 152, 0.98);
+      z-index: 100;
+      padding: 20px 16px;
       overflow-y: auto;
-      position: relative;
-      z-index: 2;
+      gap: 10px;
     }
-
     .statusBtn {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #FFFFFF;
-      background: rgba(26,44,85,0.8);
-      color: #FFFFFF;
-      font-size: 16px;
+      background: linear-gradient(180deg, #5a8ab8 0%, #4a7aa8 100%);
+      border: 2px solid #3498db;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 16px 8px;
       text-align: center;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
-      font-family: "Courier New", monospace;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      backdrop-filter: blur(2px);
     }
-
     .statusBtn:active {
-      background-color: #0A8A2A;
+      background: #4CAF50;
     }
-
     .statusBtn.back {
-      background-color: #111d33;
-      margin-top: 10px;
+      background: linear-gradient(180deg, #4a6a8a 0%, #3a5a7a 100%);
+      border-color: #f1c40f;
+      margin-top: 25px;
     }
 
-    /* SUCCESS POPUP */
     #successPopup {
       display: none;
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(11,23,59,0.9);
+      background: rgba(0,0,0,0.7);
       z-index: 1000;
-      justify-content: center;
       align-items: center;
-      backdrop-filter: blur(4px);
+      justify-content: center;
     }
-
     .popup-content {
-      background-color: #1A2C55;
-      border: 2px solid #0A8A2A;
-      border-radius: 10px;
-      padding: 30px;
+      background: linear-gradient(180deg, #5a8ab8 0%, #4a7aa8 100%);
+      border: 3px solid #27ae60;
+      border-radius: 20px;
+      padding: 30px 20px;
       text-align: center;
-      animation: popupFade 0.3s ease;
+      width: 240px;
+      animation: fadePop 0.2s;
     }
-
     .checkmark {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 20px auto;
-      background-color: #0A8A2A;
+      width: 70px;
+      height: 70px;
+      background: #27ae60;
       border-radius: 50%;
+      font-size: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 50px;
+      margin: 0 auto 15px auto;
       color: white;
-      animation: checkmarkSpin 0.5s ease;
+    }
+    .popup-message { font-size: 20px; font-weight: bold; }
+    .popup-submessage { color: #00ffaa; font-size: 15px; }
+    @keyframes fadePop {
+      0% { opacity: 0; transform: scale(0.7); }
+      100% { opacity: 1; transform: scale(1); }
     }
 
-    .popup-message {
-      color: #FFFFFF;
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-      font-family: "Courier New", monospace;
-    }
-
-    .popup-submessage {
-      color: #00FFAA;
-      font-size: 14px;
-      font-family: "Courier New", monospace;
-    }
-
-    @keyframes popupFade {
-      from { opacity: 0; transform: scale(0.8); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    @keyframes checkmarkSpin {
-      0% { transform: rotate(0deg) scale(0); }
-      50% { transform: rotate(180deg) scale(1.2); }
-      100% { transform: rotate(360deg) scale(1); }
-    }
-
-    /* Scrollbar styling */
-    #phone::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    #phone::-webkit-scrollbar-track {
-      background: #0B173B;
-    }
-
-    #phone::-webkit-scrollbar-thumb {
-      background: #1A2C55;
-    }
-
-    #labelBox::-webkit-scrollbar {
-      width: 2px;
-    }
-
-    #labelBox::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    #labelBox::-webkit-scrollbar-thumb {
-      background: #1A2C55;
-    }
-
-    button {
-      -webkit-tap-highlight-color: transparent;
-      outline: none;
-    }
+    #labelBox::-webkit-scrollbar { width: 4px; }
+    #labelBox::-webkit-scrollbar-thumb { background: #3498db; }
   </style>
 
-  <!-- jsQR -->
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
   <script>
-    let stream = null;
-    let scanning = false;
-    let scanCount = 0;
-    let animationFrame = null;
-    let selectedStatus = '';
-    let currentScans = [];
+    (function() {
+      let stream = null;
+      let scanning = false;
+      let scanCount = 0;
+      let animationFrame = null;
+      let currentScans = [];
 
-    function playBeep() {
-      const beep = document.getElementById('beep');
-      beep.currentTime = 0;
-      beep.play().catch(e => console.log('Beep failed:', e));
-    }
+      const beep = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=");
+      beep.preload = 'auto';
+      function playBeep() { beep.currentTime = 0; beep.play().catch(e => {}); }
 
-    function updateTime() {
-      const now = new Date();
-      const h = now.getHours().toString().padStart(2, '0');
-      const m = now.getMinutes().toString().padStart(2, '0');
-      document.getElementById("rightArea").innerHTML = h + ":" + m;
-    }
-    setInterval(updateTime, 1000);
+      function updateTime() {
+        const d = new Date();
+        const month = (d.getMonth() + 1).toString().padStart(2,'0');
+        const day = d.getDate().toString().padStart(2,'0');
+        const hours = d.getHours();
+        const minutes = d.getMinutes().toString().padStart(2,'0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const hour12 = hours % 12 || 12;
+        const timeStr = month + '/' + day + ' ' + hour12 + ':' + minutes + ' ' + ampm;
+        document.getElementById('timeDisplay').innerText = timeStr;
+        document.getElementById('timeDisplay2').innerText = timeStr;
+      }
+      setInterval(updateTime, 1000);
+      window.addEventListener('load', updateTime);
 
-    window.onload = function() {
-      updateTime();
-      showNumeric();
-    };
+      function stopCamera() {
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+      }
 
-    async function startScan() {
-      if (scanning) return;
-      scanning = true;
+      async function startScan() {
+        if (scanning) return;
+        scanning = true;
+        const frame = document.getElementById('scanFrame');
+        const laser = document.getElementById('laser');
+        frame.style.display = 'block';
+        laser.style.display = 'block';
 
-      document.getElementById("scanFrame").style.display = "block";
-      document.getElementById("laser").style.display = "block";
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          const video = document.getElementById('preview');
+          video.srcObject = stream;
+          await video.play();
 
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" }
-        });
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
 
-        const video = document.getElementById("preview");
-        video.srcObject = stream;
-        await video.play();
-
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-
-        function tick() {
-          if (!scanning || !video.videoWidth) {
+          function tick() {
+            if (!scanning || !video.videoWidth) {
+              animationFrame = requestAnimationFrame(tick);
+              return;
+            }
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const qr = jsQR(img.data, canvas.width, canvas.height);
+            if (qr) { onBarcodeDecoded(qr.data); return; }
             animationFrame = requestAnimationFrame(tick);
-            return;
           }
-
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const qr = jsQR(imageData.data, canvas.width, canvas.height);
-
-          if (qr) {
-            onBarcodeDecoded(qr.data);
-            return;
-          }
-
-          animationFrame = requestAnimationFrame(tick);
+          tick();
+        } catch (err) {
+          scanning = false;
+          frame.style.display = 'none';
+          laser.style.display = 'none';
+          alert('Camera access denied');
         }
+      }
 
-        tick();
-      } catch (err) {
-        console.error("Camera error:", err);
+      function onBarcodeDecoded(code) {
         scanning = false;
-        document.getElementById("scanFrame").style.display = "none";
-        document.getElementById("laser").style.display = "none";
-        alert("Could not access camera");
+        stopCamera();
+        document.getElementById('scanFrame').style.display = 'none';
+        document.getElementById('laser').style.display = 'none';
+        playBeep();
+
+        scanCount++;
+        currentScans.push({ number: scanCount, code, timestamp: new Date().toISOString() });
+        const box = document.getElementById('labelBox');
+        box.innerText += scanCount + ' ' + code + '\n';
+        box.scrollTop = box.scrollHeight;
       }
-    }
 
-    function stopCamera() {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-        animationFrame = null;
+      function clearScans() {
+        scanCount = 0;
+        currentScans = [];
+        document.getElementById('labelBox').innerText = '';
       }
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-        stream = null;
+
+      function goToStatus() {
+        document.getElementById('labelBlock').style.display = 'none';
+        document.getElementById('scanButton').style.display = 'none';
+        document.getElementById('leftText').innerText = 'SELECT STATUS';
+        document.getElementById('statusScreen').style.display = 'flex';
       }
-    }
 
-    function onBarcodeDecoded(code) {
-      scanning = false;
-      stopCamera();
+      function goBackToScan() {
+        document.getElementById('statusScreen').style.display = 'none';
+        document.getElementById('labelBlock').style.display = 'flex';
+        document.getElementById('scanButton').style.display = 'block';
+        document.getElementById('leftText').innerText = 'SCAN BARCODE';
+      }
 
-      document.getElementById("scanFrame").style.display = "none";
-      document.getElementById("laser").style.display = "none";
+      function sendToSheets(status) {
+        const data = { scans: currentScans, status, timestamp: new Date().toISOString() };
+        console.log('📤 Sending to sheets:', data);
+        // Uncomment and add your Google Apps Script URL:
+        // fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+        //   method: 'POST', mode: 'no-cors', body: JSON.stringify(data)
+        // });
+      }
 
-      playBeep();
+      function chooseStatus(status) {
+        sendToSheets(status);
+        document.getElementById('popupStatus').innerText = status;
+        document.getElementById('popupScanCount').innerText = scanCount + ' scan(s)';
+        document.getElementById('successPopup').style.display = 'flex';
 
-      scanCount++;
-      const line = scanCount + " " + code;
+        setTimeout(() => {
+          document.getElementById('successPopup').style.display = 'none';
+          clearScans();
+          goBackToScan();
+        }, 2000);
+      }
 
-      currentScans.push({
-        number: scanCount,
-        code: code,
-        timestamp: new Date().toISOString()
-      });
+      function showNumeric() {
+        document.getElementById('numericPad').style.display = 'grid';
+        document.getElementById('qwertyPad').style.display = 'none';
+        document.getElementById('symbolPad').style.display = 'none';
+        document.getElementById('tabNumeric').classList.add('active');
+        document.getElementById('tabQwerty').classList.remove('active');
+        document.getElementById('tabSymbol').classList.remove('active');
+      }
 
-      const box = document.getElementById("labelBox");
-      box.innerHTML += line + "\n";
-      box.scrollTop = box.scrollHeight;
-    }
+      function showQwerty() {
+        document.getElementById('numericPad').style.display = 'none';
+        document.getElementById('qwertyPad').style.display = 'block';
+        document.getElementById('symbolPad').style.display = 'none';
+        document.getElementById('tabQwerty').classList.add('active');
+        document.getElementById('tabNumeric').classList.remove('active');
+        document.getElementById('tabSymbol').classList.remove('active');
+      }
 
-    function clearScans() {
-      scanCount = 0;
-      currentScans = [];
-      document.getElementById("labelBox").innerHTML = "";
-    }
+      function showSymbol() {
+        document.getElementById('numericPad').style.display = 'none';
+        document.getElementById('qwertyPad').style.display = 'none';
+        document.getElementById('symbolPad').style.display = 'block';
+        document.getElementById('tabSymbol').classList.add('active');
+        document.getElementById('tabQwerty').classList.remove('active');
+        document.getElementById('tabNumeric').classList.remove('active');
+      }
 
-    function goToStatus() {
-      document.getElementById("labelBlock").style.display = "none";
-      document.getElementById("scanButton").style.display = "none";
-      document.getElementById("keypadWrapper").style.display = "none";
+      function typeChar(c) {
+        const box = document.getElementById('labelBox');
+        box.innerText += c;
+        box.scrollTop = box.scrollHeight;
+      }
 
-      document.getElementById("leftText").innerHTML = "SELECT STATUS";
+      function backspace() {
+        const box = document.getElementById('labelBox');
+        box.innerText = box.innerText.slice(0, -1);
+      }
 
-      document.getElementById("statusScreen").style.display = "flex";
-    }
-
-    function chooseStatus(status) {
-      selectedStatus = status;
-      
-      sendToGoogleSheets(status);
-      showSuccessPopup(status);
-      
-      setTimeout(() => {
-        clearScans();
-        goBackToScan();
-      }, 2000);
-    }
-
-    function sendToGoogleSheets(status) {
-      const data = {
-        scans: currentScans,
-        status: status,
-        timestamp: new Date().toISOString(),
-        deviceInfo: navigator.userAgent
-      };
-
-      const googleSheetsURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
-      
-      fetch(googleSheetsURL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-      })
-      .then(response => {
-        console.log('Data sent to Google Sheets');
-      })
-      .catch(error => {
-        console.error('Error sending to Google Sheets:', error);
-      });
-
-      console.log('Sending to Google Sheets:', data);
-    }
-
-    function showSuccessPopup(status) {
-      const popup = document.getElementById('successPopup');
-      const statusMsg = document.getElementById('popupStatus');
-      const scanCountMsg = document.getElementById('popupScanCount');
-      
-      statusMsg.textContent = status;
-      scanCountMsg.textContent = scanCount + ' scan' + (scanCount !== 1 ? 's' : '') + ' recorded';
-      
-      popup.style.display = 'flex';
-      
-      setTimeout(() => {
-        popup.style.display = 'none';
-      }, 2000);
-    }
-
-    function goBackToScan() {
-      document.getElementById("statusScreen").style.display = "none";
-      document.getElementById("labelBlock").style.display = "flex";
-      document.getElementById("scanButton").style.display = "block";
-      document.getElementById("keypadWrapper").style.display = "block";
-      document.getElementById("leftText").innerHTML = "SCAN BARCODE";
-    }
-
-    function showNumeric() {
-      document.getElementById("numericPad").style.display = "grid";
-      document.getElementById("qwertyPad").style.display = "none";
-      document.getElementById("symbolPad").style.display = "none";
-      
-      document.getElementById("tabNumeric").classList.add("active");
-      document.getElementById("tabQwerty").classList.remove("active");
-      document.getElementById("tabSymbol").classList.remove("active");
-    }
-
-    function showQwerty() {
-      document.getElementById("numericPad").style.display = "none";
-      document.getElementById("qwertyPad").style.display = "block";
-      document.getElementById("symbolPad").style.display = "none";
-      
-      document.getElementById("tabQwerty").classList.add("active");
-      document.getElementById("tabNumeric").classList.remove("active");
-      document.getElementById("tabSymbol").classList.remove("active");
-    }
-
-    function showSymbol() {
-      document.getElementById("numericPad").style.display = "none";
-      document.getElementById("qwertyPad").style.display = "none";
-      document.getElementById("symbolPad").style.display = "block";
-      
-      document.getElementById("tabSymbol").classList.add("active");
-      document.getElementById("tabQwerty").classList.remove("active");
-      document.getElementById("tabNumeric").classList.remove("active");
-    }
-
-    function typeChar(c) {
-      const box = document.getElementById("labelBox");
-      box.innerHTML += c;
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function backspace() {
-      let t = document.getElementById("labelBox").innerHTML;
-      document.getElementById("labelBox").innerHTML = t.slice(0, -1);
-    }
+      window.startScan = startScan;
+      window.clearScans = clearScans;
+      window.goToStatus = goToStatus;
+      window.chooseStatus = chooseStatus;
+      window.goBackToScan = goBackToScan;
+      window.showNumeric = showNumeric;
+      window.showQwerty = showQwerty;
+      window.showSymbol = showSymbol;
+      window.typeChar = typeChar;
+      window.backspace = backspace;
+    })();
   </script>
-
 </head>
-
 <body>
-
   <div id="phone">
-    <!-- GLASSY MESH PATTERN -->
-    <div id="pattern"></div>
-
     <div id="header">
       <div id="leftText">SCAN BARCODE</div>
-      <div id="rightArea"></div>
+      <div id="rightArea">
+        <span>📶</span>
+        <span id="timeDisplay"></span>
+      </div>
     </div>
 
     <div id="scanButton" onclick="startScan()">SCAN</div>
@@ -781,16 +606,12 @@
     <div id="scanFrame">
       <video id="preview" playsinline></video>
       <div id="laser"></div>
-      <div class="corner tl"></div>
-      <div class="corner tr"></div>
-      <div class="corner bl"></div>
-      <div class="corner br"></div>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
     </div>
 
-    <!-- LABEL BLOCK -->
     <div id="labelBlock">
-      <div id="labelTitle"># LABEL ID</div>
-
+      <div id="labelTitle"># Label ID</div>
       <div id="labelBox"></div>
 
       <div id="labelButtons">
@@ -799,127 +620,43 @@
         <span onclick="goToStatus()">ENTER</span>
       </div>
 
-      <!-- KEYPAD WRAPPER -->
-      <div id="keypadWrapper">
+      <div id="navBar">
+        <button>◄</button>
+        <span id="timeDisplay2"></span>
+        <button>►</button>
+      </div>
 
-        <!-- KEYPAD TABS -->
+      <div id="keypadWrapper">
         <div id="keyTabs">
           <button id="tabQwerty" onclick="showQwerty()">ABC</button>
           <button id="tabNumeric" onclick="showNumeric()" class="active">123</button>
           <button id="tabSymbol" onclick="showSymbol()">SYM</button>
         </div>
 
-        <!-- NUMERIC KEYPAD -->
         <div id="numericPad">
-          <button onclick="typeChar('1')">1</button>
-          <button onclick="typeChar('2')">2</button>
-          <button onclick="typeChar('3')">3</button>
-          
-          <button onclick="typeChar('4')">4</button>
-          <button onclick="typeChar('5')">5</button>
-          <button onclick="typeChar('6')">6</button>
-          
-          <button onclick="typeChar('7')">7</button>
-          <button onclick="typeChar('8')">8</button>
-          <button onclick="typeChar('9')">9</button>
-          
-          <button onclick="typeChar('.')">.</button>
-          <button onclick="typeChar('0')">0</button>
+          <button onclick="typeChar('1')">1</button><button onclick="typeChar('2')">2</button><button onclick="typeChar('3')">3</button>
+          <button onclick="typeChar('4')">4</button><button onclick="typeChar('5')">5</button><button onclick="typeChar('6')">6</button>
+          <button onclick="typeChar('7')">7</button><button onclick="typeChar('8')">8</button><button onclick="typeChar('9')">9</button>
+          <button onclick="typeChar('.')">.</button><button onclick="typeChar('0')">0</button>
           <button class="backspace" onclick="backspace()">⌫</button>
         </div>
 
-        <!-- QWERTY KEYPAD -->
         <div id="qwertyPad">
-          <div class="row">
-            <button onclick="typeChar('q')">q</button>
-            <button onclick="typeChar('w')">w</button>
-            <button onclick="typeChar('e')">e</button>
-            <button onclick="typeChar('r')">r</button>
-            <button onclick="typeChar('t')">t</button>
-            <button onclick="typeChar('y')">y</button>
-            <button onclick="typeChar('u')">u</button>
-            <button onclick="typeChar('i')">i</button>
-            <button onclick="typeChar('o')">o</button>
-            <button onclick="typeChar('p')">p</button>
-          </div>
-          <div class="row">
-            <button onclick="typeChar('a')">a</button>
-            <button onclick="typeChar('s')">s</button>
-            <button onclick="typeChar('d')">d</button>
-            <button onclick="typeChar('f')">f</button>
-            <button onclick="typeChar('g')">g</button>
-            <button onclick="typeChar('h')">h</button>
-            <button onclick="typeChar('j')">j</button>
-            <button onclick="typeChar('k')">k</button>
-            <button onclick="typeChar('l')">l</button>
-          </div>
-          <div class="row">
-            <button class="special" onclick="typeChar('z')">z</button>
-            <button class="special" onclick="typeChar('x')">x</button>
-            <button class="special" onclick="typeChar('c')">c</button>
-            <button class="special" onclick="typeChar('v')">v</button>
-            <button class="special" onclick="typeChar('b')">b</button>
-            <button class="special" onclick="typeChar('n')">n</button>
-            <button class="special" onclick="typeChar('m')">m</button>
-            <button class="special" onclick="backspace()">⌫</button>
-          </div>
-          <div class="row">
-            <button class="special" onclick="showSymbol()">?123</button>
-            <button class="space" onclick="typeChar(' ')">space</button>
-            <button class="special" onclick="typeChar('.')">.</button>
-          </div>
+          <div class="row"><button onclick="typeChar('q')">q</button><button onclick="typeChar('w')">w</button><button onclick="typeChar('e')">e</button><button onclick="typeChar('r')">r</button><button onclick="typeChar('t')">t</button><button onclick="typeChar('y')">y</button><button onclick="typeChar('u')">u</button><button onclick="typeChar('i')">i</button><button onclick="typeChar('o')">o</button><button onclick="typeChar('p')">p</button></div>
+          <div class="row"><button onclick="typeChar('a')">a</button><button onclick="typeChar('s')">s</button><button onclick="typeChar('d')">d</button><button onclick="typeChar('f')">f</button><button onclick="typeChar('g')">g</button><button onclick="typeChar('h')">h</button><button onclick="typeChar('j')">j</button><button onclick="typeChar('k')">k</button><button onclick="typeChar('l')">l</button></div>
+          <div class="row"><button class="special" onclick="typeChar('z')">z</button><button class="special" onclick="typeChar('x')">x</button><button class="special" onclick="typeChar('c')">c</button><button class="special" onclick="typeChar('v')">v</button><button class="special" onclick="typeChar('b')">b</button><button class="special" onclick="typeChar('n')">n</button><button class="special" onclick="typeChar('m')">m</button><button class="special" onclick="backspace()">⌫</button></div>
+          <div class="row"><button class="special" onclick="showNumeric()">123</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
         </div>
 
-        <!-- SYMBOL KEYPAD -->
         <div id="symbolPad">
-          <div class="row">
-            <button onclick="typeChar('@')">@</button>
-            <button onclick="typeChar('#')">#</button>
-            <button onclick="typeChar('$')">$</button>
-            <button onclick="typeChar('%')">%</button>
-            <button onclick="typeChar('&')">&</button>
-            <button onclick="typeChar('*')">*</button>
-            <button onclick="typeChar('(')">(</button>
-            <button onclick="typeChar(')')">)</button>
-            <button onclick="typeChar('-')">-</button>
-            <button onclick="typeChar('+')">+</button>
-          </div>
-          <div class="row">
-            <button onclick="typeChar('!')">!</button>
-            <button onclick="typeChar('?')">?</button>
-            <button onclick="typeChar('/')">/</button>
-            <button onclick="typeChar(':')">:</button>
-            <button onclick="typeChar(';')">;</button>
-            <button onclick="typeChar('"')">"</button>
-            <button onclick="typeChar("'")">'</button>
-            <button onclick="typeChar(',')">,</button>
-            <button onclick="typeChar('.')">.</button>
-            <button onclick="typeChar('~')">~</button>
-          </div>
-          <div class="row">
-            <button onclick="typeChar('_')">_</button>
-            <button onclick="typeChar('=')">=</button>
-            <button onclick="typeChar('<')">&lt;</button>
-            <button onclick="typeChar('>')">&gt;</button>
-            <button onclick="typeChar('[')">[</button>
-            <button onclick="typeChar(']')">]</button>
-            <button onclick="typeChar('{')">{</button>
-            <button onclick="typeChar('}')">}</button>
-            <button onclick="typeChar('\\')">\</button>
-            <button onclick="typeChar('|')">|</button>
-          </div>
-          <div class="row">
-            <button class="special" onclick="showQwerty()">ABC</button>
-            <button class="space" onclick="typeChar(' ')">space</button>
-            <button class="special" onclick="backspace()">⌫</button>
-          </div>
+          <div class="row"><button onclick="typeChar('@')">@</button><button onclick="typeChar('#')">#</button><button onclick="typeChar('$')">$</button><button onclick="typeChar('%')">%</button><button onclick="typeChar('&')">&</button><button onclick="typeChar('*')">*</button><button onclick="typeChar('(')">(</button><button onclick="typeChar(')')">)</button></div>
+          <div class="row"><button onclick="typeChar('!')">!</button><button onclick="typeChar('?')">?</button><button onclick="typeChar('/')">/</button><button onclick="typeChar(':')">:</button><button onclick="typeChar(';')">;</button><button onclick="typeChar('"')">"</button><button onclick="typeChar("'")">'</button><button onclick="typeChar(',')">,</button></div>
+          <div class="row"><button onclick="typeChar('-')">-</button><button onclick="typeChar('+')">+</button><button onclick="typeChar('=')">=</button><button onclick="typeChar('<')">&lt;</button><button onclick="typeChar('>')">&gt;</button><button onclick="typeChar('[')">[</button><button onclick="typeChar(']')">]</button><button class="special" onclick="backspace()">⌫</button></div>
+          <div class="row"><button class="special" onclick="showQwerty()">ABC</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
         </div>
+      </div>
+    </div>
 
-      </div> <!-- END KEYPAD WRAPPER -->
-
-    </div> <!-- END LABEL BLOCK -->
-
-    <!-- STATUS SCREEN -->
     <div id="statusScreen">
       <div class="statusBtn" onclick="chooseStatus('Data Received')">Data Received</div>
       <div class="statusBtn" onclick="chooseStatus('Picked Up')">Picked Up</div>
@@ -932,7 +669,6 @@
       <div class="statusBtn back" onclick="goBackToScan()">BACK TO SCANNER</div>
     </div>
 
-    <!-- SUCCESS POPUP -->
     <div id="successPopup">
       <div class="popup-content">
         <div class="checkmark">✓</div>
@@ -941,11 +677,6 @@
         <div class="popup-submessage" id="popupScanCount"></div>
       </div>
     </div>
-
-    <!-- BEEP -->
-    <audio id="beep" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=" preload="auto"></audio>
-
   </div>
-
 </body>
 </html>
