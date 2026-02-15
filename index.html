@@ -85,7 +85,7 @@
       box-shadow: 0 0 6px rgba(0,0,0,0.4);
     }
 
-    /* BARCODE FRAME */
+    /* SCAN FRAME */
     #scanFrame {
       width: 280px;
       height: 160px;
@@ -136,7 +136,7 @@
     .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
     .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
 
-    /* BARCODE ID LABEL */
+    /* BARCODE LABEL */
     #barcodeLabel {
       width: 100%;
       height: 32px;
@@ -155,15 +155,16 @@
     }
   </style>
 
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
   <script>
-    var stream = null;
-    var scanning = false;
-    var codeReader = null;
+    let stream = null;
+    let scanning = false;
 
     function updateTime() {
-      var now = new Date();
-      var h = now.getHours();
-      var m = now.getMinutes();
+      const now = new Date();
+      const h = now.getHours();
+      let m = now.getMinutes();
       if (m < 10) m = "0" + m;
       document.getElementById("rightArea").innerHTML = h + ":" + m;
     }
@@ -178,7 +179,6 @@
       document.getElementById("scanFrame").style.display = "block";
       document.getElementById("laser").style.display = "block";
 
-      // Start camera
       stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" }
       });
@@ -187,15 +187,29 @@
       video.srcObject = stream;
       await video.play();
 
-      // ZXing QR-only decoder
-      codeReader = new ZXing.BrowserQRCodeReader();
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
-      try {
-        const result = await codeReader.decodeFromVideoElement(video);
-        onBarcodeDecoded(result.text);
-      } catch (err) {
-        console.log("Decode error:", err);
+      function tick() {
+        if (!scanning) return;
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const qr = jsQR(imageData.data, canvas.width, canvas.height);
+
+        if (qr) {
+          onBarcodeDecoded(qr.data);
+          return;
+        }
+
+        requestAnimationFrame(tick);
       }
+
+      tick();
     }
 
     function stopCamera() {
@@ -203,30 +217,22 @@
         stream.getTracks().forEach(t => t.stop());
         stream = null;
       }
-      if (codeReader) {
-        codeReader.reset();
-      }
     }
 
     function onBarcodeDecoded(code) {
+      scanning = false;
       stopCamera();
 
       document.getElementById("scanFrame").style.display = "none";
       document.getElementById("laser").style.display = "none";
 
-      // Beep
       document.getElementById("beep").play();
 
       const label = document.getElementById("barcodeLabel");
       label.style.display = "flex";
       label.innerHTML = "# BARCODE ID: " + code;
-
-      scanning = false;
     }
   </script>
-
-  <!-- ZXing-JS -->
-  <script src="https://unpkg.com/@zxing/library@latest"></script>
 
 </head>
 
@@ -254,7 +260,7 @@
 
     <div id="barcodeLabel"></div>
 
-    <!-- BEEP SOUND -->
+    <!-- BEEP -->
     <audio id="beep" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA="></audio>
 
   </div>
