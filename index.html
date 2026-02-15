@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Scanner UI</title>
+
+  <meta name="viewport"
+        content="width=360, height=640, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #phone {
+      width: 360px;
+      height: 640px;
+      background-color: #0B173B;
+      font-family: "Courier New", monospace;
+      color: #FFFFFF;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* GLASSY MESH */
+    #pattern {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      background-image:
+        linear-gradient(to bottom,
+          rgba(255,255,255,0.08) 0%,
+          rgba(255,255,255,0.00) 40%,
+          rgba(255,255,255,0.06) 60%,
+          rgba(255,255,255,0.00) 100%
+        ),
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.00) 60%);
+      background-size: 100% 100%, 32px 32px, 32px 32px, 100% 100%;
+      opacity: 0.35;
+    }
+
+    /* HEADER */
+    #header {
+      width: 100%;
+      height: 32px;
+      background-color: #1A2C55;
+      border-bottom: 1px solid #000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+      box-sizing: border-box;
+      position: relative;
+      z-index: 2;
+    }
+
+    #leftText { font-weight: bold; font-size: 15px; }
+    #rightArea { font-size: 14px; }
+
+    /* SCAN BUTTON */
+    #scanButton {
+      width: calc(100% - 20px);
+      height: 48px;
+      background-color: #0A8A2A;
+      border: 2px solid #0F5F1C;
+      color: #FFFFFF;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      line-height: 48px;
+      margin: 12px auto 0 auto;
+      border-radius: 4px;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 0 6px rgba(0,0,0,0.4);
+    }
+
+    /* BARCODE FRAME */
+    #scanFrame {
+      width: 280px;
+      height: 160px;
+      border: 2px solid rgba(255,255,255,0.4);
+      margin: 20px auto 0 auto;
+      position: relative;
+      display: none;
+      z-index: 3;
+      overflow: hidden;
+    }
+
+    /* video preview inside frame */
+    #preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1); /* mirror like camera */
+    }
+
+    /* Corner angles */
+    .corner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid #00FFAA;
+      position: absolute;
+      pointer-events: none;
+    }
+    .tl { top: -3px; left: -3px; border-right: none; border-bottom: none; }
+    .tr { top: -3px; right: -3px; border-left: none; border-bottom: none; }
+    .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
+    .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
+
+    /* BARCODE ID LABEL (SHRUNK LIKE HEADER) */
+    #barcodeLabel {
+      width: 100%;
+      height: 32px;
+      background-color: #1A2C55;
+      border-top: 1px solid #000;
+      border-bottom: 1px solid #000;
+      display: none;
+      align-items: center;
+      padding-left: 10px;
+      font-weight: bold;
+      font-size: 15px;
+      box-sizing: border-box;
+      margin-top: 12px;
+      z-index: 2;
+      position: relative;
+    }
+  </style>
+
+  <script>
+    var stream = null;
+    var scanning = false;
+
+    function updateTime() {
+      var now = new Date();
+      var h = now.getHours();
+      var m = now.getMinutes();
+      if (m < 10) m = "0" + m;
+      document.getElementById("rightArea").innerHTML = h + ":" + m;
+    }
+    setInterval(updateTime, 1000);
+    window.onload = updateTime;
+
+    function startScan() {
+      if (scanning) return;
+      scanning = true;
+
+      var frame = document.getElementById("scanFrame");
+      var label = document.getElementById("barcodeLabel");
+      label.style.display = "none";
+      frame.style.display = "block";
+
+      navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" }
+      }).then(function (s) {
+        stream = s;
+        var video = document.getElementById("preview");
+        video.srcObject = stream;
+        video.play();
+
+        // TODO: integrate real decoder here (QuaggaJS, ZXing, etc.)
+        // For now, simulate decode after 2 seconds:
+        setTimeout(function () {
+          onBarcodeDecoded(decodedValue);
+        }, 2000);
+
+      }).catch(function (err) {
+        console.log("Camera error:", err);
+        scanning = false;
+        frame.style.display = "none";
+      });
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        stream = null;
+      }
+    }
+
+    function onBarcodeDecoded(code) {
+      stopCamera();
+      document.getElementById("scanFrame").style.display = "none";
+
+      var label = document.getElementById("barcodeLabel");
+      label.style.display = "flex";
+      label.innerHTML = "# BARCODE ID: " + code;
+
+      scanning = false;
+    }
+  </script>
+
+</head>
+
+<body>
+
+  <div id="phone">
+
+    <div id="pattern"></div>
+
+    <div id="header">
+      <div id="leftText">SCAN BARCODE</div>
+      <div id="rightArea"></div>
+    </div>
+
+    <div id="scanButton" onclick="startScan()">SCAN</div>
+
+    <div id="scanFrame">
+      <video id="preview" playsinline></video>
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+    </div>
+
+    <div id="barcodeLabel"></div>
+
+  </div>
+
+</body>
+</html>
