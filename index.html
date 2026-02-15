@@ -508,35 +508,35 @@
         }
       }
 
-      // Calculate ETA based on status
-      function calculateETA(status) {
-        const now = new Date();
-        let eta = new Date(now);
+      // Calculate ETA based on status from the current timestamp
+      function calculateETA(status, scanTimestamp) {
+        const scanDate = new Date(scanTimestamp);
+        let eta = new Date(scanDate);
         
         switch(status) {
           case 'Data Received':
-            eta.setDate(now.getDate() + 7);
+            eta.setDate(scanDate.getDate() + 7);
             break;
           case 'Picked Up':
-            eta.setDate(now.getDate() - 1);
+            eta.setDate(scanDate.getDate() - 1);
             break;
           case 'Depart Post Office':
-            eta.setDate(now.getDate() - 2);
+            eta.setDate(scanDate.getDate() - 2);
             break;
           case 'Arrival Scan':
-            eta.setHours(now.getHours() - 12); // -0.5 days
+            eta.setHours(scanDate.getHours() - 12);
             break;
           case 'Local Scan':
-            eta.setHours(now.getHours() - 36); // -1.5 days
+            eta.setHours(scanDate.getHours() - 36);
             break;
           case 'Out For Delivery':
-            eta.setDate(now.getDate() - 2);
+            eta.setDate(scanDate.getDate() - 2);
             break;
           case 'Delivered':
-            eta = now; // 0 days
+            eta = scanDate;
             break;
           default:
-            eta.setDate(now.getDate() + 7);
+            eta.setDate(scanDate.getDate() + 7);
         }
         
         return eta;
@@ -630,7 +630,7 @@
         const box = document.getElementById('labelBox');
         const span = document.createElement('span');
         span.className = 'scan-entry';
-        span.innerText = scanCount + '  ' + code + (currentLocation ? ' 📍' : '');
+        span.innerText = scanCount + '  ' + code; // Removed GPS pin display
         box.appendChild(span);
         box.scrollTop = box.scrollHeight;
       }
@@ -678,26 +678,25 @@
           }
         }
 
-        // Calculate ETA for each scanned package
-        const now = new Date();
+        // Calculate ETA for each scanned package based on its scan timestamp
         const scannedPackages = currentScans.map((scan) => {
-          const eta = calculateETA(status);
+          const eta = calculateETA(status, scan.timestamp);
           
           return {
             LABEL_ID: scan.code,
-            TIME: now.toLocaleTimeString(),
-            DATE: now.toLocaleDateString(),
+            TIME: new Date(scan.timestamp).toLocaleTimeString(),
+            DATE: new Date(scan.timestamp).toLocaleDateString(),
             STATUS: status,
             LOCATION: currentLocation ? `${currentLocation.lat},${currentLocation.lng}` : 'GPS Unavailable',
             ETA: formatDate(eta),
-            TIMESTAMP: now.toISOString()
+            TIMESTAMP: scan.timestamp
           };
         });
 
         const data = { 
           scans: scannedPackages, 
           status, 
-          timestamp: now.toISOString(),
+          timestamp: new Date().toISOString(),
           location: currentLocation,
           batch_id: Date.now().toString()
         };
@@ -911,7 +910,7 @@
     </div>
 
     <div id="statusScreen">
-      <div class="statusBtn" onclick="chooseStatus('Data Received')">Data Received (+7 days)</div>
+      <div class="statusBtn" onclick="chooseStatus('Data Received')">Data Received</div>
       <div class="statusBtn" onclick="chooseStatus('Picked Up')">Picked Up (-1 day)</div>
       <div class="statusBtn" onclick="chooseStatus('Depart Post Office')">Depart Post Office (-2 days)</div>
       <div class="statusBtn" onclick="chooseStatus('Arrival Scan')">Arrival Scan (-0.5 days)</div>
