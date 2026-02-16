@@ -2,12 +2,8 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Courier Scanner · PRO</title>
-  <meta name="viewport" content="width=360, height=640, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <title>QR Scanner · PRO</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
   <style>
     * {
@@ -28,7 +24,7 @@
       font-weight: 700;
     }
 
-    #root {
+    #phone {
       width: 360px;
       height: 640px;
       background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
@@ -40,7 +36,7 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
-    .header {
+    #header {
       width: 100%;
       height: 38px;
       background: linear-gradient(180deg, #5180b0 0%, #2e5a88 100%);
@@ -56,7 +52,21 @@
       letter-spacing: 0.3px;
     }
 
-    .scan-button {
+    #leftText { color: #ffffff; }
+    #rightArea { 
+      color: #ffffff;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #gpsIndicator {
+      color: #4CAF50;
+      font-size: 16px;
+    }
+
+    #scanButton {
       width: calc(100% - 24px);
       height: 50px;
       background: linear-gradient(180deg, #4CAF50 0%, #2b6e2f 100%);
@@ -64,8 +74,11 @@
       color: #ffffff;
       font-size: 22px;
       font-weight: 700;
+      text-align: center;
+      line-height: 48px;
       margin: 12px auto 8px auto;
       border-radius: 6px;
+      z-index: 2;
       box-shadow: 0 4px 0 #145018;
       cursor: pointer;
       flex-shrink: 0;
@@ -75,36 +88,33 @@
       gap: 8px;
       letter-spacing: 0.5px;
     }
-    .scan-button:active {
+    #scanButton:active {
       transform: translateY(2px);
       box-shadow: 0 2px 0 #145018;
     }
 
-    .scan-icon {
-      width: 18px;
-      height: 14px;
-      background: repeating-linear-gradient(to right, black, black 2px, white 2px, white 4px);
-    }
-
-    .scan-frame {
+    #scanFrame {
       width: 280px;
       height: 160px;
       border: 2px solid rgba(255,255,255,0.6);
       margin: 4px auto 0 auto;
       position: relative;
+      display: none;
       z-index: 3;
       overflow: hidden;
       flex-shrink: 0;
       background: rgba(0,0,0,0.4);
     }
 
-    .scan-frame video {
+    #preview {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transform: none;
+      display: block;
     }
 
-    .laser {
+    #laser {
       position: absolute;
       top: 0;
       left: 0;
@@ -113,6 +123,7 @@
       background: #ff3333;
       box-shadow: 0 0 10px #ff0000;
       animation: laserMove 1.8s linear infinite;
+      display: none;
       z-index: 5;
     }
     @keyframes laserMove {
@@ -128,12 +139,12 @@
       position: absolute;
       pointer-events: none;
     }
-    .corner-tl { top: -3px; left: -3px; border-right: none; border-bottom: none; }
-    .corner-tr { top: -3px; right: -3px; border-left: none; border-bottom: none; }
-    .corner-bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
-    .corner-br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
+    .tl { top: -3px; left: -3px; border-right: none; border-bottom: none; }
+    .tr { top: -3px; right: -3px; border-left: none; border-bottom: none; }
+    .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
+    .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
 
-    .label-block {
+    #labelBlock {
       display: flex;
       flex-direction: column;
       flex: 1;
@@ -143,7 +154,7 @@
       margin-top: 4px;
     }
 
-    .label-title {
+    #labelTitle {
       height: 32px;
       background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
       border: 1px solid #1f3f5c;
@@ -153,11 +164,12 @@
       margin: 0 12px;
       font-weight: 700;
       font-size: 14px;
+      color: #ffffff;
       flex-shrink: 0;
       letter-spacing: 0.5px;
     }
 
-    .label-box {
+    #labelBox {
       width: calc(100% - 24px);
       min-height: 80px;
       max-height: 120px;
@@ -168,14 +180,16 @@
       font-size: 16px;
       font-weight: 700;
       color: #000000;
+      white-space: pre-line;
       overflow-y: auto;
+      word-break: break-all;
       flex-shrink: 0;
       line-height: 1.5;
       font-family: 'Roboto', 'Segoe UI', monospace;
       box-shadow: inset 0 0 0 2px #ffffff;
     }
 
-    .scan-entry {
+    #labelBox span.scan-entry {
       display: block;
       border-bottom: 2px solid #2b4b70;
       background: #c0d4f5;
@@ -185,11 +199,11 @@
       font-weight: 700;
       color: #000;
     }
-    .scan-entry:last-child {
+    #labelBox span.scan-entry:last-child {
       border-bottom: none;
     }
 
-    .label-buttons {
+    #labelButtons {
       height: 42px;
       background: #7496C4;
       display: flex;
@@ -201,20 +215,26 @@
       padding: 0 20px;
       font-weight: 700;
       font-size: 18px;
+      color: #ffffff;
       flex-shrink: 0;
       box-shadow: inset 0 -2px 0 #3a5f8a;
     }
-    .label-buttons span {
+    #labelButtons span {
       cursor: pointer;
       padding: 4px 12px;
+      background: transparent;
       text-shadow: 1px 1px 0 #1f3f5c;
     }
-    .label-buttons span:active {
+    #labelButtons span:active {
       background: #27ae60;
       border-radius: 4px;
     }
+    #divider {
+      color: rgba(255,255,255,0.7);
+      padding: 0 !important;
+    }
 
-    .nav-bar {
+    #navBar {
       height: 36px;
       background: linear-gradient(180deg, #4a7aa8 0%, #2b4b70 100%);
       display: flex;
@@ -226,9 +246,10 @@
       padding: 0 16px;
       font-weight: 700;
       font-size: 14px;
+      color: #ffffff;
       flex-shrink: 0;
     }
-    .nav-bar button {
+    #navBar button {
       background: transparent;
       border: none;
       color: white;
@@ -237,11 +258,11 @@
       cursor: pointer;
       padding: 4px 8px;
     }
-    .nav-bar button:active {
+    #navBar button:active {
       color: #4CAF50;
     }
 
-    .keypad-wrapper {
+    #keypadWrapper {
       width: 100%;
       background: linear-gradient(180deg, #2b4b70 0%, #1f3f5c 100%);
       border-top: 3px solid #ffcc00;
@@ -251,12 +272,12 @@
       padding-bottom: 4px;
     }
 
-    .key-tabs {
+    #keyTabs {
       display: flex;
       gap: 8px;
       padding: 8px 12px 4px 12px;
     }
-    .key-tabs button {
+    #keyTabs button {
       flex: 1;
       background: #3a5f8a;
       border: 2px solid #1f3f5c;
@@ -267,90 +288,84 @@
       padding: 8px 0;
       cursor: pointer;
     }
-    .key-tabs button.active {
+    #keyTabs button.active {
       background: #4CAF50;
       border-color: #145018;
     }
+    #keyTabs button:active {
+      background: #66BB6A;
+    }
 
-    .numeric-pad {
+    #numericPad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      padding: 6px 12px 10px 12px;
+      gap: 8px;
+      padding: 6px 15px 10px 15px;
     }
-    .numeric-pad button {
+    #numericPad button {
       background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
       border: 1px solid #1f3f5c;
       border-radius: 6px;
       color: #ffffff;
       font-size: 22px;
       font-weight: 700;
-      height: 46px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
       box-shadow: 0 3px 0 #1f3f5c;
     }
-    .numeric-pad button:active {
+    #numericPad button:active {
       transform: translateY(2px);
       background: #4CAF50;
     }
-    .numeric-pad .backspace {
-      background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
-    }
-    .numeric-pad .add-btn {
-      background: linear-gradient(180deg, #4CAF50 0%, #2b6e2f 100%);
-      border: 2px solid #1e5a22;
-      grid-column: span 3;
-      font-size: 18px;
+    #numericPad button.backspace {
+      background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
     }
 
-    .qwerty-pad, .symbol-pad {
+    #qwertyPad, #symbolPad {
+      display: none;
       padding: 0 8px 12px 8px;
     }
-    .key-row {
+    .row {
       display: flex;
-      gap: 3px;
+      gap: 4px;
       margin-bottom: 4px;
       justify-content: center;
     }
-    .key-row button {
+    .row button {
       flex: 1;
-      max-width: 34px;
-      min-width: 28px;
+      max-width: 32px;
       background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
       border: 1px solid #1f3f5c;
-      border-radius: 5px;
+      border-radius: 6px;
       color: #ffffff;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
-      height: 38px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
       box-shadow: 0 2px 0 #1f3f5c;
     }
-    .key-row button:active {
+    .row button:active {
       transform: translateY(2px);
       background: #4CAF50;
     }
-    .key-row .special {
+    .row button.special {
+      background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
       max-width: 50px;
-      font-size: 12px;
     }
-    .key-row .space {
+    .row button.space { 
       flex: 3;
-      max-width: 180px;
-      font-size: 13px;
-    }
-    .key-row .backspace {
-      background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
-      max-width: 45px;
-    }
-    .key-row .add {
-      background: linear-gradient(180deg, #4CAF50 0%, #2b6e2f 100%);
-      border: 2px solid #1e5a22;
-      max-width: 50px;
-      font-size: 12px;
+      max-width: 200px;
     }
 
-    .status-screen {
+    #statusScreen {
+      display: none;
+      flex-direction: column;
       position: absolute;
       top: 38px;
       left: 0;
@@ -360,11 +375,9 @@
       z-index: 100;
       padding: 20px 16px;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
       gap: 10px;
     }
-    .status-btn {
+    .statusBtn {
       background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
       border: 2px solid #ffcc00;
       color: white;
@@ -375,16 +388,17 @@
       border-radius: 8px;
       cursor: pointer;
     }
-    .status-btn:active {
+    .statusBtn:active {
       background: #4CAF50;
     }
-    .status-btn.back {
+    .statusBtn.back {
       background: linear-gradient(180deg, #3a5f8a 0%, #1f3f5c 100%);
       border-color: #f1c40f;
       margin-top: 25px;
     }
 
-    .success-popup {
+    #successPopup {
+      display: none;
       position: absolute;
       top: 0;
       left: 0;
@@ -392,7 +406,6 @@
       height: 100%;
       background: rgba(0,0,0,0.7);
       z-index: 1000;
-      display: flex;
       align-items: center;
       justify-content: center;
     }
@@ -402,7 +415,7 @@
       border-radius: 20px;
       padding: 30px 20px;
       text-align: center;
-      width: 240px;
+      width: 280px;
       animation: fadePop 0.2s;
     }
     .checkmark {
@@ -417,443 +430,599 @@
       margin: 0 auto 15px auto;
       color: white;
     }
+    .popup-message { font-size: 20px; font-weight: 700; }
+    .popup-submessage { color: #ffcc00; font-size: 15px; margin-top: 5px; }
+    .eta-info { color: #4CAF50; font-size: 14px; margin-top: 10px; border-top: 1px solid #fff; padding-top: 10px; }
     @keyframes fadePop {
       0% { opacity: 0; transform: scale(0.7); }
       100% { opacity: 1; transform: scale(1); }
     }
+
+    #labelBox::-webkit-scrollbar { width: 4px; }
+    #labelBox::-webkit-scrollbar-thumb { background: #1f3f5c; }
+    
+    #barcodeType {
+      font-size: 10px;
+      color: #ffcc00;
+      margin-left: 5px;
+      font-weight: normal;
+    }
+
+    #errorMessage {
+      color: #ff4444;
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
+      display: none;
+    }
   </style>
-</head>
-<body>
-  <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef, useCallback } = React;
+  <!-- Use jsQR which is more compatible with mobile browsers -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
-    function ScannerApp() {
-      const [scanning, setScanning] = useState(false);
-      const [scans, setScans] = useState([]);
-      const [scanCount, setScanCount] = useState(0);
-      const [currentTime, setCurrentTime] = useState('');
-      const [gpsLocation, setGpsLocation] = useState(null);
-      const [hasGPS, setHasGPS] = useState(false);
-      const [showStatus, setShowStatus] = useState(false);
-      const [showSuccess, setShowSuccess] = useState(false);
-      const [lastStatus, setLastStatus] = useState('');
-      const [activeKeypad, setActiveKeypad] = useState('numeric');
-      const [manualInput, setManualInput] = useState('');
+  <script>
+    (function() {
+      let stream = null;
+      let scanning = false;
+      let scanCount = 0;
+      let animationFrame = null;
+      let currentScans = [];
+      let currentLocation = null;
+      let gpsWatchId = null;
       
-      const videoRef = useRef(null);
-      const streamRef = useRef(null);
-      const animationRef = useRef(null);
-
+      // Google Apps Script Web App URL - REPLACE WITH YOUR ACTUAL URL
       const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5wGyJmz_HbuTovfLigGirPwh08qkRyUdecQuZgKeKnOQNFLSgVc5xSTE2HtCf2bE/exec';
 
-      // Update time
-      useEffect(() => {
-        const updateTime = () => {
-          const d = new Date();
-          const month = (d.getMonth() + 1).toString().padStart(2, '0');
-          const day = d.getDate().toString().padStart(2, '0');
-          const hours = d.getHours();
-          const minutes = d.getMinutes().toString().padStart(2, '0');
-          const ampm = hours >= 12 ? 'PM' : 'AM';
-          const hour12 = hours % 12 || 12;
-          setCurrentTime(`${month}/${day} ${hour12}:${minutes} ${ampm}`);
-        };
-        updateTime();
-        const interval = setInterval(updateTime, 1000);
-        return () => clearInterval(interval);
-      }, []);
+      const beep = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=");
+      beep.preload = 'auto';
+      function playBeep() { beep.currentTime = 0; beep.play().catch(e => {}); }
 
       // Initialize GPS
-      useEffect(() => {
+      function initGPS() {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             (position) => {
-              setGpsLocation({
+              currentLocation = {
                 lat: position.coords.latitude,
                 lng: position.coords.longitude,
                 accuracy: position.coords.accuracy
-              });
-              setHasGPS(true);
+              };
+              updateGPSIndicator(true);
             },
-            () => setHasGPS(false),
+            (error) => {
+              console.error('GPS Error:', error);
+              updateGPSIndicator(false);
+            },
             { enableHighAccuracy: true, timeout: 10000 }
           );
-
-          const watchId = navigator.geolocation.watchPosition(
+          
+          gpsWatchId = navigator.geolocation.watchPosition(
             (position) => {
-              setGpsLocation({
+              currentLocation = {
                 lat: position.coords.latitude,
                 lng: position.coords.longitude,
                 accuracy: position.coords.accuracy
-              });
-              setHasGPS(true);
+              };
+              updateGPSIndicator(true);
             },
-            () => setHasGPS(false),
+            (error) => {
+              console.error('GPS Watch Error:', error);
+              updateGPSIndicator(false);
+            },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
           );
-
-          return () => navigator.geolocation.clearWatch(watchId);
+        } else {
+          updateGPSIndicator(false);
         }
-      }, []);
+      }
 
-      const playBeep = useCallback(() => {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        oscillator.frequency.value = 1800;
-        oscillator.type = 'square';
-        gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-        oscillator.start(ctx.currentTime);
-        oscillator.stop(ctx.currentTime + 0.1);
-      }, []);
-
-      const detectBarcodeType = useCallback((code) => {
-        if (!code) return 'Unknown';
-        if (/^\d{20}$/.test(code) || /^\d{25}$/.test(code) || /^\d{29}$/.test(code) || /^\d{31}$/.test(code)) return 'USPS IMb';
-        if (/^[ADFT]{65}$/i.test(code)) return 'USPS IMb';
-        if (/^\d{12}$/.test(code)) return 'UPC-A';
-        if (/^[01]\d{7}$/.test(code)) return 'UPC-E';
-        if (/^\d{13}$/.test(code)) return 'EAN-13';
-        if (/^\d{8}$/.test(code)) return 'EAN-8';
-        if (code.startsWith('http') || code.includes('://')) return 'QR Code';
-        return 'Barcode';
-      }, []);
-
-      const stopCamera = useCallback(() => {
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
-          animationRef.current = null;
+      function updateGPSIndicator(hasGPS) {
+        const gpsElement = document.getElementById('gpsIndicator');
+        if (gpsElement) {
+          gpsElement.innerHTML = hasGPS ? '🛰️' : '🌐';
+          gpsElement.style.color = hasGPS ? '#4CAF50' : '#ff4444';
         }
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(t => t.stop());
-          streamRef.current = null;
-        }
-      }, []);
+      }
 
-      const onBarcodeDetected = useCallback((code) => {
-        setScanning(false);
-        stopCamera();
-        playBeep();
-
-        const barcodeType = detectBarcodeType(code);
-        const newScan = {
-          number: scanCount + 1,
-          code,
-          barcodeType,
-          timestamp: new Date().toISOString(),
-          location: gpsLocation
-        };
-
-        setScanCount(prev => prev + 1);
-        setScans(prev => [...prev, newScan]);
-        setManualInput('');
-      }, [scanCount, gpsLocation, stopCamera, playBeep, detectBarcodeType]);
-
-      const startScan = useCallback(async () => {
-        if (scanning) return;
-        setScanning(true);
-
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: 'environment',
-              width: { ideal: 1280 },
-              height: { ideal: 720 }
-            }
-          });
-
-          streamRef.current = stream;
-          
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            await videoRef.current.play();
-          }
-
-          if ('BarcodeDetector' in window) {
-            const barcodeDetector = new BarcodeDetector({
-              formats: ['aztec', 'code_128', 'code_39', 'code_93', 'codabar', 'data_matrix', 'ean_13', 'ean_8', 'itf', 'pdf417', 'qr_code', 'upc_a', 'upc_e']
-            });
-
-            const detectBarcode = async () => {
-              if (!scanning || !videoRef.current) return;
-              
-              try {
-                const barcodes = await barcodeDetector.detect(videoRef.current);
-                if (barcodes.length > 0) {
-                  onBarcodeDetected(barcodes[0].rawValue);
-                  return;
-                }
-              } catch (e) {}
-              
-              animationRef.current = requestAnimationFrame(detectBarcode);
-            };
-
-            detectBarcode();
-          } else {
-            alert('Barcode scanning not supported. Use Chrome/Edge or manual entry.');
-            setScanning(false);
-            stopCamera();
-          }
-        } catch (err) {
-          console.error('Camera error:', err);
-          setScanning(false);
-          alert('Camera access denied');
-        }
-      }, [scanning, onBarcodeDetected, stopCamera]);
-
-      const addManualBarcode = useCallback(() => {
-        if (!manualInput.trim()) return;
-        onBarcodeDetected(manualInput.trim());
-      }, [manualInput, onBarcodeDetected]);
-
-      const clearScans = useCallback(() => {
-        setScanCount(0);
-        setScans([]);
-        setManualInput('');
-      }, []);
-
-      const calculateETA = useCallback((status) => {
+      // Calculate ETA based on status
+      function calculateETA(status) {
         const now = new Date();
-        const eta = new Date(now);
+        let eta = new Date(now);
         
         switch(status) {
-          case 'Data Received': eta.setDate(now.getDate() + 7); break;
-          case 'Picked Up': eta.setDate(now.getDate() - 1); break;
-          case 'Depart Post Office': eta.setDate(now.getDate() - 2); break;
-          case 'Arrival Scan': eta.setHours(now.getHours() - 12); break;
-          case 'Local Scan': eta.setHours(now.getHours() - 36); break;
-          case 'Out For Delivery': eta.setDate(now.getDate() - 2); break;
-          case 'Delivered': break;
-          default: eta.setDate(now.getDate() + 7);
+          case 'Data Received':
+            eta.setDate(now.getDate() + 7);
+            break;
+          case 'Picked Up':
+            eta.setDate(now.getDate() - 1);
+            break;
+          case 'Depart Post Office':
+            eta.setDate(now.getDate() - 2);
+            break;
+          case 'Arrival Scan':
+            eta.setHours(now.getHours() - 12);
+            break;
+          case 'Local Scan':
+            eta.setHours(now.getHours() - 36);
+            break;
+          case 'Out For Delivery':
+            eta.setDate(now.getDate() - 2);
+            break;
+          case 'Delivered':
+            eta = now;
+            break;
+          default:
+            eta.setDate(now.getDate() + 7);
         }
         
         return eta;
-      }, []);
+      }
 
-      const chooseStatus = useCallback(async (status) => {
-        setLastStatus(status);
-        setShowStatus(false);
-        setShowSuccess(true);
+      // Format date for display
+      function formatDate(date) {
+        return date.toLocaleString('en-US', { 
+          month: '2-digit', 
+          day: '2-digit', 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true 
+        });
+      }
 
-        const now = new Date();
-        const scannedPackages = scans.map(scan => ({
-          LABEL_ID: scan.code,
-          BARCODE_TYPE: scan.barcodeType,
-          TIME: now.toLocaleTimeString(),
-          DATE: now.toLocaleDateString(),
-          STATUS: status,
-          LOCATION: gpsLocation ? `${gpsLocation.lat},${gpsLocation.lng}` : 'GPS Unavailable',
-          ETA: calculateETA(status).toLocaleString(),
-          TIMESTAMP: now.toISOString()
-        }));
+      function updateTime() {
+        const d = new Date();
+        const month = (d.getMonth() + 1).toString().padStart(2,'0');
+        const day = d.getDate().toString().padStart(2,'0');
+        const hours = d.getHours();
+        const minutes = d.getMinutes().toString().padStart(2,'0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const hour12 = hours % 12 || 12;
+        const timeStr = month + '/' + day + ' ' + hour12 + ':' + minutes + ' ' + ampm;
+        document.getElementById('timeDisplay').innerText = timeStr;
+        document.getElementById('timeDisplay2').innerText = timeStr;
+      }
+      setInterval(updateTime, 1000);
+      window.addEventListener('load', updateTime);
+
+      function stopCamera() {
+        if (animationFrame) {
+          cancelAnimationFrame(animationFrame);
+          animationFrame = null;
+        }
+        if (stream) { 
+          stream.getTracks().forEach(t => {
+            t.stop();
+            stream = null;
+          });
+        }
+        scanning = false;
+      }
+
+      async function startScan() {
+        if (scanning) {
+          stopCamera();
+          return;
+        }
+        
+        scanning = true;
+        const frame = document.getElementById('scanFrame');
+        const laser = document.getElementById('laser');
+        frame.style.display = 'block';
+        laser.style.display = 'block';
 
         try {
-          await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              scans: scannedPackages, 
-              status, 
-              timestamp: now.toISOString(),
-              location: gpsLocation,
-              batch_id: Date.now().toString()
-            })
+          // Check if browser supports getUserMedia
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('Your browser does not support camera access');
+          }
+
+          stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+              facingMode: 'environment',
+              width: { min: 360, ideal: 640, max: 1280 },
+              height: { min: 240, ideal: 480, max: 720 }
+            } 
           });
-        } catch (error) {
-          console.error('Error:', error);
+          
+          const video = document.getElementById('preview');
+          video.srcObject = stream;
+          
+          // Wait for video to be ready
+          await new Promise((resolve) => {
+            video.onloadedmetadata = () => {
+              video.play().then(resolve);
+            };
+          });
+
+          // Use jsQR for scanning
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          
+          function scanFrame() {
+            if (!scanning || !video.videoWidth) {
+              animationFrame = requestAnimationFrame(scanFrame);
+              return;
+            }
+            
+            // Set canvas size to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Draw video frame to canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Get image data
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            
+            // Use jsQR to detect QR codes
+            const code = jsQR(imageData.data, canvas.width, canvas.height, {
+              inversionAttempts: "dontInvert"
+            });
+            
+            if (code) {
+              // QR code found
+              onBarcodeDecoded(code.data, 'QR Code');
+              return;
+            }
+            
+            // Continue scanning
+            animationFrame = requestAnimationFrame(scanFrame);
+          }
+          
+          // Start scanning
+          animationFrame = requestAnimationFrame(scanFrame);
+          
+        } catch (err) {
+          console.error('Camera error:', err);
+          scanning = false;
+          frame.style.display = 'none';
+          laser.style.display = 'none';
+          
+          // Show user-friendly error message
+          let errorMsg = 'Camera access denied or not supported';
+          if (err.message) {
+            errorMsg = err.message;
+          }
+          alert(errorMsg);
+        }
+      }
+
+      function onBarcodeDecoded(code, barcodeType) {
+        scanning = false;
+        stopCamera();
+        document.getElementById('scanFrame').style.display = 'none';
+        document.getElementById('laser').style.display = 'none';
+        playBeep();
+
+        scanCount++;
+        currentScans.push({ 
+          number: scanCount, 
+          code, 
+          barcodeType,
+          timestamp: new Date().toISOString(),
+          location: currentLocation 
+        });
+        
+        const box = document.getElementById('labelBox');
+        const span = document.createElement('span');
+        span.className = 'scan-entry';
+        span.innerHTML = scanCount + '  ' + code + 
+          (currentLocation ? ' 📍' : '') + 
+          '<span id="barcodeType"> [QR Code]</span>';
+        box.appendChild(span);
+        box.scrollTop = box.scrollHeight;
+      }
+
+      function clearScans() {
+        scanCount = 0;
+        currentScans = [];
+        document.getElementById('labelBox').innerHTML = '';
+      }
+
+      function goToStatus() {
+        if (currentScans.length === 0) {
+          alert('Please scan a QR code first');
+          return;
+        }
+        document.getElementById('labelBlock').style.display = 'none';
+        document.getElementById('scanButton').style.display = 'none';
+        document.getElementById('leftText').innerText = 'SELECT STATUS';
+        document.getElementById('statusScreen').style.display = 'flex';
+      }
+
+      function goBackToScan() {
+        document.getElementById('statusScreen').style.display = 'none';
+        document.getElementById('labelBlock').style.display = 'flex';
+        document.getElementById('scanButton').style.display = 'flex';
+        document.getElementById('leftText').innerText = 'SCAN QR CODE';
+      }
+
+      async function sendToSheets(status) {
+        if (!currentLocation) {
+          try {
+            const position = await new Promise((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 5000
+              });
+            });
+            currentLocation = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+              accuracy: position.coords.accuracy
+            };
+          } catch (error) {
+            console.warn('Could not get GPS location:', error);
+          }
         }
 
+        const now = new Date();
+        const scannedPackages = currentScans.map((scan) => {
+          const eta = calculateETA(status);
+          
+          return {
+            LABEL_ID: scan.code,
+            BARCODE_TYPE: scan.barcodeType,
+            TIME: now.toLocaleTimeString(),
+            DATE: now.toLocaleDateString(),
+            STATUS: status,
+            LOCATION: currentLocation ? `${currentLocation.lat},${currentLocation.lng}` : 'GPS Unavailable',
+            ETA: formatDate(eta),
+            TIMESTAMP: now.toISOString()
+          };
+        });
+
+        const data = { 
+          scans: scannedPackages, 
+          status, 
+          timestamp: now.toISOString(),
+          location: currentLocation,
+          batch_id: Date.now().toString()
+        };
+        
+        console.log('📤 Sending to sheets:', data);
+        
+        try {
+          const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+          });
+          console.log('Data sent successfully');
+        } catch (error) {
+          console.error('Error sending to sheets:', error);
+        }
+
+        return scannedPackages;
+      }
+
+      async function chooseStatus(status) {
+        const scannedPackages = await sendToSheets(status);
+        
+        const etaInfo = scannedPackages.map(pkg => 
+          `Package: ${pkg.LABEL_ID.substring(0, 8)}... [QR Code] ETA: ${pkg.ETA}`
+        ).join('<br>');
+        
+        document.getElementById('popupStatus').innerText = status;
+        document.getElementById('popupScanCount').innerHTML = `
+          ${scanCount} QR code(s) recorded<br>
+          <div class="eta-info">${etaInfo}</div>
+        `;
+        document.getElementById('successPopup').style.display = 'flex';
+
         setTimeout(() => {
-          setShowSuccess(false);
+          document.getElementById('successPopup').style.display = 'none';
           clearScans();
-        }, 3000);
-      }, [scans, gpsLocation, calculateETA, clearScans]);
+          goBackToScan();
+        }, 4000);
+      }
 
-      const typeChar = useCallback((char) => {
-        setManualInput(prev => prev + char);
-      }, []);
+      function showNumeric() {
+        document.getElementById('numericPad').style.display = 'grid';
+        document.getElementById('qwertyPad').style.display = 'none';
+        document.getElementById('symbolPad').style.display = 'none';
+        document.getElementById('tabNumeric').classList.add('active');
+        document.getElementById('tabQwerty').classList.remove('active');
+        document.getElementById('tabSymbol').classList.remove('active');
+      }
 
-      const backspace = useCallback(() => {
-        setManualInput(prev => prev.slice(0, -1));
-      }, []);
+      function showQwerty() {
+        document.getElementById('numericPad').style.display = 'none';
+        document.getElementById('qwertyPad').style.display = 'block';
+        document.getElementById('symbolPad').style.display = 'none';
+        document.getElementById('tabQwerty').classList.add('active');
+        document.getElementById('tabNumeric').classList.remove('active');
+        document.getElementById('tabSymbol').classList.remove('active');
+      }
 
-      const statusOptions = [
-        { label: 'Data Received', eta: '+7 days' },
-        { label: 'Picked Up', eta: '-1 day' },
-        { label: 'Depart Post Office', eta: '-2 days' },
-        { label: 'Arrival Scan', eta: '-0.5 days' },
-        { label: 'Local Scan', eta: '-1.5 days' },
-        { label: 'Out For Delivery', eta: '-2 days' },
-        { label: 'Delivered', eta: '0 days' }
-      ];
+      function showSymbol() {
+        document.getElementById('numericPad').style.display = 'none';
+        document.getElementById('qwertyPad').style.display = 'none';
+        document.getElementById('symbolPad').style.display = 'block';
+        document.getElementById('tabSymbol').classList.add('active');
+        document.getElementById('tabQwerty').classList.remove('active');
+        document.getElementById('tabNumeric').classList.remove('active');
+      }
 
-      return (
-        <>
-          <div className="header">
-            <span>{showStatus ? 'SELECT STATUS' : 'SCAN BARCODE'}</span>
-            <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px'}}>
-              <span style={{color: hasGPS ? '#4CAF50' : '#ff4444'}}>{hasGPS ? '🛰️' : '🌐'}</span>
-              <span>📶</span>
-              <span>{currentTime}</span>
-            </div>
-          </div>
+      function typeChar(c) {
+        const box = document.getElementById('labelBox');
+        box.innerHTML += c;
+        box.scrollTop = box.scrollHeight;
+      }
 
-          {!showStatus ? (
-            <>
-              <button className="scan-button" onClick={startScan}>
-                <div className="scan-icon"></div>
-                <div>SCAN</div>
-              </button>
+      function backspace() {
+        const box = document.getElementById('labelBox');
+        if (box.lastChild?.nodeType === Node.TEXT_NODE) {
+          let txt = box.lastChild.textContent;
+          box.lastChild.textContent = txt.slice(0, -1);
+          if (box.lastChild.textContent === '') box.removeChild(box.lastChild);
+        } else {
+          box.innerHTML = box.innerHTML.slice(0, -1);
+        }
+      }
 
-              {scanning && (
-                <div className="scan-frame">
-                  <video ref__={videoRef} playsInline muted />
-                  <div className="laser" />
-                  <div className="corner corner-tl"></div>
-                  <div className="corner corner-tr"></div>
-                  <div className="corner corner-bl"></div>
-                  <div className="corner corner-br"></div>
-                </div>
-              )}
+      // Check camera support on load
+      function checkCameraSupport() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          document.getElementById('scanButton').style.opacity = '0.5';
+          document.getElementById('scanButton').style.pointerEvents = 'none';
+          alert('Your browser does not support camera access. Please use Chrome or Safari on a mobile device.');
+        }
+      }
 
-              <div className="label-block">
-                <div className="label-title"># LABEL ID</div>
-                
-                <div className="label-box">
-                  {scans.map((scan, idx) => (
-                    <div key={idx} className="scan-entry">
-                      {scan.number}  {scan.code} {scan.location && '📍'}
-                      <span style={{fontSize: '12px'}}> [{scan.barcodeType}]</span>
-                    </div>
-                  ))}
-                  {manualInput && <div style={{color: '#666', fontStyle: 'italic'}}>{manualInput}_</div>}
-                </div>
+      // Initialize on load
+      window.addEventListener('load', () => {
+        initGPS();
+        showNumeric();
+        document.getElementById('leftText').innerText = 'SCAN QR CODE';
+        checkCameraSupport();
+      });
 
-                <div className="label-buttons">
-                  <span onClick={clearScans}>ESC</span>
-                  <span style={{color: 'rgba(255,255,255,0.7)'}}>|</span>
-                  <span onClick={() => scans.length > 0 && setShowStatus(true)}>ENTER</span>
-                </div>
+      // Clean up on unload
+      window.addEventListener('beforeunload', () => {
+        if (gpsWatchId) {
+          navigator.geolocation.clearWatch(gpsWatchId);
+        }
+        stopCamera();
+      });
 
-                <div className="nav-bar">
-                  <button>◄</button>
-                  <span>{currentTime}</span>
-                  <button>►</button>
-                </div>
-              </div>
+      // Handle page visibility change
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && scanning) {
+          stopCamera();
+        }
+      });
 
-              <div className="keypad-wrapper">
-                <div className="key-tabs">
-                  <button className={activeKeypad === 'qwerty' ? 'active' : ''} onClick={() => setActiveKeypad('qwerty')}>ABC</button>
-                  <button className={activeKeypad === 'numeric' ? 'active' : ''} onClick={() => setActiveKeypad('numeric')}>123</button>
-                  <button className={activeKeypad === 'symbol' ? 'active' : ''} onClick={() => setActiveKeypad('symbol')}>SYM</button>
-                </div>
-
-                {activeKeypad === 'numeric' && (
-                  <div className="numeric-pad">
-                    {[1,2,3,4,5,6,7,8,9,'-',0,'⌫'].map((key) => (
-                      <button
-                        key={key}
-                        className={key === '⌫' ? 'backspace' : ''}
-                        onClick={() => key === '⌫' ? backspace() : typeChar(String(key))}
-                      >
-                        {key}
-                      </button>
-                    ))}
-                    <button className="add-btn" onClick={addManualBarcode}>ADD BARCODE</button>
-                  </div>
-                )}
-
-                {activeKeypad === 'qwerty' && (
-                  <div className="qwerty-pad">
-                    {[
-                      ['Q','W','E','R','T','Y','U','I','O','P'],
-                      ['A','S','D','F','G','H','J','K','L'],
-                      ['Z','X','C','V','B','N','M','⌫']
-                    ].map((row, rowIdx) => (
-                      <div key={rowIdx} className="key-row">
-                        {row.map((key) => (
-                          <button
-                            key={key}
-                            className={key === '⌫' ? 'backspace' : ''}
-                            onClick={() => key === '⌫' ? backspace() : typeChar(key)}
-                          >
-                            {key}
-                          </button>
-                        ))}
-                      </div>
-                    ))}
-                    <div className="key-row">
-                      <button className="special" onClick={() => setActiveKeypad('numeric')}>123</button>
-                      <button className="space" onClick={() => typeChar(' ')}>SPACE</button>
-                      <button className="add" onClick={addManualBarcode}>ADD</button>
-                    </div>
-                  </div>
-                )}
-
-                {activeKeypad === 'symbol' && (
-                  <div className="symbol-pad">
-                    {[
-                      ['@','#','$','%','&','*','(',')'],
-                      ['!','?','/',':',';','"',"'",','],
-                      ['-','+','=','<','>','[',']','⌫']
-                    ].map((row, rowIdx) => (
-                      <div key={rowIdx} className="key-row">
-                        {row.map((key) => (
-                          <button
-                            key={key}
-                            className={key === '⌫' ? 'backspace' : ''}
-                            onClick={() => key === '⌫' ? backspace() : typeChar(key)}
-                          >
-                            {key}
-                          </button>
-                        ))}
-                      </div>
-                    ))}
-                    <div className="key-row">
-                      <button className="special" onClick={() => setActiveKeypad('qwerty')}>ABC</button>
-                      <button className="space" onClick={() => typeChar(' ')}>SPACE</button>
-                      <button className="add" onClick={addManualBarcode}>ADD</button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="status-screen">
-              {statusOptions.map((opt) => (
-                <button key={opt.label} className="status-btn" onClick={() => chooseStatus(opt.label)}>
-                  {opt.label} ({opt.eta})
-                </button>
-              ))}
-              <button className="status-btn back" onClick={() => setShowStatus(false)}>
-                BACK TO SCANNER
-              </button>
-            </div>
-          )}
-
-          {showSuccess && (
-            <div className="success-popup">
-              <div className="popup-content">
-                <div className="checkmark">✓</div>
-                <div style={{fontSize: '20px', fontWeight: 700}}>Package Recorded!</div>
-                <div style={{color: '#ffcc00', fontSize: '15px', marginTop: '8px'}}>{lastStatus}</div>
-                <div style={{color: '#ffcc00', fontSize: '15px'}}>{scans.length} barcode(s) recorded</div>
-              </div>
-            </div>
-          )}
-        </>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<ScannerApp />);
+      // Expose functions globally
+      window.startScan = startScan;
+      window.clearScans = clearScans;
+      window.goToStatus = goToStatus;
+      window.chooseStatus = chooseStatus;
+      window.goBackToScan = goBackToScan;
+      window.showNumeric = showNumeric;
+      window.showQwerty = showQwerty;
+      window.showSymbol = showSymbol;
+      window.typeChar = typeChar;
+      window.backspace = backspace;
+    })();
   </script>
+</head>
+<body>
+  <div id="phone">
+    <div id="header">
+      <div id="leftText">SCAN QR CODE</div>
+      <div id="rightArea">
+        <span id="gpsIndicator">🌐</span>
+        <span>📶</span>
+        <span id="timeDisplay"></span>
+      </div>
+    </div>
+
+    <div id="scanButton" onclick="startScan()">
+      <div class="scan-button">
+        <div class="icon"></div>
+        <div>SCAN QR CODE</div>
+      </div>
+    </div>
+
+    <style>
+      .scan-button{
+        display:flex;
+        align-items:center;
+        gap:6px;
+        font-family:Arial;
+        font-size:14px;
+      }
+      .icon{
+        width:16px;
+        height:12px;
+        background:
+          repeating-linear-gradient(
+            to right,
+            black,
+            black 2px,
+            white 2px,
+            white 4px
+          );
+      }
+    </style>
+
+    <div id="scanFrame">
+      <video id="preview" playsinline autoplay></video>
+      <div id="laser"></div>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+    </div>
+
+    <div id="labelBlock">
+      <div id="labelTitle"># QR CODE DATA</div>
+      <div id="labelBox"></div>
+
+      <div id="labelButtons">
+        <span onclick="clearScans()">ESC</span>
+        <span id="divider">|</span>
+        <span onclick="goToStatus()">ENTER</span>
+      </div>
+
+      <div id="navBar">
+        <button>◄</button>
+        <span id="timeDisplay2"></span>
+        <button>►</button>
+      </div>
+
+      <div id="keypadWrapper">
+        <div id="keyTabs">
+          <button id="tabQwerty" onclick="showQwerty()">ABC</button>
+          <button id="tabNumeric" onclick="showNumeric()" class="active">123</button>
+          <button id="tabSymbol" onclick="showSymbol()">SYM</button>
+        </div>
+
+        <div id="numericPad">
+          <button onclick="typeChar('1')">1</button><button onclick="typeChar('2')">2</button><button onclick="typeChar('3')">3</button>
+          <button onclick="typeChar('4')">4</button><button onclick="typeChar('5')">5</button><button onclick="typeChar('6')">6</button>
+          <button onclick="typeChar('7')">7</button><button onclick="typeChar('8')">8</button><button onclick="typeChar('9')">9</button>
+          <button onclick="typeChar('.')">.</button><button onclick="typeChar('0')">0</button>
+          <button class="backspace" onclick="backspace()">⌫</button>
+        </div>
+
+        <div id="qwertyPad">
+          <div class="row"><button onclick="typeChar('q')">q</button><button onclick="typeChar('w')">w</button><button onclick="typeChar('e')">e</button><button onclick="typeChar('r')">r</button><button onclick="typeChar('t')">t</button><button onclick="typeChar('y')">y</button><button onclick="typeChar('u')">u</button><button onclick="typeChar('i')">i</button><button onclick="typeChar('o')">o</button><button onclick="typeChar('p')">p</button></div>
+          <div class="row"><button onclick="typeChar('a')">a</button><button onclick="typeChar('s')">s</button><button onclick="typeChar('d')">d</button><button onclick="typeChar('f')">f</button><button onclick="typeChar('g')">g</button><button onclick="typeChar('h')">h</button><button onclick="typeChar('j')">j</button><button onclick="typeChar('k')">k</button><button onclick="typeChar('l')">l</button></div>
+          <div class="row"><button class="special" onclick="typeChar('z')">z</button><button class="special" onclick="typeChar('x')">x</button><button class="special" onclick="typeChar('c')">c</button><button class="special" onclick="typeChar('v')">v</button><button class="special" onclick="typeChar('b')">b</button><button class="special" onclick="typeChar('n')">n</button><button class="special" onclick="typeChar('m')">m</button><button class="special" onclick="backspace()">⌫</button></div>
+          <div class="row"><button class="special" onclick="showNumeric()">123</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
+        </div>
+
+        <div id="symbolPad">
+          <div class="row"><button onclick="typeChar('@')">@</button><button onclick="typeChar('#')">#</button><button onclick="typeChar('$')">$</button><button onclick="typeChar('%')">%</button><button onclick="typeChar('&')">&</button><button onclick="typeChar('*')">*</button><button onclick="typeChar('(')">(</button><button onclick="typeChar(')')">)</button></div>
+          <div class="row"><button onclick="typeChar('!')">!</button><button onclick="typeChar('?')">?</button><button onclick="typeChar('/')">/</button><button onclick="typeChar(':')">:</button><button onclick="typeChar(';')">;</button><button onclick="typeChar('"')">"</button><button onclick="typeChar("'")">'</button><button onclick="typeChar(',')">,</button></div>
+          <div class="row"><button onclick="typeChar('-')">-</button><button onclick="typeChar('+')">+</button><button onclick="typeChar('=')">=</button><button onclick="typeChar('<')">&lt;</button><button onclick="typeChar('>')">&gt;</button><button onclick="typeChar('[')">[</button><button onclick="typeChar(']')">]</button><button class="special" onclick="backspace()">⌫</button></div>
+          <div class="row"><button class="special" onclick="showQwerty()">ABC</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="statusScreen">
+      <div class="statusBtn" onclick="chooseStatus('Data Received')">Data Received (+7 days)</div>
+      <div class="statusBtn" onclick="chooseStatus('Picked Up')">Picked Up (-1 day)</div>
+      <div class="statusBtn" onclick="chooseStatus('Depart Post Office')">Depart Post Office (-2 days)</div>
+      <div class="statusBtn" onclick="chooseStatus('Arrival Scan')">Arrival Scan (-0.5 days)</div>
+      <div class="statusBtn" onclick="chooseStatus('Local Scan')">Local Scan (-1.5 days)</div>
+      <div class="statusBtn" onclick="chooseStatus('Out For Delivery')">Out For Delivery (-2 days)</div>
+      <div class="statusBtn" onclick="chooseStatus('Delivered')">Delivered (0 days)</div>
+      <div class="statusBtn back" onclick="goBackToScan()">BACK TO SCANNER</div>
+    </div>
+
+    <div id="successPopup">
+      <div class="popup-content">
+        <div class="checkmark">✓</div>
+        <div class="popup-message">QR Code Recorded!</div>
+        <div class="popup-submessage" id="popupStatus"></div>
+        <div class="popup-submessage" id="popupScanCount"></div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
