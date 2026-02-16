@@ -167,7 +167,7 @@ async function startScan(){
     await new Promise(resolve=>{video.onloadedmetadata=()=>{video.play().then(resolve);};});
     
     const canvas=document.createElement('canvas');
-    const ctx=canvas.getContext('2d');
+    const ctx=canvas.getContext('2d', { willReadFrequently: true }); // Fix for the warning
     
     function scanFrame(){
       if(!scanning||!video.videoWidth){
@@ -276,19 +276,20 @@ async function submitToXano(status){
 
   const now=new Date();
   
-  // Format data for Xano qr_scans table - send one record at a time
+  // Format data for Xano qr_scans table - using EXACT field names from error message
   let successCount = 0;
+  let errorMessages = [];
   
   for(let i = 0; i < currentScans.length; i++) {
     const scan = currentScans[i];
     const eta = calculateETA(status);
     
-    // Match Xano table structure
+    // Based on error "Missing param: date", the table expects a field called "date"
     const xanoRecord = {
       label_id: scan.code,
       barcode_type: scan.type,
-      scan_time: now.toLocaleTimeString(),
-      scan_date: now.toLocaleDateString(),
+      time: now.toLocaleTimeString(),
+      date: now.toLocaleDateString(), // CHANGED from scan_date to date
       status: status,
       location_lat: currentLocation ? currentLocation.lat : null,
       location_lng: currentLocation ? currentLocation.lng : null,
@@ -315,9 +316,11 @@ async function submitToXano(status){
       } else {
         const errorText = await resp.text();
         console.error(`❌ Scan ${i+1} failed:`, errorText);
+        errorMessages.push(`Scan ${i+1}: ${errorText}`);
       }
     } catch(e) {
       console.error(`❌ Scan ${i+1} error:`, e);
+      errorMessages.push(`Scan ${i+1}: ${e.message}`);
     }
   }
   
@@ -330,9 +333,7 @@ async function submitToXano(status){
   if(successCount > 0){
     showSuccess(status, currentScans.length, successCount);
   } else {
-    alert('Failed to send to Xano. Check console for errors.');
-    // Still show success for demo
-    showSuccess(status, currentScans.length, currentScans.length);
+    alert('Failed to send to Xano. Errors:\n' + errorMessages.join('\n'));
   }
 }
 
