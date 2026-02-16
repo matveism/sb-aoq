@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Courier Scanner · PRO · Multi-Symbology</title>
+  <title>QR Scanner · PRO</title>
   <meta name="viewport" content="width=360, height=640, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
   <style>
@@ -110,7 +110,6 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      /* Remove mirror effect - show camera view normally */
       transform: none;
       display: block;
     }
@@ -450,7 +449,7 @@
     }
   </style>
 
-  <!-- ZXing Library for full barcode support (all 1D & 2D) -->
+  <!-- ZXing Library for QR code scanning only -->
   <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
 
   <script>
@@ -471,44 +470,9 @@
       beep.preload = 'auto';
       function playBeep() { beep.currentTime = 0; beep.play().catch(e => {}); }
 
-      // Map ZXing format names to readable names
+      // QR Code only - simplified type name
       function getBarcodeTypeName(format) {
-        const formatMap = {
-          'AZTEC': 'Aztec Code',
-          'CODABAR': 'Codabar (NW-7)',
-          'CODE_39': 'Code 39',
-          'CODE_93': 'Code 93',
-          'CODE_128': 'Code 128',
-          'DATA_MATRIX': 'Data Matrix',
-          'EAN_8': 'EAN-8',
-          'EAN_13': 'EAN-13',
-          'ITF': 'Interleaved 2 of 5',
-          'PDF_417': 'PDF417',
-          'QR_CODE': 'QR Code',
-          'UPC_A': 'UPC-A',
-          'UPC_E': 'UPC-E',
-          'MAXICODE': 'MaxiCode',
-          'RSS_14': 'GS1 Databar',
-          'RSS_EXPANDED': 'GS1 Expanded',
-          'CODABLOCK': 'Codablock',
-          'CODE_11': 'Code 11',
-          'MSI': 'MSI Plessey',
-          'PHARMACODE': 'Pharmacode',
-          'POSTNET': 'PostNet',
-          'PLANET': 'PLANET',
-          'IMB': 'Intelligent Mail',
-          'MICRO_QR': 'Micro QR Code',
-          'MICRO_PDF_417': 'MicroPDF417',
-          'COMPOSITE': 'Composite Code',
-          'GS1_128': 'GS1-128',
-          'GS1_DM': 'GS1 DataMatrix',
-          'GS1_QR': 'GS1 QR Code',
-          'HAN_XIN': 'Han Xin Code',
-          'RM4SCC': 'Royal Mail 4 State',
-          'AUSPOST': 'Australia Post',
-          'CANPOST': 'Canada Post'
-        };
-        return formatMap[format] || format || 'Unknown';
+        return 'QR Code'; // Always return QR Code since we only scan QR codes
       }
 
       // Initialize GPS
@@ -647,39 +611,11 @@
           video.srcObject = stream;
           await video.play();
 
-          // Initialize ZXing reader
+          // Initialize ZXing reader for QR codes only
           const hints = new Map();
+          // Set to ONLY scan QR codes
           const possibleFormats = [
-            ZXing.BarcodeFormat.QR_CODE,
-            ZXing.BarcodeFormat.MICRO_QR,
-            ZXing.BarcodeFormat.DATA_MATRIX,
-            ZXing.BarcodeFormat.PDF_417,
-            ZXing.BarcodeFormat.MICRO_PDF_417,
-            ZXing.BarcodeFormat.AZTEC,
-            ZXing.BarcodeFormat.MAXICODE,
-            ZXing.BarcodeFormat.CODE_128,
-            ZXing.BarcodeFormat.CODE_39,
-            ZXing.BarcodeFormat.CODE_93,
-            ZXing.BarcodeFormat.CODABAR,
-            ZXing.BarcodeFormat.EAN_13,
-            ZXing.BarcodeFormat.EAN_8,
-            ZXing.BarcodeFormat.ITF,
-            ZXing.BarcodeFormat.UPC_A,
-            ZXing.BarcodeFormat.UPC_E,
-            ZXing.BarcodeFormat.RSS_14,
-            ZXing.BarcodeFormat.RSS_EXPANDED,
-            ZXing.BarcodeFormat.CODABLOCK,
-            ZXing.BarcodeFormat.MSI,
-            ZXing.BarcodeFormat.PHARMACODE,
-            ZXing.BarcodeFormat.POSTNET,
-            ZXing.BarcodeFormat.PLANET,
-            ZXing.BarcodeFormat.IMB,
-            ZXing.BarcodeFormat.GS1_128,
-            ZXing.BarcodeFormat.GS1_DM,
-            ZXing.BarcodeFormat.GS1_QR,
-            ZXing.BarcodeFormat.HAN_XIN,
-            ZXing.BarcodeFormat.RM4SCC,
-            ZXing.BarcodeFormat.AUSPOST
+            ZXing.BarcodeFormat.QR_CODE
           ];
           
           hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, possibleFormats);
@@ -705,8 +641,6 @@
               // Convert canvas to luminance source for ZXing
               const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
               
-              // For ZXing, we need to create a proper luminance source
-              // Using RGBLuminanceSource as a more compatible alternative
               const luminanceSource = new ZXing.RGBLuminanceSource(
                 imageData.data, 
                 canvas.width, 
@@ -715,16 +649,19 @@
               
               const binaryBitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(luminanceSource));
               
-              // Try to decode
+              // Try to decode - will only find QR codes
               const result = codeReader.decode(binaryBitmap);
               
               if (result) {
-                const barcodeType = getBarcodeTypeName(result.getBarcodeFormat().toString());
-                onBarcodeDecoded(result.getText(), barcodeType);
-                return;
+                // Check if it's actually a QR code (should be, but double-check)
+                const format = result.getBarcodeFormat().toString();
+                if (format === 'QR_CODE') {
+                  onBarcodeDecoded(result.getText(), 'QR Code');
+                  return;
+                }
               }
             } catch (e) {
-              // No barcode found, continue scanning
+              // No QR code found, continue scanning
             }
             
             animationFrame = requestAnimationFrame(tick);
@@ -760,7 +697,7 @@
         span.className = 'scan-entry';
         span.innerHTML = scanCount + '  ' + code + 
           (currentLocation ? ' 📍' : '') + 
-          '<span id="barcodeType"> [' + barcodeType + ']</span>';
+          '<span id="barcodeType"> [QR Code]</span>';
         box.appendChild(span);
         box.scrollTop = box.scrollHeight;
       }
@@ -773,7 +710,7 @@
 
       function goToStatus() {
         if (currentScans.length === 0) {
-          alert('Please scan a package first');
+          alert('Please scan a QR code first');
           return;
         }
         document.getElementById('labelBlock').style.display = 'none';
@@ -786,7 +723,7 @@
         document.getElementById('statusScreen').style.display = 'none';
         document.getElementById('labelBlock').style.display = 'flex';
         document.getElementById('scanButton').style.display = 'flex';
-        document.getElementById('leftText').innerText = 'SCAN BARCODE';
+        document.getElementById('leftText').innerText = 'SCAN QR CODE';
       }
 
       async function sendToSheets(status) {
@@ -858,12 +795,12 @@
         
         // Show ETA in popup
         const etaInfo = scannedPackages.map(pkg => 
-          `Package: ${pkg.LABEL_ID.substring(0, 8)}... [${pkg.BARCODE_TYPE}] ETA: ${pkg.ETA}`
+          `Package: ${pkg.LABEL_ID.substring(0, 8)}... [QR Code] ETA: ${pkg.ETA}`
         ).join('<br>');
         
         document.getElementById('popupStatus').innerText = status;
         document.getElementById('popupScanCount').innerHTML = `
-          ${scanCount} package(s) recorded<br>
+          ${scanCount} QR code(s) recorded<br>
           <div class="eta-info">${etaInfo}</div>
         `;
         document.getElementById('successPopup').style.display = 'flex';
@@ -923,6 +860,7 @@
       window.addEventListener('load', () => {
         initGPS();
         showNumeric();
+        document.getElementById('leftText').innerText = 'SCAN QR CODE';
       });
 
       // Clean up on unload
@@ -950,7 +888,7 @@
 <body>
   <div id="phone">
     <div id="header">
-      <div id="leftText">SCAN BARCODE</div>
+      <div id="leftText">SCAN QR CODE</div>
       <div id="rightArea">
         <span id="gpsIndicator">🌐</span>
         <span>📶</span>
@@ -961,7 +899,7 @@
     <div id="scanButton" onclick="startScan()">
       <div class="scan-button">
         <div class="icon"></div>
-        <div>SCAN</div>
+        <div>SCAN QR CODE</div>
       </div>
     </div>
 
@@ -995,7 +933,7 @@
     </div>
 
     <div id="labelBlock">
-      <div id="labelTitle"># LABEL ID</div>
+      <div id="labelTitle"># QR CODE DATA</div>
       <div id="labelBox"></div>
 
       <div id="labelButtons">
@@ -1055,7 +993,7 @@
     <div id="successPopup">
       <div class="popup-content">
         <div class="checkmark">✓</div>
-        <div class="popup-message">Package Recorded!</div>
+        <div class="popup-message">QR Code Recorded!</div>
         <div class="popup-submessage" id="popupStatus"></div>
         <div class="popup-submessage" id="popupScanCount"></div>
       </div>
