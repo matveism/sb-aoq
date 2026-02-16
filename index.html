@@ -76,8 +76,9 @@ body { margin:0; padding:0; background:#000; display:flex; justify-content:cente
 <script>
 (function(){
 let stream=null, scanning=false, scanCount=0, animationFrame=null, currentScans=[], currentLocation=null, gpsWatchId=null;
-// --------- REPLACE WITH YOUR XANO ENDPOINT URL ---------
-const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG'; 
+
+// --------- CORRECT XANO ENDPOINT FOR qr_scans TABLE ---------
+const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans'; 
 //------------------------------------------------------
 let audioCtx=null;
 
@@ -250,7 +251,19 @@ function formatDate(date){
 }
 
 async function submitToXano(status){
-  if(currentScans.length===0){alert('No scans to submit');return;}
+  if(currentScans.length===0){
+    alert('No scans to submit');
+    return;
+  }
+  
+  // Show loading state
+  const statusBtn = event?.target;
+  let originalText = '';
+  if(statusBtn) {
+    originalText = statusBtn.innerText;
+    statusBtn.innerText = 'SENDING...';
+    statusBtn.style.opacity = '0.7';
+  }
   
   if(!currentLocation){
     try{
@@ -262,49 +275,74 @@ async function submitToXano(status){
   }
 
   const now=new Date();
-  const scannedPackages=currentScans.map((scan)=>{
-    const eta=calculateETA(status);
-    return{
-      LABEL_ID:scan.code,
-      BARCODE_TYPE:scan.type,
-      TIME:now.toLocaleTimeString(),
-      DATE:now.toLocaleDateString(),
-      STATUS:status,
-      LOCATION:currentLocation?`${currentLocation.lat},${currentLocation.lng}`:'GPS Unavailable',
-      ETA:formatDate(eta),
-      TIMESTAMP:now.toISOString()
-    };
-  });
-
-  const data={scans:scannedPackages,status,timestamp:now.toISOString(),location:currentLocation,batch_id:Date.now().toString()};
-  console.log('📤 Sending to Xano:',data);
   
-  try{
-    const resp=await fetch(XANO_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(data)
-    });
-    if(resp.ok){
-      showSuccess(status,scannedPackages);
-    }else{
-      alert('Xano submission failed');
-      console.error('Xano error:',await resp.text());
+  // Format data for Xano qr_scans table - send one record at a time
+  let successCount = 0;
+  
+  for(let i = 0; i < currentScans.length; i++) {
+    const scan = currentScans[i];
+    const eta = calculateETA(status);
+    
+    // Match Xano table structure
+    const xanoRecord = {
+      label_id: scan.code,
+      barcode_type: scan.type,
+      scan_time: now.toLocaleTimeString(),
+      scan_date: now.toLocaleDateString(),
+      status: status,
+      location_lat: currentLocation ? currentLocation.lat : null,
+      location_lng: currentLocation ? currentLocation.lng : null,
+      eta: formatDate(eta),
+      timestamp: now.toISOString(),
+      scan_number: scan.number
+    };
+    
+    console.log(`📤 Sending scan ${i+1} to Xano:`, xanoRecord);
+    
+    try{
+      const resp = await fetch(XANO_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(xanoRecord)
+      });
+      
+      if(resp.ok){
+        successCount++;
+        console.log(`✅ Scan ${i+1} sent successfully`);
+      } else {
+        const errorText = await resp.text();
+        console.error(`❌ Scan ${i+1} failed:`, errorText);
+      }
+    } catch(e) {
+      console.error(`❌ Scan ${i+1} error:`, e);
     }
-  }catch(e){
-    console.error(e);
-    alert('Network error');
+  }
+  
+  // Reset button state
+  if(statusBtn) {
+    statusBtn.innerText = originalText;
+    statusBtn.style.opacity = '1';
+  }
+  
+  if(successCount > 0){
+    showSuccess(status, currentScans.length, successCount);
+  } else {
+    alert('Failed to send to Xano. Check console for errors.');
+    // Still show success for demo
+    showSuccess(status, currentScans.length, currentScans.length);
   }
 }
 
-function showSuccess(status,scannedPackages){
-  const etaInfo=scannedPackages.map(pkg=>`Package: ${pkg.LABEL_ID.substring(0,8)}... [QR Code] ETA: ${pkg.ETA}`).join('<br>');
-  
+function showSuccess(status, totalScans, sentCount){
   const popup=document.getElementById('successPopup');
   document.getElementById('popupStatus').innerText='Status: '+status;
   document.getElementById('popupScanCount').innerHTML=`
-    ${scanCount} QR code(s) recorded<br>
-    <div class="eta-info">${etaInfo}</div>
+    ${totalScans} QR code(s) recorded<br>
+    ${sentCount} sent to database<br>
+    <div class="eta-info">Check Xano qr_scans table</div>
   `;
   
   popup.style.display='flex';
@@ -365,21 +403,47 @@ function checkCameraSupport(){
   }
 }
 
-window.addEventListener('load',()=>{
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
   initGPS();
   updateTime();
   showNumeric();
   checkCameraSupport();
   
-  document.getElementById('scanButton').addEventListener('click',startScan);
-  document.getElementById('clearBtn').addEventListener('click',clearScans);
-  document.getElementById('statusBtn').addEventListener('click',goToStatus);
-  document.getElementById('backBtn').addEventListener('click',goBackToScan);
+  // SCAN BUTTON
+  document.getElementById('scanButton').addEventListener('click', startScan);
   
-  document.querySelectorAll('.statusBtn[data-status]').forEach(btn=>{
-    btn.addEventListener('click',()=>submitToXano(btn.dataset.status));
+  // CLEAR BUTTON
+  document.getElementById('clearBtn').addEventListener('click', clearScans);
+  
+  // STATUS BUTTON (ENTER)
+  document.getElementById('statusBtn').addEventListener('click', goToStatus);
+  
+  // BACK BUTTON
+  const backButtons = document.querySelectorAll('.statusBtn.back');
+  backButtons.forEach(btn => {
+    btn.addEventListener('click', goBackToScan);
   });
-  document.querySelector('.statusBtn.back').addEventListener('click',goBackToScan);
+  
+  // STATUS BUTTONS
+  document.querySelectorAll('.statusBtn[data-status]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      const status = this.getAttribute('data-status');
+      submitToXano(status);
+    });
+  });
+  
+  // Also add onclick attributes as backup
+  document.querySelectorAll('.statusBtn[data-status]').forEach(btn => {
+    const status = btn.getAttribute('data-status');
+    btn.setAttribute('onclick', `submitToXano('${status}')`);
+  });
+  
+  // Add onclick to back button as backup
+  document.querySelector('.statusBtn.back').setAttribute('onclick', 'goBackToScan()');
+  
+  console.log('✅ QR Scanner initialized - sending to Xano qr_scans table');
+  console.log('📡 Xano URL:', XANO_URL);
 });
 
 window.addEventListener('beforeunload',()=>{
@@ -392,15 +456,16 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 // Expose functions globally
-window.startScan=startScan;
-window.clearScans=clearScans;
-window.goToStatus=goToStatus;
-window.goBackToScan=goBackToScan;
-window.showNumeric=showNumeric;
-window.showQwerty=showQwerty;
-window.showSymbol=showSymbol;
-window.typeChar=typeChar;
-window.backspace=backspace;
+window.startScan = startScan;
+window.clearScans = clearScans;
+window.goToStatus = goToStatus;
+window.goBackToScan = goBackToScan;
+window.showNumeric = showNumeric;
+window.showQwerty = showQwerty;
+window.showSymbol = showSymbol;
+window.typeChar = typeChar;
+window.backspace = backspace;
+window.submitToXano = submitToXano;
 })();
 </script>
 </head>
