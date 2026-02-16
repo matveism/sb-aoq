@@ -917,161 +917,36 @@
         <button>►</button>
       </div>
 
-      <div id="keypadWrapper">
-        <!-- Physical Keypad - Improved Spacing -->
-        <div class="keypad">
-            <!-- Numeric Keyboard (Default) - Wider buttons -->
-            <div class="keyboard-mode active" id="numericKeyboard">
-                <!-- Row 1: Arrow Left, 1, 2, 3, Arrow Up -->
-                <div class="keyboard-row">
-                    <button class="key-btn dark small arrow-btn" data-key="arrowLeft">←</button>
-                    <button class="key-btn medium" data-key="1">1</button>
-                    <button class="key-btn medium" data-key="2">2</button>
-                    <button class="key-btn medium" data-key="3">3</button>
-                    <button class="key-btn dark small arrow-btn" data-key="arrowUp">↑</button>
-                </div>
-                
-                <!-- Row 2: Arrow Right, 4, 5, 6, Arrow Down -->
-                <div class="keyboard-row">
-                    <button class="key-btn dark small arrow-btn" data-key="arrowRight">→</button>
-                    <button class="key-btn medium" data-key="4">4</button>
-                    <button class="key-btn medium" data-key="5">5</button>
-                    <button class="key-btn medium" data-key="6">6</button>
-                    <button class="key-btn dark small arrow-btn" data-key="arrowDown">↓</button>
-                </div>
-                
-                <!-- Row 3: ESC, 7, 8, 9, Backspace - ESC and Backspace wider -->
-                <div class="keyboard-row">
-                    <button class="key-btn dark wide" data-key="esc">ESC</button>
-                    <button class="key-btn medium" data-key="7">7</button>
-                    <button class="key-btn medium" data-key="8">8</button>
-                    <button class="key-btn medium" data-key="9">9</button>
-                    <button class="key-btn blue wide" data-key="backspace">⌫</button>
-                </div>
-                
-                <!-- Row 4: ABC SYM, -, 0, ., ENT - More spacious -->
-                <div class="keyboard-row">
-                    <button class="key-btn dark wide double-row abc-sym-btn" data-key="abcSym">
-                        <span>ABC</span>
-                        <span>SYM</span>
-                    </button>
-                    <button class="key-btn medium" data-key="-">-</button>
-                    <button class="key-btn medium" data-key="0">0</button>
-                    <button class="key-btn medium" data-key=".">.</button>
-                    <button class="key-btn green wide" data-key="enter">ENT↵</button>
-                </div>
-            </div>
-            
-            <!-- QWERTY Keyboard - More spacious layout -->
-            <div class="keyboard-mode" id="qwertyKeyboard">
-                <!-- QWERTY Row 1 -->
-                <div class="keyboard-row">
-                    <button class="key-btn qwerty" data-key="Q">Q</button>
-                    <button class="key-btn qwerty" data-key="W">W</button>
-                    <button class="key-btn qwerty" data-key="E">E</button>
-                    <button class="key-btn qwerty" data-key="R">R</button>
-                    <button class="key-btn qwerty" data-key="T">T</button>
-                    <button class="key-btn qwerty" data-key="Y">Y</button>
-                    <button class="key-btn qwerty" data-key="U">U</button>
-                    <button class="key-btn qwerty" data-key="I">I</button>
-                    <button class="key-btn qwerty" data-key="O">O</button>
-                    <button class="key-btn qwerty" data-key="P">P</button>
-                </div>
-                
-                <!-- QWERTY Row 2 -->
-                <div class="keyboard-row">
-                    <button class="key-btn qwerty" data-key="A">A</button>
-                    <button class="key-btn qwerty" data-key="S">S</button>
-                    <button class="key-btn qwerty" data-key="D">D</button>
-                    <button class="key-btn qwerty" data-key="F">F</button>
-                    <button class="key-btn qwerty" data-key="G">G</button>
-                    <button class="key-btn qwerty" data-key="H">H</button>
-                    <button class="key-btn qwerty" data-key="J">J</button>
-                    <button class="key-btn qwerty" data-key="K">K</button>
-                    <button class="key-btn qwerty" data-key="L">L</button>
-                </div>
-                
-                <!-- QWERTY Row 3 - ESC and Backspace wider -->
-                <div class="keyboard-row">
-                    <button class="key-btn dark qwerty-wide" data-key="esc">ESC</button>
-                    <button class="key-btn qwerty" data-key="Z">Z</button>
-                    <button class="key-btn qwerty" data-key="X">X</button>
-                    <button class="key-btn qwerty" data-key="C">C</button>
-                    <button class="key-btn qwerty" data-key="V">V</button>
-                    <button class="key-btn qwerty" data-key="B">B</button>
-                    <button class="key-btn qwerty" data-key="N">N</button>
-                    <button class="key-btn qwerty" data-key="M">M</button>
-                    <button class="key-btn blue qwerty-wide" data-key="backspace">⌫</button>
-                </div>
-                
-                <!-- QWERTY Row 4 - SPACE bar extra wide -->
-                <div class="keyboard-row">
-                    <button class="key-btn dark qwerty-wide" data-key="123">123</button>
-                    <button class="key-btn dark qwerty-wide" data-key="sym">SYM</button>
-                    <button class="key-btn qwerty-extra-wide" data-key="space">SPACE</button>
-                    <button class="key-btn green qwerty-wide" data-key="enter">ENT↵</button>
-                </div>
-            </div>
-            
-            <!-- Symbols Keyboard - More spacious -->
-            <div class="keyboard-mode" id="symbolsKeyboard">
-                <!-- Symbols Row 1 -->
-                <div class="keyboard-row">
-                    <button class="key-btn qwerty" data-key="!">!</button>
-                    <button class="key-btn qwerty" data-key="@">@</button>
-                    <button class="key-btn qwerty" data-key="#">#</button>
-                    <button class="key-btn qwerty" data-key="$">$</button>
-                    <button class="key-btn qwerty" data-key="%">%</button>
-                    <button class="key-btn qwerty" data-key="^">^</button>
-                    <button class="key-btn qwerty" data-key="&">&</button>
-                    <button class="key-btn qwerty" data-key="*">*</button>
-                    <button class="key-btn qwerty" data-key="(">(</button>
-                    <button class="key-btn qwerty" data-key=")">)</button>
-                </div>
-                
-                <!-- Symbols Row 2 -->
-                <div class="keyboard-row">
-                    <button class="key-btn qwerty" data-key="_">_</button>
-                    <button class="key-btn qwerty" data-key="+">+</button>
-                    <button class="key-btn qwerty" data-key="{">{</button>
-                    <button class="key-btn qwerty" data-key="}">}</button>
-                    <button class="key-btn qwerty" data-key="|">|</button>
-                    <button class="key-btn qwerty" data-key=":">:</button>
-                    <button class="key-btn qwerty" data-key='"'>"</button>
-                    <button class="key-btn qwerty" data-key="<"><</button>
-                    <button class="key-btn qwerty" data-key=">">></button>
-                </div>
-                
-                <!-- Symbols Row 3 - ESC and Backspace wider -->
-                <div class="keyboard-row">
-                    <button class="key-btn dark qwerty-wide" data-key="esc">ESC</button>
-                    <button class="key-btn qwerty" data-key="~">~</button>
-                    <button class="key-btn qwerty" data-key="`">`</button>
-                    <button class="key-btn qwerty" data-key="-">-</button>
-                    <button class="key-btn qwerty" data-key="=">=</button>
-                    <button class="key-btn qwerty" data-key="[">[</button>
-                    <button class="key-btn qwerty" data-key="]">]</button>
-                    <button class="key-btn qwerty" data-key="\\">\</button>
-                    <button class="key-btn blue qwerty-wide" data-key="backspace">⌫</button>
-                </div>
-                
-                <!-- Symbols Row 4 - Wider mode buttons and space -->
-                <div class="keyboard-row">
-                    <button class="key-btn dark qwerty-wide" data-key="123">123</button>
-                    <button class="key-btn dark qwerty-wide" data-key="abc">ABC</button>
-                    <button class="key-btn qwerty" data-key=";">;</button>
-                    <button class="key-btn qwerty" data-key="'">'</button>
-                    <button class="key-btn qwerty" data-key=",">,</button>
-                    <button class="key-btn qwerty" data-key=".">.</button>
-                    <button class="key-btn qwerty" data-key="/">/</button>
-                    <button class="key-btn qwerty" data-key="?">?</button>
-                    <button class="key-btn green qwerty-wide" data-key="enter">ENT↵</button>
-                </div>
-            </div>
+            <div id="keypadWrapper">
+        <div id="keyTabs">
+          <button id="tabQwerty" onclick="showQwerty()">ABC</button>
+          <button id="tabNumeric" onclick="showNumeric()" class="active">123</button>
+          <button id="tabSymbol" onclick="showSymbol()">SYM</button>
+        </div>
+
+        <div id="numericPad">
+          <button onclick="typeChar('1')">1</button><button onclick="typeChar('2')">2</button><button onclick="typeChar('3')">3</button>
+          <button onclick="typeChar('4')">4</button><button onclick="typeChar('5')">5</button><button onclick="typeChar('6')">6</button>
+          <button onclick="typeChar('7')">7</button><button onclick="typeChar('8')">8</button><button onclick="typeChar('9')">9</button>
+          <button onclick="typeChar('.')">.</button><button onclick="typeChar('0')">0</button>
+          <button class="backspace" onclick="backspace()">⌫</button>
+        </div>
+
+        <div id="qwertyPad">
+          <div class="row"><button onclick="typeChar('q')">q</button><button onclick="typeChar('w')">w</button><button onclick="typeChar('e')">e</button><button onclick="typeChar('r')">r</button><button onclick="typeChar('t')">t</button><button onclick="typeChar('y')">y</button><button onclick="typeChar('u')">u</button><button onclick="typeChar('i')">i</button><button onclick="typeChar('o')">o</button><button onclick="typeChar('p')">p</button></div>
+          <div class="row"><button onclick="typeChar('a')">a</button><button onclick="typeChar('s')">s</button><button onclick="typeChar('d')">d</button><button onclick="typeChar('f')">f</button><button onclick="typeChar('g')">g</button><button onclick="typeChar('h')">h</button><button onclick="typeChar('j')">j</button><button onclick="typeChar('k')">k</button><button onclick="typeChar('l')">l</button></div>
+          <div class="row"><button class="special" onclick="typeChar('z')">z</button><button class="special" onclick="typeChar('x')">x</button><button class="special" onclick="typeChar('c')">c</button><button class="special" onclick="typeChar('v')">v</button><button class="special" onclick="typeChar('b')">b</button><button class="special" onclick="typeChar('n')">n</button><button class="special" onclick="typeChar('m')">m</button><button class="special" onclick="backspace()">⌫</button></div>
+          <div class="row"><button class="special" onclick="showNumeric()">123</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
+        </div>
+
+        <div id="symbolPad">
+          <div class="row"><button onclick="typeChar('@')">@</button><button onclick="typeChar('#')">#</button><button onclick="typeChar('$')">$</button><button onclick="typeChar('%')">%</button><button onclick="typeChar('&')">&</button><button onclick="typeChar('*')">*</button><button onclick="typeChar('(')">(</button><button onclick="typeChar(')')">)</button></div>
+          <div class="row"><button onclick="typeChar('!')">!</button><button onclick="typeChar('?')">?</button><button onclick="typeChar('/')">/</button><button onclick="typeChar(':')">:</button><button onclick="typeChar(';')">;</button><button onclick="typeChar('"')">"</button><button onclick="typeChar("'")">'</button><button onclick="typeChar(',')">,</button></div>
+          <div class="row"><button onclick="typeChar('-')">-</button><button onclick="typeChar('+')">+</button><button onclick="typeChar('=')">=</button><button onclick="typeChar('<')">&lt;</button><button onclick="typeChar('>')">&gt;</button><button onclick="typeChar('[')">[</button><button onclick="typeChar(']')">]</button><button class="special" onclick="backspace()">⌫</button></div>
+          <div class="row"><button class="special" onclick="showQwerty()">ABC</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
         </div>
       </div>
     </div>
-
     <div id="statusScreen">
       <div class="statusBtn" onclick="chooseStatus('Data Received')">Data Received</div>
       <div class="statusBtn" onclick="chooseStatus('Picked Up')">Picked Up (-1 day)</div>
