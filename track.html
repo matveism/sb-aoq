@@ -1,91 +1,731 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>MVP Style Navbar Mobile</title>
-<!-- Bootstrap 3 CSS -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WIN CE · TRACKER 2007</title>
 
 <style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Tahoma', 'Segoe UI', 'Arial', sans-serif;
+}
+
 body {
-    background: #3C6796;
-    color: white;
-    font-family: Arial, Helvetica, sans-serif;
+  background: #000000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 5px;
 }
 
-/* Header logo styling */
-.navbar-brand {
-    font-size: px;
-    font-weight: bold;
-    color: white !important;
+#wince {
+  width: 360px;
+  height: 600px;
+  background: #c0c0c0;
+  border: 4px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.navbar-brand .x-highlight {
-    background-color: black;
-    color: white;
-    padding: 0 6px;
-    border-radius: 2px;
-    margin: 0 1px;
+/* WIN CE TITLE BAR */
+.title-bar {
+  background: #000080;
+  padding: 4px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  height: 26px;
 }
 
-/* Navbar buttons */
-.navbar-default .navbar-nav>li>a {
-    color: white;
-    font-weight: bold;
-    border: 1px solid white;
-    margin: 1px;
-    border-radius: 4px;
-    transition: 0.2s;
+.title-bar .title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.navbar-default .navbar-nav>li>a:hover {
-    background: rgba(255,255,255,0.2);
-    color: white;
+.title-bar .icon {
+  width: 18px;
+  height: 18px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
 }
 
-.navbar-default {
-    background-color: #2F537C;
-    border-color: #1E3A5F;
+.title-bar .buttons {
+  display: flex;
+  gap: 3px;
 }
 
-/* Hamburger icon color */
-.navbar-default .navbar-toggle .icon-bar {
-    background-color: white;
+.title-bar .btn {
+  width: 22px;
+  height: 22px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  color: black;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* MENU BAR */
+.menu-bar {
+  background: #c0c0c0;
+  border-bottom: 2px solid #808080;
+  padding: 4px 6px;
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.menu-bar span {
+  padding: 2px 4px;
+}
+
+.menu-bar span:active {
+  background: #000080;
+  color: white;
+}
+
+/* TOOLBAR */
+.toolbar {
+  background: #c0c0c0;
+  border-bottom: 2px solid #808080;
+  padding: 6px;
+  display: flex;
+  gap: 6px;
+}
+
+.tool-btn {
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  padding: 6px 10px;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tool-btn:active {
+  border-color: #808080 #ffffff #ffffff #808080;
+}
+
+.tool-btn.primary {
+  background: #000080;
+  color: white;
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  background: #d4d0c8;
+  padding: 8px;
+  overflow-y: auto;
+}
+
+/* SEARCH BOX */
+.search-box {
+  background: #ffffff;
+  border: 2px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+.search-box label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #000080;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.search-row {
+  display: flex;
+  gap: 4px;
+}
+
+.search-row input {
+  flex: 1;
+  border: 2px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  padding: 6px;
+  font-size: 14px;
+  background: #ffffff;
+}
+
+.search-row button {
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  padding: 6px 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.search-row button:active {
+  border-color: #808080 #ffffff #ffffff #808080;
+}
+
+/* STATUS BAR */
+.status-bar {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  padding: 4px 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: bold;
+  height: 24px;
+}
+
+/* PACKAGE INFO */
+.package-info {
+  background: #ffffff;
+  border: 2px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.package-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #000080;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+}
+
+.package-id {
+  font-size: 18px;
+  font-weight: bold;
+  color: #000080;
+}
+
+.package-status {
+  background: #000080;
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.package-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.detail-label {
+  color: #666;
+}
+
+.detail-value {
+  font-weight: bold;
+}
+
+/* TIMELINE */
+.timeline {
+  background: #ffffff;
+  border: 2px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  padding: 10px;
+}
+
+.timeline-title {
+  font-weight: bold;
+  color: #000080;
+  border-bottom: 2px solid #000080;
+  padding-bottom: 4px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timeline-item {
+  border-bottom: 1px solid #c0c0c0;
+  padding: 8px 0;
+  position: relative;
+  padding-left: 20px;
+}
+
+.timeline-item:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #000080;
+  font-size: 20px;
+}
+
+.timeline-time {
+  font-size: 11px;
+  color: #666;
+}
+
+.timeline-status {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.timeline-location {
+  font-size: 12px;
+  color: #333;
+}
+
+/* LOADING */
+.loading {
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
+  height: 20px;
+  margin: 10px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-bar {
+  height: 100%;
+  background: #000080;
+  width: 0%;
+  transition: width 0.3s;
+}
+
+/* ERROR */
+.error {
+  background: #ffc0c0;
+  border: 2px solid #ff0000;
+  padding: 8px;
+  margin: 10px 0;
+  font-weight: bold;
+  display: none;
+}
+
+/* HIDE BY DEFAULT */
+#packageInfo, #timelineBox {
+  display: none;
+}
+
+/* CONNECTION STATUS */
+.connected {
+  color: #008000;
+}
+
+.disconnected {
+  color: #ff0000;
 }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+
 <body>
-
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <!-- Brand and toggle get grouped for mobile -->
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="#">
-         U E <span class="x-highlight">X</span> S
-      </a>
+<div id="wince">
+  <!-- WIN CE TITLE BAR -->
+  <div class="title-bar">
+    <div class="title">
+      <div class="icon"></div>
+      <span>📦 CE TRACKER 2007</span>
     </div>
-
-    <!-- Navbar links -->
-    <div class="collapse navbar-collapse" id="navbar-collapse-1">
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href="#">TRACK PACKAGE</a></li>
-        <li><a href="#">CALCULATE POSTAGE</a></li>
-        <li><a href="#">SHIP PACKAGE</a></li>
-        <li><a href="#">LOGIN</a></li>
-      </ul>
+    <div class="buttons">
+      <div class="btn">🗕</div>
+      <div class="btn">🗖</div>
+      <div class="btn">✕</div>
     </div>
   </div>
-</nav>
+  
+  <!-- MENU BAR -->
+  <div class="menu-bar">
+    <span>File</span>
+    <span>Edit</span>
+    <span>View</span>
+    <span>Tools</span>
+  </div>
+  
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="tool-btn" id="recentBtn">🔄 RECENT</button>
+    <button class="tool-btn primary" id="trackBtn">🔍 TRACK</button>
+  </div>
+  
+  <!-- CONTENT -->
+  <div class="content" id="content">
+    <!-- SEARCH -->
+    <div class="search-box">
+      <label>Enter Tracking Number:</label>
+      <div class="search-row">
+        <input type="text" id="trackingInput" value="U900EX34S" placeholder="e.g., U900EX34S">
+        <button id="goBtn">GO</button>
+      </div>
+    </div>
+    
+    <!-- LOADING BAR -->
+    <div class="loading">
+      <div class="loading-bar" id="loadingBar"></div>
+    </div>
+    
+    <!-- ERROR MESSAGE -->
+    <div class="error" id="errorMsg"></div>
+    
+    <!-- PACKAGE INFO -->
+    <div class="package-info" id="packageInfo">
+      <div class="package-header">
+        <span class="package-id" id="pkgId">U900EX34S</span>
+        <span class="package-status" id="pkgStatus">Data Received</span>
+      </div>
+      <div class="package-details">
+        <div>
+          <span class="detail-label">TYPE:</span>
+          <span class="detail-value" id="pkgType">QR Code</span>
+        </div>
+        <div>
+          <span class="detail-label">DATE:</span>
+          <span class="detail-value" id="pkgDate">02/15/2026</span>
+        </div>
+        <div>
+          <span class="detail-label">TIME:</span>
+          <span class="detail-value" id="pkgTime">8:52 PM</span>
+        </div>
+        <div>
+          <span class="detail-label">LOCATION:</span>
+          <span class="detail-value" id="pkgLocation">40.7128,-74.0060</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- TIMELINE -->
+    <div class="timeline" id="timelineBox">
+      <div class="timeline-title">
+        <span>📋 TRACKING HISTORY</span>
+      </div>
+      <div id="timeline"></div>
+    </div>
+    
+    <!-- RECENT SCANS (HIDDEN) -->
+    <div class="timeline" id="recentBox" style="display:none;">
+      <div class="timeline-title">
+        <span>🔄 RECENT SCANS</span>
+      </div>
+      <div id="recentList"></div>
+    </div>
+  </div>
+  
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span id="statusText">Ready</span>
+    <span id="connStatus">
+      <span id="connDot">🔴</span> <span id="connText">Connecting...</span>
+    </span>
+  </div>
+</div>
 
-<!-- Bootstrap 3 JS (required for collapse) -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script>
+// ============================================
+// XANO - DIRECT WORKING ENDPOINT
+// ============================================
+const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
 
+// ============================================
+// STATE
+// ============================================
+let allScans = [];
+let connected = false;
+
+// ============================================
+// DOM ELEMENTS
+// ============================================
+const loadingBar = document.getElementById('loadingBar');
+const statusText = document.getElementById('statusText');
+const connDot = document.getElementById('connDot');
+const connText = document.getElementById('connText');
+const errorMsg = document.getElementById('errorMsg');
+const packageInfo = document.getElementById('packageInfo');
+const timelineBox = document.getElementById('timelineBox');
+const recentBox = document.getElementById('recentBox');
+const timeline = document.getElementById('timeline');
+const recentList = document.getElementById('recentList');
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+function setLoading(percent, text) {
+  loadingBar.style.width = percent + '%';
+  statusText.innerText = text || 'Working...';
+}
+
+function showError(text) {
+  errorMsg.style.display = 'block';
+  errorMsg.innerText = '❌ ' + text;
+  setTimeout(() => {
+    errorMsg.style.display = 'none';
+  }, 4000);
+}
+
+function setConnected(online) {
+  connected = online;
+  if (online) {
+    connDot.innerHTML = '🟢';
+    connText.innerText = 'Xano Online';
+  } else {
+    connDot.innerHTML = '🔴';
+    connText.innerText = 'Offline';
+  }
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return 'Unknown';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+}
+
+// ============================================
+// FETCH FROM XANO - DIRECT
+// ============================================
+async function fetchFromXano() {
+  setLoading(20, 'Connecting to Xano...');
+  
+  try {
+    console.log('Fetching from:', XANO_URL);
+    
+    const response = await fetch(XANO_URL, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Data received:', data);
+    
+    allScans = data || [];
+    setConnected(true);
+    setLoading(100, 'Connected!');
+    setTimeout(() => setLoading(0, 'Ready'), 1000);
+    
+    return true;
+    
+  } catch (error) {
+    console.error('Xano fetch error:', error);
+    setConnected(false);
+    setLoading(0, 'Failed');
+    showError('Cannot connect to Xano: ' + error.message);
+    
+    // Create demo data so UI works
+    createDemoData();
+    return false;
+  }
+}
+
+// ============================================
+// DEMO DATA (BACKUP)
+// ============================================
+function createDemoData() {
+  const now = new Date();
+  allScans = [
+    {
+      label_id: 'U900EX34S',
+      barcode_type: 'QR Code',
+      status: 'Data Received',
+      timestamp: new Date(now - 7*24*60*60*1000).toISOString(),
+      location: '40.7128,-74.0060',
+      scan_number: 1
+    },
+    {
+      label_id: 'U900EX34S',
+      barcode_type: 'QR Code',
+      status: 'Picked Up',
+      timestamp: new Date(now - 6*24*60*60*1000).toISOString(),
+      location: '40.7128,-74.0060',
+      scan_number: 2
+    },
+    {
+      label_id: 'U900EX34S',
+      barcode_type: 'QR Code',
+      status: 'Out For Delivery',
+      timestamp: new Date(now - 1*24*60*60*1000).toISOString(),
+      location: '40.7128,-74.0060',
+      scan_number: 3
+    }
+  ];
+}
+
+// ============================================
+// DISPLAY PACKAGE
+// ============================================
+function displayPackage(pkg) {
+  document.getElementById('pkgId').innerText = pkg.label_id || 'Unknown';
+  document.getElementById('pkgStatus').innerText = pkg.status || 'Unknown';
+  document.getElementById('pkgType').innerText = pkg.barcode_type || 'QR';
+  document.getElementById('pkgDate').innerText = pkg.timestamp ? new Date(pkg.timestamp).toLocaleDateString() : 'Unknown';
+  document.getElementById('pkgTime').innerText = pkg.timestamp ? new Date(pkg.timestamp).toLocaleTimeString() : 'Unknown';
+  document.getElementById('pkgLocation').innerText = pkg.location || 'GPS Unavailable';
+  
+  packageInfo.style.display = 'block';
+}
+
+// ============================================
+// DISPLAY TIMELINE
+// ============================================
+function displayTimeline(scans) {
+  if (!scans || scans.length === 0) {
+    timeline.innerHTML = '<div style="padding:10px;text-align:center;">No history</div>';
+    return;
+  }
+  
+  // Sort newest first
+  const sorted = [...scans].sort((a, b) => 
+    new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
+  );
+  
+  let html = '';
+  sorted.forEach(scan => {
+    html += `
+      <div class="timeline-item">
+        <div class="timeline-time">${formatDate(scan.timestamp)}</div>
+        <div class="timeline-status">${scan.status || 'Unknown'}</div>
+        <div class="timeline-location">📍 ${scan.location || 'No location'}</div>
+      </div>
+    `;
+  });
+  
+  timeline.innerHTML = html;
+  timelineBox.style.display = 'block';
+}
+
+// ============================================
+// DISPLAY RECENT
+// ============================================
+function displayRecent() {
+  if (!allScans || allScans.length === 0) {
+    recentList.innerHTML = '<div style="padding:10px;">No scans found</div>';
+    return;
+  }
+  
+  // Sort newest first
+  const sorted = [...allScans].sort((a, b) => 
+    new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
+  );
+  
+  let html = '';
+  sorted.slice(0, 15).forEach(scan => {
+    html += `
+      <div class="timeline-item" style="cursor:pointer;" onclick="trackNumber('${scan.label_id}')">
+        <div class="timeline-time">${formatDate(scan.timestamp)}</div>
+        <div class="timeline-status">${scan.label_id}</div>
+        <div class="timeline-location">${scan.status} • ${scan.barcode_type}</div>
+      </div>
+    `;
+  });
+  
+  recentList.innerHTML = html;
+  
+  // Hide package view, show recent
+  packageInfo.style.display = 'none';
+  timelineBox.style.display = 'none';
+  recentBox.style.display = 'block';
+}
+
+// ============================================
+// TRACK NUMBER
+// ============================================
+function trackNumber(number) {
+  document.getElementById('trackingInput').value = number;
+  trackPackage();
+}
+
+async function trackPackage() {
+  const trackingNum = document.getElementById('trackingInput').value.trim();
+  
+  if (!trackingNum) {
+    showError('Enter tracking number');
+    return;
+  }
+  
+  setLoading(30, 'Searching...');
+  
+  // Filter scans for this number
+  const packageScans = allScans.filter(s => 
+    s.label_id && s.label_id.toLowerCase() === trackingNum.toLowerCase()
+  );
+  
+  console.log(`Found ${packageScans.length} scans for ${trackingNum}`);
+  
+  if (packageScans.length === 0) {
+    setLoading(0, 'Not found');
+    showError(`No tracking data for "${trackingNum}"`);
+    return;
+  }
+  
+  setLoading(60, 'Building history...');
+  
+  // Get latest scan
+  const sorted = [...packageScans].sort((a, b) => 
+    new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
+  );
+  
+  displayPackage(sorted[0]);
+  displayTimeline(packageScans);
+  recentBox.style.display = 'none';
+  
+  setLoading(100, 'Done');
+  setTimeout(() => setLoading(0, 'Ready'), 1000);
+}
+
+// ============================================
+// INIT
+// ============================================
+window.onload = async function() {
+  console.log('WIN CE Tracker starting...');
+  
+  // Set up buttons
+  document.getElementById('goBtn').onclick = trackPackage;
+  document.getElementById('trackBtn').onclick = trackPackage;
+  document.getElementById('recentBtn').onclick = () => {
+    displayRecent();
+  };
+  
+  document.getElementById('trackingInput').onkeypress = (e) => {
+    if (e.key === 'Enter') trackPackage();
+  };
+  
+  // Fetch from Xano
+  await fetchFromXano();
+  
+  // If connected and have data, show recent
+  if (connected && allScans.length > 0) {
+    displayRecent();
+  } else if (allScans.length > 0) {
+    displayRecent();
+  }
+};
+
+// Expose for onclick
+window.trackNumber = trackNumber;
+</script>
 </body>
 </html>
