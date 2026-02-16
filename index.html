@@ -5,7 +5,7 @@
   <title>Courier Scanner · PRO</title>
   <meta name="viewport" content="width=360, height=640, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-  <style>
+   <style>
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
@@ -20,6 +20,7 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      /* more official: similar to TC55 / Zebra industrial font */
       font-family: 'Roboto', 'Segoe UI', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif;
       font-weight: 700;
     }
@@ -61,11 +62,7 @@
       gap: 8px;
     }
 
-    #gpsIndicator {
-      color: #4CAF50;
-      font-size: 16px;
-    }
-
+    /* 1st: SCAN button → Barcode symbol + text */
     #scanButton {
       width: calc(100% - 24px);
       height: 50px;
@@ -144,6 +141,7 @@
     .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
     .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
 
+    /* 2nd: label block redesigned with inner border */
     #labelBlock {
       display: flex;
       flex-direction: column;
@@ -169,30 +167,32 @@
       letter-spacing: 0.5px;
     }
 
+    /* main scanned data box — color #A6BEEF, bold black text, separate border for each entry */
     #labelBox {
       width: calc(100% - 24px);
       min-height: 80px;
       max-height: 120px;
       margin: 0 auto;
-      border: 3px solid #1f3f5c;
-      background: #A6BEEF;
+      border: 3px solid #1f3f5c;         /* outer border */
+      background: #A6BEEF;                /* 5th: requested light blue */
       padding: 8px 10px;
       font-size: 16px;
       font-weight: 700;
-      color: #000000;
+      color: #000000;                     /* bold black text */
       white-space: pre-line;
       overflow-y: auto;
       word-break: break-all;
       flex-shrink: 0;
       line-height: 1.5;
       font-family: 'Roboto', 'Segoe UI', monospace;
-      box-shadow: inset 0 0 0 2px #ffffff;
+      box-shadow: inset 0 0 0 2px #ffffff; /* inner white border -> "shrunk inside" effect */
     }
 
+    /* each scanned line gets a separator and background for contrast */
     #labelBox span.scan-entry {
       display: block;
-      border-bottom: 2px solid #2b4b70;
-      background: #c0d4f5;
+      border-bottom: 2px solid #2b4b70;    /* thick separator between scans */
+      background: #c0d4f5;                  /* slightly darker for entry */
       padding: 4px 6px;
       margin: 4px 0;
       border-radius: 4px;
@@ -201,6 +201,38 @@
     }
     #labelBox span.scan-entry:last-child {
       border-bottom: none;
+    }
+
+    /* 6th: ESC/ENTER background #7496C4 */
+    #labelButtons {
+      height: 42px;
+      background: #7496C4;                  /* solid as requested */
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 4px;
+      border: 2px solid #3a5f8a;
+      margin: 8px 12px 0 12px;
+      padding: 0 20px;
+      font-weight: 700;
+      font-size: 18px;
+      color: #ffffff;
+      flex-shrink: 0;
+      box-shadow: inset 0 -2px 0 #3a5f8a;
+    }
+    #labelButtons span {
+      cursor: pointer;
+      padding: 4px 12px;
+      background: transparent;
+      text-shadow: 1px 1px 0 #1f3f5c;
+    }
+    #labelButtons span:active {
+      background: #27ae60;
+      border-radius: 4px;
+    }
+    #divider {
+      color: rgba(255,255,255,0.7);
+      padding: 0 !important;
     }
 
     #navBar {
@@ -231,144 +263,108 @@
       color: #4CAF50;
     }
 
-    /* Physical Keypad Styles - Improved Spacing */
+    /* 3rd: keypadWrapper moved to bottom (footer) – already at bottom but ensure flex column */
     #keypadWrapper {
       width: 100%;
       background: linear-gradient(180deg, #2b4b70 0%, #1f3f5c 100%);
       border-top: 3px solid #ffcc00;
-      margin-top: auto;
+      margin-top: auto;        /* push to bottom */
       flex-shrink: 0;
       z-index: 2;
-      padding: 8px 8px 12px 8px;
+      padding-bottom: 4px;
     }
 
-    .keyboard-mode {
-      display: none;
-    }
-
-    .keyboard-mode.active {
-      display: block;
-    }
-
-    .keyboard-row {
+    #keyTabs {
       display: flex;
-      gap: 6px;
-      margin-bottom: 6px;
-      justify-content: center;
+      gap: 8px;
+      padding: 8px 12px 4px 12px;
+    }
+    #keyTabs button {
+      flex: 1;
+      background: #3a5f8a;
+      border: 2px solid #1f3f5c;
+      border-radius: 30px;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 8px 0;
+      cursor: pointer;
+    }
+    #keyTabs button.active {
+      background: #4CAF50;
+      border-color: #145018;
+    }
+    #keyTabs button:active {
+      background: #66BB6A;
     }
 
-    .key-btn {
+    #numericPad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 6px 15px 10px 15px;
+    }
+    #numericPad button {
       background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
       border: 1px solid #1f3f5c;
-      border-radius: 8px;
+      border-radius: 6px;
       color: #ffffff;
-      font-size: 18px;
+      font-size: 22px;
       font-weight: 700;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       box-shadow: 0 3px 0 #1f3f5c;
-      padding: 0;
-      font-family: 'Roboto', 'Segoe UI', sans-serif;
-      transition: all 0.05s ease;
     }
-
-    .key-btn:active {
+    #numericPad button:active {
       transform: translateY(2px);
       background: #4CAF50;
-      box-shadow: 0 1px 0 #1f3f5c;
     }
-
-    /* Improved sizing for better spacing */
-    .key-btn.small {
-      width: 48px;
-      height: 48px;
-      font-size: 16px;
-    }
-
-    .key-btn.medium {
-      width: 52px;
-      height: 48px;
-    }
-
-    .key-btn.large {
-      width: 110px;
-      height: 48px;
-    }
-
-    .key-btn.wide {
-      width: 80px;
-      height: 48px;
-    }
-
-    .key-btn.extra-wide {
-      width: 160px;
-      height: 48px;
-    }
-
-    .key-btn.dark {
+    #numericPad button.backspace {
       background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
     }
 
-    .key-btn.blue {
-      background: linear-gradient(180deg, #4a7aa8 0%, #2e5a88 100%);
+    #qwertyPad, #symbolPad {
+      display: none;
+      padding: 0 8px 12px 8px;
     }
-
-    .key-btn.green {
-      background: linear-gradient(180deg, #4CAF50 0%, #2b6e2f 100%);
-    }
-
-    .key-btn.qwerty {
-      width: 32px;
-      height: 44px;
-      font-size: 16px;
-    }
-
-    .key-btn.qwerty-wide {
-      width: 70px;
-      height: 44px;
-    }
-
-    .key-btn.qwerty-extra-wide {
-      width: 140px;
-      height: 44px;
-    }
-
-    .key-btn.arrow-btn {
-      font-size: 20px;
-    }
-
-    .key-btn.double-row {
+    .row {
       display: flex;
-      flex-direction: column;
-      line-height: 1.2;
-      font-size: 14px;
-      padding: 4px 0;
-      height: 48px;
-    }
-
-    /* Special styling for the ABC/SYM button */
-    .abc-sym-btn {
-      font-size: 13px;
-      line-height: 1.3;
-    }
-
-    /* Space bar styling */
-    .space-bar {
-      width: 180px;
-      height: 44px;
-    }
-
-    /* Numeric keypad specific */
-    .numeric-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
+      gap: 4px;
+      margin-bottom: 4px;
       justify-content: center;
     }
+    .row button {
+      flex: 1;
+      max-width: 32px;
+      background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
+      border: 1px solid #1f3f5c;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 0 #1f3f5c;
+    }
+    .row button:active {
+      transform: translateY(2px);
+      background: #4CAF50;
+    }
+    .row button.special {
+      background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
+      max-width: 50px;
+    }
+    .row button.space { 
+      flex: 3;
+      max-width: 200px;
+    }
 
-    /* Status screen styles */
     #statusScreen {
       display: none;
       flex-direction: column;
@@ -421,7 +417,7 @@
       border-radius: 20px;
       padding: 30px 20px;
       text-align: center;
-      width: 280px;
+      width: 240px;
       animation: fadePop 0.2s;
     }
     .checkmark {
@@ -437,8 +433,7 @@
       color: white;
     }
     .popup-message { font-size: 20px; font-weight: 700; }
-    .popup-submessage { color: #ffcc00; font-size: 15px; margin-top: 5px; }
-    .eta-info { color: #4CAF50; font-size: 14px; margin-top: 10px; border-top: 1px solid #fff; padding-top: 10px; }
+    .popup-submessage { color: #ffcc00; font-size: 15px; }
     @keyframes fadePop {
       0% { opacity: 0; transform: scale(0.7); }
       100% { opacity: 1; transform: scale(1); }
