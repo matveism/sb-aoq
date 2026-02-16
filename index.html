@@ -28,9 +28,11 @@ body { margin:0; padding:0; background:#000; display:flex; justify-content:cente
 .br{bottom:-3px; right:-3px; border-left:none; border-top:none;}
 #labelBlock { display:flex; flex-direction:column; flex:1; min-height:0; width:100%; z-index:2; margin-top:4px; }
 #labelTitle { height:32px; background:linear-gradient(180deg,#3f6b9c 0%,#2b4b70 100%); border:1px solid #1f3f5c; display:flex; align-items:center; padding-left:12px; margin:0 12px; font-weight:700; font-size:14px; color:#fff; flex-shrink:0; letter-spacing:0.5px; }
-#labelBox { width:calc(100% - 24px); min-height:80px; max-height:120px; margin:0 auto; border:3px solid #1f3f5c; background:#A6BEEF; padding:8px 10px; font-size:16px; font-weight:700; color:#000; white-space:pre-line; overflow-y:auto; word-break:break-all; flex-shrink:0; line-height:1.5; font-family:'Roboto','Segoe UI',monospace; box-shadow:inset 0 0 0 2px #fff; }
+#labelBox { width:calc(100% - 24px); min-height:80px; max-height:120px; margin:0 auto; border:3px solid #1f3f5c; background:#A6BEEF; padding:8px 10px; font-size:16px; font-weight:700; color:#000; white-space:pre-wrap; overflow-y:auto; word-break:break-all; flex-shrink:0; line-height:1.5; font-family:'Roboto','Segoe UI',monospace; box-shadow:inset 0 0 0 2px #fff; }
 #labelBox span.scan-entry { display:block; border-bottom:2px solid #2b4b70; background:#c0d4f5; padding:4px 6px; margin:4px 0; border-radius:4px; font-weight:700; color:#000; }
 #labelBox span.scan-entry:last-child{border-bottom:none;}
+#labelBox .manual-input { display:inline; background:transparent; color:#0000ff; font-weight:700; padding:2px; text-decoration:underline wavy #ffcc00; }
+#labelBox .manual-label { display:inline; color:#666; font-size:12px; font-style:italic; margin-right:4px; }
 #labelButtons { height:42px; background:#7496C4; display:flex; align-items:center; justify-content:space-between; border-radius:4px; border:2px solid #3a5f8a; margin:8px 12px 0 12px; padding:0 20px; font-weight:700; font-size:18px; color:#fff; flex-shrink:0; box-shadow:inset 0 -2px 0 #3a5f8a; }
 #labelButtons span { cursor:pointer; padding:4px 12px; background:transparent; text-shadow:1px 1px 0 #1f3f5c; }
 #labelButtons span:active { background:#27ae60; border-radius:4px; }
@@ -76,6 +78,7 @@ body { margin:0; padding:0; background:#000; display:flex; justify-content:cente
 <script>
 (function(){
 let stream=null, scanning=false, scanCount=0, animationFrame=null, currentScans=[], currentLocation=null, gpsWatchId=null;
+let manualInput = ''; // Track manual input separately
 
 // --------- CORRECT XANO ENDPOINT FOR qr_scans TABLE ---------
 const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans'; 
@@ -202,9 +205,13 @@ function onBarcodeDecoded(code,type){
   currentScans.push({number:scanCount,code,type,timestamp:new Date().toISOString(),location:currentLocation});
   
   const box=document.getElementById('labelBox');
+  
+  // Clear any manual input display when a scan happens
+  manualInput = '';
+  
   const span=document.createElement('span');
   span.className='scan-entry';
-  span.innerHTML=scanCount+'  '+code+(currentLocation?' 📍':'')+'<span id="barcodeType"> ['+type+']</span>';
+  span.innerHTML = '📷 SCAN #' + scanCount + ': ' + code + (currentLocation?' 📍':'') + '<span id="barcodeType"> ['+type+']</span>';
   box.appendChild(span);
   box.scrollTop=box.scrollHeight;
 }
@@ -212,11 +219,37 @@ function onBarcodeDecoded(code,type){
 function clearScans(){
   scanCount=0;
   currentScans=[];
+  manualInput = '';
   document.getElementById('labelBox').innerHTML='';
 }
 
 function goToStatus(){
-  if(currentScans.length===0){alert('Please scan a QR code first');return;}
+  if(currentScans.length===0){
+    // If no scans but has manual input, add manual input as a scan
+    if(manualInput.trim() !== '') {
+      scanCount++;
+      currentScans.push({
+        number: scanCount,
+        code: manualInput.trim(),
+        type: 'MANUAL',
+        timestamp: new Date().toISOString(),
+        location: currentLocation
+      });
+      
+      const box = document.getElementById('labelBox');
+      const span = document.createElement('span');
+      span.className = 'scan-entry';
+      span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput.trim() + (currentLocation?' 📍':'') + '<span id="barcodeType"> [MANUAL]</span>';
+      box.appendChild(span);
+      
+      // Clear manual input
+      manualInput = '';
+    } else {
+      alert('Please scan a QR code or type one first');
+      return;
+    }
+  }
+  
   document.getElementById('labelBlock').style.display='none';
   document.getElementById('scanButton').style.display='none';
   document.getElementById('leftText').innerText='SELECT STATUS';
@@ -276,7 +309,7 @@ async function submitToXano(status){
 
   const now=new Date();
   
-  // Format data for Xano qr_scans table - using EXACT field names from error messages
+  // Format data for Xano qr_scans table
   let successCount = 0;
   let errorMessages = [];
   
@@ -289,14 +322,13 @@ async function submitToXano(status){
       `${currentLocation.lat},${currentLocation.lng}` : 
       'GPS Unavailable';
     
-    // Based on errors: needs "date" and "location" fields
     const xanoRecord = {
       label_id: scan.code,
       barcode_type: scan.type,
       time: now.toLocaleTimeString(),
-      date: now.toLocaleDateString(), // Fixed from previous error
+      date: now.toLocaleDateString(),
       status: status,
-      location: locationString, // CHANGED: single location field instead of lat/lng
+      location: locationString,
       eta: formatDate(eta),
       timestamp: now.toISOString(),
       scan_number: scan.number
@@ -361,7 +393,7 @@ function showSuccess(status, totalScans, sentCount){
   },4000);
 }
 
-// Keypad functions
+// Keypad functions - FIXED to show manual input separately
 function showNumeric(){
   document.getElementById('numericPad').style.display='grid';
   document.getElementById('qwertyPad').style.display='none';
@@ -389,18 +421,82 @@ function showSymbol(){
   document.getElementById('tabNumeric').classList.remove('active');
 }
 
+// FIXED: Show manual input in a dedicated area
 function typeChar(c){
-  const box=document.getElementById('labelBox');
-  const span=document.createElement('span');
-  span.className='scan-entry';
-  span.innerText=c;
-  box.appendChild(span);
-  box.scrollTop=box.scrollHeight;
+  const box = document.getElementById('labelBox');
+  
+  // Check if there's a manual input div
+  let manualDiv = document.getElementById('manualInputDiv');
+  
+  if (!manualDiv) {
+    // Create manual input display
+    manualDiv = document.createElement('div');
+    manualDiv.id = 'manualInputDiv';
+    manualDiv.style.padding = '4px';
+    manualDiv.style.margin = '4px 0';
+    manualDiv.style.background = '#ffff99';
+    manualDiv.style.border = '2px dashed #ffcc00';
+    manualDiv.style.borderRadius = '4px';
+    manualDiv.style.color = '#000';
+    manualDiv.style.fontWeight = 'bold';
+    manualDiv.innerHTML = '<span style="color:#666;font-size:12px;">✏️ TYPING:</span> <span id="manualText"></span>';
+    box.appendChild(manualDiv);
+  }
+  
+  // Update manual input
+  manualInput += c;
+  document.getElementById('manualText').innerText = manualInput;
+  
+  box.scrollTop = box.scrollHeight;
 }
 
+// FIXED: Remove last character from manual input
 function backspace(){
-  const box=document.getElementById('labelBox');
-  if(box.lastChild)box.removeChild(box.lastChild);
+  if (manualInput.length > 0) {
+    manualInput = manualInput.slice(0, -1);
+    
+    const manualText = document.getElementById('manualText');
+    if (manualText) {
+      manualText.innerText = manualInput;
+      
+      // If manual input is empty, remove the div
+      if (manualInput === '') {
+        const manualDiv = document.getElementById('manualInputDiv');
+        if (manualDiv) {
+          manualDiv.remove();
+        }
+      }
+    }
+  }
+}
+
+// FIXED: Add manual input as scan when ENTER is pressed
+function addManualAsScan() {
+  if (manualInput.trim() !== '') {
+    scanCount++;
+    currentScans.push({
+      number: scanCount,
+      code: manualInput.trim(),
+      type: 'MANUAL',
+      timestamp: new Date().toISOString(),
+      location: currentLocation
+    });
+    
+    const box = document.getElementById('labelBox');
+    const span = document.createElement('span');
+    span.className = 'scan-entry';
+    span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput.trim() + (currentLocation?' 📍':'') + '<span id="barcodeType"> [MANUAL]</span>';
+    box.appendChild(span);
+    
+    // Clear manual input
+    manualInput = '';
+    const manualDiv = document.getElementById('manualInputDiv');
+    if (manualDiv) {
+      manualDiv.remove();
+    }
+    
+    box.scrollTop = box.scrollHeight;
+  }
 }
 
 function checkCameraSupport(){
@@ -424,8 +520,13 @@ document.addEventListener('DOMContentLoaded', function() {
   // CLEAR BUTTON
   document.getElementById('clearBtn').addEventListener('click', clearScans);
   
-  // STATUS BUTTON (ENTER)
-  document.getElementById('statusBtn').addEventListener('click', goToStatus);
+  // STATUS BUTTON (ENTER) - Now adds manual input as scan if exists
+  document.getElementById('statusBtn').addEventListener('click', function() {
+    // First add any manual input as a scan
+    addManualAsScan();
+    // Then go to status
+    goToStatus();
+  });
   
   // BACK BUTTON
   const backButtons = document.querySelectorAll('.statusBtn.back');
@@ -474,6 +575,7 @@ window.showSymbol = showSymbol;
 window.typeChar = typeChar;
 window.backspace = backspace;
 window.submitToXano = submitToXano;
+window.addManualAsScan = addManualAsScan;
 })();
 </script>
 </head>
