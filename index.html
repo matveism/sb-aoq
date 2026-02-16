@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>QR Scanner · PRO</title>
+  <title>Courier Scanner · PRO</title>
   <meta name="viewport" content="width=360, height=640, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
   <style>
@@ -110,7 +110,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: none;
+      transform: scaleX(-1);
       display: block;
     }
 
@@ -203,37 +203,6 @@
       border-bottom: none;
     }
 
-    #labelButtons {
-      height: 42px;
-      background: #7496C4;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-radius: 4px;
-      border: 2px solid #3a5f8a;
-      margin: 8px 12px 0 12px;
-      padding: 0 20px;
-      font-weight: 700;
-      font-size: 18px;
-      color: #ffffff;
-      flex-shrink: 0;
-      box-shadow: inset 0 -2px 0 #3a5f8a;
-    }
-    #labelButtons span {
-      cursor: pointer;
-      padding: 4px 12px;
-      background: transparent;
-      text-shadow: 1px 1px 0 #1f3f5c;
-    }
-    #labelButtons span:active {
-      background: #27ae60;
-      border-radius: 4px;
-    }
-    #divider {
-      color: rgba(255,255,255,0.7);
-      padding: 0 !important;
-    }
-
     #navBar {
       height: 36px;
       background: linear-gradient(180deg, #4a7aa8 0%, #2b4b70 100%);
@@ -262,6 +231,7 @@
       color: #4CAF50;
     }
 
+    /* Physical Keypad Styles - Improved Spacing */
     #keypadWrapper {
       width: 100%;
       background: linear-gradient(180deg, #2b4b70 0%, #1f3f5c 100%);
@@ -269,100 +239,136 @@
       margin-top: auto;
       flex-shrink: 0;
       z-index: 2;
-      padding-bottom: 4px;
+      padding: 8px 8px 12px 8px;
     }
 
-    #keyTabs {
+    .keyboard-mode {
+      display: none;
+    }
+
+    .keyboard-mode.active {
+      display: block;
+    }
+
+    .keyboard-row {
       display: flex;
-      gap: 8px;
-      padding: 8px 12px 4px 12px;
-    }
-    #keyTabs button {
-      flex: 1;
-      background: #3a5f8a;
-      border: 2px solid #1f3f5c;
-      border-radius: 30px;
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 700;
-      padding: 8px 0;
-      cursor: pointer;
-    }
-    #keyTabs button.active {
-      background: #4CAF50;
-      border-color: #145018;
-    }
-    #keyTabs button:active {
-      background: #66BB6A;
+      gap: 6px;
+      margin-bottom: 6px;
+      justify-content: center;
     }
 
-    #numericPad {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      padding: 6px 15px 10px 15px;
-    }
-    #numericPad button {
+    .key-btn {
       background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
       border: 1px solid #1f3f5c;
-      border-radius: 6px;
+      border-radius: 8px;
       color: #ffffff;
-      font-size: 22px;
+      font-size: 18px;
       font-weight: 700;
-      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       box-shadow: 0 3px 0 #1f3f5c;
-    }
-    #numericPad button:active {
-      transform: translateY(2px);
-      background: #4CAF50;
-    }
-    #numericPad button.backspace {
-      background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
+      padding: 0;
+      font-family: 'Roboto', 'Segoe UI', sans-serif;
+      transition: all 0.05s ease;
     }
 
-    #qwertyPad, #symbolPad {
-      display: none;
-      padding: 0 8px 12px 8px;
+    .key-btn:active {
+      transform: translateY(2px);
+      background: #4CAF50;
+      box-shadow: 0 1px 0 #1f3f5c;
     }
-    .row {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 4px;
-      justify-content: center;
-    }
-    .row button {
-      flex: 1;
-      max-width: 32px;
-      background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
-      border: 1px solid #1f3f5c;
-      border-radius: 6px;
-      color: #ffffff;
+
+    /* Improved sizing for better spacing */
+    .key-btn.small {
+      width: 48px;
+      height: 48px;
       font-size: 16px;
-      font-weight: 700;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 2px 0 #1f3f5c;
-    }
-    .row button:active {
-      transform: translateY(2px);
-      background: #4CAF50;
-    }
-    .row button.special {
-      background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
-      max-width: 50px;
-    }
-    .row button.space { 
-      flex: 3;
-      max-width: 200px;
     }
 
+    .key-btn.medium {
+      width: 52px;
+      height: 48px;
+    }
+
+    .key-btn.large {
+      width: 110px;
+      height: 48px;
+    }
+
+    .key-btn.wide {
+      width: 80px;
+      height: 48px;
+    }
+
+    .key-btn.extra-wide {
+      width: 160px;
+      height: 48px;
+    }
+
+    .key-btn.dark {
+      background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
+    }
+
+    .key-btn.blue {
+      background: linear-gradient(180deg, #4a7aa8 0%, #2e5a88 100%);
+    }
+
+    .key-btn.green {
+      background: linear-gradient(180deg, #4CAF50 0%, #2b6e2f 100%);
+    }
+
+    .key-btn.qwerty {
+      width: 32px;
+      height: 44px;
+      font-size: 16px;
+    }
+
+    .key-btn.qwerty-wide {
+      width: 70px;
+      height: 44px;
+    }
+
+    .key-btn.qwerty-extra-wide {
+      width: 140px;
+      height: 44px;
+    }
+
+    .key-btn.arrow-btn {
+      font-size: 20px;
+    }
+
+    .key-btn.double-row {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+      font-size: 14px;
+      padding: 4px 0;
+      height: 48px;
+    }
+
+    /* Special styling for the ABC/SYM button */
+    .abc-sym-btn {
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    /* Space bar styling */
+    .space-bar {
+      width: 180px;
+      height: 44px;
+    }
+
+    /* Numeric keypad specific */
+    .numeric-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      justify-content: center;
+    }
+
+    /* Status screen styles */
     #statusScreen {
       display: none;
       flex-direction: column;
@@ -440,17 +446,9 @@
 
     #labelBox::-webkit-scrollbar { width: 4px; }
     #labelBox::-webkit-scrollbar-thumb { background: #1f3f5c; }
-    
-    #barcodeType {
-      font-size: 10px;
-      color: #ffcc00;
-      margin-left: 5px;
-      font-weight: normal;
-    }
   </style>
 
-  <!-- ZXing Library for QR code scanning only -->
-  <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
   <script>
     (function() {
@@ -461,7 +459,6 @@
       let currentScans = [];
       let currentLocation = null;
       let gpsWatchId = null;
-      let codeReader = null;
       
       // Google Apps Script Web App URL - REPLACE WITH YOUR ACTUAL URL
       const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5wGyJmz_HbuTovfLigGirPwh08qkRyUdecQuZgKeKnOQNFLSgVc5xSTE2HtCf2bE/exec';
@@ -469,11 +466,6 @@
       const beep = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=");
       beep.preload = 'auto';
       function playBeep() { beep.currentTime = 0; beep.play().catch(e => {}); }
-
-      // QR Code only - simplified type name
-      function getBarcodeTypeName(format) {
-        return 'QR Code'; // Always return QR Code since we only scan QR codes
-      }
 
       // Initialize GPS
       function initGPS() {
@@ -522,35 +514,35 @@
         }
       }
 
-      // Calculate ETA based on status
-      function calculateETA(status) {
-        const now = new Date();
-        let eta = new Date(now);
+      // Calculate ETA based on status from the current timestamp
+      function calculateETA(status, scanTimestamp) {
+        const scanDate = new Date(scanTimestamp);
+        let eta = new Date(scanDate);
         
         switch(status) {
           case 'Data Received':
-            eta.setDate(now.getDate() + 7);
+            eta.setDate(scanDate.getDate() + 7);
             break;
           case 'Picked Up':
-            eta.setDate(now.getDate() - 1);
+            eta.setDate(scanDate.getDate() - 1);
             break;
           case 'Depart Post Office':
-            eta.setDate(now.getDate() - 2);
+            eta.setDate(scanDate.getDate() - 2);
             break;
           case 'Arrival Scan':
-            eta.setHours(now.getHours() - 12); // -0.5 days
+            eta.setHours(scanDate.getHours() - 12);
             break;
           case 'Local Scan':
-            eta.setHours(now.getHours() - 36); // -1.5 days
+            eta.setHours(scanDate.getHours() - 36);
             break;
           case 'Out For Delivery':
-            eta.setDate(now.getDate() - 2);
+            eta.setDate(scanDate.getDate() - 2);
             break;
           case 'Delivered':
-            eta = now; // 0 days
+            eta = scanDate;
             break;
           default:
-            eta.setDate(now.getDate() + 7);
+            eta.setDate(scanDate.getDate() + 7);
         }
         
         return eta;
@@ -584,10 +576,7 @@
 
       function stopCamera() {
         if (animationFrame) cancelAnimationFrame(animationFrame);
-        if (stream) { 
-          stream.getTracks().forEach(t => t.stop()); 
-          stream = null;
-        }
+        if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
       }
 
       async function startScan() {
@@ -599,30 +588,10 @@
         laser.style.display = 'block';
 
         try {
-          stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-              facingMode: 'environment',
-              width: { ideal: 640 },
-              height: { ideal: 480 }
-            } 
-          });
-          
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
           const video = document.getElementById('preview');
           video.srcObject = stream;
           await video.play();
-
-          // Initialize ZXing reader for QR codes only
-          const hints = new Map();
-          // Set to ONLY scan QR codes
-          const possibleFormats = [
-            ZXing.BarcodeFormat.QR_CODE
-          ];
-          
-          hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, possibleFormats);
-          hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-          
-          codeReader = new ZXing.MultiFormatReader();
-          codeReader.setHints(hints);
 
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
@@ -632,51 +601,24 @@
               animationFrame = requestAnimationFrame(tick);
               return;
             }
-            
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            try {
-              // Convert canvas to luminance source for ZXing
-              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-              
-              const luminanceSource = new ZXing.RGBLuminanceSource(
-                imageData.data, 
-                canvas.width, 
-                canvas.height
-              );
-              
-              const binaryBitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(luminanceSource));
-              
-              // Try to decode - will only find QR codes
-              const result = codeReader.decode(binaryBitmap);
-              
-              if (result) {
-                // Check if it's actually a QR code (should be, but double-check)
-                const format = result.getBarcodeFormat().toString();
-                if (format === 'QR_CODE') {
-                  onBarcodeDecoded(result.getText(), 'QR Code');
-                  return;
-                }
-              }
-            } catch (e) {
-              // No QR code found, continue scanning
-            }
-            
+            const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const qr = jsQR(img.data, canvas.width, canvas.height);
+            if (qr) { onBarcodeDecoded(qr.data); return; }
             animationFrame = requestAnimationFrame(tick);
           }
           tick();
         } catch (err) {
-          console.error('Camera error:', err);
           scanning = false;
           frame.style.display = 'none';
           laser.style.display = 'none';
-          alert('Camera access denied or not supported');
+          alert('Camera access denied');
         }
       }
 
-      function onBarcodeDecoded(code, barcodeType) {
+      function onBarcodeDecoded(code) {
         scanning = false;
         stopCamera();
         document.getElementById('scanFrame').style.display = 'none';
@@ -687,7 +629,6 @@
         currentScans.push({ 
           number: scanCount, 
           code, 
-          barcodeType,
           timestamp: new Date().toISOString(),
           location: currentLocation 
         });
@@ -695,9 +636,7 @@
         const box = document.getElementById('labelBox');
         const span = document.createElement('span');
         span.className = 'scan-entry';
-        span.innerHTML = scanCount + '  ' + code + 
-          (currentLocation ? ' 📍' : '') + 
-          '<span id="barcodeType"> [QR Code]</span>';
+        span.innerText = scanCount + '  ' + code;
         box.appendChild(span);
         box.scrollTop = box.scrollHeight;
       }
@@ -710,7 +649,7 @@
 
       function goToStatus() {
         if (currentScans.length === 0) {
-          alert('Please scan a QR code first');
+          alert('Please scan a package first');
           return;
         }
         document.getElementById('labelBlock').style.display = 'none';
@@ -723,7 +662,7 @@
         document.getElementById('statusScreen').style.display = 'none';
         document.getElementById('labelBlock').style.display = 'flex';
         document.getElementById('scanButton').style.display = 'flex';
-        document.getElementById('leftText').innerText = 'SCAN QR CODE';
+        document.getElementById('leftText').innerText = 'SCAN BARCODE';
       }
 
       async function sendToSheets(status) {
@@ -745,27 +684,25 @@
           }
         }
 
-        // Calculate ETA for each scanned package
-        const now = new Date();
+        // Calculate ETA for each scanned package based on its scan timestamp
         const scannedPackages = currentScans.map((scan) => {
-          const eta = calculateETA(status);
+          const eta = calculateETA(status, scan.timestamp);
           
           return {
             LABEL_ID: scan.code,
-            BARCODE_TYPE: scan.barcodeType,
-            TIME: now.toLocaleTimeString(),
-            DATE: now.toLocaleDateString(),
+            TIME: new Date(scan.timestamp).toLocaleTimeString(),
+            DATE: new Date(scan.timestamp).toLocaleDateString(),
             STATUS: status,
             LOCATION: currentLocation ? `${currentLocation.lat},${currentLocation.lng}` : 'GPS Unavailable',
             ETA: formatDate(eta),
-            TIMESTAMP: now.toISOString()
+            TIMESTAMP: scan.timestamp
           };
         });
 
         const data = { 
           scans: scannedPackages, 
           status, 
-          timestamp: now.toISOString(),
+          timestamp: new Date().toISOString(),
           location: currentLocation,
           batch_id: Date.now().toString()
         };
@@ -795,12 +732,12 @@
         
         // Show ETA in popup
         const etaInfo = scannedPackages.map(pkg => 
-          `Package: ${pkg.LABEL_ID.substring(0, 8)}... [QR Code] ETA: ${pkg.ETA}`
+          `Package: ${pkg.LABEL_ID.substring(0, 8)}... ETA: ${pkg.ETA}`
         ).join('<br>');
         
         document.getElementById('popupStatus').innerText = status;
         document.getElementById('popupScanCount').innerHTML = `
-          ${scanCount} QR code(s) recorded<br>
+          ${scanCount} package(s) recorded<br>
           <div class="eta-info">${etaInfo}</div>
         `;
         document.getElementById('successPopup').style.display = 'flex';
@@ -812,55 +749,94 @@
         }, 4000);
       }
 
-      function showNumeric() {
-        document.getElementById('numericPad').style.display = 'grid';
-        document.getElementById('qwertyPad').style.display = 'none';
-        document.getElementById('symbolPad').style.display = 'none';
-        document.getElementById('tabNumeric').classList.add('active');
-        document.getElementById('tabQwerty').classList.remove('active');
-        document.getElementById('tabSymbol').classList.remove('active');
+      // Keyboard mode switching
+      function showNumericKeyboard() {
+        document.getElementById('numericKeyboard').classList.add('active');
+        document.getElementById('qwertyKeyboard').classList.remove('active');
+        document.getElementById('symbolsKeyboard').classList.remove('active');
       }
 
-      function showQwerty() {
-        document.getElementById('numericPad').style.display = 'none';
-        document.getElementById('qwertyPad').style.display = 'block';
-        document.getElementById('symbolPad').style.display = 'none';
-        document.getElementById('tabQwerty').classList.add('active');
-        document.getElementById('tabNumeric').classList.remove('active');
-        document.getElementById('tabSymbol').classList.remove('active');
+      function showQwertyKeyboard() {
+        document.getElementById('numericKeyboard').classList.remove('active');
+        document.getElementById('qwertyKeyboard').classList.add('active');
+        document.getElementById('symbolsKeyboard').classList.remove('active');
       }
 
-      function showSymbol() {
-        document.getElementById('numericPad').style.display = 'none';
-        document.getElementById('qwertyPad').style.display = 'none';
-        document.getElementById('symbolPad').style.display = 'block';
-        document.getElementById('tabSymbol').classList.add('active');
-        document.getElementById('tabQwerty').classList.remove('active');
-        document.getElementById('tabNumeric').classList.remove('active');
+      function showSymbolsKeyboard() {
+        document.getElementById('numericKeyboard').classList.remove('active');
+        document.getElementById('qwertyKeyboard').classList.remove('active');
+        document.getElementById('symbolsKeyboard').classList.add('active');
       }
 
-      function typeChar(c) {
+      // Keyboard input handling
+      function handleKeyPress(key) {
         const box = document.getElementById('labelBox');
-        box.innerHTML += c;
+        
+        switch(key) {
+          case 'esc':
+            clearScans();
+            break;
+          case 'enter':
+            goToStatus();
+            break;
+          case 'backspace':
+            if (box.lastChild?.nodeType === Node.TEXT_NODE) {
+              let txt = box.lastChild.textContent;
+              box.lastChild.textContent = txt.slice(0, -1);
+              if (box.lastChild.textContent === '') box.removeChild(box.lastChild);
+            } else if (box.lastChild?.tagName === 'SPAN') {
+              // Don't remove scan entries with backspace
+              return;
+            } else {
+              box.innerHTML = box.innerHTML.slice(0, -1);
+            }
+            break;
+          case 'abcSym':
+            showQwertyKeyboard();
+            break;
+          case '123':
+            showNumericKeyboard();
+            break;
+          case 'sym':
+            showSymbolsKeyboard();
+            break;
+          case 'abc':
+            showQwertyKeyboard();
+            break;
+          case 'space':
+            box.innerHTML += ' ';
+            break;
+          case 'arrowLeft':
+          case 'arrowRight':
+          case 'arrowUp':
+          case 'arrowDown':
+            // Arrow keys - could be used for navigation if needed
+            console.log('Arrow key pressed:', key);
+            break;
+          default:
+            // Regular character input
+            box.innerHTML += key;
+            break;
+        }
         box.scrollTop = box.scrollHeight;
       }
 
-      function backspace() {
-        const box = document.getElementById('labelBox');
-        if (box.lastChild?.nodeType === Node.TEXT_NODE) {
-          let txt = box.lastChild.textContent;
-          box.lastChild.textContent = txt.slice(0, -1);
-          if (box.lastChild.textContent === '') box.removeChild(box.lastChild);
-        } else {
-          box.innerHTML = box.innerHTML.slice(0, -1);
-        }
+      // Initialize keyboard event listeners
+      function initKeyboard() {
+        document.querySelectorAll('.key-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const key = btn.dataset.key;
+            if (key) handleKeyPress(key);
+          });
+        });
       }
 
       // Initialize on load
       window.addEventListener('load', () => {
         initGPS();
-        showNumeric();
-        document.getElementById('leftText').innerText = 'SCAN QR CODE';
+        showNumericKeyboard();
+        initKeyboard();
       });
 
       // Clean up on unload
@@ -877,18 +853,17 @@
       window.goToStatus = goToStatus;
       window.chooseStatus = chooseStatus;
       window.goBackToScan = goBackToScan;
-      window.showNumeric = showNumeric;
-      window.showQwerty = showQwerty;
-      window.showSymbol = showSymbol;
-      window.typeChar = typeChar;
-      window.backspace = backspace;
+      window.handleKeyPress = handleKeyPress;
+      window.showNumericKeyboard = showNumericKeyboard;
+      window.showQwertyKeyboard = showQwertyKeyboard;
+      window.showSymbolsKeyboard = showSymbolsKeyboard;
     })();
   </script>
 </head>
 <body>
   <div id="phone">
     <div id="header">
-      <div id="leftText">SCAN QR CODE</div>
+      <div id="leftText">SCAN BARCODE</div>
       <div id="rightArea">
         <span id="gpsIndicator">🌐</span>
         <span>📶</span>
@@ -899,7 +874,7 @@
     <div id="scanButton" onclick="startScan()">
       <div class="scan-button">
         <div class="icon"></div>
-        <div>SCAN QR CODE</div>
+        <div>SCAN</div>
       </div>
     </div>
 
@@ -933,14 +908,8 @@
     </div>
 
     <div id="labelBlock">
-      <div id="labelTitle"># QR CODE DATA</div>
+      <div id="labelTitle"># LABEL ID</div>
       <div id="labelBox"></div>
-
-      <div id="labelButtons">
-        <span onclick="clearScans()">ESC</span>
-        <span id="divider">|</span>
-        <span onclick="goToStatus()">ENTER</span>
-      </div>
 
       <div id="navBar">
         <button>◄</button>
@@ -949,38 +918,162 @@
       </div>
 
       <div id="keypadWrapper">
-        <div id="keyTabs">
-          <button id="tabQwerty" onclick="showQwerty()">ABC</button>
-          <button id="tabNumeric" onclick="showNumeric()" class="active">123</button>
-          <button id="tabSymbol" onclick="showSymbol()">SYM</button>
-        </div>
-
-        <div id="numericPad">
-          <button onclick="typeChar('1')">1</button><button onclick="typeChar('2')">2</button><button onclick="typeChar('3')">3</button>
-          <button onclick="typeChar('4')">4</button><button onclick="typeChar('5')">5</button><button onclick="typeChar('6')">6</button>
-          <button onclick="typeChar('7')">7</button><button onclick="typeChar('8')">8</button><button onclick="typeChar('9')">9</button>
-          <button onclick="typeChar('.')">.</button><button onclick="typeChar('0')">0</button>
-          <button class="backspace" onclick="backspace()">⌫</button>
-        </div>
-
-        <div id="qwertyPad">
-          <div class="row"><button onclick="typeChar('q')">q</button><button onclick="typeChar('w')">w</button><button onclick="typeChar('e')">e</button><button onclick="typeChar('r')">r</button><button onclick="typeChar('t')">t</button><button onclick="typeChar('y')">y</button><button onclick="typeChar('u')">u</button><button onclick="typeChar('i')">i</button><button onclick="typeChar('o')">o</button><button onclick="typeChar('p')">p</button></div>
-          <div class="row"><button onclick="typeChar('a')">a</button><button onclick="typeChar('s')">s</button><button onclick="typeChar('d')">d</button><button onclick="typeChar('f')">f</button><button onclick="typeChar('g')">g</button><button onclick="typeChar('h')">h</button><button onclick="typeChar('j')">j</button><button onclick="typeChar('k')">k</button><button onclick="typeChar('l')">l</button></div>
-          <div class="row"><button class="special" onclick="typeChar('z')">z</button><button class="special" onclick="typeChar('x')">x</button><button class="special" onclick="typeChar('c')">c</button><button class="special" onclick="typeChar('v')">v</button><button class="special" onclick="typeChar('b')">b</button><button class="special" onclick="typeChar('n')">n</button><button class="special" onclick="typeChar('m')">m</button><button class="special" onclick="backspace()">⌫</button></div>
-          <div class="row"><button class="special" onclick="showNumeric()">123</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
-        </div>
-
-        <div id="symbolPad">
-          <div class="row"><button onclick="typeChar('@')">@</button><button onclick="typeChar('#')">#</button><button onclick="typeChar('$')">$</button><button onclick="typeChar('%')">%</button><button onclick="typeChar('&')">&</button><button onclick="typeChar('*')">*</button><button onclick="typeChar('(')">(</button><button onclick="typeChar(')')">)</button></div>
-          <div class="row"><button onclick="typeChar('!')">!</button><button onclick="typeChar('?')">?</button><button onclick="typeChar('/')">/</button><button onclick="typeChar(':')">:</button><button onclick="typeChar(';')">;</button><button onclick="typeChar('"')">"</button><button onclick="typeChar("'")">'</button><button onclick="typeChar(',')">,</button></div>
-          <div class="row"><button onclick="typeChar('-')">-</button><button onclick="typeChar('+')">+</button><button onclick="typeChar('=')">=</button><button onclick="typeChar('<')">&lt;</button><button onclick="typeChar('>')">&gt;</button><button onclick="typeChar('[')">[</button><button onclick="typeChar(']')">]</button><button class="special" onclick="backspace()">⌫</button></div>
-          <div class="row"><button class="special" onclick="showQwerty()">ABC</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
+        <!-- Physical Keypad - Improved Spacing -->
+        <div class="keypad">
+            <!-- Numeric Keyboard (Default) - Wider buttons -->
+            <div class="keyboard-mode active" id="numericKeyboard">
+                <!-- Row 1: Arrow Left, 1, 2, 3, Arrow Up -->
+                <div class="keyboard-row">
+                    <button class="key-btn dark small arrow-btn" data-key="arrowLeft">←</button>
+                    <button class="key-btn medium" data-key="1">1</button>
+                    <button class="key-btn medium" data-key="2">2</button>
+                    <button class="key-btn medium" data-key="3">3</button>
+                    <button class="key-btn dark small arrow-btn" data-key="arrowUp">↑</button>
+                </div>
+                
+                <!-- Row 2: Arrow Right, 4, 5, 6, Arrow Down -->
+                <div class="keyboard-row">
+                    <button class="key-btn dark small arrow-btn" data-key="arrowRight">→</button>
+                    <button class="key-btn medium" data-key="4">4</button>
+                    <button class="key-btn medium" data-key="5">5</button>
+                    <button class="key-btn medium" data-key="6">6</button>
+                    <button class="key-btn dark small arrow-btn" data-key="arrowDown">↓</button>
+                </div>
+                
+                <!-- Row 3: ESC, 7, 8, 9, Backspace - ESC and Backspace wider -->
+                <div class="keyboard-row">
+                    <button class="key-btn dark wide" data-key="esc">ESC</button>
+                    <button class="key-btn medium" data-key="7">7</button>
+                    <button class="key-btn medium" data-key="8">8</button>
+                    <button class="key-btn medium" data-key="9">9</button>
+                    <button class="key-btn blue wide" data-key="backspace">⌫</button>
+                </div>
+                
+                <!-- Row 4: ABC SYM, -, 0, ., ENT - More spacious -->
+                <div class="keyboard-row">
+                    <button class="key-btn dark wide double-row abc-sym-btn" data-key="abcSym">
+                        <span>ABC</span>
+                        <span>SYM</span>
+                    </button>
+                    <button class="key-btn medium" data-key="-">-</button>
+                    <button class="key-btn medium" data-key="0">0</button>
+                    <button class="key-btn medium" data-key=".">.</button>
+                    <button class="key-btn green wide" data-key="enter">ENT↵</button>
+                </div>
+            </div>
+            
+            <!-- QWERTY Keyboard - More spacious layout -->
+            <div class="keyboard-mode" id="qwertyKeyboard">
+                <!-- QWERTY Row 1 -->
+                <div class="keyboard-row">
+                    <button class="key-btn qwerty" data-key="Q">Q</button>
+                    <button class="key-btn qwerty" data-key="W">W</button>
+                    <button class="key-btn qwerty" data-key="E">E</button>
+                    <button class="key-btn qwerty" data-key="R">R</button>
+                    <button class="key-btn qwerty" data-key="T">T</button>
+                    <button class="key-btn qwerty" data-key="Y">Y</button>
+                    <button class="key-btn qwerty" data-key="U">U</button>
+                    <button class="key-btn qwerty" data-key="I">I</button>
+                    <button class="key-btn qwerty" data-key="O">O</button>
+                    <button class="key-btn qwerty" data-key="P">P</button>
+                </div>
+                
+                <!-- QWERTY Row 2 -->
+                <div class="keyboard-row">
+                    <button class="key-btn qwerty" data-key="A">A</button>
+                    <button class="key-btn qwerty" data-key="S">S</button>
+                    <button class="key-btn qwerty" data-key="D">D</button>
+                    <button class="key-btn qwerty" data-key="F">F</button>
+                    <button class="key-btn qwerty" data-key="G">G</button>
+                    <button class="key-btn qwerty" data-key="H">H</button>
+                    <button class="key-btn qwerty" data-key="J">J</button>
+                    <button class="key-btn qwerty" data-key="K">K</button>
+                    <button class="key-btn qwerty" data-key="L">L</button>
+                </div>
+                
+                <!-- QWERTY Row 3 - ESC and Backspace wider -->
+                <div class="keyboard-row">
+                    <button class="key-btn dark qwerty-wide" data-key="esc">ESC</button>
+                    <button class="key-btn qwerty" data-key="Z">Z</button>
+                    <button class="key-btn qwerty" data-key="X">X</button>
+                    <button class="key-btn qwerty" data-key="C">C</button>
+                    <button class="key-btn qwerty" data-key="V">V</button>
+                    <button class="key-btn qwerty" data-key="B">B</button>
+                    <button class="key-btn qwerty" data-key="N">N</button>
+                    <button class="key-btn qwerty" data-key="M">M</button>
+                    <button class="key-btn blue qwerty-wide" data-key="backspace">⌫</button>
+                </div>
+                
+                <!-- QWERTY Row 4 - SPACE bar extra wide -->
+                <div class="keyboard-row">
+                    <button class="key-btn dark qwerty-wide" data-key="123">123</button>
+                    <button class="key-btn dark qwerty-wide" data-key="sym">SYM</button>
+                    <button class="key-btn qwerty-extra-wide" data-key="space">SPACE</button>
+                    <button class="key-btn green qwerty-wide" data-key="enter">ENT↵</button>
+                </div>
+            </div>
+            
+            <!-- Symbols Keyboard - More spacious -->
+            <div class="keyboard-mode" id="symbolsKeyboard">
+                <!-- Symbols Row 1 -->
+                <div class="keyboard-row">
+                    <button class="key-btn qwerty" data-key="!">!</button>
+                    <button class="key-btn qwerty" data-key="@">@</button>
+                    <button class="key-btn qwerty" data-key="#">#</button>
+                    <button class="key-btn qwerty" data-key="$">$</button>
+                    <button class="key-btn qwerty" data-key="%">%</button>
+                    <button class="key-btn qwerty" data-key="^">^</button>
+                    <button class="key-btn qwerty" data-key="&">&</button>
+                    <button class="key-btn qwerty" data-key="*">*</button>
+                    <button class="key-btn qwerty" data-key="(">(</button>
+                    <button class="key-btn qwerty" data-key=")">)</button>
+                </div>
+                
+                <!-- Symbols Row 2 -->
+                <div class="keyboard-row">
+                    <button class="key-btn qwerty" data-key="_">_</button>
+                    <button class="key-btn qwerty" data-key="+">+</button>
+                    <button class="key-btn qwerty" data-key="{">{</button>
+                    <button class="key-btn qwerty" data-key="}">}</button>
+                    <button class="key-btn qwerty" data-key="|">|</button>
+                    <button class="key-btn qwerty" data-key=":">:</button>
+                    <button class="key-btn qwerty" data-key='"'>"</button>
+                    <button class="key-btn qwerty" data-key="<"><</button>
+                    <button class="key-btn qwerty" data-key=">">></button>
+                </div>
+                
+                <!-- Symbols Row 3 - ESC and Backspace wider -->
+                <div class="keyboard-row">
+                    <button class="key-btn dark qwerty-wide" data-key="esc">ESC</button>
+                    <button class="key-btn qwerty" data-key="~">~</button>
+                    <button class="key-btn qwerty" data-key="`">`</button>
+                    <button class="key-btn qwerty" data-key="-">-</button>
+                    <button class="key-btn qwerty" data-key="=">=</button>
+                    <button class="key-btn qwerty" data-key="[">[</button>
+                    <button class="key-btn qwerty" data-key="]">]</button>
+                    <button class="key-btn qwerty" data-key="\\">\</button>
+                    <button class="key-btn blue qwerty-wide" data-key="backspace">⌫</button>
+                </div>
+                
+                <!-- Symbols Row 4 - Wider mode buttons and space -->
+                <div class="keyboard-row">
+                    <button class="key-btn dark qwerty-wide" data-key="123">123</button>
+                    <button class="key-btn dark qwerty-wide" data-key="abc">ABC</button>
+                    <button class="key-btn qwerty" data-key=";">;</button>
+                    <button class="key-btn qwerty" data-key="'">'</button>
+                    <button class="key-btn qwerty" data-key=",">,</button>
+                    <button class="key-btn qwerty" data-key=".">.</button>
+                    <button class="key-btn qwerty" data-key="/">/</button>
+                    <button class="key-btn qwerty" data-key="?">?</button>
+                    <button class="key-btn green qwerty-wide" data-key="enter">ENT↵</button>
+                </div>
+            </div>
         </div>
       </div>
     </div>
 
     <div id="statusScreen">
-      <div class="statusBtn" onclick="chooseStatus('Data Received')">Data Received (+7 days)</div>
+      <div class="statusBtn" onclick="chooseStatus('Data Received')">Data Received</div>
       <div class="statusBtn" onclick="chooseStatus('Picked Up')">Picked Up (-1 day)</div>
       <div class="statusBtn" onclick="chooseStatus('Depart Post Office')">Depart Post Office (-2 days)</div>
       <div class="statusBtn" onclick="chooseStatus('Arrival Scan')">Arrival Scan (-0.5 days)</div>
@@ -993,7 +1086,7 @@
     <div id="successPopup">
       <div class="popup-content">
         <div class="checkmark">✓</div>
-        <div class="popup-message">QR Code Recorded!</div>
+        <div class="popup-message">Package Recorded!</div>
         <div class="popup-submessage" id="popupStatus"></div>
         <div class="popup-submessage" id="popupScanCount"></div>
       </div>
