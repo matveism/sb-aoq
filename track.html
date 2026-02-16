@@ -332,6 +332,13 @@ body {
 .disconnected {
   color: #ff0000;
 }
+
+/* LOCATION CACHE INDICATOR */
+.location-cached {
+  font-size: 10px;
+  color: #008000;
+  margin-left: 4px;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -444,6 +451,11 @@ body {
 const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/track';
 
 // ============================================
+// LOCATION CACHE
+// ============================================
+const locationCache = new Map(); // Cache coordinates -> city/state/zip
+
+// ============================================
 // STATE
 // ============================================
 let allScans = [];
@@ -497,6 +509,114 @@ function formatDate(dateStr) {
 }
 
 // ============================================
+// EXTRACT COORDINATES FROM LOCATION STRING
+// ============================================
+function extractCoordinates(locationStr) {
+  if (!locationStr) return null;
+  
+  // Check if it's already a formatted address (contains letters)
+  if (/[a-zA-Z]/.test(locationStr)) {
+    return null; // Already an address, not coordinates
+  }
+  
+  // Check for lat,lng format (numbers with decimals)
+  const coordsMatch = locationStr.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
+  if (coordsMatch) {
+    return {
+      lat: parseFloat(coordsMatch[1]),
+      lng: parseFloat(coordsMatch[2])
+    };
+  }
+  
+  return null;
+}
+
+// ============================================
+// GET CITY/STATE FROM COORDINATES (USING OPENCAGE - FREE)
+// ============================================
+async function getLocationFromCoords(lat, lng) {
+  const cacheKey = `${lat},${lng}`;
+  
+  // Check cache first
+  if (locationCache.has(cacheKey)) {
+    console.log('📍 Using cached location for:', cacheKey);
+    return locationCache.get(cacheKey);
+  }
+  
+  try {
+    console.log('🌍 Getting location for:', lat, lng);
+    
+    // Using BigDataCloud free API (no API key required, 10,000 requests/day)
+    const response = await axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
+    
+    if (response.data) {
+      const city = response.data.city || response.data.locality || response.data.town || 'Unknown';
+      const state = response.data.principalSubdivision || response.data.principalSubdivisionCode?.split('-')[1] || 'XX';
+      const zip = response.data.postcode || '00000';
+      const country = response.data.countryName || '';
+      
+      const locationStr = `${city}, ${state} ${zip}`.trim();
+      
+      // Cache the result
+      locationCache.set(cacheKey, locationStr);
+      
+      console.log('📍 Location found:', locationStr);
+      return locationStr;
+    }
+    
+    return `${lat.toFixed(4)}, ${lng.toFixed(4)}`; // Fallback to coordinates
+    
+  } catch (error) {
+    console.error('Error getting location:', error);
+    
+    // Try OpenStreetMap as fallback (free, no API key)
+    try {
+      const osmResponse = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18`, {
+        headers: {
+          'User-Agent': 'WinCE-Tracker/1.0'
+        }
+      });
+      
+      if (osmResponse.data && osmResponse.data.address) {
+        const addr = osmResponse.data.address;
+        const city = addr.city || addr.town || addr.village || addr.hamlet || 'Unknown';
+        const state = addr.state || addr.state_code || 'XX';
+        const zip = addr.postcode || '00000';
+        
+        const locationStr = `${city}, ${state} ${zip}`.trim();
+        locationCache.set(cacheKey, locationStr);
+        return locationStr;
+      }
+    } catch (osmError) {
+      console.error('OSM fallback also failed:', osmError);
+    }
+    
+    return `${lat.toFixed(4)}, ${lng.toFixed(4)}`; // Ultimate fallback
+  }
+}
+
+// ============================================
+// PROCESS LOCATION FOR A SCAN
+// ============================================
+async function processScanLocation(scan) {
+  if (!scan.location) return '📍 No location';
+  
+  // Check if it's already a city/state format (has letters)
+  if (/[a-zA-Z]/.test(scan.location) && scan.location.includes(',')) {
+    return `📍 ${scan.location}`; // Already formatted
+  }
+  
+  // Try to extract coordinates
+  const coords = extractCoordinates(scan.location);
+  if (coords) {
+    const cityState = await getLocationFromCoords(coords.lat, coords.lng);
+    return `📍 ${cityState}`;
+  }
+  
+  return `📍 ${scan.location}`; // Return as-is if not coordinates
+}
+
+// ============================================
 // FETCH FROM XANO - DIRECT
 // ============================================
 async function fetchFromXano() {
@@ -520,7 +640,7 @@ async function fetchFromXano() {
     }
     
     const data = await response.json();
-    console.log('Data received:', data);
+    console.log('Data received:', data.length, 'records');
     
     allScans = data || [];
     setConnected(true);
@@ -552,7 +672,7 @@ function createDemoData() {
       barcode_type: 'QR Code',
       status: 'Data Received',
       timestamp: new Date(now - 7*24*60*60*1000).toISOString(),
-      location: '40.7128,-74.0060',
+      location: '40.7128,-74.0060', // New York
       scan_number: 1
     },
     {
@@ -560,7 +680,7 @@ function createDemoData() {
       barcode_type: 'QR Code',
       status: 'Picked Up',
       timestamp: new Date(now - 6*24*60*60*1000).toISOString(),
-      location: '40.7128,-74.0060',
+      location: '34.0522,-118.2437', // Los Angeles
       scan_number: 2
     },
     {
@@ -568,7 +688,7 @@ function createDemoData() {
       barcode_type: 'QR Code',
       status: 'Out For Delivery',
       timestamp: new Date(now - 1*24*60*60*1000).toISOString(),
-      location: '40.7128,-74.0060',
+      location: '41.8781,-87.6298', // Chicago
       scan_number: 3
     }
   ];
@@ -577,13 +697,16 @@ function createDemoData() {
 // ============================================
 // DISPLAY PACKAGE
 // ============================================
-function displayPackage(pkg) {
+async function displayPackage(pkg) {
   document.getElementById('pkgId').innerText = pkg.label_id || 'Unknown';
   document.getElementById('pkgStatus').innerText = pkg.status || 'Unknown';
   document.getElementById('pkgType').innerText = pkg.barcode_type || 'QR';
   document.getElementById('pkgDate').innerText = pkg.timestamp ? new Date(pkg.timestamp).toLocaleDateString() : 'Unknown';
   document.getElementById('pkgTime').innerText = pkg.timestamp ? new Date(pkg.timestamp).toLocaleTimeString() : 'Unknown';
-  document.getElementById('pkgLocation').innerText = pkg.location || 'GPS Unavailable';
+  
+  // Process location
+  const locationDisplay = await processScanLocation(pkg);
+  document.getElementById('pkgLocation').innerHTML = locationDisplay;
   
   packageInfo.style.display = 'block';
 }
@@ -591,7 +714,7 @@ function displayPackage(pkg) {
 // ============================================
 // DISPLAY TIMELINE
 // ============================================
-function displayTimeline(scans) {
+async function displayTimeline(scans) {
   if (!scans || scans.length === 0) {
     timeline.innerHTML = '<div style="padding:10px;text-align:center;">No history</div>';
     return;
@@ -603,15 +726,18 @@ function displayTimeline(scans) {
   );
   
   let html = '';
-  sorted.forEach(scan => {
+  
+  // Process locations sequentially to avoid rate limiting
+  for (const scan of sorted) {
+    const locationDisplay = await processScanLocation(scan);
     html += `
       <div class="timeline-item">
         <div class="timeline-time">${formatDate(scan.timestamp)}</div>
         <div class="timeline-status">${scan.status || 'Unknown'}</div>
-        <div class="timeline-location">📍 ${scan.location || 'No location'}</div>
+        <div class="timeline-location">${locationDisplay}</div>
       </div>
     `;
-  });
+  }
   
   timeline.innerHTML = html;
   timelineBox.style.display = 'block';
@@ -620,9 +746,12 @@ function displayTimeline(scans) {
 // ============================================
 // DISPLAY RECENT
 // ============================================
-function displayRecent() {
+async function displayRecent() {
+  setLoading(30, 'Loading recent scans...');
+  
   if (!allScans || allScans.length === 0) {
     recentList.innerHTML = '<div style="padding:10px;">No scans found</div>';
+    setLoading(0, 'Ready');
     return;
   }
   
@@ -632,15 +761,18 @@ function displayRecent() {
   );
   
   let html = '';
-  sorted.slice(0, 15).forEach(scan => {
+  
+  // Process locations sequentially
+  for (const scan of sorted.slice(0, 10)) {
+    const locationDisplay = await processScanLocation(scan);
     html += `
       <div class="timeline-item" style="cursor:pointer;" onclick="trackNumber('${scan.label_id}')">
         <div class="timeline-time">${formatDate(scan.timestamp)}</div>
         <div class="timeline-status">${scan.label_id}</div>
-        <div class="timeline-location">${scan.status} • ${scan.barcode_type}</div>
+        <div class="timeline-location">${scan.status} • ${locationDisplay}</div>
       </div>
     `;
-  });
+  }
   
   recentList.innerHTML = html;
   
@@ -648,6 +780,8 @@ function displayRecent() {
   packageInfo.style.display = 'none';
   timelineBox.style.display = 'none';
   recentBox.style.display = 'block';
+  
+  setLoading(0, 'Ready');
 }
 
 // ============================================
@@ -688,8 +822,8 @@ async function trackPackage() {
     new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
   );
   
-  displayPackage(sorted[0]);
-  displayTimeline(packageScans);
+  await displayPackage(sorted[0]);
+  await displayTimeline(packageScans);
   recentBox.style.display = 'none';
   
   setLoading(100, 'Done');
@@ -717,10 +851,8 @@ window.onload = async function() {
   await fetchFromXano();
   
   // If connected and have data, show recent
-  if (connected && allScans.length > 0) {
-    displayRecent();
-  } else if (allScans.length > 0) {
-    displayRecent();
+  if (allScans.length > 0) {
+    await displayRecent();
   }
 };
 
