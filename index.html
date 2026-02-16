@@ -443,7 +443,8 @@
     #labelBox::-webkit-scrollbar-thumb { background: #1f3f5c; }
   </style>
 
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <!-- ZXing Library for QR code scanning only -->
+  <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
 
   <script>
     (function() {
@@ -454,6 +455,7 @@
       let currentScans = [];
       let currentLocation = null;
       let gpsWatchId = null;
+      let codeReader = null;
       
       // Google Apps Script Web App URL - REPLACE WITH YOUR ACTUAL URL
       const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5wGyJmz_HbuTovfLigGirPwh08qkRyUdecQuZgKeKnOQNFLSgVc5xSTE2HtCf2bE/exec';
@@ -461,6 +463,11 @@
       const beep = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=");
       beep.preload = 'auto';
       function playBeep() { beep.currentTime = 0; beep.play().catch(e => {}); }
+
+      // QR Code only - simplified type name
+      function getBarcodeTypeName(format) {
+        return 'QR Code'; // Always return QR Code since we only scan QR codes
+      }
 
       // Initialize GPS
       function initGPS() {
@@ -509,35 +516,35 @@
         }
       }
 
-      // Calculate ETA based on status from the current timestamp
-      function calculateETA(status, scanTimestamp) {
-        const scanDate = new Date(scanTimestamp);
-        let eta = new Date(scanDate);
+      // Calculate ETA based on status
+      function calculateETA(status) {
+        const now = new Date();
+        let eta = new Date(now);
         
         switch(status) {
           case 'Data Received':
-            eta.setDate(scanDate.getDate() + 7);
+            eta.setDate(now.getDate() + 7);
             break;
           case 'Picked Up':
-            eta.setDate(scanDate.getDate() - 1);
+            eta.setDate(now.getDate() - 1);
             break;
           case 'Depart Post Office':
-            eta.setDate(scanDate.getDate() - 2);
+            eta.setDate(now.getDate() - 2);
             break;
           case 'Arrival Scan':
-            eta.setHours(scanDate.getHours() - 12);
+            eta.setHours(now.getHours() - 12); // -0.5 days
             break;
           case 'Local Scan':
-            eta.setHours(scanDate.getHours() - 36);
+            eta.setHours(now.getHours() - 36); // -1.5 days
             break;
           case 'Out For Delivery':
-            eta.setDate(scanDate.getDate() - 2);
+            eta.setDate(now.getDate() - 2);
             break;
           case 'Delivered':
-            eta = scanDate;
+            eta = now; // 0 days
             break;
           default:
-            eta.setDate(scanDate.getDate() + 7);
+            eta.setDate(now.getDate() + 7);
         }
         
         return eta;
@@ -571,7 +578,10 @@
 
       function stopCamera() {
         if (animationFrame) cancelAnimationFrame(animationFrame);
-        if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+        if (stream) { 
+          stream.getTracks().forEach(t => t.stop()); 
+          stream = null;
+        }
       }
 
       async function startScan() {
@@ -583,10 +593,30 @@
         laser.style.display = 'block';
 
         try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+              facingMode: 'environment',
+              width: { ideal: 640 },
+              height: { ideal: 480 }
+            } 
+          });
+          
           const video = document.getElementById('preview');
           video.srcObject = stream;
           await video.play();
+
+          // Initialize ZXing reader for QR codes only
+          const hints = new Map();
+          // Set to ONLY scan QR codes
+          const possibleFormats = [
+            ZXing.BarcodeFormat.QR_CODE
+          ];
+          
+          hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, possibleFormats);
+          hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+          
+          codeReader = new ZXing.MultiFormatReader();
+          codeReader.setHints(hints);
 
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
@@ -596,24 +626,51 @@
               animationFrame = requestAnimationFrame(tick);
               return;
             }
+            
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const qr = jsQR(img.data, canvas.width, canvas.height);
-            if (qr) { onBarcodeDecoded(qr.data); return; }
+            
+            try {
+              // Convert canvas to luminance source for ZXing
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              
+              const luminanceSource = new ZXing.RGBLuminanceSource(
+                imageData.data, 
+                canvas.width, 
+                canvas.height
+              );
+              
+              const binaryBitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(luminanceSource));
+              
+              // Try to decode - will only find QR codes
+              const result = codeReader.decode(binaryBitmap);
+              
+              if (result) {
+                // Check if it's actually a QR code (should be, but double-check)
+                const format = result.getBarcodeFormat().toString();
+                if (format === 'QR_CODE') {
+                  onBarcodeDecoded(result.getText(), 'QR Code');
+                  return;
+                }
+              }
+            } catch (e) {
+              // No QR code found, continue scanning
+            }
+            
             animationFrame = requestAnimationFrame(tick);
           }
           tick();
         } catch (err) {
+          console.error('Camera error:', err);
           scanning = false;
           frame.style.display = 'none';
           laser.style.display = 'none';
-          alert('Camera access denied');
+          alert('Camera access denied or not supported');
         }
       }
 
-      function onBarcodeDecoded(code) {
+      function onBarcodeDecoded(code, barcodeType) {
         scanning = false;
         stopCamera();
         document.getElementById('scanFrame').style.display = 'none';
@@ -624,6 +681,7 @@
         currentScans.push({ 
           number: scanCount, 
           code, 
+          barcodeType,
           timestamp: new Date().toISOString(),
           location: currentLocation 
         });
@@ -631,7 +689,9 @@
         const box = document.getElementById('labelBox');
         const span = document.createElement('span');
         span.className = 'scan-entry';
-        span.innerText = scanCount + '  ' + code;
+        span.innerHTML = scanCount + '  ' + code + 
+          (currentLocation ? ' 📍' : '') + 
+          '<span id="barcodeType"> [QR Code]</span>';
         box.appendChild(span);
         box.scrollTop = box.scrollHeight;
       }
@@ -644,7 +704,7 @@
 
       function goToStatus() {
         if (currentScans.length === 0) {
-          alert('Please scan a package first');
+          alert('Please scan a QR code first');
           return;
         }
         document.getElementById('labelBlock').style.display = 'none';
@@ -657,7 +717,7 @@
         document.getElementById('statusScreen').style.display = 'none';
         document.getElementById('labelBlock').style.display = 'flex';
         document.getElementById('scanButton').style.display = 'flex';
-        document.getElementById('leftText').innerText = 'SCAN BARCODE';
+        document.getElementById('leftText').innerText = 'SCAN QR CODE';
       }
 
       async function sendToSheets(status) {
@@ -679,25 +739,27 @@
           }
         }
 
-        // Calculate ETA for each scanned package based on its scan timestamp
+        // Calculate ETA for each scanned package
+        const now = new Date();
         const scannedPackages = currentScans.map((scan) => {
-          const eta = calculateETA(status, scan.timestamp);
+          const eta = calculateETA(status);
           
           return {
             LABEL_ID: scan.code,
-            TIME: new Date(scan.timestamp).toLocaleTimeString(),
-            DATE: new Date(scan.timestamp).toLocaleDateString(),
+            BARCODE_TYPE: scan.barcodeType,
+            TIME: now.toLocaleTimeString(),
+            DATE: now.toLocaleDateString(),
             STATUS: status,
             LOCATION: currentLocation ? `${currentLocation.lat},${currentLocation.lng}` : 'GPS Unavailable',
             ETA: formatDate(eta),
-            TIMESTAMP: scan.timestamp
+            TIMESTAMP: now.toISOString()
           };
         });
 
         const data = { 
           scans: scannedPackages, 
           status, 
-          timestamp: new Date().toISOString(),
+          timestamp: now.toISOString(),
           location: currentLocation,
           batch_id: Date.now().toString()
         };
@@ -727,12 +789,12 @@
         
         // Show ETA in popup
         const etaInfo = scannedPackages.map(pkg => 
-          `Package: ${pkg.LABEL_ID.substring(0, 8)}... ETA: ${pkg.ETA}`
+          `Package: ${pkg.LABEL_ID.substring(0, 8)}... [QR Code] ETA: ${pkg.ETA}`
         ).join('<br>');
         
         document.getElementById('popupStatus').innerText = status;
         document.getElementById('popupScanCount').innerHTML = `
-          ${scanCount} package(s) recorded<br>
+          ${scanCount} QR code(s) recorded<br>
           <div class="eta-info">${etaInfo}</div>
         `;
         document.getElementById('successPopup').style.display = 'flex';
@@ -744,94 +806,55 @@
         }, 4000);
       }
 
-      // Keyboard mode switching
-      function showNumericKeyboard() {
-        document.getElementById('numericKeyboard').classList.add('active');
-        document.getElementById('qwertyKeyboard').classList.remove('active');
-        document.getElementById('symbolsKeyboard').classList.remove('active');
+      function showNumeric() {
+        document.getElementById('numericPad').style.display = 'grid';
+        document.getElementById('qwertyPad').style.display = 'none';
+        document.getElementById('symbolPad').style.display = 'none';
+        document.getElementById('tabNumeric').classList.add('active');
+        document.getElementById('tabQwerty').classList.remove('active');
+        document.getElementById('tabSymbol').classList.remove('active');
       }
 
-      function showQwertyKeyboard() {
-        document.getElementById('numericKeyboard').classList.remove('active');
-        document.getElementById('qwertyKeyboard').classList.add('active');
-        document.getElementById('symbolsKeyboard').classList.remove('active');
+      function showQwerty() {
+        document.getElementById('numericPad').style.display = 'none';
+        document.getElementById('qwertyPad').style.display = 'block';
+        document.getElementById('symbolPad').style.display = 'none';
+        document.getElementById('tabQwerty').classList.add('active');
+        document.getElementById('tabNumeric').classList.remove('active');
+        document.getElementById('tabSymbol').classList.remove('active');
       }
 
-      function showSymbolsKeyboard() {
-        document.getElementById('numericKeyboard').classList.remove('active');
-        document.getElementById('qwertyKeyboard').classList.remove('active');
-        document.getElementById('symbolsKeyboard').classList.add('active');
+      function showSymbol() {
+        document.getElementById('numericPad').style.display = 'none';
+        document.getElementById('qwertyPad').style.display = 'none';
+        document.getElementById('symbolPad').style.display = 'block';
+        document.getElementById('tabSymbol').classList.add('active');
+        document.getElementById('tabQwerty').classList.remove('active');
+        document.getElementById('tabNumeric').classList.remove('active');
       }
 
-      // Keyboard input handling
-      function handleKeyPress(key) {
+      function typeChar(c) {
         const box = document.getElementById('labelBox');
-        
-        switch(key) {
-          case 'esc':
-            clearScans();
-            break;
-          case 'enter':
-            goToStatus();
-            break;
-          case 'backspace':
-            if (box.lastChild?.nodeType === Node.TEXT_NODE) {
-              let txt = box.lastChild.textContent;
-              box.lastChild.textContent = txt.slice(0, -1);
-              if (box.lastChild.textContent === '') box.removeChild(box.lastChild);
-            } else if (box.lastChild?.tagName === 'SPAN') {
-              // Don't remove scan entries with backspace
-              return;
-            } else {
-              box.innerHTML = box.innerHTML.slice(0, -1);
-            }
-            break;
-          case 'abcSym':
-            showQwertyKeyboard();
-            break;
-          case '123':
-            showNumericKeyboard();
-            break;
-          case 'sym':
-            showSymbolsKeyboard();
-            break;
-          case 'abc':
-            showQwertyKeyboard();
-            break;
-          case 'space':
-            box.innerHTML += ' ';
-            break;
-          case 'arrowLeft':
-          case 'arrowRight':
-          case 'arrowUp':
-          case 'arrowDown':
-            // Arrow keys - could be used for navigation if needed
-            console.log('Arrow key pressed:', key);
-            break;
-          default:
-            // Regular character input
-            box.innerHTML += key;
-            break;
-        }
+        box.innerHTML += c;
         box.scrollTop = box.scrollHeight;
       }
 
-      // Initialize keyboard event listeners
-      function initKeyboard() {
-        document.querySelectorAll('.key-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const key = btn.dataset.key;
-            if (key) handleKeyPress(key);
-          });
-        });
+      function backspace() {
+        const box = document.getElementById('labelBox');
+        if (box.lastChild?.nodeType === Node.TEXT_NODE) {
+          let txt = box.lastChild.textContent;
+          box.lastChild.textContent = txt.slice(0, -1);
+          if (box.lastChild.textContent === '') box.removeChild(box.lastChild);
+        } else {
+          box.innerHTML = box.innerHTML.slice(0, -1);
+        }
       }
 
       // Initialize on load
       window.addEventListener('load', () => {
         initGPS();
-        showNumericKeyboard();
-        initKeyboard();
+        showNumeric();
+        document.getElementById('leftText').innerText = 'SCAN QR CODE';
       });
 
       // Clean up on unload
@@ -848,10 +871,11 @@
       window.goToStatus = goToStatus;
       window.chooseStatus = chooseStatus;
       window.goBackToScan = goBackToScan;
-      window.handleKeyPress = handleKeyPress;
-      window.showNumericKeyboard = showNumericKeyboard;
-      window.showQwertyKeyboard = showQwertyKeyboard;
-      window.showSymbolsKeyboard = showSymbolsKeyboard;
+      window.showNumeric = showNumeric;
+      window.showQwerty = showQwerty;
+      window.showSymbol = showSymbol;
+      window.typeChar = typeChar;
+      window.backspace = backspace;
     })();
   </script>
 </head>
