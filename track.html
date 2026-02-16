@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MVP Style Navbar Mobile</title>
+<!-- Bootstrap 3 CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+<style>
+body {
+    background: #3C6796;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Header logo styling */
+.navbar-brand {
+    font-size: px;
+    font-weight: bold;
+    color: white !important;
+}
+
+.navbar-brand .x-highlight {
+    background-color: black;
+    color: white;
+    padding: 0 6px;
+    border-radius: 2px;
+    margin: 0 1px;
+}
+
+/* Navbar buttons */
+.navbar-default .navbar-nav>li>a {
+    color: white;
+    font-weight: bold;
+    border: 1px solid white;
+    margin: 1px;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+
+.navbar-default .navbar-nav>li>a:hover {
+    background: rgba(255,255,255,0.2);
+    color: white;
+}
+
+.navbar-default {
+    background-color: #2F537C;
+    border-color: #1E3A5F;
+}
+
+/* Hamburger icon color */
+.navbar-default .navbar-toggle .icon-bar {
+    background-color: white;
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for mobile -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">
+         U E <span class="x-highlight">X</span> S
+      </a>
+    </div>
+
+    <!-- Navbar links -->
+    <div class="collapse navbar-collapse" id="navbar-collapse-1">
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#">TRACK PACKAGE</a></li>
+        <li><a href="#">CALCULATE POSTAGE</a></li>
+        <li><a href="#">SHIP PACKAGE</a></li>
+        <li><a href="#">LOGIN</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Bootstrap 3 JS (required for collapse) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>
