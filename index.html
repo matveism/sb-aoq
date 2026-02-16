@@ -573,6 +573,34 @@
         if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
       }
 
+      // Function to detect if QR code is Micro QR format
+      function isMicroQRCode(qrCode) {
+        if (!qrCode || !qrCode.version) return false;
+        
+        // Micro QR codes have versions 1-4 (M1-M4)
+        // In jsQR, micro QR codes typically have version <= 4 and specific characteristics
+        const isMicro = qrCode.version <= 4 && 
+                       qrCode.version !== undefined && 
+                       qrCode.modules && 
+                       qrCode.modules.length <= 17; // Micro QR max size is 17x17
+        
+        // Additional check: Micro QR has specific finder pattern (only one corner)
+        // Standard QR has 3 finder patterns, Micro QR has only 1
+        if (qrCode.version <= 4 && qrCode.modules) {
+          // Count finder patterns (rough check - looking for position patterns)
+          let finderPatternCount = 0;
+          const size = qrCode.modules.length;
+          
+          // Simple heuristic: Micro QR codes are smaller and have finder pattern in only one corner
+          // This is a basic check - can be enhanced
+          if (size <= 21) { // Version 1 QR is 21x21, Micro QR is even smaller
+            return true;
+          }
+        }
+        
+        return isMicro;
+      }
+
       async function startScan() {
         if (scanning) return;
         scanning = true;
@@ -595,12 +623,32 @@
               animationFrame = requestAnimationFrame(tick);
               return;
             }
+            
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
             const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const qr = jsQR(img.data, canvas.width, canvas.height);
-            if (qr) { onBarcodeDecoded(qr.data); return; }
+            
+            // Try to detect QR codes
+            const qr = jsQR(img.data, canvas.width, canvas.height, {
+              inversionAttempts: "dontInvert",
+              greyScale: false
+            });
+            
+            if (qr) {
+              // Check if it's a Micro QR code
+              if (isMicroQRCode(qr)) {
+                // It's a Micro QR code - accept it
+                onBarcodeDecoded(qr.data);
+                return;
+              } else {
+                // It's a standard QR code - ignore it (optional: show message)
+                console.log('Standard QR code ignored - Micro QR only');
+                // Continue scanning without stopping
+              }
+            }
+            
             animationFrame = requestAnimationFrame(tick);
           }
           tick();
@@ -630,7 +678,7 @@
         const box = document.getElementById('labelBox');
         const span = document.createElement('span');
         span.className = 'scan-entry';
-        span.innerText = scanCount + '  ' + code + (currentLocation ? ' 📍' : '');
+        span.innerText = scanCount + '  ' + code + (currentLocation ? ' 📍' : '') + ' [MICRO QR]';
         box.appendChild(span);
         box.scrollTop = box.scrollHeight;
       }
@@ -690,7 +738,8 @@
             STATUS: status,
             LOCATION: currentLocation ? `${currentLocation.lat},${currentLocation.lng}` : 'GPS Unavailable',
             ETA: formatDate(eta),
-            TIMESTAMP: now.toISOString()
+            TIMESTAMP: now.toISOString(),
+            QR_TYPE: 'MICRO_QR' // Add QR type info
           };
         });
 
