@@ -1,640 +1,131 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>QR Scanner · PRO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Scanner Xano</title>
+<style>
+  body { font-family: Arial; background: #111; color: #fff; margin:0; padding:0; }
+  #scanFrame { display:none; position:relative; width:100%; max-width:400px; margin:auto; }
+  #preview { width:100%; border:2px solid #4CAF50; }
+  #laser { display:none; position:absolute; top:50%; left:0; width:100%; height:2px; background:red; animation: laserMove 1s infinite alternate; }
+  @keyframes laserMove { from {top:20%;} to {top:80%;} }
+  #labelBox { max-height:200px; overflow:auto; margin:10px; border:1px solid #444; padding:5px; }
+  .scan-entry { display:block; margin-bottom:2px; }
+  button { margin:5px; padding:10px 15px; background:#4CAF50; color:#fff; border:none; border-radius:5px; }
+  #statusScreen { display:none; flex-direction:column; align-items:center; justify-content:center; }
+  #successPopup { display:none; position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:#333; padding:20px; border-radius:10px; text-align:center; }
+</style>
+</head>
+<body>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
+<div style="text-align:center; margin:10px;">
+  <span id="gpsIndicator">🌐</span>
+  <span id="timeDisplay"></span>
+</div>
 
-    body {
-      margin: 0;
-      padding: 0;
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: 'Roboto', 'Segoe UI', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif;
-      font-weight: 700;
-    }
+<div id="scanFrame">
+  <video id="preview" autoplay playsinline></video>
+  <div id="laser"></div>
+</div>
 
-    #phone {
-      width: 360px;
-      height: 640px;
-      background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
-      color: #ffffff;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
+<div id="labelBlock">
+  <div id="labelBox"></div>
+  <button id="scanButton" onclick="startScan()">Start Scan</button>
+  <button onclick="goToStatus()">Select Status</button>
+</div>
 
-    #header {
-      width: 100%;
-      height: 38px;
-      background: linear-gradient(180deg, #5180b0 0%, #2e5a88 100%);
-      border-bottom: 2px solid #1f3f5c;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 12px;
-      font-weight: 700;
-      font-size: 16px;
-      z-index: 2;
-      flex-shrink: 0;
-      letter-spacing: 0.3px;
-    }
+<div id="statusScreen">
+  <button onclick="chooseStatus('Picked Up')">Picked Up</button>
+  <button onclick="chooseStatus('Out For Delivery')">Out For Delivery</button>
+  <button onclick="chooseStatus('Delivered')">Delivered</button>
+  <button onclick="goBackToScan()">Back</button>
+</div>
 
-    #leftText { color: #ffffff; }
-    #rightArea { 
-      color: #ffffff;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+<div id="successPopup">
+  <h3>Status: <span id="popupStatus"></span></h3>
+  <div id="popupScanCount"></div>
+</div>
 
-    #gpsIndicator {
-      color: #4CAF50;
-      font-size: 16px;
-    }
-
-    #scanButton {
-      width: calc(100% - 24px);
-      height: 50px;
-      background: linear-gradient(180deg, #4CAF50 0%, #2b6e2f 100%);
-      border: 2px solid #1e5a22;
-      color: #ffffff;
-      font-size: 22px;
-      font-weight: 700;
-      text-align: center;
-      line-height: 48px;
-      margin: 12px auto 8px auto;
-      border-radius: 6px;
-      z-index: 2;
-      box-shadow: 0 4px 0 #145018;
-      cursor: pointer;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      letter-spacing: 0.5px;
-    }
-    #scanButton:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 #145018;
-    }
-
-    #scanFrame {
-      width: 280px;
-      height: 160px;
-      border: 2px solid rgba(255,255,255,0.6);
-      margin: 4px auto 0 auto;
-      position: relative;
-      display: none;
-      z-index: 3;
-      overflow: hidden;
-      flex-shrink: 0;
-      background: rgba(0,0,0,0.4);
-    }
-
-    #preview {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: none;
-      display: block;
-    }
-
-    #laser {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: #ff3333;
-      box-shadow: 0 0 10px #ff0000;
-      animation: laserMove 1.8s linear infinite;
-      display: none;
-      z-index: 5;
-    }
-    @keyframes laserMove {
-      0%   { top: 0; }
-      50%  { top: 158px; }
-      100% { top: 0; }
-    }
-
-    .corner {
-      width: 22px;
-      height: 22px;
-      border: 3px solid #ffcc00;
-      position: absolute;
-      pointer-events: none;
-    }
-    .tl { top: -3px; left: -3px; border-right: none; border-bottom: none; }
-    .tr { top: -3px; right: -3px; border-left: none; border-bottom: none; }
-    .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
-    .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
-
-    #labelBlock {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-height: 0;
-      width: 100%;
-      z-index: 2;
-      margin-top: 4px;
-    }
-
-    #labelTitle {
-      height: 32px;
-      background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
-      border: 1px solid #1f3f5c;
-      display: flex;
-      align-items: center;
-      padding-left: 12px;
-      margin: 0 12px;
-      font-weight: 700;
-      font-size: 14px;
-      color: #ffffff;
-      flex-shrink: 0;
-      letter-spacing: 0.5px;
-    }
-
-    #labelBox {
-      width: calc(100% - 24px);
-      min-height: 80px;
-      max-height: 120px;
-      margin: 0 auto;
-      border: 3px solid #1f3f5c;
-      background: #A6BEEF;
-      padding: 8px 10px;
-      font-size: 16px;
-      font-weight: 700;
-      color: #000000;
-      white-space: pre-line;
-      overflow-y: auto;
-      word-break: break-all;
-      flex-shrink: 0;
-      line-height: 1.5;
-      font-family: 'Roboto', 'Segoe UI', monospace;
-      box-shadow: inset 0 0 0 2px #ffffff;
-    }
-
-    #labelBox span.scan-entry {
-      display: block;
-      border-bottom: 2px solid #2b4b70;
-      background: #c0d4f5;
-      padding: 4px 6px;
-      margin: 4px 0;
-      border-radius: 4px;
-      font-weight: 700;
-      color: #000;
-    }
-    #labelBox span.scan-entry:last-child {
-      border-bottom: none;
-    }
-
-    #labelButtons {
-      height: 42px;
-      background: #7496C4;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-radius: 4px;
-      border: 2px solid #3a5f8a;
-      margin: 8px 12px 0 12px;
-      padding: 0 20px;
-      font-weight: 700;
-      font-size: 18px;
-      color: #ffffff;
-      flex-shrink: 0;
-      box-shadow: inset 0 -2px 0 #3a5f8a;
-    }
-    #labelButtons span {
-      cursor: pointer;
-      padding: 4px 12px;
-      background: transparent;
-      text-shadow: 1px 1px 0 #1f3f5c;
-    }
-    #labelButtons span:active {
-      background: #27ae60;
-      border-radius: 4px;
-    }
-    #divider {
-      color: rgba(255,255,255,0.7);
-      padding: 0 !important;
-    }
-
-    #navBar {
-      height: 36px;
-      background: linear-gradient(180deg, #4a7aa8 0%, #2b4b70 100%);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-radius: 4px;
-      border: 1px solid #1f3f5c;
-      margin: 8px 12px 0 12px;
-      padding: 0 16px;
-      font-weight: 700;
-      font-size: 14px;
-      color: #ffffff;
-      flex-shrink: 0;
-    }
-    #navBar button {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 20px;
-      font-weight: 700;
-      cursor: pointer;
-      padding: 4px 8px;
-    }
-    #navBar button:active {
-      color: #4CAF50;
-    }
-
-    #keypadWrapper {
-      width: 100%;
-      background: linear-gradient(180deg, #2b4b70 0%, #1f3f5c 100%);
-      border-top: 3px solid #ffcc00;
-      margin-top: auto;
-      flex-shrink: 0;
-      z-index: 2;
-      padding-bottom: 4px;
-    }
-
-    #keyTabs {
-      display: flex;
-      gap: 8px;
-      padding: 8px 12px 4px 12px;
-    }
-    #keyTabs button {
-      flex: 1;
-      background: #3a5f8a;
-      border: 2px solid #1f3f5c;
-      border-radius: 30px;
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 700;
-      padding: 8px 0;
-      cursor: pointer;
-    }
-    #keyTabs button.active {
-      background: #4CAF50;
-      border-color: #145018;
-    }
-    #keyTabs button:active {
-      background: #66BB6A;
-    }
-
-    #numericPad {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      padding: 6px 15px 10px 15px;
-    }
-    #numericPad button {
-      background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
-      border: 1px solid #1f3f5c;
-      border-radius: 6px;
-      color: #ffffff;
-      font-size: 22px;
-      font-weight: 700;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 3px 0 #1f3f5c;
-    }
-    #numericPad button:active {
-      transform: translateY(2px);
-      background: #4CAF50;
-    }
-    #numericPad button.backspace {
-      background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
-    }
-
-    #qwertyPad, #symbolPad {
-      display: none;
-      padding: 0 8px 12px 8px;
-    }
-    .row {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 4px;
-      justify-content: center;
-    }
-    .row button {
-      flex: 1;
-      max-width: 32px;
-      background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
-      border: 1px solid #1f3f5c;
-      border-radius: 6px;
-      color: #ffffff;
-      font-size: 16px;
-      font-weight: 700;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 2px 0 #1f3f5c;
-    }
-    .row button:active {
-      transform: translateY(2px);
-      background: #4CAF50;
-    }
-    .row button.special {
-      background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
-      max-width: 50px;
-    }
-    .row button.space { 
-      flex: 3;
-      max-width: 200px;
-    }
-
-    #statusScreen {
-      display: none;
-      flex-direction: column;
-      position: absolute;
-      top: 38px;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(28, 48, 70, 0.98);
-      z-index: 100;
-      padding: 20px 16px;
-      overflow-y: auto;
-      gap: 10px;
-    }
-    .statusBtn {
-      background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
-      border: 2px solid #ffcc00;
-      color: white;
-      font-size: 18px;
-      font-weight: 700;
-      padding: 16px 8px;
-      text-align: center;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .statusBtn:active {
-      background: #4CAF50;
-    }
-    .statusBtn.back {
-      background: linear-gradient(180deg, #3a5f8a 0%, #1f3f5c 100%);
-      border-color: #f1c40f;
-      margin-top: 25px;
-    }
-
-    #successPopup {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.7);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-    .popup-content {
-      background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
-      border: 3px solid #27ae60;
-      border-radius: 20px;
-      padding: 30px 20px;
-      text-align: center;
-      width: 280px;
-      animation: fadePop 0.2s;
-    }
-    .checkmark {
-      width: 70px;
-      height: 70px;
-      background: #27ae60;
-      border-radius: 50%;
-      font-size: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 15px auto;
-      color: white;
-    }
-    .popup-message { font-size: 20px; font-weight: 700; }
-    .popup-submessage { color: #ffcc00; font-size: 15px; margin-top: 5px; }
-    .eta-info { color: #4CAF50; font-size: 14px; margin-top: 10px; border-top: 1px solid #fff; padding-top: 10px; }
-    @keyframes fadePop {
-      0% { opacity: 0; transform: scale(0.7); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-
-    #labelBox::-webkit-scrollbar { width: 4px; }
-    #labelBox::-webkit-scrollbar-thumb { background: #1f3f5c; }
-    
-    #barcodeType {
-      font-size: 10px;
-      color: #ffcc00;
-      margin-left: 5px;
-      font-weight: normal;
-    }
-
-    #errorMessage {
-      color: #ff4444;
-      text-align: center;
-      padding: 10px;
-      font-size: 14px;
-      display: none;
-    }
-  </style>
-
-  <!-- Use jsQR which is more compatible with mobile browsers -->
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
 <script>
 (function() {
-  let stream = null;
-  let scanning = false;
-  let scanCount = 0;
-  let animationFrame = null;
-  let currentScans = [];
-  let currentLocation = null;
-  let gpsWatchId = null;
-
-  // Xano API Endpoint
+  let stream = null, scanning = false, scanCount = 0, animationFrame = null;
+  let currentScans = [], currentLocation = null, gpsWatchId = null;
   const XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
 
-  // ---- BEEP ----
+  // ---- Beep ----
   let audioCtx = null;
   function playBeep() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume().then(() => createBeep());
+    if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if (audioCtx.state==='suspended') audioCtx.resume().then(()=>createBeep());
     else createBeep();
   }
   function createBeep() {
-    const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine'; osc.frequency.value = 880;
+    const now=audioCtx.currentTime, osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+    osc.type='sine'; osc.frequency.value=880;
     gain.gain.setValueAtTime(0.3, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-    osc.connect(gain).connect(audioCtx.destination);
-    osc.start(now); osc.stop(now + 0.15);
+    gain.gain.exponentialRampToValueAtTime(0.01, now+0.15);
+    osc.connect(gain).connect(audioCtx.destination); osc.start(now); osc.stop(now+0.15);
   }
 
   // ---- GPS ----
   function initGPS() {
-    if (!navigator.geolocation) return updateGPS(false);
-    navigator.geolocation.getCurrentPosition(
-      pos => { currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; updateGPS(true); },
-      () => updateGPS(false),
-      { enableHighAccuracy:true, timeout:10000 }
-    );
-    gpsWatchId = navigator.geolocation.watchPosition(
-      pos => { currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; updateGPS(true); },
-      () => updateGPS(false),
-      { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
-    );
+    if(!navigator.geolocation) return updateGPS(false);
+    navigator.geolocation.getCurrentPosition(pos=>{ currentLocation={lat:pos.coords.latitude,lng:pos.coords.longitude}; updateGPS(true); },()=>updateGPS(false),{enableHighAccuracy:true,timeout:10000});
+    gpsWatchId = navigator.geolocation.watchPosition(pos=>{currentLocation={lat:pos.coords.latitude,lng:pos.coords.longitude}; updateGPS(true);},()=>updateGPS(false),{enableHighAccuracy:true,timeout:10000,maximumAge:0});
   }
-  function updateGPS(hasGPS) {
-    const el = document.getElementById('gpsIndicator');
-    if (!el) return;
-    el.innerHTML = hasGPS?'🛰️':'🌐';
-    el.style.color = hasGPS?'#4CAF50':'#ff4444';
-  }
+  function updateGPS(hasGPS){ const el=document.getElementById('gpsIndicator'); if(!el) return; el.innerHTML=hasGPS?'🛰️':'🌐'; el.style.color=hasGPS?'#4CAF50':'#ff4444'; }
 
-  // ---- TIME ----
+  // ---- Time ----
   function updateTime() {
-    const d = new Date();
-    const month = (d.getMonth()+1).toString().padStart(2,'0');
-    const day = d.getDate().toString().padStart(2,'0');
-    const hours = d.getHours(); const minutes = d.getMinutes().toString().padStart(2,'0');
-    const ampm = hours>=12?'PM':'AM';
-    const hour12 = hours%12||12;
-    const str = `${month}/${day} ${hour12}:${minutes} ${ampm}`;
-    const el1 = document.getElementById('timeDisplay'); if(el1) el1.innerText=str;
-    const el2 = document.getElementById('timeDisplay2'); if(el2) el2.innerText=str;
+    const d=new Date(),month=(d.getMonth()+1).toString().padStart(2,'0'),day=d.getDate().toString().padStart(2,'0'),hours=d.getHours(),minutes=d.getMinutes().toString().padStart(2,'0'),ampm=hours>=12?'PM':'AM',hour12=hours%12||12,str=`${month}/${day} ${hour12}:${minutes} ${ampm}`;
+    const el1=document.getElementById('timeDisplay'); if(el1) el1.innerText=str;
   }
-  setInterval(updateTime, 1000);
-  window.addEventListener('load', updateTime);
+  setInterval(updateTime,1000); window.addEventListener('load',updateTime);
 
-  // ---- CAMERA ----
-  function stopCamera() {
-    if (animationFrame) cancelAnimationFrame(animationFrame);
-    animationFrame = null;
-    if (stream) {
-      stream.getTracks().forEach(t => t.stop());
-      stream = null;
-    }
-    scanning = false;
-  }
+  // ---- Camera ----
+  function stopCamera() { if(animationFrame) cancelAnimationFrame(animationFrame); animationFrame=null; if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;} scanning=false; }
 
   async function startScan() {
-    if (scanning) { stopCamera(); return; }
-    scanning = true;
-
-    const frame = document.getElementById('scanFrame');
-    const laser = document.getElementById('laser');
-    frame.style.display = 'block';
-    laser.style.display = 'block';
-
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: 640, height: 480 } });
-      const video = document.getElementById('preview');
-      video.srcObject = stream;
-      await new Promise(resolve => { video.onloadedmetadata = () => video.play().then(resolve); });
-
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-
-      function scanFrame() {
-        if (!scanning || !video.videoWidth) {
-          animationFrame = requestAnimationFrame(scanFrame);
-          return;
-        }
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+    if(scanning){ stopCamera(); return; }
+    scanning=true; document.getElementById('scanFrame').style.display='block'; document.getElementById('laser').style.display='block';
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({ video:{facingMode:'environment',width:640,height:480} });
+      const video=document.getElementById('preview'); video.srcObject=stream; await new Promise(r=>{video.onloadedmetadata=()=>video.play().then(r);});
+      const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
+      function scanFrame(){
+        if(!scanning||!video.videoWidth){ animationFrame=requestAnimationFrame(scanFrame); return; }
+        canvas.width=video.videoWidth; canvas.height=video.videoHeight;
         ctx.drawImage(video,0,0,canvas.width,canvas.height);
-        const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
-        const code = jsQR(imageData.data, canvas.width, canvas.height, { inversionAttempts:"dontInvert" });
-        if (code) { onBarcodeDecoded(code.data, 'QR Code'); return; }
-        animationFrame = requestAnimationFrame(scanFrame);
+        const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+        const code=jsQR(imageData.data,canvas.width,canvas.height,{inversionAttempts:"dontInvert"});
+        if(code){ onBarcodeDecoded(code.data,'QR Code'); return; }
+        animationFrame=requestAnimationFrame(scanFrame);
       }
-      animationFrame = requestAnimationFrame(scanFrame);
-
-    } catch(err) {
-      console.error('Camera error', err);
-      scanning = false;
-      frame.style.display = 'none';
-      laser.style.display = 'none';
-      alert(err.message || 'Camera not supported');
-    }
+      animationFrame=requestAnimationFrame(scanFrame);
+    }catch(err){ console.error(err); scanning=false; document.getElementById('scanFrame').style.display='none'; document.getElementById('laser').style.display='none'; alert(err.message||'Camera not supported'); }
   }
 
-  function onBarcodeDecoded(code, barcodeType) {
-    scanning = false; stopCamera(); playBeep();
-    scanCount++;
-    currentScans.push({ number: scanCount, code, barcodeType, timestamp:new Date().toISOString(), location:currentLocation });
-
-    const box = document.getElementById('labelBox');
-    const span = document.createElement('span');
-    span.className = 'scan-entry';
-    span.innerHTML = `${scanCount} ${code} ${currentLocation?'📍':''} [QR Code]`;
-    box.appendChild(span);
-    box.scrollTop = box.scrollHeight;
+  function onBarcodeDecoded(code,barcodeType){
+    scanning=false; stopCamera(); playBeep(); scanCount++; currentScans.push({number:scanCount,code,barcodeType,timestamp:new Date().toISOString(),location:currentLocation});
+    const box=document.getElementById('labelBox'); const span=document.createElement('span'); span.className='scan-entry'; span.innerHTML=`${scanCount} ${code} ${currentLocation?'📍':''} [QR Code]`; box.appendChild(span); box.scrollTop=box.scrollHeight;
   }
 
-  function clearScans() { scanCount=0; currentScans=[]; document.getElementById('labelBox').innerHTML=''; }
+  function clearScans(){ scanCount=0; currentScans=[]; document.getElementById('labelBox').innerHTML=''; }
 
-  function goToStatus() {
-    if(currentScans.length===0){ alert('Scan first'); return; }
-    document.getElementById('labelBlock').style.display='none';
-    document.getElementById('scanButton').style.display='none';
-    document.getElementById('leftText').innerText='SELECT STATUS';
-    document.getElementById('statusScreen').style.display='flex';
-  }
+  function goToStatus(){ if(currentScans.length===0){ alert('Scan first'); return; } document.getElementById('labelBlock').style.display='none'; document.getElementById('scanButton').style.display='none'; document.getElementById('leftText')?.innerText='SELECT STATUS'; document.getElementById('statusScreen').style.display='flex'; }
 
-  function goBackToScan() {
-    document.getElementById('statusScreen').style.display='none';
-    document.getElementById('labelBlock').style.display='flex';
-    document.getElementById('scanButton').style.display='flex';
-    document.getElementById('leftText').innerText='SCAN QR CODE';
-  }
+  function goBackToScan(){ document.getElementById('statusScreen').style.display='none'; document.getElementById('labelBlock').style.display='flex'; document.getElementById('scanButton').style.display='flex'; document.getElementById('leftText')?.innerText='SCAN QR CODE'; }
 
-  async function sendToXano(status) {
-    const now = new Date();
-    const payload = currentScans.map(scan=>({
-      label_id: scan.code,
-      barcode_type: scan.barcodeType,
-      status: status,
-      timestamp: now.toISOString(),
-      location: currentLocation ? `${currentLocation.lat},${currentLocation.lng}` : 'GPS Unavailable'
-    }));
-
-    try {
-      await Promise.all(payload.map(scan=>{
-        return fetch(XANO_API_URL, {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify(scan)
-        });
-      }));
-      console.log('✅ Sent to Xano', payload);
-    } catch(err){ console.error('Xano error',err); }
-
+  async function sendToXano(status){
+    const now=new Date();
+    const payload=currentScans.map(scan=>({ label_id:scan.code, barcode_type:scan.barcodeType, status, timestamp:now.toISOString(), location:currentLocation?`${currentLocation.lat},${currentLocation.lng}`:'GPS Unavailable'}));
+    try{ await Promise.all(payload.map(scan=>fetch(XANO_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(scan)}))); console.log('✅ Sent to Xano',payload); } catch(err){console.error(err);}
     return payload;
   }
 
-  async function chooseStatus(status) {
+  async function chooseStatus(status){
     const scannedPackages = await sendToXano(status);
     const etaInfo = scannedPackages.map(pkg=>`Package: ${pkg.label_id.substring(0,8)}... ETA: -`).join('<br>');
     document.getElementById('popupStatus').innerText=status;
@@ -643,148 +134,8 @@
     setTimeout(()=>{ document.getElementById('successPopup').style.display='none'; clearScans(); goBackToScan(); },4000);
   }
 
-  // ---- Keyboard Tabs ----
-  function showNumeric(){ document.getElementById('numericPad').style.display='grid'; document.getElementById('qwertyPad').style.display='none'; document.getElementById('symbolPad').style.display='none'; }
-  function showQwerty(){ document.getElementById('numericPad').style.display='none'; document.getElementById('qwertyPad').style.display='block'; document.getElementById('symbolPad').style.display='none'; }
-  function showSymbol(){ document.getElementById('numericPad').style.display='none'; document.getElementById('qwertyPad').style.display='none'; document.getElementById('symbolPad').style.display='block'; }
-  function typeChar(c){ const box=document.getElementById('labelBox'); box.innerHTML+=c; box.scrollTop=box.scrollHeight; }
-  function backspace(){ const box=document.getElementById('labelBox'); box.innerHTML=box.innerHTML.slice(0,-1); }
-
   // ---- Init ----
-  window.addEventListener('load',()=>{ initGPS(); updateTime(); checkCameraSupport(); });
-  function checkCameraSupport(){ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ alert('Camera not supported'); document.getElementById('scanButton').style.opacity='0.5'; document.getElementById('scanButton').style.pointerEvents='none'; } }
-
-  window.addEventListener('beforeunload',()=>{ if(gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId); stopCamera(); });
-  document.addEventListener('visibilitychange',()=>{ if(document.hidden&&scanning) stopCamera(); });
-
-  // ---- Expose ----
-  window.startScan=startScan;
-  window.clearScans=clearScans;
-  window.goToStatus=goToStatus;
-  window.chooseStatus=chooseStatus;
-  window.goBackToScan=goBackToScan;
-  window.showNumeric=showNumeric;
-  window.showQwerty=showQwerty;
-  window.showSymbol=showSymbol;
-  window.typeChar=typeChar;
-  window.backspace=backspace;
+  window.addEventListener('load',()=>{ initGPS(); updateTime(); });
+  window.startScan=startScan; window.clearScans=clearScans; window.goToStatus=goToStatus; window.chooseStatus=chooseStatus; window.goBackToScan=goBackToScan;
 })();
 </script>
-
-</head>
-<body>
-  <div id="phone">
-    <div id="header">
-      <div id="leftText">SCAN QR CODE</div>
-      <div id="rightArea">
-        <span id="gpsIndicator">🌐</span>
-        <span>📶</span>
-        <span id="timeDisplay"></span>
-      </div>
-    </div>
-
-    <div id="scanButton" onclick="startScan()">
-      <div class="scan-button">
-        <div class="icon"></div>
-        <div>SCAN QR CODE</div>
-      </div>
-    </div>
-
-    <style>
-      .scan-button{
-        display:flex;
-        align-items:center;
-        gap:6px;
-        font-family:Arial;
-        font-size:14px;
-      }
-      .icon{
-        width:16px;
-        height:12px;
-        background:
-          repeating-linear-gradient(
-            to right,
-            black,
-            black 2px,
-            white 2px,
-            white 4px
-          );
-      }
-    </style>
-
-    <div id="scanFrame">
-      <video id="preview" playsinline autoplay></video>
-      <div id="laser"></div>
-      <div class="corner tl"></div><div class="corner tr"></div>
-      <div class="corner bl"></div><div class="corner br"></div>
-    </div>
-
-    <div id="labelBlock">
-      <div id="labelTitle"># QR CODE DATA</div>
-      <div id="labelBox"></div>
-
-      <div id="labelButtons">
-        <span onclick="clearScans()">ESC</span>
-        <span id="divider">|</span>
-        <span onclick="goToStatus()">ENTER</span>
-      </div>
-
-      <div id="navBar">
-        <button>◄</button>
-        <span id="timeDisplay2"></span>
-        <button>►</button>
-      </div>
-
-      <div id="keypadWrapper">
-        <div id="keyTabs">
-          <button id="tabQwerty" onclick="showQwerty()">ABC</button>
-          <button id="tabNumeric" onclick="showNumeric()" class="active">123</button>
-          <button id="tabSymbol" onclick="showSymbol()">SYM</button>
-        </div>
-
-        <div id="numericPad">
-          <button onclick="typeChar('1')">1</button><button onclick="typeChar('2')">2</button><button onclick="typeChar('3')">3</button>
-          <button onclick="typeChar('4')">4</button><button onclick="typeChar('5')">5</button><button onclick="typeChar('6')">6</button>
-          <button onclick="typeChar('7')">7</button><button onclick="typeChar('8')">8</button><button onclick="typeChar('9')">9</button>
-          <button onclick="typeChar('.')">.</button><button onclick="typeChar('0')">0</button>
-          <button class="backspace" onclick="backspace()">⌫</button>
-        </div>
-
-        <div id="qwertyPad">
-          <div class="row"><button onclick="typeChar('q')">q</button><button onclick="typeChar('w')">w</button><button onclick="typeChar('e')">e</button><button onclick="typeChar('r')">r</button><button onclick="typeChar('t')">t</button><button onclick="typeChar('y')">y</button><button onclick="typeChar('u')">u</button><button onclick="typeChar('i')">i</button><button onclick="typeChar('o')">o</button><button onclick="typeChar('p')">p</button></div>
-          <div class="row"><button onclick="typeChar('a')">a</button><button onclick="typeChar('s')">s</button><button onclick="typeChar('d')">d</button><button onclick="typeChar('f')">f</button><button onclick="typeChar('g')">g</button><button onclick="typeChar('h')">h</button><button onclick="typeChar('j')">j</button><button onclick="typeChar('k')">k</button><button onclick="typeChar('l')">l</button></div>
-          <div class="row"><button class="special" onclick="typeChar('z')">z</button><button class="special" onclick="typeChar('x')">x</button><button class="special" onclick="typeChar('c')">c</button><button class="special" onclick="typeChar('v')">v</button><button class="special" onclick="typeChar('b')">b</button><button class="special" onclick="typeChar('n')">n</button><button class="special" onclick="typeChar('m')">m</button><button class="special" onclick="backspace()">⌫</button></div>
-          <div class="row"><button class="special" onclick="showNumeric()">123</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
-        </div>
-
-        <div id="symbolPad">
-          <div class="row"><button onclick="typeChar('@')">@</button><button onclick="typeChar('#')">#</button><button onclick="typeChar('$')">$</button><button onclick="typeChar('%')">%</button><button onclick="typeChar('&')">&</button><button onclick="typeChar('*')">*</button><button onclick="typeChar('(')">(</button><button onclick="typeChar(')')">)</button></div>
-          <div class="row"><button onclick="typeChar('!')">!</button><button onclick="typeChar('?')">?</button><button onclick="typeChar('/')">/</button><button onclick="typeChar(':')">:</button><button onclick="typeChar(';')">;</button><button onclick="typeChar('"')">"</button><button onclick="typeChar("'")">'</button><button onclick="typeChar(',')">,</button></div>
-          <div class="row"><button onclick="typeChar('-')">-</button><button onclick="typeChar('+')">+</button><button onclick="typeChar('=')">=</button><button onclick="typeChar('<')">&lt;</button><button onclick="typeChar('>')">&gt;</button><button onclick="typeChar('[')">[</button><button onclick="typeChar(']')">]</button><button class="special" onclick="backspace()">⌫</button></div>
-          <div class="row"><button class="special" onclick="showQwerty()">ABC</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="statusScreen">
-      <div class="statusBtn" onclick="chooseStatus('Data Received')">Data Received (+7 days)</div>
-      <div class="statusBtn" onclick="chooseStatus('Picked Up')">Picked Up (-1 day)</div>
-      <div class="statusBtn" onclick="chooseStatus('Depart Post Office')">Depart Post Office (-2 days)</div>
-      <div class="statusBtn" onclick="chooseStatus('Arrival Scan')">Arrival Scan (-0.5 days)</div>
-      <div class="statusBtn" onclick="chooseStatus('Local Scan')">Local Scan (-1.5 days)</div>
-      <div class="statusBtn" onclick="chooseStatus('Out For Delivery')">Out For Delivery (-2 days)</div>
-      <div class="statusBtn" onclick="chooseStatus('Delivered')">Delivered (0 days)</div>
-      <div class="statusBtn back" onclick="goBackToScan()">BACK TO SCANNER</div>
-    </div>
-
-    <div id="successPopup">
-      <div class="popup-content">
-        <div class="checkmark">✓</div>
-        <div class="popup-message">QR Code Recorded!</div>
-        <div class="popup-submessage" id="popupStatus"></div>
-        <div class="popup-submessage" id="popupScanCount"></div>
-      </div>
-    </div>
-  </div>
-</body>
-</html>
