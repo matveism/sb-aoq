@@ -79,6 +79,18 @@ body { margin:0; padding:0; background:#000; display:flex; justify-content:cente
 (function(){
 let stream=null, scanning=false, scanCount=0, animationFrame=null, currentScans=[], currentLocation=null, gpsWatchId=null;
 let manualInput = ''; // Track manual input separately
+let isSubmitting = false; // Prevent double submissions
+
+// Mock location data (in a real app, you'd use a geocoding service)
+function getCityStateFromCoords(lat, lng) {
+  // This is a mock function - in production, use a geocoding API like Google Maps
+  // For demo purposes, return mock data based on approximate location
+  return {
+    city: 'New York',
+    state: 'NY',
+    zip: '10001'
+  };
+}
 
 // --------- CORRECT XANO ENDPOINT FOR qr_scans TABLE ---------
 const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans'; 
@@ -105,7 +117,7 @@ function createAndPlayBeep(ctx){
   osc.stop(now+0.15);
 }
 
-// GPS
+// GPS - now only used for mock location
 function initGPS(){
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(pos=>{
@@ -224,6 +236,7 @@ function clearScans(){
 }
 
 function goToStatus(){
+  // Remove any existing event listeners to prevent double triggers
   if(currentScans.length===0){
     // If no scans but has manual input, add manual input as a scan
     if(manualInput.trim() !== '') {
@@ -284,10 +297,18 @@ function formatDate(date){
 }
 
 async function submitToXano(status){
+  // Prevent double submissions
+  if(isSubmitting) {
+    console.log('Already submitting, ignoring duplicate click');
+    return;
+  }
+  
   if(currentScans.length===0){
     alert('No scans to submit');
     return;
   }
+  
+  isSubmitting = true;
   
   // Show loading state
   const statusBtn = event?.target;
@@ -296,6 +317,7 @@ async function submitToXano(status){
     originalText = statusBtn.innerText;
     statusBtn.innerText = 'SENDING...';
     statusBtn.style.opacity = '0.7';
+    statusBtn.style.pointerEvents = 'none';
   }
   
   if(!currentLocation){
@@ -304,7 +326,9 @@ async function submitToXano(status){
         navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:5000});
       });
       currentLocation={lat:position.coords.latitude,lng:position.coords.longitude,accuracy:position.coords.accuracy};
-    }catch(error){console.warn('Could not get GPS location:',error);}
+    } catch(error){
+      console.warn('Could not get GPS location:', error);
+    }
   }
 
   const now=new Date();
@@ -317,10 +341,14 @@ async function submitToXano(status){
     const scan = currentScans[i];
     const eta = calculateETA(status);
     
-    // Create location string if GPS is available
-    const locationString = currentLocation ? 
-      `${currentLocation.lat},${currentLocation.lng}` : 
-      'GPS Unavailable';
+    // Get city/state/zip from coordinates (mock data for demo)
+    let locationData = { city: 'Unknown', state: 'XX', zip: '00000' };
+    if(currentLocation) {
+      locationData = getCityStateFromCoords(currentLocation.lat, currentLocation.lng);
+    }
+    
+    // Create location string with city, state, zip only
+    const locationString = `${locationData.city}, ${locationData.state} ${locationData.zip}`;
     
     const xanoRecord = {
       label_id: scan.code,
@@ -328,7 +356,7 @@ async function submitToXano(status){
       time: now.toLocaleTimeString(),
       date: now.toLocaleDateString(),
       status: status,
-      location: locationString,
+      location: locationString, // Now only city, state, zip
       eta: formatDate(eta),
       timestamp: now.toISOString(),
       scan_number: scan.number
@@ -365,6 +393,7 @@ async function submitToXano(status){
   if(statusBtn) {
     statusBtn.innerText = originalText;
     statusBtn.style.opacity = '1';
+    statusBtn.style.pointerEvents = 'auto';
   }
   
   if(successCount > 0){
@@ -374,6 +403,11 @@ async function submitToXano(status){
     // For testing, still show success
     showSuccess(status, currentScans.length, currentScans.length);
   }
+  
+  // Reset submitting flag after a delay
+  setTimeout(() => {
+    isSubmitting = false;
+  }, 3000);
 }
 
 function showSuccess(status, totalScans, sentCount){
@@ -390,6 +424,7 @@ function showSuccess(status, totalScans, sentCount){
     popup.style.display='none';
     clearScans();
     goBackToScan();
+    isSubmitting = false; // Reset flag
   },4000);
 }
 
@@ -534,22 +569,25 @@ document.addEventListener('DOMContentLoaded', function() {
     btn.addEventListener('click', goBackToScan);
   });
   
-  // STATUS BUTTONS
+  // STATUS BUTTONS - Remove onclick attributes and use addEventListener
   document.querySelectorAll('.statusBtn[data-status]').forEach(btn => {
+    // Remove any existing onclick attribute
+    btn.removeAttribute('onclick');
+    
+    // Add click event listener
     btn.addEventListener('click', function(e) {
+      e.stopPropagation(); // Prevent event bubbling
       const status = this.getAttribute('data-status');
       submitToXano(status);
     });
   });
   
-  // Also add onclick attributes as backup
-  document.querySelectorAll('.statusBtn[data-status]').forEach(btn => {
-    const status = btn.getAttribute('data-status');
-    btn.setAttribute('onclick', `submitToXano('${status}')`);
-  });
-  
-  // Add onclick to back button as backup
-  document.querySelector('.statusBtn.back').setAttribute('onclick', 'goBackToScan()');
+  // Add click listener to back button
+  const backBtn = document.querySelector('.statusBtn.back');
+  if(backBtn) {
+    backBtn.removeAttribute('onclick');
+    backBtn.addEventListener('click', goBackToScan);
+  }
   
   console.log('✅ QR Scanner initialized - sending to Xano qr_scans table');
   console.log('📡 Xano URL:', XANO_URL);
