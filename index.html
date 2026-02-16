@@ -74,23 +74,14 @@ body { margin:0; padding:0; background:#000; display:flex; justify-content:cente
 
 <!-- jsQR library -->
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<!-- Add OpenStreetMap Nominatim for reverse geocoding -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 <script>
 (function(){
 let stream=null, scanning=false, scanCount=0, animationFrame=null, currentScans=[], currentLocation=null, gpsWatchId=null;
 let manualInput = ''; // Track manual input separately
 let isSubmitting = false; // Prevent double submissions
-
-// Mock location data (in a real app, you'd use a geocoding service)
-function getCityStateFromCoords(lat, lng) {
-  // This is a mock function - in production, use a geocoding API like Google Maps
-  // For demo purposes, return mock data based on approximate location
-  return {
-    city: 'New York',
-    state: 'NY',
-    zip: '10001'
-  };
-}
 
 // --------- CORRECT XANO ENDPOINT FOR qr_scans TABLE ---------
 const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans'; 
@@ -117,29 +108,160 @@ function createAndPlayBeep(ctx){
   osc.stop(now+0.15);
 }
 
-// GPS - now only used for mock location
-function initGPS(){
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(pos=>{
-      currentLocation={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};
-      updateGPSIndicator(true);
-    },err=>{
-      updateGPSIndicator(false);
-    },{enableHighAccuracy:true,timeout:10000});
+// Function to get city/state from coordinates using OpenStreetMap Nominatim (free, no API key required)
+async function getCityStateFromCoords(lat, lng) {
+  try {
+    console.log(`🌍 Getting location for: ${lat}, ${lng}`);
     
-    gpsWatchId=navigator.geolocation.watchPosition(pos=>{
-      currentLocation={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};
-      updateGPSIndicator(true);
-    },err=>{
-      updateGPSIndicator(false);
-    },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
-  }else{updateGPSIndicator(false);}
+    // Using Nominatim OpenStreetMap API (free, no API key needed)
+    const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+      headers: {
+        'User-Agent': 'QRScanner-App/1.0' // Required by Nominatim
+      }
+    });
+    
+    if (response.data && response.data.address) {
+      const address = response.data.address;
+      
+      // Extract city, state, zip from address
+      const city = address.city || address.town || address.village || address.hamlet || 'Unknown';
+      const state = address.state || address.state_code || 'XX';
+      const zip = address.postcode || '00000';
+      const country = address.country || '';
+      
+      console.log(`📍 Location found: ${city}, ${state} ${zip}, ${country}`);
+      
+      return {
+        city: city,
+        state: state,
+        zip: zip,
+        country: country,
+        display_name: response.data.display_name || `${city}, ${state} ${zip}`
+      };
+    } else {
+      console.warn('No address data found');
+      return {
+        city: 'Unknown',
+        state: 'XX',
+        zip: '00000',
+        country: '',
+        display_name: `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+      };
+    }
+  } catch (error) {
+    console.error('Error getting location:', error);
+    // Return coordinates as fallback
+    return {
+      city: 'Unknown',
+      state: 'XX', 
+      zip: '00000',
+      country: '',
+      display_name: `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+    };
+  }
 }
 
-function updateGPSIndicator(hasGPS){
-  const gps=document.getElementById('gpsIndicator');
-  gps.innerHTML=hasGPS?'🛰️':'🌐';
-  gps.style.color=hasGPS?'#4CAF50':'#ff4444';
+// GPS - Now requests permission and gets real location
+function initGPS(){
+  if(navigator.geolocation){
+    console.log('📡 Requesting GPS permission...');
+    
+    // First request with high accuracy - this will trigger the permission prompt
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        currentLocation = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+          timestamp: new Date().toISOString()
+        };
+        
+        // Get city/state from coordinates
+        const locationData = await getCityStateFromCoords(pos.coords.latitude, pos.coords.longitude);
+        currentLocation.address = locationData;
+        
+        console.log('✅ GPS permission granted!');
+        console.log(`📍 You are in: ${locationData.display_name}`);
+        updateGPSIndicator(true, locationData);
+        
+        // Show a quick popup with location
+        alert(`📍 Location detected: ${locationData.city}, ${locationData.state}`);
+      },
+      (err) => {
+        console.warn('❌ GPS error:', err.message);
+        let errorMsg = '';
+        switch(err.code) {
+          case err.PERMISSION_DENIED:
+            errorMsg = 'Location permission denied. Please enable GPS in your browser settings.';
+            break;
+          case err.POSITION_UNAVAILABLE:
+            errorMsg = 'Location information unavailable.';
+            break;
+          case err.TIMEOUT:
+            errorMsg = 'Location request timed out.';
+            break;
+          default:
+            errorMsg = 'An unknown error occurred.';
+        }
+        console.warn(errorMsg);
+        updateGPSIndicator(false);
+        alert(`⚠️ ${errorMsg}\nYou can still use the app, but location will not be recorded.`);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+    
+    // Watch for position changes
+    gpsWatchId = navigator.geolocation.watchPosition(
+      async (pos) => {
+        currentLocation = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+          timestamp: new Date().toISOString()
+        };
+        
+        // Update address
+        const locationData = await getCityStateFromCoords(pos.coords.latitude, pos.coords.longitude);
+        currentLocation.address = locationData;
+        
+        updateGPSIndicator(true, locationData);
+      },
+      (err) => {
+        console.warn('GPS watch error:', err);
+        updateGPSIndicator(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  } else {
+    console.warn('❌ Geolocation not supported by this browser');
+    updateGPSIndicator(false);
+    alert('⚠️ Your browser does not support GPS. Location will not be recorded.');
+  }
+}
+
+function updateGPSIndicator(hasGPS, locationData = null){
+  const gps = document.getElementById('gpsIndicator');
+  if (hasGPS && locationData) {
+    gps.innerHTML = '📍';
+    gps.style.color = '#4CAF50';
+    gps.title = `${locationData.city}, ${locationData.state} ${locationData.zip}`;
+  } else if (hasGPS) {
+    gps.innerHTML = '🛰️';
+    gps.style.color = '#4CAF50';
+    gps.title = 'GPS connected';
+  } else {
+    gps.innerHTML = '🌐';
+    gps.style.color = '#ff4444';
+    gps.title = 'GPS unavailable';
+  }
 }
 
 function updateTime(){
@@ -221,9 +343,13 @@ function onBarcodeDecoded(code,type){
   // Clear any manual input display when a scan happens
   manualInput = '';
   
+  const locationText = currentLocation?.address ? 
+    ` 📍 ${currentLocation.address.city}, ${currentLocation.address.state}` : 
+    (currentLocation ? ' 📍' : '');
+  
   const span=document.createElement('span');
   span.className='scan-entry';
-  span.innerHTML = '📷 SCAN #' + scanCount + ': ' + code + (currentLocation?' 📍':'') + '<span id="barcodeType"> ['+type+']</span>';
+  span.innerHTML = '📷 SCAN #' + scanCount + ': ' + code + locationText + '<span id="barcodeType"> ['+type+']</span>';
   box.appendChild(span);
   box.scrollTop=box.scrollHeight;
 }
@@ -251,8 +377,13 @@ function goToStatus(){
       
       const box = document.getElementById('labelBox');
       const span = document.createElement('span');
+      
+      const locationText = currentLocation?.address ? 
+        ` 📍 ${currentLocation.address.city}, ${currentLocation.address.state}` : 
+        (currentLocation ? ' 📍' : '');
+      
       span.className = 'scan-entry';
-      span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput.trim() + (currentLocation?' 📍':'') + '<span id="barcodeType"> [MANUAL]</span>';
+      span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput.trim() + locationText + '<span id="barcodeType"> [MANUAL]</span>';
       box.appendChild(span);
       
       // Clear manual input
@@ -320,12 +451,30 @@ async function submitToXano(status){
     statusBtn.style.pointerEvents = 'none';
   }
   
+  // If no location yet, try to get it now
   if(!currentLocation){
     try{
-      const position=await new Promise((resolve,reject)=>{
-        navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:5000});
+      const position = await new Promise((resolve,reject)=>{
+        navigator.geolocation.getCurrentPosition(resolve,reject,{
+          enableHighAccuracy: true,
+          timeout: 10000
+        });
       });
-      currentLocation={lat:position.coords.latitude,lng:position.coords.longitude,accuracy:position.coords.accuracy};
+      
+      currentLocation = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Get address from coordinates
+      const locationData = await getCityStateFromCoords(
+        position.coords.latitude, 
+        position.coords.longitude
+      );
+      currentLocation.address = locationData;
+      
     } catch(error){
       console.warn('Could not get GPS location:', error);
     }
@@ -341,14 +490,14 @@ async function submitToXano(status){
     const scan = currentScans[i];
     const eta = calculateETA(status);
     
-    // Get city/state/zip from coordinates (mock data for demo)
-    let locationData = { city: 'Unknown', state: 'XX', zip: '00000' };
-    if(currentLocation) {
-      locationData = getCityStateFromCoords(currentLocation.lat, currentLocation.lng);
+    // Get city/state/zip from current location
+    let locationString = 'Location Unknown';
+    if(currentLocation?.address) {
+      locationString = `${currentLocation.address.city}, ${currentLocation.address.state} ${currentLocation.address.zip}`;
+    } else if(currentLocation) {
+      // Fallback to coordinates if address not available
+      locationString = `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
     }
-    
-    // Create location string with city, state, zip only
-    const locationString = `${locationData.city}, ${locationData.state} ${locationData.zip}`;
     
     const xanoRecord = {
       label_id: scan.code,
@@ -356,7 +505,7 @@ async function submitToXano(status){
       time: now.toLocaleTimeString(),
       date: now.toLocaleDateString(),
       status: status,
-      location: locationString, // Now only city, state, zip
+      location: locationString, // Now shows real city/state/zip
       eta: formatDate(eta),
       timestamp: now.toISOString(),
       scan_number: scan.number
@@ -416,7 +565,7 @@ function showSuccess(status, totalScans, sentCount){
   document.getElementById('popupScanCount').innerHTML=`
     ${totalScans} QR code(s) recorded<br>
     ${sentCount} sent to database<br>
-    <div class="eta-info">Check Xano qr_scans table</div>
+    <div class="eta-info">📍 Location: ${currentLocation?.address?.city || 'Unknown'}, ${currentLocation?.address?.state || ''}</div>
   `;
   
   popup.style.display='flex';
@@ -519,8 +668,13 @@ function addManualAsScan() {
     
     const box = document.getElementById('labelBox');
     const span = document.createElement('span');
+    
+    const locationText = currentLocation?.address ? 
+      ` 📍 ${currentLocation.address.city}, ${currentLocation.address.state}` : 
+      (currentLocation ? ' 📍' : '');
+    
     span.className = 'scan-entry';
-    span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput.trim() + (currentLocation?' 📍':'') + '<span id="barcodeType"> [MANUAL]</span>';
+    span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput.trim() + locationText + '<span id="barcodeType"> [MANUAL]</span>';
     box.appendChild(span);
     
     // Clear manual input
@@ -544,6 +698,9 @@ function checkCameraSupport(){
 
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+  // Show GPS permission request message
+  alert('📍 This app needs your location to record where scans happen.\nPlease allow location access when prompted.');
+  
   initGPS();
   updateTime();
   showNumeric();
