@@ -460,486 +460,217 @@
   <!-- Use jsQR which is more compatible with mobile browsers -->
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
-  <script>
-    (function() {
-      let stream = null;
-      let scanning = false;
-      let scanCount = 0;
-      let animationFrame = null;
-      let currentScans = [];
-      let currentLocation = null;
-      let gpsWatchId = null;
-      
-      // Google Apps Script Web App URL - REPLACE WITH YOUR ACTUAL URL
-      const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5wGyJmz_HbuTovfLigGirPwh08qkRyUdecQuZgKeKnOQNFLSgVc5xSTE2HtCf2bE/exec';
+<script>
+(function() {
+  let stream = null;
+  let scanning = false;
+  let scanCount = 0;
+  let animationFrame = null;
+  let currentScans = [];
+  let currentLocation = null;
+  let gpsWatchId = null;
 
-      // ---------- FIXED BEEP using Web Audio API ----------
-      let audioCtx = null;
-      function playBeep() {
-        try {
-          // Create on first call, reuse if possible
-          if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          }
-          // Resume if suspended (browser autoplay policy)
-          if (audioCtx.state === 'suspended') {
-            audioCtx.resume().then(() => {
-              createAndPlayBeep(audioCtx);
-            }).catch(e => console.warn('Audio resume failed', e));
-          } else {
-            createAndPlayBeep(audioCtx);
-          }
-        } catch (e) {
-          console.warn('Web Audio not supported', e);
-        }
-      }
+  // Xano API Endpoint
+  const XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
 
-      function createAndPlayBeep(ctx) {
-        const now = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = 880; // A5 note
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.15);
-      }
-      // ------------------------------------------------
+  // ---- BEEP ----
+  let audioCtx = null;
+  function playBeep() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume().then(() => createBeep());
+    else createBeep();
+  }
+  function createBeep() {
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine'; osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now); osc.stop(now + 0.15);
+  }
 
-      // Initialize GPS
-      function initGPS() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              currentLocation = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-                accuracy: position.coords.accuracy
-              };
-              updateGPSIndicator(true);
-            },
-            (error) => {
-              console.error('GPS Error:', error);
-              updateGPSIndicator(false);
-            },
-            { enableHighAccuracy: true, timeout: 10000 }
-          );
-          
-          gpsWatchId = navigator.geolocation.watchPosition(
-            (position) => {
-              currentLocation = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-                accuracy: position.coords.accuracy
-              };
-              updateGPSIndicator(true);
-            },
-            (error) => {
-              console.error('GPS Watch Error:', error);
-              updateGPSIndicator(false);
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-          );
-        } else {
-          updateGPSIndicator(false);
-        }
-      }
+  // ---- GPS ----
+  function initGPS() {
+    if (!navigator.geolocation) return updateGPS(false);
+    navigator.geolocation.getCurrentPosition(
+      pos => { currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; updateGPS(true); },
+      () => updateGPS(false),
+      { enableHighAccuracy:true, timeout:10000 }
+    );
+    gpsWatchId = navigator.geolocation.watchPosition(
+      pos => { currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; updateGPS(true); },
+      () => updateGPS(false),
+      { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
+    );
+  }
+  function updateGPS(hasGPS) {
+    const el = document.getElementById('gpsIndicator');
+    if (!el) return;
+    el.innerHTML = hasGPS?'🛰️':'🌐';
+    el.style.color = hasGPS?'#4CAF50':'#ff4444';
+  }
 
-      function updateGPSIndicator(hasGPS) {
-        const gpsElement = document.getElementById('gpsIndicator');
-        if (gpsElement) {
-          gpsElement.innerHTML = hasGPS ? '🛰️' : '🌐';
-          gpsElement.style.color = hasGPS ? '#4CAF50' : '#ff4444';
-        }
-      }
+  // ---- TIME ----
+  function updateTime() {
+    const d = new Date();
+    const month = (d.getMonth()+1).toString().padStart(2,'0');
+    const day = d.getDate().toString().padStart(2,'0');
+    const hours = d.getHours(); const minutes = d.getMinutes().toString().padStart(2,'0');
+    const ampm = hours>=12?'PM':'AM';
+    const hour12 = hours%12||12;
+    const str = `${month}/${day} ${hour12}:${minutes} ${ampm}`;
+    const el1 = document.getElementById('timeDisplay'); if(el1) el1.innerText=str;
+    const el2 = document.getElementById('timeDisplay2'); if(el2) el2.innerText=str;
+  }
+  setInterval(updateTime, 1000);
+  window.addEventListener('load', updateTime);
 
-      // Calculate ETA based on status
-      function calculateETA(status) {
-        const now = new Date();
-        let eta = new Date(now);
-        
-        switch(status) {
-          case 'Data Received':
-            eta.setDate(now.getDate() + 7);
-            break;
-          case 'Picked Up':
-            eta.setDate(now.getDate() - 1);
-            break;
-          case 'Depart Post Office':
-            eta.setDate(now.getDate() - 2);
-            break;
-          case 'Arrival Scan':
-            eta.setHours(now.getHours() - 12);
-            break;
-          case 'Local Scan':
-            eta.setHours(now.getHours() - 36);
-            break;
-          case 'Out For Delivery':
-            eta.setDate(now.getDate() - 2);
-            break;
-          case 'Delivered':
-            eta = now;
-            break;
-          default:
-            eta.setDate(now.getDate() + 7);
-        }
-        
-        return eta;
-      }
+  // ---- CAMERA ----
+  function stopCamera() {
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+    animationFrame = null;
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+    }
+    scanning = false;
+  }
 
-      // Format date for display
-      function formatDate(date) {
-        return date.toLocaleString('en-US', { 
-          month: '2-digit', 
-          day: '2-digit', 
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: true 
-        });
-      }
+  async function startScan() {
+    if (scanning) { stopCamera(); return; }
+    scanning = true;
 
-      function updateTime() {
-        const d = new Date();
-        const month = (d.getMonth() + 1).toString().padStart(2,'0');
-        const day = d.getDate().toString().padStart(2,'0');
-        const hours = d.getHours();
-        const minutes = d.getMinutes().toString().padStart(2,'0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        const hour12 = hours % 12 || 12;
-        const timeStr = month + '/' + day + ' ' + hour12 + ':' + minutes + ' ' + ampm;
-        document.getElementById('timeDisplay').innerText = timeStr;
-        document.getElementById('timeDisplay2').innerText = timeStr;
-      }
-      setInterval(updateTime, 1000);
-      window.addEventListener('load', updateTime);
+    const frame = document.getElementById('scanFrame');
+    const laser = document.getElementById('laser');
+    frame.style.display = 'block';
+    laser.style.display = 'block';
 
-      function stopCamera() {
-        if (animationFrame) {
-          cancelAnimationFrame(animationFrame);
-          animationFrame = null;
-        }
-        if (stream) { 
-          stream.getTracks().forEach(t => {
-            t.stop();
-            stream = null;
-          });
-        }
-        scanning = false;
-      }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: 640, height: 480 } });
+      const video = document.getElementById('preview');
+      video.srcObject = stream;
+      await new Promise(resolve => { video.onloadedmetadata = () => video.play().then(resolve); });
 
-      async function startScan() {
-        if (scanning) {
-          stopCamera();
-          return;
-        }
-        
-        scanning = true;
-        const frame = document.getElementById('scanFrame');
-        const laser = document.getElementById('laser');
-        frame.style.display = 'block';
-        laser.style.display = 'block';
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
 
-        try {
-          // Check if browser supports getUserMedia
-          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            throw new Error('Your browser does not support camera access');
-          }
-
-          stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-              facingMode: 'environment',
-              width: { min: 360, ideal: 640, max: 1280 },
-              height: { min: 240, ideal: 480, max: 720 }
-            } 
-          });
-          
-          const video = document.getElementById('preview');
-          video.srcObject = stream;
-          
-          // Wait for video to be ready
-          await new Promise((resolve) => {
-            video.onloadedmetadata = () => {
-              video.play().then(resolve);
-            };
-          });
-
-          // Use jsQR for scanning
-          const canvas = document.createElement('canvas');
-          const context = canvas.getContext('2d');
-          
-          function scanFrame() {
-            if (!scanning || !video.videoWidth) {
-              animationFrame = requestAnimationFrame(scanFrame);
-              return;
-            }
-            
-            // Set canvas size to match video
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            
-            // Draw video frame to canvas
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Get image data
-            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-            
-            // Use jsQR to detect QR codes
-            const code = jsQR(imageData.data, canvas.width, canvas.height, {
-              inversionAttempts: "dontInvert"
-            });
-            
-            if (code) {
-              // QR code found
-              onBarcodeDecoded(code.data, 'QR Code');
-              return;
-            }
-            
-            // Continue scanning
-            animationFrame = requestAnimationFrame(scanFrame);
-          }
-          
-          // Start scanning
+      function scanFrame() {
+        if (!scanning || !video.videoWidth) {
           animationFrame = requestAnimationFrame(scanFrame);
-          
-        } catch (err) {
-          console.error('Camera error:', err);
-          scanning = false;
-          frame.style.display = 'none';
-          laser.style.display = 'none';
-          
-          // Show user-friendly error message
-          let errorMsg = 'Camera access denied or not supported';
-          if (err.message) {
-            errorMsg = err.message;
-          }
-          alert(errorMsg);
-        }
-      }
-
-      function onBarcodeDecoded(code, barcodeType) {
-        scanning = false;
-        stopCamera();
-        document.getElementById('scanFrame').style.display = 'none';
-        document.getElementById('laser').style.display = 'none';
-        playBeep();  // <--- BEEP NOW WORKS (Web Audio)
-
-        scanCount++;
-        currentScans.push({ 
-          number: scanCount, 
-          code, 
-          barcodeType,
-          timestamp: new Date().toISOString(),
-          location: currentLocation 
-        });
-        
-        const box = document.getElementById('labelBox');
-        const span = document.createElement('span');
-        span.className = 'scan-entry';
-        span.innerHTML = scanCount + '  ' + code + 
-          (currentLocation ? ' 📍' : '') + 
-          '<span id="barcodeType"> [QR Code]</span>';
-        box.appendChild(span);
-        box.scrollTop = box.scrollHeight;
-      }
-
-      function clearScans() {
-        scanCount = 0;
-        currentScans = [];
-        document.getElementById('labelBox').innerHTML = '';
-      }
-
-      function goToStatus() {
-        if (currentScans.length === 0) {
-          alert('Please scan a QR code first');
           return;
         }
-        document.getElementById('labelBlock').style.display = 'none';
-        document.getElementById('scanButton').style.display = 'none';
-        document.getElementById('leftText').innerText = 'SELECT STATUS';
-        document.getElementById('statusScreen').style.display = 'flex';
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video,0,0,canvas.width,canvas.height);
+        const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+        const code = jsQR(imageData.data, canvas.width, canvas.height, { inversionAttempts:"dontInvert" });
+        if (code) { onBarcodeDecoded(code.data, 'QR Code'); return; }
+        animationFrame = requestAnimationFrame(scanFrame);
       }
+      animationFrame = requestAnimationFrame(scanFrame);
 
-      function goBackToScan() {
-        document.getElementById('statusScreen').style.display = 'none';
-        document.getElementById('labelBlock').style.display = 'flex';
-        document.getElementById('scanButton').style.display = 'flex';
-        document.getElementById('leftText').innerText = 'SCAN QR CODE';
-      }
+    } catch(err) {
+      console.error('Camera error', err);
+      scanning = false;
+      frame.style.display = 'none';
+      laser.style.display = 'none';
+      alert(err.message || 'Camera not supported');
+    }
+  }
 
-      async function sendToSheets(status) {
-        if (!currentLocation) {
-          try {
-            const position = await new Promise((resolve, reject) => {
-              navigator.geolocation.getCurrentPosition(resolve, reject, {
-                enableHighAccuracy: true,
-                timeout: 5000
-              });
-            });
-            currentLocation = {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude,
-              accuracy: position.coords.accuracy
-            };
-          } catch (error) {
-            console.warn('Could not get GPS location:', error);
-          }
-        }
+  function onBarcodeDecoded(code, barcodeType) {
+    scanning = false; stopCamera(); playBeep();
+    scanCount++;
+    currentScans.push({ number: scanCount, code, barcodeType, timestamp:new Date().toISOString(), location:currentLocation });
 
-        const now = new Date();
-        const scannedPackages = currentScans.map((scan) => {
-          const eta = calculateETA(status);
-          
-          return {
-            LABEL_ID: scan.code,
-            BARCODE_TYPE: scan.barcodeType,
-            TIME: now.toLocaleTimeString(),
-            DATE: now.toLocaleDateString(),
-            STATUS: status,
-            LOCATION: currentLocation ? `${currentLocation.lat},${currentLocation.lng}` : 'GPS Unavailable',
-            ETA: formatDate(eta),
-            TIMESTAMP: now.toISOString()
-          };
+    const box = document.getElementById('labelBox');
+    const span = document.createElement('span');
+    span.className = 'scan-entry';
+    span.innerHTML = `${scanCount} ${code} ${currentLocation?'📍':''} [QR Code]`;
+    box.appendChild(span);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function clearScans() { scanCount=0; currentScans=[]; document.getElementById('labelBox').innerHTML=''; }
+
+  function goToStatus() {
+    if(currentScans.length===0){ alert('Scan first'); return; }
+    document.getElementById('labelBlock').style.display='none';
+    document.getElementById('scanButton').style.display='none';
+    document.getElementById('leftText').innerText='SELECT STATUS';
+    document.getElementById('statusScreen').style.display='flex';
+  }
+
+  function goBackToScan() {
+    document.getElementById('statusScreen').style.display='none';
+    document.getElementById('labelBlock').style.display='flex';
+    document.getElementById('scanButton').style.display='flex';
+    document.getElementById('leftText').innerText='SCAN QR CODE';
+  }
+
+  async function sendToXano(status) {
+    const now = new Date();
+    const payload = currentScans.map(scan=>({
+      label_id: scan.code,
+      barcode_type: scan.barcodeType,
+      status: status,
+      timestamp: now.toISOString(),
+      location: currentLocation ? `${currentLocation.lat},${currentLocation.lng}` : 'GPS Unavailable'
+    }));
+
+    try {
+      await Promise.all(payload.map(scan=>{
+        return fetch(XANO_API_URL, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify(scan)
         });
+      }));
+      console.log('✅ Sent to Xano', payload);
+    } catch(err){ console.error('Xano error',err); }
 
-        const data = { 
-          scans: scannedPackages, 
-          status, 
-          timestamp: now.toISOString(),
-          location: currentLocation,
-          batch_id: Date.now().toString()
-        };
-        
-        console.log('📤 Sending to sheets:', data);
-        
-        try {
-          const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-          });
-          console.log('Data sent successfully');
-        } catch (error) {
-          console.error('Error sending to sheets:', error);
-        }
+    return payload;
+  }
 
-        return scannedPackages;
-      }
+  async function chooseStatus(status) {
+    const scannedPackages = await sendToXano(status);
+    const etaInfo = scannedPackages.map(pkg=>`Package: ${pkg.label_id.substring(0,8)}... ETA: -`).join('<br>');
+    document.getElementById('popupStatus').innerText=status;
+    document.getElementById('popupScanCount').innerHTML=`${scanCount} QR code(s) recorded<br><div class="eta-info">${etaInfo}</div>`;
+    document.getElementById('successPopup').style.display='flex';
+    setTimeout(()=>{ document.getElementById('successPopup').style.display='none'; clearScans(); goBackToScan(); },4000);
+  }
 
-      async function chooseStatus(status) {
-        const scannedPackages = await sendToSheets(status);
-        
-        const etaInfo = scannedPackages.map(pkg => 
-          `Package: ${pkg.LABEL_ID.substring(0, 8)}... [QR Code] ETA: ${pkg.ETA}`
-        ).join('<br>');
-        
-        document.getElementById('popupStatus').innerText = status;
-        document.getElementById('popupScanCount').innerHTML = `
-          ${scanCount} QR code(s) recorded<br>
-          <div class="eta-info">${etaInfo}</div>
-        `;
-        document.getElementById('successPopup').style.display = 'flex';
+  // ---- Keyboard Tabs ----
+  function showNumeric(){ document.getElementById('numericPad').style.display='grid'; document.getElementById('qwertyPad').style.display='none'; document.getElementById('symbolPad').style.display='none'; }
+  function showQwerty(){ document.getElementById('numericPad').style.display='none'; document.getElementById('qwertyPad').style.display='block'; document.getElementById('symbolPad').style.display='none'; }
+  function showSymbol(){ document.getElementById('numericPad').style.display='none'; document.getElementById('qwertyPad').style.display='none'; document.getElementById('symbolPad').style.display='block'; }
+  function typeChar(c){ const box=document.getElementById('labelBox'); box.innerHTML+=c; box.scrollTop=box.scrollHeight; }
+  function backspace(){ const box=document.getElementById('labelBox'); box.innerHTML=box.innerHTML.slice(0,-1); }
 
-        setTimeout(() => {
-          document.getElementById('successPopup').style.display = 'none';
-          clearScans();
-          goBackToScan();
-        }, 4000);
-      }
+  // ---- Init ----
+  window.addEventListener('load',()=>{ initGPS(); updateTime(); checkCameraSupport(); });
+  function checkCameraSupport(){ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ alert('Camera not supported'); document.getElementById('scanButton').style.opacity='0.5'; document.getElementById('scanButton').style.pointerEvents='none'; } }
 
-      function showNumeric() {
-        document.getElementById('numericPad').style.display = 'grid';
-        document.getElementById('qwertyPad').style.display = 'none';
-        document.getElementById('symbolPad').style.display = 'none';
-        document.getElementById('tabNumeric').classList.add('active');
-        document.getElementById('tabQwerty').classList.remove('active');
-        document.getElementById('tabSymbol').classList.remove('active');
-      }
+  window.addEventListener('beforeunload',()=>{ if(gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId); stopCamera(); });
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden&&scanning) stopCamera(); });
 
-      function showQwerty() {
-        document.getElementById('numericPad').style.display = 'none';
-        document.getElementById('qwertyPad').style.display = 'block';
-        document.getElementById('symbolPad').style.display = 'none';
-        document.getElementById('tabQwerty').classList.add('active');
-        document.getElementById('tabNumeric').classList.remove('active');
-        document.getElementById('tabSymbol').classList.remove('active');
-      }
+  // ---- Expose ----
+  window.startScan=startScan;
+  window.clearScans=clearScans;
+  window.goToStatus=goToStatus;
+  window.chooseStatus=chooseStatus;
+  window.goBackToScan=goBackToScan;
+  window.showNumeric=showNumeric;
+  window.showQwerty=showQwerty;
+  window.showSymbol=showSymbol;
+  window.typeChar=typeChar;
+  window.backspace=backspace;
+})();
+</script>
 
-      function showSymbol() {
-        document.getElementById('numericPad').style.display = 'none';
-        document.getElementById('qwertyPad').style.display = 'none';
-        document.getElementById('symbolPad').style.display = 'block';
-        document.getElementById('tabSymbol').classList.add('active');
-        document.getElementById('tabQwerty').classList.remove('active');
-        document.getElementById('tabNumeric').classList.remove('active');
-      }
-
-      function typeChar(c) {
-        const box = document.getElementById('labelBox');
-        box.innerHTML += c;
-        box.scrollTop = box.scrollHeight;
-      }
-
-      function backspace() {
-        const box = document.getElementById('labelBox');
-        if (box.lastChild?.nodeType === Node.TEXT_NODE) {
-          let txt = box.lastChild.textContent;
-          box.lastChild.textContent = txt.slice(0, -1);
-          if (box.lastChild.textContent === '') box.removeChild(box.lastChild);
-        } else {
-          box.innerHTML = box.innerHTML.slice(0, -1);
-        }
-      }
-
-      // Check camera support on load
-      function checkCameraSupport() {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          document.getElementById('scanButton').style.opacity = '0.5';
-          document.getElementById('scanButton').style.pointerEvents = 'none';
-          alert('Your browser does not support camera access. Please use Chrome or Safari on a mobile device.');
-        }
-      }
-
-      // Initialize on load
-      window.addEventListener('load', () => {
-        initGPS();
-        showNumeric();
-        document.getElementById('leftText').innerText = 'SCAN QR CODE';
-        checkCameraSupport();
-      });
-
-      // Clean up on unload
-      window.addEventListener('beforeunload', () => {
-        if (gpsWatchId) {
-          navigator.geolocation.clearWatch(gpsWatchId);
-        }
-        stopCamera();
-      });
-
-      // Handle page visibility change
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden && scanning) {
-          stopCamera();
-        }
-      });
-
-      // Expose functions globally
-      window.startScan = startScan;
-      window.clearScans = clearScans;
-      window.goToStatus = goToStatus;
-      window.chooseStatus = chooseStatus;
-      window.goBackToScan = goBackToScan;
-      window.showNumeric = showNumeric;
-      window.showQwerty = showQwerty;
-      window.showSymbol = showSymbol;
-      window.typeChar = typeChar;
-      window.backspace = backspace;
-    })();
-  </script>
 </head>
 <body>
   <div id="phone">
