@@ -110,7 +110,8 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: scaleX(-1);
+      /* Remove mirror effect - show camera view normally */
+      transform: none;
       display: block;
     }
 
@@ -703,7 +704,15 @@
             try {
               // Convert canvas to luminance source for ZXing
               const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-              const luminanceSource = new ZXing.BufferedImageLuminanceSource(imageData.data, canvas.width, canvas.height);
+              
+              // For ZXing, we need to create a proper luminance source
+              // Using RGBLuminanceSource as a more compatible alternative
+              const luminanceSource = new ZXing.RGBLuminanceSource(
+                imageData.data, 
+                canvas.width, 
+                canvas.height
+              );
+              
               const binaryBitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(luminanceSource));
               
               // Try to decode
@@ -751,7 +760,7 @@
         span.className = 'scan-entry';
         span.innerHTML = scanCount + '  ' + code + 
           (currentLocation ? ' 📍' : '') + 
-          '<span id="barcodeType">[' + barcodeType + ']</span>';
+          '<span id="barcodeType"> [' + barcodeType + ']</span>';
         box.appendChild(span);
         box.scrollTop = box.scrollHeight;
       }
