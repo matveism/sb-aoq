@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>UPC SCAN GUN · WMS PRO</title>
+<title>UNIVERSAL BARCODE SCANNER · 1D/2D</title>
 
 <style>
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
@@ -17,15 +17,25 @@ body { margin:0; padding:0; background:#000; display:flex; justify-content:cente
 #scanButton:active { transform:translateY(2px); box-shadow:0 2px 0 #145018; }
 .scan-button{display:flex;align-items:center;gap:6px;font-family:Arial;font-size:14px;}
 .icon{width:16px;height:12px;background:repeating-linear-gradient(to right, black, black 2px, white 2px, white 4px);}
-#scanFrame { width:280px; height:160px; border:2px solid rgba(255,255,255,0.6); margin:4px auto 0 auto; position:relative; display:none; z-index:3; overflow:hidden; flex-shrink:0; background:rgba(0,0,0,0.4); }
+#scanFrame { width:280px; height:160px; margin:4px auto 0 auto; position:relative; display:none; z-index:3; overflow:hidden; flex-shrink:0; background:rgba(0,0,0,0.4); border: none; } /* no outer border, inner corners only */
 #preview { width:100%; height:100%; object-fit:cover; display:block; }
-#laser { position:absolute; top:0; left:0; width:100%; height:2px; background:#ff3333; box-shadow:0 0 10px #ff0000; animation:laserMove 1.8s linear infinite; display:none; z-index:5; }
-@keyframes laserMove { 0%{top:0;} 50%{top:158px;} 100%{top:0;} }
-.corner { width:22px; height:22px; border:3px solid #ffcc00; position:absolute; pointer-events:none; }
-.tl{top:-3px; left:-3px; border-right:none; border-bottom:none;}
-.tr{top:-3px; right:-3px; border-left:none; border-bottom:none;}
-.bl{bottom:-3px; left:-3px; border-right:none; border-top:none;}
-.br{bottom:-3px; right:-3px; border-left:none; border-top:none;}
+
+/* STATIC YELLOW CORNER BRACKETS (mini rectangles) - NO LASER */
+.corner-bracket {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border: 4px solid #ffcc00;  /* solid yellow */
+    filter: drop-shadow(0 0 5px rgba(255,204,0,0.7));
+    pointer-events: none;
+    z-index: 10;
+}
+/* each corner only shows two borders to create brackets */
+.corner-tl { top: 4px; left: 4px; border-right: none; border-bottom: none; }
+.corner-tr { top: 4px; right: 4px; border-left: none; border-bottom: none; }
+.corner-bl { bottom: 4px; left: 4px; border-right: none; border-top: none; }
+.corner-br { bottom: 4px; right: 4px; border-left: none; border-top: none; }
+
 #labelBlock { display:flex; flex-direction:column; flex:1; min-height:0; width:100%; z-index:2; margin-top:4px; }
 #labelTitle { height:32px; background:linear-gradient(180deg,#3f6b9c 0%,#2b4b70 100%); border:1px solid #1f3f5c; display:flex; align-items:center; padding-left:12px; margin:0 12px; font-weight:700; font-size:14px; color:#fff; flex-shrink:0; letter-spacing:0.5px; }
 #labelBox { width:calc(100% - 24px); min-height:80px; max-height:120px; margin:0 auto; border:3px solid #1f3f5c; background:#A6BEEF; padding:8px 10px; font-size:16px; font-weight:700; color:#000; white-space:pre-wrap; overflow-y:auto; word-break:break-all; flex-shrink:0; line-height:1.5; font-family:'Roboto','Segoe UI',monospace; box-shadow:inset 0 0 0 2px #fff; }
@@ -73,7 +83,7 @@ body { margin:0; padding:0; background:#000; display:flex; justify-content:cente
 #errorMessage{color:#ff4444;text-align:center;padding:10px;font-size:14px;display:none;}
 </style>
 
-<!-- jsQR -->
+<!-- jsQR (good for 1D and 2D) -->
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <!-- axios for reverse geocoding -->
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -84,7 +94,7 @@ let stream=null, scanning=false, scanCount=0, animationFrame=null, currentScans=
 let manualInput = ''; 
 let isSubmitting = false;
 
-// --------- XANO ENDPOINT (UPC/PRODUCT SCANS) ---------
+// --------- XANO ENDPOINT (UNIVERSAL BARCODE SCANS) ---------
 const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans'; 
 //------------------------------------------------------
 
@@ -114,7 +124,7 @@ async function getCityStateFromCoords(lat, lng) {
   try {
     console.log(`📍 reverse geocode: ${lat}, ${lng}`);
     const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
-      headers: { 'User-Agent': 'UPCScanner-App/2.0' }
+      headers: { 'User-Agent': 'UniversalBarcodeScanner/2.0' }
     });
     if (response.data && response.data.address) {
       const address = response.data.address;
@@ -205,9 +215,8 @@ async function startScan(){
   if(scanning){stopCamera();return;} 
   scanning=true;
   const frame=document.getElementById('scanFrame');
-  const laser=document.getElementById('laser');
+  // Laser element removed; we use static corner brackets (already in HTML)
   frame.style.display='block';
-  laser.style.display='block';
   
   try{
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
@@ -231,10 +240,17 @@ async function startScan(){
       canvas.width=video.videoWidth;
       canvas.height=video.videoHeight;
       ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      // jsQR detects both 1D (if formatted) and 2D codes. It's quite robust.
       const code=jsQR(ctx.getImageData(0,0,canvas.width,canvas.height).data,canvas.width,canvas.height,{inversionAttempts:"dontInvert"});
       if(code){
-        // Decode as UPC / any barcode (QR, but we treat as any)
-        onBarcodeDecoded(code.data, code.format ? code.format : 'UPC/QR');
+        // Determine format hint: if it's numeric and length typical, label as UPC/A, else as detected format or 'CODE'
+        let detectedType = code.format ? code.format : '1D/2D';
+        // Improve type guessing: if code.data matches UPC pattern (12 digits) maybe label as UPC
+        if(/^\d{12,13}$/.test(code.data)) detectedType = 'UPC-A/EAN';
+        else if(/^[0-9]+$/.test(code.data) && code.data.length > 5) detectedType = '1D (numeric)';
+        else if(code.data.length > 0) detectedType = '2D/QR';
+        
+        onBarcodeDecoded(code.data, detectedType);
         return;
       } 
       animationFrame=requestAnimationFrame(scanFrame);
@@ -244,7 +260,6 @@ async function startScan(){
     console.error(err);
     scanning=false;
     frame.style.display='none';
-    laser.style.display='none';
     alert('Camera error: ' + (err.message||''));
   }
 }
@@ -253,7 +268,6 @@ function onBarcodeDecoded(code, type){
   scanning=false;
   stopCamera();
   document.getElementById('scanFrame').style.display='none';
-  document.getElementById('laser').style.display='none';
   playBeep();
   
   scanCount++;
@@ -294,7 +308,7 @@ function goToStatus(){
     currentScans.push({
       number: scanCount,
       code: manualInput.trim(),
-      type: 'MANUAL-UPC',
+      type: 'MANUAL-ENTRY',
       timestamp: new Date().toISOString(),
       location: currentLocation
     });
@@ -314,7 +328,7 @@ function goToStatus(){
   }
   
   if(currentScans.length===0){
-    alert('Scan a UPC or type one first');
+    alert('Scan a barcode or type one first');
     return;
   }
   
@@ -328,7 +342,7 @@ function goBackToScan(){
   document.getElementById('statusScreen').style.display='none';
   document.getElementById('labelBlock').style.display='flex';
   document.getElementById('scanButton').style.display='flex';
-  document.getElementById('leftText').innerText='SCAN UPC CODE';
+  document.getElementById('leftText').innerText='SCAN ANY BARCODE';
 }
 
 function calculateETA(status){
@@ -387,7 +401,7 @@ async function submitToXano(status){
     }
     
     const xanoRecord = {
-      label_id: scan.code,                 // UPC / barcode value
+      label_id: scan.code,
       barcode_type: scan.type,
       time: now.toLocaleTimeString(),
       date: now.toLocaleDateString(),
@@ -441,7 +455,7 @@ function showSuccess(status, totalScans, sentCount){
   },4000);
 }
 
-// Keypad functions - manual UPC entry
+// Keypad functions - manual entry
 function showNumeric(){
   document.getElementById('numericPad').style.display='grid';
   document.getElementById('qwertyPad').style.display='none';
@@ -505,7 +519,7 @@ function addManualAsScan() {
     currentScans.push({
       number: scanCount,
       code: manualInput.trim(),
-      type: 'MANUAL-UPC',
+      type: 'MANUAL-ENTRY',
       timestamp: new Date().toISOString(),
       location: currentLocation
     });
@@ -557,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
   
-  console.log('✅ UPC Scan Gun ready — Xano endpoint active');
+  console.log('✅ Universal Barcode Scanner ready — 1D/2D support');
 });
 
 window.addEventListener('beforeunload',()=>{
@@ -587,7 +601,7 @@ window.addManualAsScan = addManualAsScan;
 <body>
 <div id="phone">
   <div id="header">
-    <span id="leftText">SCAN UPC CODE</span>
+    <span id="leftText">SCAN ANY BARCODE</span>
     <span id="rightArea">
       GPS: <span id="gpsIndicator">🛰️</span>
       <span>📶</span>
@@ -598,19 +612,21 @@ window.addManualAsScan = addManualAsScan;
   <div id="scanButton">
     <div class="scan-button">
       <div class="icon"></div>
-      <div>SCAN UPC / BARCODE</div>
+      <div>SCAN 1D / 2D CODE</div>
     </div>
   </div>
   
   <div id="scanFrame">
     <video id="preview" autoplay playsinline></video>
-    <div id="laser"></div>
-    <div class="corner tl"></div><div class="corner tr"></div>
-    <div class="corner bl"></div><div class="corner br"></div>
+    <!-- Static yellow corner brackets (mini rectangles) replace laser -->
+    <div class="corner-bracket corner-tl"></div>
+    <div class="corner-bracket corner-tr"></div>
+    <div class="corner-bracket corner-bl"></div>
+    <div class="corner-bracket corner-br"></div>
   </div>
   
   <div id="labelBlock">
-    <div id="labelTitle"># SCANNED / MANUAL UPC</div>
+    <div id="labelTitle"># SCANNED / MANUAL CODES</div>
     <div id="labelBox"></div>
     
     <div id="labelButtons">
