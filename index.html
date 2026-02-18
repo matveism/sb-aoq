@@ -28,15 +28,11 @@ body {
 #phone { 
     width: 340px; 
     height: 600px; 
-    background: #3f6b9c; 
-    background: -webkit-linear-gradient(top, #3f6b9c 0%, #2b4b70 100%);
     background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
     color: #fff; 
     position: relative; 
     overflow: hidden; 
-    display: -webkit-flex; 
     display: flex; 
-    -webkit-flex-direction: column;
     flex-direction: column; 
     box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
     margin: auto;
@@ -45,33 +41,25 @@ body {
 #header { 
     width: 100%; 
     height: 45px; 
-    background: #5180b0; 
-    background: -webkit-linear-gradient(top, #5180b0 0%, #2e5a88 100%);
     background: linear-gradient(180deg, #5180b0 0%, #2e5a88 100%); 
     border-bottom: 2px solid #1f3f5c; 
-    display: -webkit-flex; 
     display: flex; 
-    -webkit-justify-content: space-between;
     justify-content: space-between; 
-    -webkit-align-items: center;
     align-items: center; 
     padding: 0 8px; 
     font-weight: bold; 
     font-size: 16px; 
     z-index: 2; 
-    -webkit-flex-shrink: 0;
     flex-shrink: 0; 
 }
 #leftText { color: #fff; } 
-#rightArea { color: #fff; font-size: 14px; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
+#rightArea { color: #fff; font-size: 14px; display: flex; align-items: center; }
 #rightArea span { margin-left: 6px; }
 #gpsIndicator { color: #ff4444; font-size: 16px; }
 #timeDisplay { color: #ffcc00; font-size: 14px; }
 #scanButton { 
     width: 310px; 
     height: 55px; 
-    background: #4CAF50; 
-    background: -webkit-linear-gradient(top, #4CAF50 0%, #2b6e2f 100%);
     background: linear-gradient(180deg, #4CAF50 0%, #2b6e2f 100%); 
     border: 2px solid #1e5a22; 
     color: #fff; 
@@ -84,7 +72,6 @@ body {
     z-index: 2; 
     box-shadow: 0 4px 0 #145018; 
     cursor: pointer; 
-    -webkit-flex-shrink: 0;
     flex-shrink: 0; 
 }
 #scanButton:active { 
@@ -101,7 +88,6 @@ body {
     display: none; 
     z-index: 3; 
     overflow: hidden; 
-    -webkit-flex-shrink: 0;
     flex-shrink: 0; 
     background: rgba(0,0,0,0.4); 
     border: 3px solid #ffcc00;
@@ -143,11 +129,8 @@ body {
 }
 
 #labelBlock { 
-    display: -webkit-flex; 
     display: flex; 
-    -webkit-flex-direction: column;
     flex-direction: column; 
-    -webkit-flex: 1;
     flex: 1; 
     min-height: 0; 
     width: 100%; 
@@ -156,19 +139,15 @@ body {
 }
 #labelTitle { 
     height: 35px; 
-    background: #3f6b9c; 
-    background: -webkit-linear-gradient(top, #3f6b9c 0%, #2b4b70 100%);
+    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
     border: 2px solid #1f3f5c; 
-    display: -webkit-flex; 
     display: flex; 
-    -webkit-align-items: center;
     align-items: center; 
     padding-left: 12px; 
     margin: 0 10px; 
     font-weight: bold; 
     font-size: 15px; 
     color: #fff; 
-    -webkit-flex-shrink: 0;
     flex-shrink: 0; 
     border-radius: 4px;
 }
@@ -185,7 +164,6 @@ body {
     color: #000; 
     overflow-y: auto; 
     word-break: break-all; 
-    -webkit-flex-shrink: 0;
     flex-shrink: 0; 
     line-height: 1.4; 
     font-family: monospace; 
@@ -216,11 +194,8 @@ body {
 #labelButtons { 
     height: 45px; 
     background: #7496C4; 
-    display: -webkit-flex; 
     display: flex; 
-    -webkit-align-items: center;
     align-items: center; 
-    -webkit-justify-content: space-between;
     justify-content: space-between; 
     border-radius: 6px; 
     border: 2px solid #3a5f8a; 
@@ -229,7 +204,6 @@ body {
     font-weight: bold; 
     font-size: 20px; 
     color: #fff; 
-    -webkit-flex-shrink: 0;
     flex-shrink: 0; 
 }
 #labelButtons span { 
@@ -239,13 +213,9 @@ body {
 #divider { color: rgba(255,255,255,0.5); }
 #navBar { 
     height: 40px; 
-    background: #4a7aa8; 
-    background: -webkit-linear-gradient(top, #4a7aa8 0%, #2b4b70 100%);
-    display: -webkit-flex; 
+    background: linear-gradient(180deg, #4a7aa8 0%, #2b4b70 100%);
     display: flex; 
-    -webkit-align-items: center;
     align-items: center; 
-    -webkit-justify-content: space-between;
     justify-content: space-between; 
     border-radius: 6px; 
     border: 2px solid #1f3f5c; 
@@ -254,7 +224,6 @@ body {
     font-weight: bold; 
     font-size: 16px; 
     color: #fff; 
-    -webkit-flex-shrink: 0;
     flex-shrink: 0; 
 }
 #navBar button { 
@@ -268,46 +237,25 @@ body {
 }
 #keypadWrapper { 
     width: 100%; 
-    background: #2b4b70; 
-    background: -webkit-linear-gradient(top, #2b4b70 0%, #1f3f5c 100%);
+    background: linear-gradient(180deg, #2b4b70 0%, #1f3f5c 100%);
     border-top: 3px solid #ffcc00; 
     margin-top: auto; 
-    -webkit-flex-shrink: 0;
     flex-shrink: 0; 
     z-index: 2; 
     padding-bottom: 5px; 
 }
-#keyTabs {
-    display: -webkit-flex; 
-    display: flex; 
-    gap: 5px; 
-    padding: 8px 10px 4px 10px;
-} 
-#keyTabs button {
-    -webkit-flex: 1;
-    flex: 1; 
-    background: #3a5f8a; 
-    border: 2px solid #1f3f5c; 
-    border-radius: 30px; 
-    color: #fff; 
-    font-size: 16px; 
-    font-weight: bold; 
-    padding: 8px 0; 
-    cursor: pointer;
-}
-#keyTabs button.active {
-    background: #4CAF50; 
-    border-color: #145018;
+
+#qwertyPad {
+    padding: 0 8px 10px 8px;
 }
 #numericPad {
-    display: grid;
+    display: none;
     grid-template-columns: repeat(3, 1fr);
     gap: 6px;
     padding: 6px 12px 10px 12px;
 }
 #numericPad button {
-    background: #5a7a9a; 
-    background: -webkit-linear-gradient(top, #5a7a9a 0%, #3a5f8a 100%);
+    background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
     border: 2px solid #1f3f5c; 
     border-radius: 6px;
     color: #fff; 
@@ -322,21 +270,14 @@ body {
     box-shadow: 0 1px 0 #1f3f5c;
     background: #4CAF50;
 }
-#qwertyPad, #symbolPad {
-    display: none; 
-    padding: 0 8px 10px 8px;
-}
 .row {
-    display: -webkit-flex; 
     display: flex; 
     gap: 4px; 
     margin-bottom: 4px; 
 }
 .row button {
-    -webkit-flex: 1;
     flex: 1; 
-    background: #5a7a9a; 
-    background: -webkit-linear-gradient(top, #5a7a9a 0%, #3a5f8a 100%);
+    background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
     border: 2px solid #1f3f5c; 
     border-radius: 6px; 
     color: #fff; 
@@ -352,8 +293,11 @@ body {
     background: #4CAF50;
 }
 .row button.space {
-    -webkit-flex: 3;
     flex: 3; 
+}
+.row button.fullwidth {
+    flex: 1;
+    width: 100%;
 }
 #statusScreen {
     display: none; 
@@ -368,8 +312,7 @@ body {
     overflow-y: auto; 
 }
 .statusBtn {
-    background: #3f6b9c; 
-    background: -webkit-linear-gradient(top, #3f6b9c 0%, #2b4b70 100%);
+    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
     border: 2px solid #ffcc00; 
     color: white; 
     font-size: 18px; 
@@ -432,9 +375,24 @@ body {
     font-size: 26px;
     margin: 15px;
     text-align: center;
+    background: #2b4b70;
+    color: #fff;
+    border: 2px solid #ffcc00;
+    border-radius: 8px;
+    font-weight: bold;
 }
 #exitButton {
     background: #4CAF50;
+    color: white;
+    font-size: 24px;
+    padding: 12px 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-block;
+    margin-right: 10px;
+}
+#cancelButton {
+    background: #ff4444;
     color: white;
     font-size: 24px;
     padding: 12px 30px;
@@ -459,7 +417,7 @@ body {
     </div>
     
     <div id="scanFrame">
-        <video id="preview" autoplay></video>
+        <video id="preview" autoplay playsinline></video>
         <div class="corner-bracket corner-tl"></div>
         <div class="corner-bracket corner-tr"></div>
         <div class="corner-bracket corner-bl"></div>
@@ -484,27 +442,6 @@ body {
         </div>
         
         <div id="keypadWrapper">
-            <div id="keyTabs">
-                <button id="tabQwerty" onclick="showQwerty()">ABC</button>
-                <button id="tabNumeric" onclick="showNumeric()" class="active">123</button>
-                <button id="tabSymbol" onclick="showSymbol()">#+=''</button>
-            </div>
-            
-            <div id="numericPad">
-                <button onclick="typeChar('1')">1</button>
-                <button onclick="typeChar('2')">2</button>
-                <button onclick="typeChar('3')">3</button>
-                <button onclick="typeChar('4')">4</button>
-                <button onclick="typeChar('5')">5</button>
-                <button onclick="typeChar('6')">6</button>
-                <button onclick="typeChar('7')">7</button>
-                <button onclick="typeChar('8')">8</button>
-                <button onclick="typeChar('9')">9</button>
-                <button onclick="typeChar('.')">.</button>
-                <button onclick="typeChar('0')">0</button>
-                <button onclick="backspace()">⌫</button>
-            </div>
-            
             <div id="qwertyPad">
                 <div class="row">
                     <button onclick="typeChar('q')">q</button><button onclick="typeChar('w')">w</button><button onclick="typeChar('e')">e</button>
@@ -528,24 +465,20 @@ body {
                 </div>
             </div>
             
-            <div id="symbolPad">
-                <div class="row">
-                    <button onclick="typeChar('@')">@</button><button onclick="typeChar('#')">#</button><button onclick="typeChar('$')">$</button>
-                    <button onclick="typeChar('%')">%</button><button onclick="typeChar('&')">&</button><button onclick="typeChar('*')">*</button>
-                </div>
-                <div class="row">
-                    <button onclick="typeChar('!')">!</button><button onclick="typeChar('?')">?</button><button onclick="typeChar('/')">/</button>
-                    <button onclick="typeChar(':')">:</button><button onclick="typeChar(';')">;</button><button onclick="typeChar('-')">-</button>
-                </div>
-                <div class="row">
-                    <button onclick="typeChar('(')">(</button><button onclick="typeChar(')')">)</button><button onclick="typeChar('[')">[</button>
-                    <button onclick="typeChar(']')">]</button><button onclick="typeChar('<')">&lt;</button><button onclick="typeChar('>')">&gt;</button>
-                </div>
-                <div class="row">
-                    <button onclick="showQwerty()">ABC</button>
-                    <button class="space" onclick="typeChar(' ')">space</button>
-                    <button onclick="backspace()">⌫</button>
-                </div>
+            <div id="numericPad">
+                <button onclick="typeChar('1')">1</button>
+                <button onclick="typeChar('2')">2</button>
+                <button onclick="typeChar('3')">3</button>
+                <button onclick="typeChar('4')">4</button>
+                <button onclick="typeChar('5')">5</button>
+                <button onclick="typeChar('6')">6</button>
+                <button onclick="typeChar('7')">7</button>
+                <button onclick="typeChar('8')">8</button>
+                <button onclick="typeChar('9')">9</button>
+                <button onclick="typeChar('.')">.</button>
+                <button onclick="typeChar('0')">0</button>
+                <button onclick="backspace()">⌫</button>
+                <button onclick="showQwerty()" style="grid-column: span 3;">ABC</button>
             </div>
         </div>
     </div>
@@ -572,16 +505,11 @@ body {
         <div style="color:#ffcc00; font-size:22px;">🔒 EXIT PASSWORD</div>
         <input type="password" id="exitPassword" maxlength="6">
         <div id="exitButton" onclick="checkPassword()">UNLOCK</div>
+        <div id="cancelButton" onclick="closeExit()">CANCEL</div>
     </div>
 </div>
 
 <script>
-// ============================================
-// COURIER SCANNER FOR ALCATEL 7046T
-// WITH XANO DATABASE INTEGRATION
-// ============================================
-
-// GLOBAL VARIABLES
 var scanCount = 0;
 var currentScans = [];
 var manualInput = '';
@@ -594,11 +522,9 @@ var gpsLocation = null;
 var tapCount = 0;
 var tapTimer = null;
 
-// ===== XANO DATABASE CONFIGURATION =====
 var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
-var DEVICE_ID = 'ALCATEL_7046T_01'; // Change this for each device
+var DEVICE_ID = 'ALCATEL_7046T_01';
 
-// ===== TIME FUNCTIONS =====
 function updateTime() {
     var d = new Date();
     var month = (d.getMonth() + 1).toString();
@@ -617,7 +543,6 @@ function updateTime() {
     document.getElementById('timeDisplay2').innerText = timeStr;
 }
 
-// ===== GPS FUNCTIONS =====
 function initGPS() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -634,7 +559,6 @@ function initGPS() {
     }
 }
 
-// ===== XANO DATABASE FUNCTIONS =====
 function saveToXano(code, type, status) {
     var popup = document.getElementById('successPopup');
     popup.style.display = 'block';
@@ -682,7 +606,6 @@ function saveToXano(code, type, status) {
     xhr.send(JSON.stringify(xanoData));
 }
 
-// Test Xano connection on startup
 function testXanoConnection() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', XANO_URL, true);
@@ -700,7 +623,6 @@ function testXanoConnection() {
     xhr.send();
 }
 
-// ===== CAMERA FUNCTIONS =====
 function stopCamera() {
     scanning = false;
     if (scanTimeout) {
@@ -762,7 +684,6 @@ function startScan() {
                 }, 3000);
             },
             function(err) {
-                // Try without facingMode constraint
                 getUserMedia.call(navigator, 
                     { video: true },
                     function(s) {
@@ -827,7 +748,6 @@ function toggleFlashlight() {
     }
 }
 
-// ===== SCAN FUNCTIONS =====
 function addScannedCode(code, type) {
     scanning = false;
     stopCamera();
@@ -859,7 +779,6 @@ function addScannedCode(code, type) {
     box.appendChild(span);
     box.scrollTop = box.scrollHeight;
     
-    // Save to Xano database
     saveToXano(code, type, 'SCANNED');
 }
 
@@ -887,7 +806,6 @@ function goToStatus() {
         span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput.trim() + ' [MANUAL]';
         box.appendChild(span);
         
-        // Save manual entry to Xano
         saveToXano(manualInput.trim(), 'MANUAL', 'ENTERED');
         
         manualInput = '';
@@ -955,32 +873,14 @@ function submitStatus(status) {
     }
 }
 
-// ===== KEYPAD FUNCTIONS =====
 function showNumeric() {
-    document.getElementById('numericPad').style.display = 'grid';
     document.getElementById('qwertyPad').style.display = 'none';
-    document.getElementById('symbolPad').style.display = 'none';
-    document.getElementById('tabNumeric').classList.add('active');
-    document.getElementById('tabQwerty').classList.remove('active');
-    document.getElementById('tabSymbol').classList.remove('active');
+    document.getElementById('numericPad').style.display = 'grid';
 }
 
 function showQwerty() {
     document.getElementById('numericPad').style.display = 'none';
     document.getElementById('qwertyPad').style.display = 'block';
-    document.getElementById('symbolPad').style.display = 'none';
-    document.getElementById('tabQwerty').classList.add('active');
-    document.getElementById('tabNumeric').classList.remove('active');
-    document.getElementById('tabSymbol').classList.remove('active');
-}
-
-function showSymbol() {
-    document.getElementById('numericPad').style.display = 'none';
-    document.getElementById('qwertyPad').style.display = 'none';
-    document.getElementById('symbolPad').style.display = 'block';
-    document.getElementById('tabSymbol').classList.add('active');
-    document.getElementById('tabQwerty').classList.remove('active');
-    document.getElementById('tabNumeric').classList.remove('active');
 }
 
 function typeChar(c) {
@@ -1013,30 +913,32 @@ function backspace() {
 }
 
 function prevTab() {
-    if (document.getElementById('numericPad').style.display === 'grid') {
-        showSymbol();
-    } else if (document.getElementById('qwertyPad').style.display === 'block') {
+    var qwertyVisible = document.getElementById('qwertyPad').style.display !== 'none';
+    if (qwertyVisible) {
         showNumeric();
-    } else if (document.getElementById('symbolPad').style.display === 'block') {
+    } else {
         showQwerty();
     }
 }
 
 function nextTab() {
-    if (document.getElementById('numericPad').style.display === 'grid') {
-        showQwerty();
-    } else if (document.getElementById('qwertyPad').style.display === 'block') {
-        showSymbol();
-    } else if (document.getElementById('symbolPad').style.display === 'block') {
+    var qwertyVisible = document.getElementById('qwertyPad').style.display !== 'none';
+    if (qwertyVisible) {
         showNumeric();
+    } else {
+        showQwerty();
     }
 }
 
-// ===== EXIT FUNCTIONS =====
 function showExitPrompt() {
     document.getElementById('exitOverlay').style.display = 'block';
     document.getElementById('exitPassword').value = '';
     document.getElementById('exitPassword').focus();
+}
+
+function closeExit() {
+    document.getElementById('exitOverlay').style.display = 'none';
+    document.getElementById('exitPassword').value = '';
 }
 
 function checkPassword() {
@@ -1051,7 +953,6 @@ function checkPassword() {
     }
 }
 
-// ===== EVENT LISTENERS =====
 document.getElementById('header').addEventListener('click', function() {
     tapCount++;
     if (tapTimer) clearTimeout(tapTimer);
@@ -1062,12 +963,16 @@ document.getElementById('header').addEventListener('click', function() {
     }
 });
 
-// ===== INITIALIZATION =====
+document.getElementById('exitPassword').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        checkPassword();
+    }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     initGPS();
     updateTime();
     setInterval(updateTime, 1000);
-    showNumeric();
     testXanoConnection();
     
     history.pushState(null, null, location.href);
