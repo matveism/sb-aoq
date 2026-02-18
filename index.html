@@ -3,32 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi">
-    <title>Alcatel 7046T · XEON FIXED</title>
-    <!-- QuaggaJS for barcode scanning (supports 1D/2D) -->
-    <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+    <title>Alcatel 7046T · INDUSTRIAL SCANNER</title>
+    <!-- INSTASCAN - lightweight, works on Android 5, supports many 1D/2D -->
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    <!-- No emojis, only text/icons. Industrial WinCE look, high contrast -->
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-        body { margin:0; padding:0; background:#000; display:flex; justify-content:center; align-items:center; min-height:100vh; font-family:'Roboto','Segoe UI',Arial,sans-serif; font-weight:700; }
-        /* Alcatel 7046T native resolution 480x854 */
-        #phone { width:480px; height:854px; background:linear-gradient(180deg,#3f6b9c 0%,#2b4b70 100%); color:#fff; position:relative; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 10px 25px rgba(0,0,0,0.5); }
-        #header { width:100%; height:38px; background:linear-gradient(180deg,#5180b0 0%,#2e5a88 100%); border-bottom:2px solid #1f3f5c; display:flex; justify-content:space-between; align-items:center; padding:0 12px; font-weight:700; font-size:16px; z-index:2; flex-shrink:0; letter-spacing:0.3px; }
-        #leftText{color:#fff;} #rightArea{color:#fff;font-size:14px;display:flex;align-items:center;gap:8px;}
-        #gpsIndicator{color:#4CAF50;font-size:16px;}
-        #timeDisplay{color:#ffcc00;font-size:14px;}
-        #scanButton { width:calc(100% - 24px); height:50px; background:linear-gradient(180deg,#4CAF50 0%,#2b6e2f 100%); border:2px solid #1e5a22; color:#fff; font-size:22px; font-weight:700; text-align:center; line-height:48px; margin:12px auto 8px auto; border-radius:6px; z-index:2; box-shadow:0 4px 0 #145018; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; gap:8px; letter-spacing:0.5px; }
-        #scanButton:active { transform:translateY(2px); box-shadow:0 2px 0 #145018; }
-        .scan-button{display:flex;align-items:center;gap:6px;font-family:Arial;font-size:14px;}
-        .icon{width:16px;height:12px;background:repeating-linear-gradient(to right, black, black 2px, white 2px, white 4px);}
-        #scanFrame { width:440px; height:220px; margin:4px auto 0 auto; position:relative; display:none; z-index:3; overflow:hidden; flex-shrink:0; background:rgba(0,0,0,0.4); border: none; }
-        #preview { width:100%; height:100%; object-fit:cover; display:block; }
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            user-select: none; 
+            margin: 0;
+            padding: 0;
+        }
+        body { 
+            background: #000; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            font-family: 'Roboto', 'Droid Sans', 'Segoe UI', Arial, sans-serif; 
+            font-weight: 700; 
+            margin: 0;
+            padding: 0;
+        }
+        /* Alcatel 7046T exact size 480x854 */
+        #device { 
+            width: 480px; 
+            height: 854px; 
+            background: #1a2a3a;  /* industrial dark blue-gray */
+            color: #fff; 
+            position: relative; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 0 0 2px #7a7a7a; 
+            border: 4px solid #3a4a5a;
+        }
+        /* WinCE style header - sharp, no gradients */
+        #header { 
+            width: 100%; 
+            height: 38px; 
+            background: #0f1a24; 
+            border-bottom: 3px solid #ffaa00; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0 12px; 
+            font-size: 16px; 
+            color: #ffaa00; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        #header span {
+            color: #ffaa00;
+        }
+        #header .right {
+            display: flex;
+            gap: 16px;
+            color: #ffffff;
+        }
+        #header .right span {
+            color: #ffffff;
+            font-size: 15px;
+        }
 
-        /* STATIC YELLOW CORNER BRACKETS */
+        /* SCAN BUTTON - big, tactile */
+        #scanButton { 
+            width: calc(100% - 24px); 
+            height: 60px; 
+            background: #2a5a3a; 
+            border: 4px solid #0f4a1a; 
+            color: #fff; 
+            font-size: 28px; 
+            font-weight: 700; 
+            text-align: center; 
+            margin: 12px auto 8px auto; 
+            border-radius: 0px; 
+            box-shadow: inset 0 -4px 0 #0a3a1a, 0 4px 0 #0a1a0a; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        #scanButton:active { 
+            transform: translateY(2px); 
+            box-shadow: inset 0 -2px 0 #0a3a1a, 0 2px 0 #0a1a0a;
+        }
+        .btn-icon {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* CAMERA FRAME - industrial window */
+        #scanFrame { 
+            width: 440px; 
+            height: 220px; 
+            margin: 4px auto 0 auto; 
+            position: relative; 
+            display: none; 
+            z-index: 3; 
+            overflow: hidden; 
+            background: #000; 
+            border: 4px solid #7a8a9a; 
+            box-shadow: inset 0 0 0 2px #000;
+        }
+        #preview { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            display: block; 
+        }
+
+        /* STATIC YELLOW CORNER BRACKETS - industrial targeting */
         .corner-bracket {
             position: absolute;
-            width: 28px;
-            height: 28px;
-            border: 4px solid #ffcc00;
-            filter: drop-shadow(0 0 5px rgba(255,204,0,0.7));
+            width: 36px;
+            height: 36px;
+            border: 4px solid #ffaa00;
+            filter: drop-shadow(0 0 5px #ffaa00);
             pointer-events: none;
             z-index: 10;
         }
@@ -37,156 +132,422 @@
         .corner-bl { bottom: 4px; left: 4px; border-right: none; border-top: none; }
         .corner-br { bottom: 4px; right: 4px; border-left: none; border-top: none; }
 
-        #labelBlock { display:flex; flex-direction:column; flex:1; min-height:0; width:100%; z-index:2; margin-top:4px; }
-        #labelTitle { height:32px; background:linear-gradient(180deg,#3f6b9c 0%,#2b4b70 100%); border:1px solid #1f3f5c; display:flex; align-items:center; padding-left:12px; margin:0 12px; font-weight:700; font-size:14px; color:#fff; flex-shrink:0; letter-spacing:0.5px; }
-        #labelBox { width:calc(100% - 24px); min-height:80px; max-height:120px; margin:0 auto; border:3px solid #1f3f5c; background:#A6BEEF; padding:8px 10px; font-size:16px; font-weight:700; color:#000; white-space:pre-wrap; overflow-y:auto; word-break:break-all; flex-shrink:0; line-height:1.5; font-family:'Roboto','Segoe UI',monospace; box-shadow:inset 0 0 0 2px #fff; }
-        #labelBox span.scan-entry { display:block; border-bottom:2px solid #2b4b70; background:#c0d4f5; padding:4px 6px; margin:4px 0; border-radius:4px; font-weight:700; color:#000; }
-        #labelBox span.scan-entry:last-child{border-bottom:none;}
-        #manualInputDiv { background:#ffff99; border:2px dashed #ffaa00; border-radius:4px; padding:6px; margin:4px 0; font-weight:bold; color:#000; display:none; align-items:center; gap:6px; }
-        #manualIndicator { background:#ffaa00; color:#000; padding:2px 8px; border-radius:12px; font-size:12px; }
-        #manualText { flex:1; font-family:monospace; letter-spacing:1px; color:#0066cc; }
-        #labelButtons { height:42px; background:#7496C4; display:flex; align-items:center; justify-content:space-between; border-radius:4px; border:2px solid #3a5f8a; margin:8px 12px 0 12px; padding:0 20px; font-weight:700; font-size:18px; color:#fff; flex-shrink:0; box-shadow:inset 0 -2px 0 #3a5f8a; }
-        #labelButtons span { cursor:pointer; padding:4px 12px; background:transparent; text-shadow:1px 1px 0 #1f3f5c; }
-        #labelButtons span:active { background:#27ae60; border-radius:4px; }
-        #divider { color: rgba(255,255,255,0.7); padding:0 !important; }
-        #navBar { height:36px; background:linear-gradient(180deg,#4a7aa8 0%,#2b4b70 100%); display:flex; align-items:center; justify-content:space-between; border-radius:4px; border:1px solid #1f3f5c; margin:8px 12px 0 12px; padding:0 16px; font-weight:700; font-size:14px; color:#fff; flex-shrink:0; }
-        #navBar button { background:transparent; border:none; color:white; font-size:20px; font-weight:700; cursor:pointer; padding:4px 8px; }
-        #navBar button:active { color:#4CAF50; }
-        #keypadWrapper { width:100%; background:linear-gradient(180deg,#2b4b70 0%,#1f3f5c 100%); border-top:3px solid #ffcc00; margin-top:auto; flex-shrink:0; z-index:2; padding-bottom:4px; }
-        #keyTabs{display:flex; gap:8px; padding:8px 12px 4px 12px;} 
-        #keyTabs button{flex:1; background:#3a5f8a; border:2px solid #1f3f5c; border-radius:30px; color:#fff; font-size:14px; font-weight:700; padding:8px 0; cursor:pointer;}
-        #keyTabs button.active{background:#4CAF50; border-color:#145018;}
-        #keyTabs button:active{background:#66BB6A;}
-        #numericPad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:6px 15px 10px 15px;}
-        #numericPad button{background:linear-gradient(180deg,#5a7a9a 0%,#3a5f8a 100%); border:1px solid #1f3f5c; border-radius:6px;color:#fff; font-size:22px; font-weight:700; height:48px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 3px 0 #1f3f5c;}
-        #numericPad button:active{transform:translateY(2px); background:#4CAF50;}
-        #numericPad button.backspace{background:linear-gradient(180deg,#3a5f8a 0%,#2b4b70 100%);}
-        #qwertyPad, #symbolPad{display:none; padding:0 8px 12px 8px;}
-        .row{display:flex; gap:4px; margin-bottom:4px; justify-content:center;}
-        .row button{flex:1; max-width:32px; background:linear-gradient(180deg,#5a7a9a 0%,#3a5f8a 100%); border:1px solid #1f3f5c; border-radius:6px; color:#fff; font-size:16px; font-weight:700; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 0 #1f3f5c;}
-        .row button:active{transform:translateY(2px); background:#4CAF50;}
-        .row button.special{background:linear-gradient(180deg,#3a5f8a 0%,#2b4b70 100%); max-width:50px;}
-        .row button.space{flex:3; max-width:200px;}
-        #statusScreen{display:none; flex-direction:column; position:absolute; top:38px; left:0; right:0; bottom:0; background:rgba(28,48,70,0.98); z-index:100; padding:20px 16px; overflow-y:auto; gap:10px;}
-        .statusBtn{background:linear-gradient(180deg,#3f6b9c 0%,#2b4b70 100%); border:2px solid #ffcc00; color:white; font-size:18px; font-weight:700; padding:16px 8px; text-align:center; border-radius:8px; cursor:pointer;}
-        .statusBtn:active{background:#4CAF50;}
-        .statusBtn.back{background:linear-gradient(180deg,#3a5f8a 0%,#1f3f5c 100%); border-color:#f1c40f; margin-top:25px;}
-        #successPopup{display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;}
-        .popup-content{background:linear-gradient(180deg,#3f6b9c 0%,#2b4b70 100%); border:3px solid #27ae60; border-radius:20px; padding:30px 20px; text-align:center; width:280px; animation:fadePop 0.2s;}
-        .checkmark{width:70px;height:70px;background:#27ae60;border-radius:50%; font-size:48px; display:flex; align-items:center; justify-content:center; margin:0 auto 15px auto; color:white;}
-        .popup-message{font-size:20px; font-weight:700;}
-        .popup-submessage{color:#ffcc00;font-size:15px;margin-top:5px;}
-        .eta-info{color:#4CAF50;font-size:14px;margin-top:10px;border-top:1px solid #fff;padding-top:10px;}
-        @keyframes fadePop{0%{opacity:0;transform:scale(0.7);}100%{opacity:1;transform:scale(1);}}
-        #labelBox::-webkit-scrollbar{width:4px;} 
-        #labelBox::-webkit-scrollbar-thumb{background:#1f3f5c;}
-        #barcodeType{font-size:10px;color:#ffcc00;margin-left:5px;font-weight:normal;}
-        #errorMessage{color:#ff4444;text-align:center;padding:10px;font-size:14px;display:none;}
+        /* LABEL BLOCK - monochrome industrial display */
+        #labelBlock { 
+            display: flex; 
+            flex-direction: column; 
+            flex: 1; 
+            min-height: 0; 
+            width: 100%; 
+            margin-top: 8px; 
+        }
+        #labelTitle { 
+            height: 36px; 
+            background: #1a2f3f; 
+            border: 2px solid #5a7a8a; 
+            display: flex; 
+            align-items: center; 
+            padding-left: 16px; 
+            margin: 0 12px; 
+            font-size: 18px; 
+            color: #ffaa00; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        #labelBox { 
+            width: calc(100% - 24px); 
+            min-height: 90px; 
+            max-height: 130px; 
+            margin: 0 auto; 
+            border: 4px solid #5a7a8a; 
+            background: #c0d0e0; 
+            padding: 8px; 
+            font-size: 18px; 
+            font-weight: 700; 
+            color: #000; 
+            overflow-y: auto; 
+            word-break: break-all; 
+            font-family: 'Courier New', monospace; 
+            box-shadow: inset 0 0 0 2px #2a3a4a;
+        }
+        #labelBox span.scan-entry { 
+            display: block; 
+            border-bottom: 3px solid #2a4a6a; 
+            background: #e0e8f0; 
+            padding: 6px 8px; 
+            margin: 4px 0; 
+            font-weight: 700; 
+            color: #000; 
+            font-size: 18px;
+        }
+        #labelBox span.scan-entry:last-child { border-bottom: none; }
+
+        /* MANUAL INPUT BAR - high visibility */
+        #manualInputDiv { 
+            background: #ffffaa; 
+            border: 4px solid #ffaa00; 
+            margin: 4px 12px; 
+            padding: 8px; 
+            font-weight: bold; 
+            color: #000; 
+            display: none; 
+            align-items: center; 
+            gap: 12px; 
+            font-size: 18px;
+        }
+        #manualIndicator { 
+            background: #ffaa00; 
+            color: #000; 
+            padding: 4px 12px; 
+            font-size: 16px; 
+            text-transform: uppercase;
+        }
+        #manualText { 
+            flex: 1; 
+            font-family: 'Courier New', monospace; 
+            letter-spacing: 1px; 
+            color: #0066aa; 
+            font-size: 18px;
+        }
+
+        /* BUTTON BAR - industrial controls */
+        #labelButtons { 
+            height: 48px; 
+            background: #2a4a5a; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-around; 
+            border: 4px solid #0f2a3a; 
+            margin: 8px 12px 0 12px; 
+            padding: 0; 
+            font-weight: 700; 
+            font-size: 20px; 
+            color: #fff; 
+            text-transform: uppercase;
+        }
+        #labelButtons span { 
+            cursor: pointer; 
+            padding: 8px 16px; 
+            background: transparent; 
+            border-right: 2px solid #5a7a8a;
+            flex: 1;
+            text-align: center;
+        }
+        #labelButtons span:last-child { border-right: none; }
+        #labelButtons span:active { background: #0f6a2a; }
+
+        /* NAV BAR */
+        #navBar { 
+            height: 40px; 
+            background: #0f1f2a; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            border: 3px solid #5a7a8a; 
+            margin: 8px 12px 0 12px; 
+            padding: 0 16px; 
+            font-weight: 700; 
+            font-size: 16px; 
+            color: #ffaa00; 
+            text-transform: uppercase;
+        }
+        #navBar button { 
+            background: transparent; 
+            border: 2px solid #7a9aaf; 
+            color: white; 
+            font-size: 18px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            padding: 4px 10px; 
+        }
+        #navBar button:active { background: #4CAF50; }
+
+        /* KEYPAD WRAPPER - industrial key section */
+        #keypadWrapper { 
+            width: 100%; 
+            background: #0f1f2a; 
+            border-top: 6px solid #ffaa00; 
+            margin-top: auto; 
+            flex-shrink: 0; 
+        }
+        #keyTabs {
+            display: flex; 
+            gap: 8px; 
+            padding: 8px 12px 4px 12px;
+        } 
+        #keyTabs button { 
+            flex: 1; 
+            background: #1a3a4a; 
+            border: 3px solid #0f2a3a; 
+            color: #fff; 
+            font-size: 18px; 
+            font-weight: 700; 
+            padding: 8px 0; 
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        #keyTabs button.active { 
+            background: #ffaa00; 
+            border-color: #aa5500; 
+            color: #000; 
+        }
+        #keyTabs button:active { background: #5a9aaf; }
+
+        /* Numeric pad - big buttons */
+        #numericPad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 6px 15px 10px 15px;
+        }
+        #numericPad button {
+            background: #1a3a4a;
+            border: 3px solid #0f2a3a;
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #0f1a1f;
+        }
+        #numericPad button:active {
+            transform: translateY(2px);
+            background: #ffaa00;
+            color: #000;
+        }
+        #numericPad button.backspace {
+            background: #3a1a1a;
+            font-size: 26px;
+        }
+
+        /* QWERTY and SYM pads */
+        #qwertyPad, #symbolPad { 
+            display: none; 
+            padding: 0 8px 12px 8px; 
+        }
+        .row { 
+            display: flex; 
+            gap: 6px; 
+            margin-bottom: 6px; 
+            justify-content: center; 
+        }
+        .row button { 
+            flex: 1; 
+            max-width: 40px; 
+            background: #1a3a4a; 
+            border: 3px solid #0f2a3a; 
+            color: #fff; 
+            font-size: 20px; 
+            font-weight: 700; 
+            height: 48px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            box-shadow: 0 3px 0 #0f1a1f;
+        }
+        .row button:active { 
+            transform: translateY(2px); 
+            background: #ffaa00; 
+            color: #000; 
+        }
+        .row button.special { 
+            background: #2a1a3a; 
+            max-width: 60px; 
+        }
+        .row button.space { 
+            flex: 3; 
+            max-width: 220px; 
+            background: #2a4a5a;
+        }
+
+        /* STATUS SCREEN (menu) */
+        #statusScreen { 
+            display: none; 
+            flex-direction: column; 
+            position: absolute; 
+            top: 38px; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background: #0a1a2ae0; 
+            z-index: 100; 
+            padding: 20px 16px; 
+            gap: 10px; 
+            border-top: 6px solid #ffaa00;
+        }
+        .statusBtn { 
+            background: #1a3a4a; 
+            border: 4px solid #ffaa00; 
+            color: white; 
+            font-size: 22px; 
+            font-weight: 700; 
+            padding: 16px 8px; 
+            text-align: center; 
+            cursor: pointer; 
+            text-transform: uppercase;
+        }
+        .statusBtn:active { background: #4CAF50; }
+        .statusBtn.back { 
+            background: #2a1a1a; 
+            border-color: #aa5500; 
+            margin-top: 25px; 
+        }
+
+        /* SUCCESS POPUP - industrial confirmation */
+        #successPopup { 
+            display: none; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.8); 
+            z-index: 1000; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .popup-content { 
+            background: #1a3a4a; 
+            border: 8px solid #ffaa00; 
+            padding: 30px 20px; 
+            text-align: center; 
+            width: 300px; 
+        }
+        .checkmark { 
+            width: 70px; 
+            height: 70px; 
+            background: #2a7a2a; 
+            font-size: 50px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 0 auto 15px auto; 
+            color: white; 
+            border: 4px solid #ffaa00;
+        }
+        .popup-message { 
+            font-size: 28px; 
+            font-weight: 700; 
+            color: #ffaa00; 
+        }
+        .eta-info { 
+            color: #fff; 
+            font-size: 16px; 
+            margin-top: 10px; 
+            border-top: 2px solid #ffaa00; 
+            padding-top: 10px; 
+        }
+        #errorMessage { 
+            color: #ff5555; 
+            text-align: center; 
+            padding: 10px; 
+            font-size: 18px; 
+            display: none; 
+            background: #000;
+            border: 2px solid red;
+        }
+        /* scrollbar */
+        #labelBox::-webkit-scrollbar { width: 6px; } 
+        #labelBox::-webkit-scrollbar-thumb { background: #ffaa00; }
     </style>
 </head>
 <body>
-    <!-- PHONE CONTAINER EXACT SIZE -->
-    <div id="phone">
-        <!-- Header -->
+    <div id="device">
+        <!-- HEADER - no emojis -->
         <div id="header">
-            <span id="leftText">Alcatel 7046T</span>
-            <div id="rightArea">
-                <span id="gpsIndicator">📍</span>
+            <span>ALCATEL 7046T</span>
+            <div class="right">
+                <span>GPS</span>
                 <span id="timeDisplay">14:28</span>
             </div>
         </div>
 
-        <!-- Scan button (starts camera) - FIXED: now directly calls initQuagga -->
+        <!-- SCAN BUTTON (triggers camera) -->
         <div id="scanButton">
-            <span class="icon"></span> SCAN BARCODE
+            <span class="btn-icon">[+]</span> SCAN <span class="btn-icon">[+]</span>
         </div>
 
-        <!-- Camera + brackets (hidden until scan) -->
+        <!-- CAMERA FRAME -->
         <div id="scanFrame">
-            <div id="scanner-container" style="width:100%;height:100%; position:relative;">
-                <!-- Quagga will insert video and canvas here -->
-            </div>
-            <!-- static corner brackets (overlay) -->
+            <video id="preview"></video>
             <div class="corner-bracket corner-tl"></div>
             <div class="corner-bracket corner-tr"></div>
             <div class="corner-bracket corner-bl"></div>
             <div class="corner-bracket corner-br"></div>
         </div>
 
-        <!-- Label area -->
+        <!-- LABEL AREA -->
         <div id="labelBlock">
-            <div id="labelTitle">📋 SCANNED / MANUAL <span id="barcodeType"></span></div>
-            <div id="labelBox">
-                <!-- dynamic entries appear here -->
-                <span class="scan-entry">—</span>
-            </div>
-            <!-- Manual entry indicator -->
+            <div id="labelTitle">SCANNED DATA</div>
+            <div id="labelBox"><span class="scan-entry">---</span></div>
+            <!-- manual entry indicator -->
             <div id="manualInputDiv">
-                <span id="manualIndicator">✏️ MANUAL</span>
+                <span id="manualIndicator">MANUAL</span>
                 <span id="manualText"></span>
             </div>
-            <!-- label buttons (send, clear, flash) -->
+            <!-- control buttons -->
             <div id="labelButtons">
-                <span id="sendBtn">📤 SEND</span>
-                <span id="divider">|</span>
-                <span id="clearBtn">🗑️ CLEAR</span>
-                <span id="divider">|</span>
-                <span id="flashBtn">🔦 FLASH</span>
+                <span id="sendBtn">SEND</span>
+                <span id="clearBtn">CLEAR</span>
+                <span id="flashBtn">FLASH</span>
             </div>
         </div>
 
-        <!-- Navbar (status & settings) -->
+        <!-- NAV BAR -->
         <div id="navBar">
-            <button id="statusMenuBtn">📊</button>
+            <button id="statusMenuBtn">MENU</button>
             <span>XEON LINK</span>
-            <button id="closeSettings">⚙️</button>
+            <button id="closeSettings">CFG</button>
         </div>
 
-        <!-- Keypad tabs: QWERTY / 123 / SYM -->
+        <!-- KEYPAD SECTION (industrial) -->
         <div id="keypadWrapper">
             <div id="keyTabs">
                 <button id="tabQwerty" class="active">QWERTY</button>
                 <button id="tabNumeric">123</button>
                 <button id="tabSymbol">SYM</button>
             </div>
-            <!-- numeric pad (123) -->
+            <!-- numeric pad -->
             <div id="numericPad">
                 <button>1</button><button>2</button><button>3</button>
                 <button>4</button><button>5</button><button>6</button>
                 <button>7</button><button>8</button><button>9</button>
-                <button>.</button><button>0</button><button class="backspace">⌫</button>
+                <button>.</button><button>0</button><button class="backspace">DEL</button>
             </div>
             <!-- qwerty pad -->
             <div id="qwertyPad">
                 <div class="row"><button>Q</button><button>W</button><button>E</button><button>R</button><button>T</button><button>Y</button><button>U</button><button>I</button><button>O</button><button>P</button></div>
-                <div class="row"><button>A</button><button>S</button><button>D</button><button>F</button><button>G</button><button>H</button><button>J</button><button>K</button><button>L</button><button class="special">⌫</button></div>
-                <div class="row"><button>Z</button><button>X</button><button>C</button><button>V</button><button>B</button><button>N</button><button>M</button><button class="special">⏎</button></div>
-                <div class="row"><button class="space">⎵ SPACE</button></div>
+                <div class="row"><button>A</button><button>S</button><button>D</button><button>F</button><button>G</button><button>H</button><button>J</button><button>K</button><button>L</button><button class="special">DEL</button></div>
+                <div class="row"><button>Z</button><button>X</button><button>C</button><button>V</button><button>B</button><button>N</button><button>M</button><button class="special">ENT</button></div>
+                <div class="row"><button class="space">SPACE</button></div>
             </div>
             <!-- symbol pad -->
             <div id="symbolPad">
                 <div class="row"><button>!</button><button>@</button><button>#</button><button>$</button><button>%</button><button>^</button><button>&</button><button>*</button><button>(</button><button>)</button></div>
                 <div class="row"><button>-</button><button>_</button><button>=</button><button>+</button><button>[</button><button>]</button><button>{</button><button>}</button><button>\</button><button>|</button></div>
-                <div class="row"><button>;</button><button>:</button><button>'</button><button>"</button><button>,</button><button>.</button><button>/</button><button>?</button><button class="backspace">⌫</button></div>
+                <div class="row"><button>;</button><button>:</button><button>'</button><button>"</button><button>,</button><button>.</button><button>/</button><button>?</button><button class="backspace">DEL</button></div>
                 <div class="row"><button class="space">SPACE</button></div>
             </div>
         </div>
 
-        <!-- Status screen popup (hidden) -->
+        <!-- STATUS MENU (hidden) -->
         <div id="statusScreen">
-            <div class="statusBtn">🔄 REINIT CAMERA</div>
-            <div class="statusBtn">📡 XEON CONNECTION</div>
-            <div class="statusBtn">🗑️ CLEAR ALL</div>
-            <div class="statusBtn back">⬅ BACK</div>
+            <div class="statusBtn">REINIT CAMERA</div>
+            <div class="statusBtn">XANO STATUS</div>
+            <div class="statusBtn">CLEAR ALL</div>
+            <div class="statusBtn back">BACK</div>
         </div>
 
-        <!-- Success popup (after XEON send) -->
+        <!-- SUCCESS POPUP -->
         <div id="successPopup">
             <div class="popup-content">
                 <div class="checkmark">✓</div>
                 <div class="popup-message">SENT TO XEON</div>
-                <div class="popup-submessage">via XANO endpoint</div>
-                <div class="eta-info">⚡ 200 OK</div>
+                <div class="eta-info">XANO 200 OK</div>
             </div>
         </div>
         <div id="errorMessage"></div>
@@ -194,43 +555,46 @@
 
     <script>
         (function() {
-            // --- XANO endpoint (universal scans) - FIXED: matches expected schema ---
+            // ---------- CONFIG ----------
             const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
-
-            // --- UI elements ---
-            const scanButton = document.getElementById('scanButton');
+            
+            // UI elements
+            const scanBtn = document.getElementById('scanButton');
             const scanFrame = document.getElementById('scanFrame');
+            const preview = document.getElementById('preview');
             const labelBox = document.getElementById('labelBox');
-            const barcodeSpan = document.getElementById('barcodeType');
-            const flashBtn = document.getElementById('flashBtn');
+            const manualDiv = document.getElementById('manualInputDiv');
+            const manualText = document.getElementById('manualText');
             const sendBtn = document.getElementById('sendBtn');
             const clearBtn = document.getElementById('clearBtn');
+            const flashBtn = document.getElementById('flashBtn');
             const statusMenuBtn = document.getElementById('statusMenuBtn');
             const statusScreen = document.getElementById('statusScreen');
-            const backStatus = document.querySelector('.statusBtn.back');
+            const backBtn = document.querySelector('.statusBtn.back');
             const successPopup = document.getElementById('successPopup');
-            const numericPad = document.getElementById('numericPad');
-            const qwertyPad = document.getElementById('qwertyPad');
-            const symbolPad = document.getElementById('symbolPad');
+            const errorDiv = document.getElementById('errorMessage');
+            
+            // Tabs & keypads
             const tabQwerty = document.getElementById('tabQwerty');
             const tabNumeric = document.getElementById('tabNumeric');
             const tabSymbol = document.getElementById('tabSymbol');
-            const manualTextSpan = document.getElementById('manualText');
-            const manualInputDiv = document.getElementById('manualInputDiv');
-            const errorDiv = document.getElementById('errorMessage');
-
-            // state
-            let quaggaInitialized = false;
+            const numericPad = document.getElementById('numericPad');
+            const qwertyPad = document.getElementById('qwertyPad');
+            const symbolPad = document.getElementById('symbolPad');
+            
+            // State
+            let scanner = null;                // Instascan scanner instance
+            let activeCamera = null;
             let torchActive = false;
-            let currentManual = '';
-            let lastScannedCode = '';
             let scanEntries = [];
+            let currentManual = '';
+            let lastScan = '';
 
-            // --- helper update labelbox from scanEntries array ---
+            // ---------- helper: update label box ----------
             function updateLabelBox() {
                 let html = '';
                 if (scanEntries.length === 0) {
-                    html = '<span class="scan-entry">—</span>';
+                    html = '<span class="scan-entry">---</span>';
                 } else {
                     const recent = scanEntries.slice(-3).reverse();
                     recent.forEach(code => {
@@ -238,255 +602,220 @@
                     });
                 }
                 labelBox.innerHTML = html;
-                if (scanEntries.length > 0) {
-                    lastScannedCode = scanEntries[scanEntries.length-1];
-                } else {
-                    lastScannedCode = '';
-                }
+                if (scanEntries.length > 0) lastScan = scanEntries[scanEntries.length-1];
+                else lastScan = '';
             }
 
-            // --- send to XANO (XEON) - FIXED: proper payload and error handling ---
-            async function sendToXeon(barcodeValue) {
-                if (!barcodeValue || barcodeValue === '—' || barcodeValue === '') {
-                    alert('No barcode or manual entry to send');
+            // ---------- XANO send (industrial) ----------
+            async function sendToXeon(value) {
+                if (!value || value.trim() === '') {
+                    alert('NO DATA');
                     return;
                 }
                 try {
-                    // FIX: Ensure payload matches XANO expected fields (qr_scans likely expects 'code' or 'data')
-                    // Also add device identifier
                     const payload = { 
-                        code: barcodeValue,           // common field name
-                        device: 'Alcatel7046T',
-                        timestamp: new Date().toISOString() 
+                        code: value.trim(),
+                        device: 'ALCATEL7046T',
+                        timestamp: new Date().toISOString()
                     };
-                    
-                    const response = await fetch(XANO_URL, {
+                    const resp = await fetch(XANO_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-                    
-                    if (response.ok) {
+                    if (resp.ok) {
                         successPopup.style.display = 'flex';
-                        setTimeout(() => { successPopup.style.display = 'none'; }, 1500);
+                        setTimeout(() => successPopup.style.display = 'none', 1200);
                     } else {
-                        const errText = await response.text();
-                        console.error('XANO error:', response.status, errText);
-                        alert('XANO error: ' + response.status + ' - check console');
+                        const txt = await resp.text();
                         errorDiv.style.display = 'block';
-                        errorDiv.innerText = 'Error ' + response.status;
-                        setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
+                        errorDiv.innerText = 'ERR ' + resp.status;
+                        setTimeout(() => errorDiv.style.display = 'none', 2000);
                     }
                 } catch (e) {
-                    alert('Network error: ' + e.message);
+                    alert('NETWORK ERROR');
                 }
             }
 
-            // --- Quagga init (rear camera, many barcode types) - FIXED: better constraints for Android 5 ---
-            function initQuagga() {
-                // Hide any previous error
-                errorDiv.style.display = 'none';
-                
-                if (quaggaInitialized) {
-                    try { Quagga.stop(); } catch(e) {}
-                    quaggaInitialized = false;
+            // ---------- start scanner (Instascan) ----------
+            function startScanner() {
+                if (scanner) {
+                    scanner.stop();
                 }
+                // Instascan works on Android 5, no fancy constructors
+                scanner = new Instascan.Scanner({ 
+                    video: preview,
+                    mirror: false,
+                    scanPeriod: 3,
+                    refractoryPeriod: 5000  // avoid duplicate spam
+                });
                 
-                // Show frame
-                scanFrame.style.display = 'block';
-                
-                Quagga.init({
-                    inputStream: {
-                        name: "Live",
-                        type: "LiveStream",
-                        target: document.querySelector('#scanner-container'),
-                        constraints: {
-                            width: 440,
-                            height: 220,
-                            facingMode: "environment",   // rear camera
-                            aspectRatio: 440/220
-                        },
-                    },
-                    decoder: {
-                        readers: [
-                            "code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader",
-                            "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader",
-                            "i2of5_reader", "2of5_reader", "code_93_reader", "pdf417_reader"
-                        ]
-                    },
-                    locate: true,
-                    numOfWorkers: 0,
-                    frequency: 3,
-                }, function(err) {
-                    if (err) {
-                        console.error('Quagga init error:', err);
-                        errorDiv.style.display = 'block';
-                        errorDiv.innerText = 'Camera error: ' + (err.message || 'unknown');
-                        return;
-                    }
-                    quaggaInitialized = true;
-                    Quagga.start();
-
-                    // onDetected - FIX: add code to list
-                    Quagga.onDetected(function(result) {
-                        if (result && result.codeResult && result.codeResult.code) {
-                            const code = result.codeResult.code;
-                            // avoid rapid duplicates
-                            if (scanEntries.length === 0 || scanEntries[scanEntries.length-1] !== code) {
-                                scanEntries.push(code);
-                                if (scanEntries.length > 5) scanEntries.shift();
-                                updateLabelBox();
-                                barcodeSpan.innerText = ' (scan)';
-                            }
+                scanner.addListener('scan', function(content) {
+                    if (content && content.length > 0) {
+                        // add to list
+                        if (scanEntries.length === 0 || scanEntries[scanEntries.length-1] !== content) {
+                            scanEntries.push(content);
+                            if (scanEntries.length > 5) scanEntries.shift();
+                            updateLabelBox();
                         }
-                    });
+                    }
+                });
+
+                // request camera
+                Instascan.Camera.getCameras().then(function(cameras) {
+                    if (cameras.length > 0) {
+                        // find rear camera
+                        const rear = cameras.find(c => c.name.toLowerCase().includes('back') || c.name.toLowerCase().includes('rear'));
+                        activeCamera = rear || cameras[0];
+                        scanner.start(activeCamera);
+                        scanFrame.style.display = 'block';
+                        errorDiv.style.display = 'none';
+                    } else {
+                        errorDiv.style.display = 'block';
+                        errorDiv.innerText = 'NO CAMERA';
+                    }
+                }).catch(function(e) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerText = 'CAMERA ERROR';
                 });
             }
 
-            // --- Flash toggle (FIX: use torch if available) ---
+            // ---------- flash (torch) ----------
             function toggleFlash() {
-                if (!quaggaInitialized) { 
-                    alert('Start scanner first'); 
-                    return; 
-                }
-                const track = Quagga.CameraAccess.getActiveTrack();
-                if (!track) {
-                    alert('No camera track');
+                if (!scanner || !activeCamera) {
+                    alert('START SCANNER FIRST');
                     return;
                 }
-                torchActive = !torchActive;
-                // attempt with advanced constraint
-                track.applyConstraints({ advanced: [{ torch: torchActive }] }).catch(e => {
-                    // fallback for older Android
-                    track.applyConstraints({ torch: torchActive }).catch(()=>{
-                        alert('Flash not supported on this device');
-                        torchActive = false;
+                // Instascan doesn't have direct flash, but we can try via video track
+                const videoTrack = preview.srcObject?.getVideoTracks()[0];
+                if (videoTrack && videoTrack.applyConstraints) {
+                    torchActive = !torchActive;
+                    videoTrack.applyConstraints({ advanced: [{ torch: torchActive }] }).catch(()=>{
+                        // fallback
+                        videoTrack.applyConstraints({ torch: torchActive }).catch(()=>{
+                            alert('FLASH NOT SUPPORTED');
+                            torchActive = false;
+                        });
                     });
-                });
-                flashBtn.innerHTML = torchActive ? '🔦 FLASH ON' : '🔦 FLASH';
+                    flashBtn.innerText = torchActive ? 'FLASH ON' : 'FLASH';
+                } else {
+                    alert('NO FLASH CONTROL');
+                }
             }
 
-            // --- Keypad handling (manual entry) ---
-            function handleKeypadInput(key) {
-                if (key === '⌫') {
+            // ---------- manual keypad ----------
+            function handleKeyInput(key) {
+                if (key === 'DEL') {
                     currentManual = currentManual.slice(0, -1);
-                } else if (key === '⏎') {
-                    // treat as newline? ignore
-                } else if (key === '⎵ SPACE' || key === 'SPACE') {
+                } else if (key === 'ENT' || key === 'SPACE') {
                     currentManual += ' ';
                 } else {
                     currentManual += key;
                 }
-                manualTextSpan.innerText = currentManual || ' ';
-                manualInputDiv.style.display = 'flex';
+                manualText.innerText = currentManual || ' ';
+                manualDiv.style.display = 'flex';
             }
 
-            // --- clear manual / reset ---
-            clearBtn.addEventListener('click', ()=>{
-                scanEntries = [];
-                currentManual = '';
-                manualTextSpan.innerText = '';
-                manualInputDiv.style.display = 'none';
-                updateLabelBox();
-            });
-
-            // --- send button - FIX: prioritizes scanned code, then manual ---
-            sendBtn.addEventListener('click', ()=>{
-                let toSend = '';
-                if (lastScannedCode) {
-                    toSend = lastScannedCode;
-                } else if (currentManual.trim() !== '') {
-                    toSend = currentManual;
-                } else {
-                    // if nothing, try last manual?
-                    toSend = currentManual;
-                }
-                if (!toSend || toSend === '') {
-                    alert('No data to send');
-                    return;
-                }
-                sendToXeon(toSend);
-            });
-
-            // --- Scan button: FIXED to always call initQuagga ---
-            scanButton.addEventListener('click', ()=>{
-                initQuagga();
-            });
-
-            // --- flash button ---
-            flashBtn.addEventListener('click', toggleFlash);
-
-            // --- status menu ---
-            statusMenuBtn.addEventListener('click', ()=>{
-                statusScreen.style.display = 'flex';
-            });
-            backStatus.addEventListener('click', ()=>{
-                statusScreen.style.display = 'none';
-            });
-
-            // Reinit camera from status
-            document.querySelectorAll('.statusBtn')[0].addEventListener('click', ()=>{
-                if (quaggaInitialized) Quagga.stop();
-                quaggaInitialized = false;
-                initQuagga();
-                statusScreen.style.display = 'none';
-            });
-
-            // Clear all from status
-            document.querySelectorAll('.statusBtn')[2].addEventListener('click', ()=>{
-                scanEntries = [];
-                currentManual = '';
-                manualTextSpan.innerText = '';
-                manualInputDiv.style.display = 'none';
-                updateLabelBox();
-                statusScreen.style.display = 'none';
-            });
-
-            // --- Tab switching ---
-            tabQwerty.addEventListener('click', ()=>{
-                tabQwerty.classList.add('active'); tabNumeric.classList.remove('active'); tabSymbol.classList.remove('active');
-                qwertyPad.style.display = 'block'; numericPad.style.display = 'none'; symbolPad.style.display = 'none';
-            });
-            tabNumeric.addEventListener('click', ()=>{
-                tabNumeric.classList.add('active'); tabQwerty.classList.remove('active'); tabSymbol.classList.remove('active');
-                numericPad.style.display = 'grid'; qwertyPad.style.display = 'none'; symbolPad.style.display = 'none';
-            });
-            tabSymbol.addEventListener('click', ()=>{
-                tabSymbol.classList.add('active'); tabQwerty.classList.remove('active'); tabNumeric.classList.remove('active');
-                symbolPad.style.display = 'block'; numericPad.style.display = 'none'; qwertyPad.style.display = 'none';
-            });
-
-            // --- keypad events ---
-            function attachKeypadEvents(container) {
-                container.addEventListener('click', (e)=>{
+            // ---------- attach keypad listeners ----------
+            function attachKeypad(container) {
+                container.addEventListener('click', (e) => {
                     if (e.target.tagName === 'BUTTON') {
-                        let key = e.target.innerText;
-                        handleKeypadInput(key);
+                        handleKeyInput(e.target.innerText);
                     }
                 });
             }
-            attachKeypadEvents(numericPad);
-            attachKeypadEvents(qwertyPad);
-            attachKeypadEvents(symbolPad);
+            attachKeypad(numericPad);
+            attachKeypad(qwertyPad);
+            attachKeypad(symbolPad);
 
-            // --- time mock ---
-            function updateTime() {
-                const d = new Date();
-                document.getElementById('timeDisplay').innerText = d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
-            }
-            setInterval(updateTime,1000);
-            updateTime();
+            // ---------- UI event listeners ----------
+            scanBtn.addEventListener('click', startScanner);
 
-            // Close settings (dummy)
-            document.getElementById('closeSettings').addEventListener('click', ()=>{});
-
-            // Stop scanner on page unload
-            window.addEventListener('beforeunload', ()=>{
-                if (quaggaInitialized) Quagga.stop();
+            sendBtn.addEventListener('click', ()=>{
+                let out = lastScan || currentManual;
+                if (!out || out === '') {
+                    alert('NO DATA');
+                    return;
+                }
+                sendToXeon(out);
             });
 
-            // Hide success popup on click
-            successPopup.addEventListener('click', ()=>{ successPopup.style.display='none'; });
+            clearBtn.addEventListener('click', ()=>{
+                scanEntries = [];
+                currentManual = '';
+                manualText.innerText = '';
+                manualDiv.style.display = 'none';
+                updateLabelBox();
+            });
+
+            flashBtn.addEventListener('click', toggleFlash);
+
+            statusMenuBtn.addEventListener('click', ()=>{
+                statusScreen.style.display = 'flex';
+            });
+
+            backBtn.addEventListener('click', ()=>{
+                statusScreen.style.display = 'none';
+            });
+
+            document.querySelectorAll('.statusBtn')[0].addEventListener('click', ()=>{
+                if (scanner) scanner.stop();
+                startScanner();
+                statusScreen.style.display = 'none';
+            });
+
+            document.querySelectorAll('.statusBtn')[2].addEventListener('click', ()=>{
+                scanEntries = [];
+                currentManual = '';
+                manualText.innerText = '';
+                manualDiv.style.display = 'none';
+                updateLabelBox();
+                statusScreen.style.display = 'none';
+            });
+
+            // tabs
+            tabQwerty.addEventListener('click', ()=>{
+                tabQwerty.classList.add('active');
+                tabNumeric.classList.remove('active');
+                tabSymbol.classList.remove('active');
+                qwertyPad.style.display = 'block';
+                numericPad.style.display = 'none';
+                symbolPad.style.display = 'none';
+            });
+            tabNumeric.addEventListener('click', ()=>{
+                tabNumeric.classList.add('active');
+                tabQwerty.classList.remove('active');
+                tabSymbol.classList.remove('active');
+                numericPad.style.display = 'grid';
+                qwertyPad.style.display = 'none';
+                symbolPad.style.display = 'none';
+            });
+            tabSymbol.addEventListener('click', ()=>{
+                tabSymbol.classList.add('active');
+                tabQwerty.classList.remove('active');
+                tabNumeric.classList.remove('active');
+                symbolPad.style.display = 'block';
+                numericPad.style.display = 'none';
+                qwertyPad.style.display = 'none';
+            });
+
+            // time
+            function updateTime() {
+                const d = new Date();
+                document.getElementById('timeDisplay').innerText = 
+                    d.getHours().toString().padStart(2,'0') + ':' + 
+                    d.getMinutes().toString().padStart(2,'0');
+            }
+            setInterval(updateTime, 1000);
+            updateTime();
+
+            // close popup on click
+            successPopup.addEventListener('click', ()=> successPopup.style.display = 'none');
+            
+            // stop scanner on page exit
+            window.addEventListener('beforeunload', ()=>{
+                if (scanner) scanner.stop();
+            });
         })();
     </script>
 </body>
