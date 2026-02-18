@@ -1,992 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>📦 COURIER SCANNER · XANO</title>
-<style>
-* { 
-    box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent; 
-    margin: 0;
-    padding: 0;
-}
-body { 
-    margin: 0; 
-    background: #000; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    min-height: 100vh; 
-    font-family: Arial, Helvetica, sans-serif; 
-    font-weight: bold; 
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-}
-#phone { 
-    width: 340px; 
-    height: 600px; 
-    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
-    color: #fff; 
-    position: relative; 
-    overflow: hidden; 
-    display: flex; 
-    flex-direction: column; 
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
-    margin: auto;
-    border-radius: 10px;
-}
-#header { 
-    width: 100%; 
-    height: 45px; 
-    background: linear-gradient(180deg, #5180b0 0%, #2e5a88 100%); 
-    border-bottom: 2px solid #1f3f5c; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    padding: 0 8px; 
-    font-weight: bold; 
-    font-size: 16px; 
-    z-index: 2; 
-    flex-shrink: 0; 
-}
-#leftText { color: #fff; } 
-#rightArea { color: #fff; font-size: 14px; display: flex; align-items: center; }
-#rightArea span { margin-left: 6px; }
-#gpsIndicator { color: #ff4444; font-size: 16px; }
-#timeDisplay { color: #ffcc00; font-size: 14px; }
-#scanButton { 
-    width: 310px; 
-    height: 55px; 
-    background: linear-gradient(180deg, #4CAF50 0%, #2b6e2f 100%); 
-    border: 2px solid #1e5a22; 
-    color: #fff; 
-    font-size: 22px; 
-    font-weight: bold; 
-    text-align: center; 
-    line-height: 55px; 
-    margin: 8px auto; 
-    border-radius: 8px; 
-    z-index: 2; 
-    box-shadow: 0 4px 0 #145018; 
-    cursor: pointer; 
-    flex-shrink: 0; 
-}
-#scanButton:active { 
-    margin-top: 11px;
-    box-shadow: 0 1px 0 #145018; 
-    background: #3d9c42; 
-}
-.icon { display: inline-block; width: 20px; height: 14px; background: repeating-linear-gradient(to right, black, black 3px, white 3px, white 6px); }
-#scanFrame { 
-    width: 310px; 
-    height: 200px; 
-    margin: 0 auto; 
-    position: relative; 
-    display: none; 
-    z-index: 3; 
-    overflow: hidden; 
-    flex-shrink: 0; 
-    background: rgba(0,0,0,0.4); 
-    border: 3px solid #ffcc00;
-    border-radius: 8px;
-}
-#preview { width: 100%; height: 100%; object-fit: cover; display: block; }
-.corner-bracket { 
-    position: absolute; 
-    width: 30px; 
-    height: 30px; 
-    border: 4px solid #ffcc00; 
-    pointer-events: none; 
-    z-index: 10; 
-}
-.corner-tl { top: 3px; left: 3px; border-right: none; border-bottom: none; }
-.corner-tr { top: 3px; right: 3px; border-left: none; border-bottom: none; }
-.corner-bl { bottom: 3px; left: 3px; border-right: none; border-top: none; }
-.corner-br { bottom: 3px; right: 3px; border-left: none; border-top: none; }
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Scan Screen</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #0b0b0b;
+      font-family: -apple-system, Roboto, "Segoe UI", sans-serif;
+      color: #ffffff;
+      overflow: hidden;
+    }
 
-#flashlightBtn {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    width: 40px;
-    height: 40px;
-    background: rgba(0,0,0,0.7);
-    border: 2px solid #ffcc00;
-    border-radius: 50%;
-    color: #ffcc00;
-    font-size: 20px;
-    text-align: center;
-    line-height: 40px;
-    cursor: pointer;
-    z-index: 20;
-}
-#flashlightBtn.active {
-    background: #ffcc00;
-    color: #000;
-}
+    .app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      max-width: 360px;
+      max-height: 640px;
+      margin: 0 auto;
+      background: #111111;
+    }
 
-#labelBlock { 
-    display: flex; 
-    flex-direction: column; 
-    flex: 1; 
-    min-height: 0; 
-    width: 100%; 
-    z-index: 2; 
-    margin-top: 2px; 
-}
-#labelTitle { 
-    height: 35px; 
-    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
-    border: 2px solid #1f3f5c; 
-    display: flex; 
-    align-items: center; 
-    padding-left: 12px; 
-    margin: 0 10px; 
-    font-weight: bold; 
-    font-size: 15px; 
-    color: #fff; 
-    flex-shrink: 0; 
-    border-radius: 4px;
-}
-#labelBox { 
-    width: 310px; 
-    min-height: 80px; 
-    max-height: 130px; 
-    margin: 0 auto; 
-    border: 2px solid #1f3f5c; 
-    background: #A6BEEF; 
-    padding: 6px; 
-    font-size: 16px; 
-    font-weight: bold; 
-    color: #000; 
-    overflow-y: auto; 
-    word-break: break-all; 
-    flex-shrink: 0; 
-    line-height: 1.4; 
-    font-family: monospace; 
-    box-shadow: inset 0 0 0 2px #fff; 
-    border-radius: 4px;
-}
-#labelBox span.scan-entry { 
-    display: block; 
-    border-bottom: 1px solid #2b4b70; 
-    background: #c0d4f5; 
-    padding: 4px 6px; 
-    margin: 4px 0; 
-    border-radius: 4px; 
-    font-weight: bold; 
-    color: #000; 
-    font-size: 14px;
-}
-#manualInputDiv { 
-    background: #ffff99; 
-    border: 2px dashed #ffaa00; 
-    border-radius: 4px; 
-    padding: 5px; 
-    margin: 4px 0; 
-    font-weight: bold; 
-    color: #000; 
-    font-size: 14px;
-}
-#labelButtons { 
-    height: 45px; 
-    background: #7496C4; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    border-radius: 6px; 
-    border: 2px solid #3a5f8a; 
-    margin: 8px 10px 0 10px; 
-    padding: 0 15px; 
-    font-weight: bold; 
-    font-size: 20px; 
-    color: #fff; 
-    flex-shrink: 0; 
-}
-#labelButtons span { 
-    cursor: pointer; 
-    padding: 5px 12px; 
-}
-#divider { color: rgba(255,255,255,0.5); }
-#navBar { 
-    height: 40px; 
-    background: linear-gradient(180deg, #4a7aa8 0%, #2b4b70 100%);
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    border-radius: 6px; 
-    border: 2px solid #1f3f5c; 
-    margin: 8px 10px 0 10px; 
-    padding: 0 10px; 
-    font-weight: bold; 
-    font-size: 16px; 
-    color: #fff; 
-    flex-shrink: 0; 
-}
-#navBar button { 
-    background: transparent; 
-    border: none; 
-    color: white; 
-    font-size: 22px; 
-    font-weight: bold; 
-    cursor: pointer; 
-    padding: 5px 10px; 
-}
-#keypadWrapper { 
-    width: 100%; 
-    background: linear-gradient(180deg, #2b4b70 0%, #1f3f5c 100%);
-    border-top: 3px solid #ffcc00; 
-    margin-top: auto; 
-    flex-shrink: 0; 
-    z-index: 2; 
-    padding-bottom: 5px; 
-}
+    /* Header */
+    .header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 48px;
+      background: #181818;
+      border-bottom: 1px solid #262626;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      box-sizing: border-box;
+    }
 
-#qwertyPad {
-    padding: 0 8px 10px 8px;
-}
-#numericPad {
-    display: none;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    padding: 6px 12px 10px 12px;
-}
-#numericPad button {
-    background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
-    border: 2px solid #1f3f5c; 
-    border-radius: 6px;
-    color: #fff; 
-    font-size: 24px; 
-    font-weight: bold; 
-    height: 50px; 
-    cursor: pointer; 
-    box-shadow: 0 3px 0 #1f3f5c;
-}
-#numericPad button:active {
-    margin-top: 2px;
-    box-shadow: 0 1px 0 #1f3f5c;
-    background: #4CAF50;
-}
-.row {
-    display: flex; 
-    gap: 4px; 
-    margin-bottom: 4px; 
-}
-.row button {
-    flex: 1; 
-    background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
-    border: 2px solid #1f3f5c; 
-    border-radius: 6px; 
-    color: #fff; 
-    font-size: 18px; 
-    font-weight: bold; 
-    height: 45px; 
-    cursor: pointer; 
-    box-shadow: 0 2px 0 #1f3f5c;
-}
-.row button:active {
-    margin-top: 2px;
-    box-shadow: 0 0 0 #1f3f5c;
-    background: #4CAF50;
-}
-.row button.space {
-    flex: 3; 
-}
-.row button.fullwidth {
-    flex: 1;
-    width: 100%;
-}
-#statusScreen {
-    display: none; 
-    position: absolute; 
-    top: 45px; 
-    left: 0; 
-    right: 0; 
-    bottom: 0; 
-    background: rgba(28,48,70,0.98); 
-    z-index: 100; 
-    padding: 15px; 
-    overflow-y: auto; 
-}
-.statusBtn {
-    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
-    border: 2px solid #ffcc00; 
-    color: white; 
-    font-size: 18px; 
-    font-weight: bold; 
-    padding: 15px; 
-    text-align: center; 
-    border-radius: 8px; 
-    cursor: pointer; 
-    margin-bottom: 5px;
-}
-.statusBtn.back {
-    background: #3a5f8a; 
-    border-color: #f1c40f; 
-    margin-top: 20px;
-}
-#successPopup {
-    display: none; 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
-    background: rgba(0,0,0,0.8); 
-    z-index: 1000; 
-    text-align: center;
-}
-.popup-content {
-    background: #3f6b9c; 
-    border: 3px solid #27ae60; 
-    border-radius: 20px; 
-    padding: 25px; 
-    width: 280px; 
-    margin: 150px auto; 
-}
-.checkmark {
-    width: 70px;
-    height: 70px;
-    background: #27ae60;
-    border-radius: 50%; 
-    font-size: 50px; 
-    line-height: 70px;
-    margin: 0 auto 15px; 
-    color: white;
-}
-#exitOverlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.95);
-    z-index: 10000;
-    display: none;
-    text-align: center;
-    padding-top: 200px;
-}
-#exitPassword {
-    width: 220px;
-    height: 50px;
-    font-size: 26px;
-    margin: 15px;
-    text-align: center;
-    background: #2b4b70;
-    color: #fff;
-    border: 2px solid #ffcc00;
-    border-radius: 8px;
-    font-weight: bold;
-}
-#exitButton {
-    background: #4CAF50;
-    color: white;
-    font-size: 24px;
-    padding: 12px 30px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: inline-block;
-    margin-right: 10px;
-}
-#cancelButton {
-    background: #ff4444;
-    color: white;
-    font-size: 24px;
-    padding: 12px 30px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: inline-block;
-}
-</style>
+    .header-title {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    /* Main scan area */
+    .content {
+      position: absolute;
+      top: 48px;
+      bottom: 72px;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      padding: 16px;
+    }
+
+    .scan-frame {
+      position: relative;
+      width: 80%;
+      max-width: 260px;
+      aspect-ratio: 1 / 1;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      box-sizing: border-box;
+      background: radial-gradient(circle at 50% 0%, rgba(0, 255, 120, 0.12), transparent 60%);
+    }
+
+    /* Corner accents */
+    .corner {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border: 3px solid #00c853;
+    }
+    .corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+    .corner.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; }
+    .corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+    .corner.br { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+    /* Scan hint text */
+    .hint {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      bottom: -32px;
+      font-size: 12px;
+      color: #b0b0b0;
+    }
+
+    /* Bottom SCAN bar */
+    .bottom-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 72px;
+      background: #101810;
+      border-top: 1px solid #1f2f1f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      padding: 8px 16px;
+    }
+
+    .scan-button {
+      width: 100%;
+      height: 48px;
+      background: #00c853;
+      border-radius: 4px;
+      border: none;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    }
+
+    .scan-button:active {
+      background: #00a844;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) inset;
+    }
+  </style>
 </head>
 <body>
-<div id="phone">
-    <div id="header">
-        <span id="leftText">📦 COURIER</span>
-        <span id="rightArea">
-            <span id="gpsIndicator">🌐</span>
-            <span id="timeDisplay"></span>
-        </span>
-    </div>
-    
-    <div id="scanButton" onclick="startScan()">
-        <span class="icon"></span> SCAN CODE
-    </div>
-    
-    <div id="scanFrame">
-        <video id="preview" autoplay playsinline></video>
-        <div class="corner-bracket corner-tl"></div>
-        <div class="corner-bracket corner-tr"></div>
-        <div class="corner-bracket corner-bl"></div>
-        <div class="corner-bracket corner-br"></div>
-        <div id="flashlightBtn" onclick="toggleFlashlight()">🔦</div>
-    </div>
-    
-    <div id="labelBlock">
-        <div id="labelTitle">SCANNED CODES</div>
-        <div id="labelBox"></div>
-        
-        <div id="labelButtons">
-            <span onclick="clearScans()">CLEAR</span>
-            <span id="divider">|</span>
-            <span onclick="goToStatus()">ENTER</span>
-        </div>
-        
-        <div id="navBar">
-            <button onclick="prevTab()">◄</button>
-            <span id="timeDisplay2"></span>
-            <button onclick="nextTab()">►</button>
-        </div>
-        
-        <div id="keypadWrapper">
-            <div id="qwertyPad">
-                <div class="row">
-                    <button onclick="typeChar('q')">q</button><button onclick="typeChar('w')">w</button><button onclick="typeChar('e')">e</button>
-                    <button onclick="typeChar('r')">r</button><button onclick="typeChar('t')">t</button><button onclick="typeChar('y')">y</button>
-                    <button onclick="typeChar('u')">u</button><button onclick="typeChar('i')">i</button><button onclick="typeChar('o')">o</button><button onclick="typeChar('p')">p</button>
-                </div>
-                <div class="row">
-                    <button onclick="typeChar('a')">a</button><button onclick="typeChar('s')">s</button><button onclick="typeChar('d')">d</button>
-                    <button onclick="typeChar('f')">f</button><button onclick="typeChar('g')">g</button><button onclick="typeChar('h')">h</button>
-                    <button onclick="typeChar('j')">j</button><button onclick="typeChar('k')">k</button><button onclick="typeChar('l')">l</button>
-                </div>
-                <div class="row">
-                    <button onclick="typeChar('z')">z</button><button onclick="typeChar('x')">x</button><button onclick="typeChar('c')">c</button>
-                    <button onclick="typeChar('v')">v</button><button onclick="typeChar('b')">b</button><button onclick="typeChar('n')">n</button>
-                    <button onclick="typeChar('m')">m</button><button onclick="backspace()">⌫</button>
-                </div>
-                <div class="row">
-                    <button onclick="showNumeric()">123</button>
-                    <button class="space" onclick="typeChar(' ')">space</button>
-                    <button onclick="typeChar('.')">.</button>
-                </div>
-            </div>
-            
-            <div id="numericPad">
-                <button onclick="typeChar('1')">1</button>
-                <button onclick="typeChar('2')">2</button>
-                <button onclick="typeChar('3')">3</button>
-                <button onclick="typeChar('4')">4</button>
-                <button onclick="typeChar('5')">5</button>
-                <button onclick="typeChar('6')">6</button>
-                <button onclick="typeChar('7')">7</button>
-                <button onclick="typeChar('8')">8</button>
-                <button onclick="typeChar('9')">9</button>
-                <button onclick="typeChar('.')">.</button>
-                <button onclick="typeChar('0')">0</button>
-                <button onclick="backspace()">⌫</button>
-                <button onclick="showQwerty()" style="grid-column: span 3;">ABC</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="statusScreen">
-        <div class="statusBtn" onclick="submitStatus('Data Received')">Data Received</div>
-        <div class="statusBtn" onclick="submitStatus('Picked Up')">Picked Up</div>
-        <div class="statusBtn" onclick="submitStatus('Depart Post')">Depart Post</div>
-        <div class="statusBtn" onclick="submitStatus('Arrival Scan')">Arrival Scan</div>
-        <div class="statusBtn" onclick="submitStatus('Local Scan')">Local Scan</div>
-        <div class="statusBtn" onclick="submitStatus('Out For Delivery')">Out For Delivery</div>
-        <div class="statusBtn" onclick="submitStatus('Delivered')">Delivered</div>
-        <div class="statusBtn back" onclick="goBackToScan()">BACK</div>
-    </div>
-    
-    <div id="successPopup">
-        <div class="popup-content">
-            <div class="checkmark">✓</div>
-            <div id="popupMessage">Ready</div>
-        </div>
+  <div class="app">
+    <div class="header">
+      <div class="header-title">Scan Barcode</div>
     </div>
 
-    <div id="exitOverlay">
-        <div style="color:#ffcc00; font-size:22px;">🔒 EXIT PASSWORD</div>
-        <input type="password" id="exitPassword" maxlength="6">
-        <div id="exitButton" onclick="checkPassword()">UNLOCK</div>
-        <div id="cancelButton" onclick="closeExit()">CANCEL</div>
+    <div class="content">
+      <div class="scan-frame">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <div class="hint">Align the barcode inside the frame</div>
+      </div>
     </div>
-</div>
 
-<script>
-var scanCount = 0;
-var currentScans = [];
-var manualInput = '';
-var scanning = false;
-var stream = null;
-var scanTimeout = null;
-var flashlightTrack = null;
-var flashlightActive = false;
-var gpsLocation = null;
-var tapCount = 0;
-var tapTimer = null;
-
-var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
-var DEVICE_ID = 'ALCATEL_7046T_01';
-
-function updateTime() {
-    var d = new Date();
-    var month = (d.getMonth() + 1).toString();
-    if (month.length < 2) month = '0' + month;
-    var day = d.getDate().toString();
-    if (day.length < 2) day = '0' + day;
-    var hours = d.getHours();
-    var minutes = d.getMinutes().toString();
-    if (minutes.length < 2) minutes = '0' + minutes;
-    var ampm = hours >= 12 ? 'PM' : 'AM';
-    var hour12 = hours % 12;
-    if (hour12 === 0) hour12 = 12;
-    var timeStr = month + '/' + day + ' ' + hour12 + ':' + minutes + ' ' + ampm;
-    
-    document.getElementById('timeDisplay').innerText = timeStr;
-    document.getElementById('timeDisplay2').innerText = timeStr;
-}
-
-function initGPS() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            function(pos) {
-                gpsLocation = pos.coords.latitude + ',' + pos.coords.longitude;
-                document.getElementById('gpsIndicator').innerHTML = '📍';
-                document.getElementById('gpsIndicator').style.color = '#4CAF50';
-            },
-            function(err) {
-                document.getElementById('gpsIndicator').innerHTML = '🌐';
-                document.getElementById('gpsIndicator').style.color = '#ff4444';
-            }
-        );
-    }
-}
-
-function saveToXano(code, type, status) {
-    var popup = document.getElementById('successPopup');
-    popup.style.display = 'block';
-    document.getElementById('popupMessage').innerHTML = 'Saving...';
-    
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', XANO_URL, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                document.getElementById('popupMessage').innerHTML = '✓ Saved to Xano!';
-                console.log('Xano response:', xhr.responseText);
-                setTimeout(function() { 
-                    popup.style.display = 'none'; 
-                }, 1000);
-            } else {
-                document.getElementById('popupMessage').innerHTML = '✗ Error: ' + xhr.status;
-                console.log('Xano error:', xhr.status, xhr.responseText);
-                setTimeout(function() { 
-                    popup.style.display = 'none'; 
-                }, 2000);
-            }
-        }
-    };
-    
-    xhr.onerror = function() {
-        document.getElementById('popupMessage').innerHTML = '✗ Network Error';
-        setTimeout(function() { 
-            popup.style.display = 'none'; 
-        }, 2000);
-    };
-    
-    var xanoData = {
-        device_id: DEVICE_ID,
-        barcode: code,
-        scan_type: type,
-        scan_status: status,
-        location: gpsLocation || '',
-        timestamp: new Date().toISOString(),
-        scan_number: scanCount
-    };
-    
-    xhr.send(JSON.stringify(xanoData));
-}
-
-function testXanoConnection() {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', XANO_URL, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                console.log('Xano connection OK');
-            } else {
-                console.log('Xano connection test:', xhr.status);
-            }
-        }
-    };
-    xhr.send();
-}
-
-function stopCamera() {
-    scanning = false;
-    if (scanTimeout) {
-        clearTimeout(scanTimeout);
-        scanTimeout = null;
-    }
-    if (stream) {
-        try {
-            if (stream.getTracks) {
-                stream.getTracks().forEach(function(t) { t.stop(); });
-            } else if (stream.stop) {
-                stream.stop();
-            }
-        } catch(e) {}
-        stream = null;
-        flashlightTrack = null;
-        flashlightActive = false;
-        document.getElementById('flashlightBtn').innerHTML = '🔦';
-        document.getElementById('flashlightBtn').classList.remove('active');
-    }
-    document.getElementById('scanFrame').style.display = 'none';
-}
-
-function startScan() {
-    if (scanning) {
-        stopCamera();
-        return;
-    }
-    
-    scanning = true;
-    var frame = document.getElementById('scanFrame');
-    frame.style.display = 'block';
-    var videoElement = document.getElementById('preview');
-    
-    var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-    
-    if (getUserMedia) {
-        getUserMedia.call(navigator, 
-            { video: { facingMode: { exact: "environment" } } },
-            function(s) {
-                stream = s;
-                if (videoElement.srcObject) {
-                    videoElement.srcObject = stream;
-                } else {
-                    videoElement.src = window.URL.createObjectURL(stream);
-                }
-                videoElement.play();
-                
-                if (stream.getVideoTracks) {
-                    flashlightTrack = stream.getVideoTracks()[0];
-                }
-                
-                scanTimeout = setTimeout(function() {
-                    if (scanning) {
-                        var fakeCodes = ['5901234123457', '9780201379624', '036000291452', '4012345012345'];
-                        var fakeCode = fakeCodes[Math.floor(Math.random() * fakeCodes.length)];
-                        addScannedCode(fakeCode, 'EAN-13');
-                    }
-                }, 3000);
-            },
-            function(err) {
-                getUserMedia.call(navigator, 
-                    { video: true },
-                    function(s) {
-                        stream = s;
-                        if (videoElement.srcObject) {
-                            videoElement.srcObject = stream;
-                        } else {
-                            videoElement.src = window.URL.createObjectURL(stream);
-                        }
-                        videoElement.play();
-                        
-                        if (stream.getVideoTracks) {
-                            flashlightTrack = stream.getVideoTracks()[0];
-                        }
-                        
-                        scanTimeout = setTimeout(function() {
-                            if (scanning) {
-                                addScannedCode('5901234123457', 'EAN-13');
-                            }
-                        }, 3000);
-                    },
-                    function(err) {
-                        alert('Camera failed. Please check permissions.');
-                        scanning = false;
-                        frame.style.display = 'none';
-                    }
-                );
-            }
-        );
-    } else {
-        alert('Camera not supported on this device');
-        scanning = false;
-        frame.style.display = 'none';
-    }
-}
-
-function toggleFlashlight() {
-    if (!flashlightTrack) {
-        alert('Please start camera first');
-        return;
-    }
-    
-    try {
-        var btn = document.getElementById('flashlightBtn');
-        if (!flashlightActive) {
-            if (flashlightTrack.applyConstraints) {
-                flashlightTrack.applyConstraints({ advanced: [{ torch: true }] });
-            }
-            flashlightActive = true;
-            btn.classList.add('active');
-            btn.innerHTML = '🔆';
-        } else {
-            if (flashlightTrack.applyConstraints) {
-                flashlightTrack.applyConstraints({ advanced: [{ torch: false }] });
-            }
-            flashlightActive = false;
-            btn.classList.remove('active');
-            btn.innerHTML = '🔦';
-        }
-    } catch(e) {
-        alert('Flashlight error');
-    }
-}
-
-function addScannedCode(code, type) {
-    scanning = false;
-    stopCamera();
-    
-    try {
-        var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        var osc = audioCtx.createOscillator();
-        osc.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.1);
-    } catch(e) {}
-    
-    scanCount++;
-    currentScans.push({
-        number: scanCount,
-        code: code,
-        type: type
-    });
-    
-    var box = document.getElementById('labelBox');
-    
-    var manualDiv = document.getElementById('manualInputDiv');
-    if (manualDiv) manualDiv.remove();
-    manualInput = '';
-    
-    var span = document.createElement('span');
-    span.className = 'scan-entry';
-    span.innerHTML = '📦 SCAN #' + scanCount + ': ' + code + ' [' + type + ']';
-    box.appendChild(span);
-    box.scrollTop = box.scrollHeight;
-    
-    saveToXano(code, type, 'SCANNED');
-}
-
-function clearScans() {
-    scanCount = 0;
-    currentScans = [];
-    manualInput = '';
-    document.getElementById('labelBox').innerHTML = '';
-    var md = document.getElementById('manualInputDiv');
-    if (md) md.remove();
-}
-
-function goToStatus() {
-    if (manualInput.trim() !== '') {
-        scanCount++;
-        currentScans.push({
-            number: scanCount,
-            code: manualInput.trim(),
-            type: 'MANUAL'
-        });
-        
-        var box = document.getElementById('labelBox');
-        var span = document.createElement('span');
-        span.className = 'scan-entry';
-        span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput.trim() + ' [MANUAL]';
-        box.appendChild(span);
-        
-        saveToXano(manualInput.trim(), 'MANUAL', 'ENTERED');
-        
-        manualInput = '';
-        var md = document.getElementById('manualInputDiv');
-        if (md) md.remove();
-    }
-    
-    if (currentScans.length === 0) {
-        alert('No scans to process');
-        return;
-    }
-    
-    document.getElementById('labelBlock').style.display = 'none';
-    document.getElementById('scanButton').style.display = 'none';
-    document.getElementById('leftText').innerText = 'SELECT STATUS';
-    document.getElementById('statusScreen').style.display = 'block';
-}
-
-function goBackToScan() {
-    document.getElementById('statusScreen').style.display = 'none';
-    document.getElementById('labelBlock').style.display = 'flex';
-    document.getElementById('scanButton').style.display = 'block';
-    document.getElementById('leftText').innerText = '📦 COURIER';
-}
-
-function submitStatus(status) {
-    var popup = document.getElementById('successPopup');
-    popup.style.display = 'block';
-    document.getElementById('popupMessage').innerHTML = 'Saving ' + currentScans.length + ' scans...';
-    
-    var savedCount = 0;
-    
-    for (var i = 0; i < currentScans.length; i++) {
-        (function(index) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', XANO_URL, true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    savedCount++;
-                    if (savedCount === currentScans.length) {
-                        document.getElementById('popupMessage').innerHTML = '✓ All scans saved!';
-                        setTimeout(function() {
-                            popup.style.display = 'none';
-                            clearScans();
-                            goBackToScan();
-                        }, 1500);
-                    }
-                }
-            };
-            
-            var data = {
-                device_id: DEVICE_ID,
-                barcode: currentScans[index].code,
-                scan_type: currentScans[index].type,
-                scan_status: status,
-                location: gpsLocation || '',
-                timestamp: new Date().toISOString(),
-                scan_number: currentScans[index].number
-            };
-            
-            xhr.send(JSON.stringify(data));
-        })(i);
-    }
-}
-
-function showNumeric() {
-    document.getElementById('qwertyPad').style.display = 'none';
-    document.getElementById('numericPad').style.display = 'grid';
-}
-
-function showQwerty() {
-    document.getElementById('numericPad').style.display = 'none';
-    document.getElementById('qwertyPad').style.display = 'block';
-}
-
-function typeChar(c) {
-    var box = document.getElementById('labelBox');
-    var manualDiv = document.getElementById('manualInputDiv');
-    
-    if (!manualDiv) {
-        manualDiv = document.createElement('div');
-        manualDiv.id = 'manualInputDiv';
-        box.appendChild(manualDiv);
-    }
-    
-    manualInput += c;
-    manualDiv.innerHTML = '✏️ MANUAL: ' + manualInput;
-    box.scrollTop = box.scrollHeight;
-}
-
-function backspace() {
-    if (manualInput.length > 0) {
-        manualInput = manualInput.slice(0, -1);
-        var manualDiv = document.getElementById('manualInputDiv');
-        if (manualDiv) {
-            if (manualInput.length > 0) {
-                manualDiv.innerHTML = '✏️ MANUAL: ' + manualInput;
-            } else {
-                manualDiv.remove();
-            }
-        }
-    }
-}
-
-function prevTab() {
-    var qwertyVisible = document.getElementById('qwertyPad').style.display !== 'none';
-    if (qwertyVisible) {
-        showNumeric();
-    } else {
-        showQwerty();
-    }
-}
-
-function nextTab() {
-    var qwertyVisible = document.getElementById('qwertyPad').style.display !== 'none';
-    if (qwertyVisible) {
-        showNumeric();
-    } else {
-        showQwerty();
-    }
-}
-
-function showExitPrompt() {
-    document.getElementById('exitOverlay').style.display = 'block';
-    document.getElementById('exitPassword').value = '';
-    document.getElementById('exitPassword').focus();
-}
-
-function closeExit() {
-    document.getElementById('exitOverlay').style.display = 'none';
-    document.getElementById('exitPassword').value = '';
-}
-
-function checkPassword() {
-    var password = document.getElementById('exitPassword').value;
-    if (password === '200606') {
-        document.getElementById('exitOverlay').style.display = 'none';
-        window.onpopstate = null;
-        history.back();
-    } else {
-        alert('Wrong password!');
-        document.getElementById('exitPassword').value = '';
-    }
-}
-
-document.getElementById('header').addEventListener('click', function() {
-    tapCount++;
-    if (tapTimer) clearTimeout(tapTimer);
-    tapTimer = setTimeout(function() { tapCount = 0; }, 500);
-    if (tapCount >= 3) {
-        showExitPrompt();
-        tapCount = 0;
-    }
-});
-
-document.getElementById('exitPassword').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        checkPassword();
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    initGPS();
-    updateTime();
-    setInterval(updateTime, 1000);
-    testXanoConnection();
-    
-    history.pushState(null, null, location.href);
-    window.onpopstate = function() {
-        history.pushState(null, null, location.href);
-    };
-    
-    document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
-    document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
-});
-
-window.addEventListener('beforeunload', function() {
-    stopCamera();
-});
-</script>
+    <div class="bottom-bar">
+      <button class="scan-button">Scan</button>
+    </div>
+  </div>
 </body>
 </html>
