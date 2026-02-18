@@ -3,10 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Scan Screen - Alcatel Debug</title>
-
-  <!-- jsQR decoder -->
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <title>Scan Screen - Simple</title>
 
   <style>
     html, body {
@@ -66,19 +63,38 @@
       top: 48px;
       left: 0;
       right: 0;
-      height: 64px;
+      height: auto;
+      min-height: 64px;
       background: #A7C6E2;
       border-bottom: 1px solid #1f2f1f;
       display: flex;
-      align-items: center;
+      flex-direction: column;
       padding: 8px 12px;
-      gap: 12px;
+      gap: 8px;
       box-sizing: border-box;
       z-index: 10;
     }
 
+    .barcode-input {
+      width: 100%;
+      height: 48px;
+      border-radius: 4px;
+      border: none;
+      padding: 0 12px;
+      font-size: 16px;
+      background: #ffffff;
+      color: #000000;
+      box-sizing: border-box;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
     .scan-button {
-      width: 110px;
+      flex: 1;
       height: 48px;
       background: darkgreen;
       border-radius: 4px;
@@ -91,85 +107,107 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
     }
 
-    .barcode-input {
-      flex: 1;
-      height: 48px;
-      border-radius: 4px;
-      border: none;
-      padding: 0 12px;
-      font-size: 16px;
-      background: #ffffff;
-      color: #000000;
-    }
-
     .content {
       position: absolute;
-      top: 112px;
+      top: 160px;
       bottom: 0;
       left: 0;
       right: 0;
       background: #000000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
+      padding: 16px;
+      box-sizing: border-box;
+      overflow-y: auto;
     }
 
-    video {
-      width: 100%;
-      height: auto;
-      background: #222;
-      border: 2px solid #555;
+    .message-box {
+      background: #333;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      color: white;
+      margin-bottom: 20px;
     }
-    
-    #debugInfo {
+
+    .camera-option {
+      background: #444;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .file-input {
       width: 100%;
-      background: rgba(0,0,0,0.8);
-      color: #0f0;
-      font-size: 12px;
-      padding: 8px;
-      margin: 5px 0;
-      text-align: left;
-      font-family: monospace;
-      white-space: pre-wrap;
-      max-height: 100px;
-      overflow-y: auto;
-      border: 1px solid #333;
+      padding: 12px;
+      background: #555;
+      color: white;
+      border-radius: 4px;
+      margin: 8px 0;
+    }
+
+    .result-box {
+      background: #222;
+      border: 2px solid #00ff00;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 20px;
+      word-break: break-all;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 
 <body>
   <div class="app">
-
     <div class="header">
       <div class="header-title">SCAN BARCODE</div>
       <div class="header-time" id="timeDisplay">--:--</div>
     </div>
 
     <div class="scan-bar">
-      <button class="scan-button" id="scanBtn">Start Camera</button>
-      <input type="text" class="barcode-input" id="barcodeBox" placeholder="Scan result" />
+      <input type="text" class="barcode-input" id="barcodeBox" placeholder="Enter barcode manually" />
+      <div class="button-row">
+        <button class="scan-button" id="scanBtn">Use Camera</button>
+        <button class="scan-button" id="clearBtn">Clear</button>
+      </div>
     </div>
 
-    <div class="content">
-      <video id="video" autoplay playsinline></video>
-      <div id="debugInfo">Ready. Click Start Camera...</div>
-      <canvas id="canvas" style="display:none;"></canvas>
-    </div>
+    <div class="content" id="content">
+      <div class="message-box">
+        <h3>Alcatel 7046T Compatible Mode</h3>
+        <p>Your device may have limited camera support. Try these options:</p>
+      </div>
 
+      <!-- Option 1: File input with camera capture -->
+      <div class="camera-option">
+        <h4>📷 Option 1: Take Photo</h4>
+        <p>Opens camera to take picture of barcode</p>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" class="file-input">
+        <div><small>Try both "Take Photo" and "Choose File" options</small></div>
+      </div>
+
+      <!-- Option 2: Simple form for manual entry -->
+      <div class="camera-option">
+        <h4>⌨️ Option 2: Manual Entry</h4>
+        <p>Type barcode number directly</p>
+        <button class="scan-button" id="manualFocusBtn">Focus on Input</button>
+      </div>
+
+      <!-- Result display -->
+      <div id="resultContainer" class="result-box hidden">
+        <strong>Scanned Barcode:</strong>
+        <p id="resultText"></p>
+      </div>
+    </div>
   </div>
 
-  <script>
-    // Debug function
-    function debug(msg) {
-      const debugEl = document.getElementById('debugInfo');
-      const timestamp = new Date().toLocaleTimeString();
-      debugEl.innerHTML = timestamp + ': ' + msg + '<br>' + debugEl.innerHTML;
-      console.log(msg);
-    }
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
-    // CLOCK
+  <script>
+    // Clock update
     function updateTime() {
       const now = new Date();
       let h = now.getHours();
@@ -181,210 +219,135 @@
     updateTime();
     setInterval(updateTime, 1000);
 
-    // Camera elements
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+    // Elements
     const barcodeBox = document.getElementById("barcodeBox");
     const scanBtn = document.getElementById("scanBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const cameraInput = document.getElementById("cameraInput");
+    const manualFocusBtn = document.getElementById("manualFocusBtn");
+    const resultContainer = document.getElementById("resultContainer");
+    const resultText = document.getElementById("resultText");
 
-    let scanning = false;
-    let stream = null;
-    let scanTimer = null;
-
-    // Check browser capabilities
-    debug('Browser: ' + navigator.userAgent);
-    debug('MediaDevices: ' + (navigator.mediaDevices ? 'Yes' : 'No'));
-    debug('getUserMedia: ' + (navigator.getUserMedia ? 'Yes' : 'No'));
-    debug('webkitGetUserMedia: ' + (navigator.webkitGetUserMedia ? 'Yes' : 'No'));
-
-    // SIMPLE camera start - try the most basic approach first
-    function startCamera() {
-      debug('Starting camera...');
-      
-      // Clear any existing stream
-      if (stream) {
-        stopCamera();
-      }
-
-      // Try the most compatible approach for old Android
-      if (navigator.getUserMedia) {
-        debug('Using navigator.getUserMedia');
-        navigator.getUserMedia(
-          { video: true },
-          function(s) {
-            debug('Camera success!');
-            handleStream(s);
-          },
-          function(err) {
-            debug('Camera error: ' + err.name + ' - ' + err.message);
-            tryNextMethod();
-          }
-        );
-      } 
-      else if (navigator.webkitGetUserMedia) {
-        debug('Using webkitGetUserMedia');
-        navigator.webkitGetUserMedia(
-          { video: true },
-          function(s) {
-            debug('Camera success!');
-            handleStream(s);
-          },
-          function(err) {
-            debug('Camera error: ' + err.name + ' - ' + err.message);
-            tryNextMethod();
-          }
-        );
-      }
-      else if (navigator.mozGetUserMedia) {
-        debug('Using mozGetUserMedia');
-        navigator.mozGetUserMedia(
-          { video: true },
-          function(s) {
-            debug('Camera success!');
-            handleStream(s);
-          },
-          function(err) {
-            debug('Camera error: ' + err.name + ' - ' + err.message);
-            tryNextMethod();
-          }
-        );
-      }
-      else {
-        debug('No camera API found!');
-        alert('Your browser does not support camera access. Please enter barcode manually.');
+    // Show result
+    function showResult(value) {
+      if (value && value.trim()) {
+        barcodeBox.value = value;
+        resultText.textContent = value;
+        resultContainer.classList.remove("hidden");
       }
     }
 
-    function tryNextMethod() {
-      debug('Trying alternative method...');
-      // Try with minimal constraints
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        debug('Trying mediaDevices API');
-        navigator.mediaDevices.getUserMedia({ video: true })
-          .then(function(s) {
-            debug('mediaDevices success!');
-            handleStream(s);
-          })
-          .catch(function(err) {
-            debug('mediaDevices error: ' + err);
-            alert('Could not access camera. Please check permissions.');
-          });
-      } else {
-        alert('Could not access camera. Please check permissions and try again.');
-      }
-    }
-
-    function handleStream(s) {
-      stream = s;
-      debug('Setting video source...');
-      
-      // For older browsers, use src instead of srcObject
-      if (video.srcObject !== undefined) {
-        video.srcObject = stream;
-        debug('Using srcObject');
-      } else {
-        // Fallback for very old browsers
-        video.src = window.URL.createObjectURL(stream);
-        debug('Using createObjectURL');
-      }
-      
-      video.onloadedmetadata = function() {
-        debug('Video metadata loaded. Playing...');
-        video.play()
-          .then(function() {
-            debug('Video playing!');
-            scanning = true;
-            scanBtn.textContent = "Stop Camera";
-            
-            // Start scanning
-            if (scanTimer) clearInterval(scanTimer);
-            scanTimer = setInterval(function() {
-              if (scanning && video.videoWidth > 0) {
-                scanFrame();
-              }
-            }, 300);
-          })
-          .catch(function(err) {
-            debug('Play error: ' + err);
-          });
-      };
-      
-      video.onerror = function(err) {
-        debug('Video error: ' + err);
-      };
-    }
-
-    function stopCamera() {
-      debug('Stopping camera...');
-      scanning = false;
-      if (scanTimer) {
-        clearInterval(scanTimer);
-        scanTimer = null;
-      }
-      if (stream) {
-        if (stream.stop) {
-          stream.stop();
-          debug('Used stream.stop()');
-        } else if (stream.getTracks) {
-          stream.getTracks().forEach(function(track) {
-            track.stop();
-            debug('Stopped track: ' + track.kind);
-          });
-        }
-        stream = null;
-      }
-      video.src = '';
-      if (video.srcObject) {
-        video.srcObject = null;
-      }
-      scanBtn.textContent = "Start Camera";
-    }
-
-    function scanFrame() {
+    // Try to scan from image file
+    async function scanImageFile(file) {
       try {
-        if (!scanning || !video.videoWidth || !video.videoHeight) return;
+        const img = new Image();
+        const reader = new FileReader();
         
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        reader.onload = function(e) {
+          img.onload = function() {
+            // Create canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            
+            // Try to decode
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, canvas.width, canvas.height);
+            
+            if (code && code.data) {
+              showResult(code.data);
+              alert('Barcode found: ' + code.data);
+            } else {
+              alert('No barcode found in image. Try taking a clearer photo.');
+            }
+          };
+          img.src = e.target.result;
+        };
         
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, canvas.width, canvas.height);
-        
-        if (code && code.data) {
-          debug('QR Code found: ' + code.data);
-          barcodeBox.value = code.data;
-          stopCamera();
-        }
-      } catch (e) {
-        debug('Scan error: ' + e.message);
+        reader.readAsDataURL(file);
+      } catch (err) {
+        alert('Error scanning image: ' + err.message);
       }
     }
 
-    // Button click handler
-    scanBtn.onclick = function() {
-      debug('Button clicked. Current state: ' + (scanning ? 'scanning' : 'idle'));
-      if (scanning) {
-        stopCamera();
-      } else {
-        startCamera();
+    // Camera input change
+    cameraInput.addEventListener('change', function(e) {
+      if (e.target.files && e.target.files[0]) {
+        scanImageFile(e.target.files[0]);
       }
-    };
+    });
 
     // Manual entry
-    barcodeBox.onchange = function() {
-      if (barcodeBox.value) {
-        debug('Manual entry: ' + barcodeBox.value);
+    barcodeBox.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && barcodeBox.value.trim()) {
+        showResult(barcodeBox.value);
+      }
+    });
+
+    // Manual focus button
+    manualFocusBtn.addEventListener('click', function() {
+      barcodeBox.focus();
+    });
+
+    // Clear button
+    clearBtn.addEventListener('click', function() {
+      barcodeBox.value = '';
+      resultContainer.classList.add('hidden');
+      cameraInput.value = ''; // Clear file input
+    });
+
+    // Try direct camera access (but likely won't work on Alcatel)
+    scanBtn.addEventListener('click', function() {
+      alert(
+        'Your device may not support direct camera access.\n\n' +
+        'Please use one of these options:\n' +
+        '1. Tap "Choose File" below and select "Camera" to take a photo\n' +
+        '2. Type the barcode manually\n\n' +
+        'The "Take Photo" option should open your camera app.'
+      );
+      
+      // Try to trigger camera via file input
+      cameraInput.click();
+    });
+
+    // Check what's supported
+    document.addEventListener('DOMContentLoaded', function() {
+      const supportMsg = [];
+      
+      if ('mediaDevices' in navigator) supportMsg.push('✓ mediaDevices');
+      else supportMsg.push('✗ mediaDevices');
+      
+      if ('getUserMedia' in navigator) supportMsg.push('✓ getUserMedia');
+      else supportMsg.push('✗ getUserMedia');
+      
+      if ('camera' in navigator) supportMsg.push('✓ camera API');
+      else supportMsg.push('✗ camera API');
+      
+      console.log('Support:', supportMsg.join(', '));
+    });
+
+    // For very old Android, try this alternative
+    window.tryLegacyCamera = function() {
+      // This is a fallback for very old browsers
+      if (navigator.camera) {
+        navigator.camera.getPicture(
+          function(imageURI) {
+            alert('Photo taken: ' + imageURI);
+            // You would need to process this image
+          },
+          function(err) {
+            alert('Camera error: ' + err);
+          },
+          { 
+            quality: 50,
+            destinationType: 1, // DATA_URL
+            sourceType: 1 // CAMERA
+          }
+        );
       }
     };
-
-    // Cleanup
-    window.addEventListener('beforeunload', function() {
-      stopCamera();
-    });
   </script>
-
 </body>
 </html>
