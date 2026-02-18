@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Scan Screen</title>
+
+  <!-- ANDROID 5 COMPATIBLE DECODER -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
   <style>
     html, body {
@@ -14,7 +15,7 @@
       padding: 0;
       width: 100%;
       height: 100%;
-      background: #111111; /* full background */
+      background: #111111;
       font-family: -apple-system, Roboto, "Segoe UI", sans-serif;
       color: #ffffff;
       overflow: hidden;
@@ -27,7 +28,7 @@
       max-width: 360px;
       max-height: 640px;
       margin: 0 auto;
-      background: #111111; /* consistent background */
+      background: #111111;
     }
 
     /* HEADER */
@@ -61,39 +62,24 @@
       color: #ffffff;
     }
 
-    /* MAIN CONTENT */
-    .content {
+    /* SCAN BAR UNDER HEADER */
+    .scan-bar {
       position: absolute;
-      top: 48px; /* header only */
-      bottom: 72px;
+      top: 48px;
       left: 0;
       right: 0;
-      background: #A7C6E2; /* FIXED: added missing semicolon */
+      height: 64px;
+      background: #A7C6E2;
+      border-bottom: 1px solid #1f2f1f;
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 16px;
-      box-sizing: border-box;
-    }
-
-    /* BOTTOM BAR */
-    .bottom-bar {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 72px;
-      background: #A7C6E2 ;
-      border-top: 1px solid #1f2f1f;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 16px;
+      padding: 8px 12px;
+      gap: 12px;
       box-sizing: border-box;
     }
 
     .scan-button {
-      width: 100%;
+      width: 110px;
       height: 48px;
       background: darkgreen;
       border-radius: 4px;
@@ -110,6 +96,38 @@
       background: #00a844;
       box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
     }
+
+    .barcode-input {
+      flex: 1;
+      height: 48px;
+      border-radius: 4px;
+      border: none;
+      padding: 0 12px;
+      font-size: 16px;
+      background: #ffffff;
+      color: #000000;
+    }
+
+    /* CAMERA PREVIEW AREA */
+    .content {
+      position: absolute;
+      top: 112px; /* header + scan bar */
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #A7C6E2 ;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    video {
+      width: 100%;
+      height: auto;
+      transform: scaleX(-1); /* mirror for scanning */
+    }
   </style>
 </head>
 
@@ -122,26 +140,86 @@
       <div class="header-time" id="timeDisplay">--:--</div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div class="content"></div>
+    <!-- SCAN BAR -->
+    <div class="scan-bar">
+      <button class="scan-button" id="scanBtn">Scan</button>
+      <input type="text" class="barcode-input" id="barcodeBox" placeholder="Barcode" />
+    </div>
 
-    <!-- BOTTOM BAR -->
-    <div class="bottom-bar">
-      <button class="scan-button">Scan</button>
+    <!-- CAMERA PREVIEW -->
+    <div class="content">
+      <video id="video" autoplay playsinline></video>
+      <canvas id="canvas" style="display:none;"></canvas>
     </div>
 
   </div>
 
   <script>
+    /* CLOCK */
     function updateTime() {
       const now = new Date();
       let h = now.getHours();
       let m = now.getMinutes();
       if (m < 10) m = "0" + m;
-      document.getElementById("timeDisplay").textContent = `${h}:${m}`;
+      document.getElementById("timeDisplay").textContent = h + ":" + m;
     }
     updateTime();
     setInterval(updateTime, 1000);
+
+    /* SCANNER LOGIC */
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const barcodeBox = document.getElementById("barcodeBox");
+
+    let scanning = false;
+    let stream = null;
+
+    document.getElementById("scanBtn").onclick = function () {
+      startScanner();
+    };
+
+    function startScanner() {
+      if (scanning) return;
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(s => {
+          stream = s;
+          video.srcObject = s;
+          scanning = true;
+          scanLoop();
+        })
+        .catch(err => {
+          alert("Camera error: " + err);
+        });
+    }
+
+    function stopScanner() {
+      scanning = false;
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+      }
+    }
+
+    function scanLoop() {
+      if (!scanning) return;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imgData.data, canvas.width, canvas.height);
+
+      if (code) {
+        barcodeBox.value = code.data;
+        stopScanner();
+        return;
+      }
+
+      requestAnimationFrame(scanLoop);
+    }
   </script>
 
 </body>
