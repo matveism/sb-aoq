@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Scan Screen - Alcatel Compatible</title>
+  <title>Scan Screen - Alcatel Debug</title>
 
   <!-- jsQR decoder -->
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
@@ -30,7 +30,6 @@
       background: #111111;
     }
 
-    /* HEADER */
     .header {
       position: absolute;
       top: 0;
@@ -62,7 +61,6 @@
       color: #ffffff;
     }
 
-    /* SCAN BAR */
     .scan-bar {
       position: absolute;
       top: 48px;
@@ -104,7 +102,6 @@
       color: #000000;
     }
 
-    /* CAMERA PREVIEW */
     .content {
       position: absolute;
       top: 112px;
@@ -113,28 +110,31 @@
       right: 0;
       background: #000000;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
     }
 
     video {
       width: 100%;
       height: auto;
-      min-height: 240px;
-      background: #000;
+      background: #222;
+      border: 2px solid #555;
     }
     
-    #fallbackMessage {
-      position: absolute;
-      bottom: 20px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      color: white;
-      background: rgba(0,0,0,0.7);
-      padding: 10px;
-      font-size: 14px;
-      display: none;
+    #debugInfo {
+      width: 100%;
+      background: rgba(0,0,0,0.8);
+      color: #0f0;
+      font-size: 12px;
+      padding: 8px;
+      margin: 5px 0;
+      text-align: left;
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 100px;
+      overflow-y: auto;
+      border: 1px solid #333;
     }
   </style>
 </head>
@@ -142,28 +142,33 @@
 <body>
   <div class="app">
 
-    <!-- HEADER -->
     <div class="header">
       <div class="header-title">SCAN BARCODE</div>
       <div class="header-time" id="timeDisplay">--:--</div>
     </div>
 
-    <!-- SCAN BAR -->
     <div class="scan-bar">
       <button class="scan-button" id="scanBtn">Start Camera</button>
       <input type="text" class="barcode-input" id="barcodeBox" placeholder="Scan result" />
     </div>
 
-    <!-- CAMERA PREVIEW -->
     <div class="content">
       <video id="video" autoplay playsinline></video>
+      <div id="debugInfo">Ready. Click Start Camera...</div>
       <canvas id="canvas" style="display:none;"></canvas>
-      <div id="fallbackMessage">Camera not available. Please enter barcode manually.</div>
     </div>
 
   </div>
 
   <script>
+    // Debug function
+    function debug(msg) {
+      const debugEl = document.getElementById('debugInfo');
+      const timestamp = new Date().toLocaleTimeString();
+      debugEl.innerHTML = timestamp + ': ' + msg + '<br>' + debugEl.innerHTML;
+      console.log(msg);
+    }
+
     // CLOCK
     function updateTime() {
       const now = new Date();
@@ -176,174 +181,209 @@
     updateTime();
     setInterval(updateTime, 1000);
 
-    // SIMPLIFIED CAMERA FOR ALCATEL 7046T
+    // Camera elements
     const video = document.getElementById("video");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const barcodeBox = document.getElementById("barcodeBox");
     const scanBtn = document.getElementById("scanBtn");
-    const fallbackMsg = document.getElementById("fallbackMessage");
 
     let scanning = false;
     let stream = null;
-    let scanInterval = null;
+    let scanTimer = null;
 
-    // Try multiple camera access methods (for older Android)
+    // Check browser capabilities
+    debug('Browser: ' + navigator.userAgent);
+    debug('MediaDevices: ' + (navigator.mediaDevices ? 'Yes' : 'No'));
+    debug('getUserMedia: ' + (navigator.getUserMedia ? 'Yes' : 'No'));
+    debug('webkitGetUserMedia: ' + (navigator.webkitGetUserMedia ? 'Yes' : 'No'));
+
+    // SIMPLE camera start - try the most basic approach first
     function startCamera() {
-      // Method 1: Modern API
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            facingMode: { exact: "environment" } 
-          } 
-        })
-        .then(handleStream)
-        .catch(function(err) {
-          console.log("Back camera failed, trying any camera:", err);
-          // Try without facingMode
-          navigator.mediaDevices.getUserMedia({ video: true })
-            .then(handleStream)
-            .catch(fallbackCamera);
-        });
-      } 
-      // Method 2: Legacy API (for older Android like Alcatel)
-      else if (navigator.getUserMedia || navigator.webkitGetUserMedia || 
-               navigator.mozGetUserMedia || navigator.msGetUserMedia) {
-        
-        const legacy = navigator.getUserMedia || 
-                      navigator.webkitGetUserMedia || 
-                      navigator.mozGetUserMedia || 
-                      navigator.msGetUserMedia;
-        
-        legacy.call(navigator, 
-          { video: true }, 
-          handleStream, 
+      debug('Starting camera...');
+      
+      // Clear any existing stream
+      if (stream) {
+        stopCamera();
+      }
+
+      // Try the most compatible approach for old Android
+      if (navigator.getUserMedia) {
+        debug('Using navigator.getUserMedia');
+        navigator.getUserMedia(
+          { video: true },
+          function(s) {
+            debug('Camera success!');
+            handleStream(s);
+          },
           function(err) {
-            console.log("Legacy camera failed:", err);
-            fallbackCamera();
+            debug('Camera error: ' + err.name + ' - ' + err.message);
+            tryNextMethod();
           }
         );
       } 
-      // Method 3: Try with video input (very old Android)
-      else if (navigator.camera) {
-        navigator.camera.getPicture(
-          function(imageData) {
-            alert("Camera API not fully supported. Please enter barcode manually.");
+      else if (navigator.webkitGetUserMedia) {
+        debug('Using webkitGetUserMedia');
+        navigator.webkitGetUserMedia(
+          { video: true },
+          function(s) {
+            debug('Camera success!');
+            handleStream(s);
           },
           function(err) {
-            console.log("Camera API error:", err);
-            fallbackCamera();
+            debug('Camera error: ' + err.name + ' - ' + err.message);
+            tryNextMethod();
+          }
+        );
+      }
+      else if (navigator.mozGetUserMedia) {
+        debug('Using mozGetUserMedia');
+        navigator.mozGetUserMedia(
+          { video: true },
+          function(s) {
+            debug('Camera success!');
+            handleStream(s);
           },
-          { quality: 50 }
+          function(err) {
+            debug('Camera error: ' + err.name + ' - ' + err.message);
+            tryNextMethod();
+          }
         );
       }
       else {
-        fallbackCamera();
+        debug('No camera API found!');
+        alert('Your browser does not support camera access. Please enter barcode manually.');
+      }
+    }
+
+    function tryNextMethod() {
+      debug('Trying alternative method...');
+      // Try with minimal constraints
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        debug('Trying mediaDevices API');
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(function(s) {
+            debug('mediaDevices success!');
+            handleStream(s);
+          })
+          .catch(function(err) {
+            debug('mediaDevices error: ' + err);
+            alert('Could not access camera. Please check permissions.');
+          });
+      } else {
+        alert('Could not access camera. Please check permissions and try again.');
       }
     }
 
     function handleStream(s) {
       stream = s;
-      video.srcObject = stream;
+      debug('Setting video source...');
+      
+      // For older browsers, use src instead of srcObject
+      if (video.srcObject !== undefined) {
+        video.srcObject = stream;
+        debug('Using srcObject');
+      } else {
+        // Fallback for very old browsers
+        video.src = window.URL.createObjectURL(stream);
+        debug('Using createObjectURL');
+      }
       
       video.onloadedmetadata = function() {
-        video.play();
-        scanning = true;
-        scanBtn.textContent = "Stop Camera";
-        fallbackMsg.style.display = "none";
-        
-        // Start scanning loop
-        if (scanInterval) clearInterval(scanInterval);
-        scanInterval = setInterval(scanFrame, 500); // Scan every 500ms
+        debug('Video metadata loaded. Playing...');
+        video.play()
+          .then(function() {
+            debug('Video playing!');
+            scanning = true;
+            scanBtn.textContent = "Stop Camera";
+            
+            // Start scanning
+            if (scanTimer) clearInterval(scanTimer);
+            scanTimer = setInterval(function() {
+              if (scanning && video.videoWidth > 0) {
+                scanFrame();
+              }
+            }, 300);
+          })
+          .catch(function(err) {
+            debug('Play error: ' + err);
+          });
       };
       
-      video.onerror = function() {
-        stopCamera();
-        fallbackCamera();
+      video.onerror = function(err) {
+        debug('Video error: ' + err);
       };
     }
 
     function stopCamera() {
+      debug('Stopping camera...');
       scanning = false;
-      if (scanInterval) {
-        clearInterval(scanInterval);
-        scanInterval = null;
+      if (scanTimer) {
+        clearInterval(scanTimer);
+        scanTimer = null;
       }
       if (stream) {
         if (stream.stop) {
-          stream.stop(); // Old API
-        } else {
-          stream.getTracks().forEach(track => track.stop());
+          stream.stop();
+          debug('Used stream.stop()');
+        } else if (stream.getTracks) {
+          stream.getTracks().forEach(function(track) {
+            track.stop();
+            debug('Stopped track: ' + track.kind);
+          });
         }
         stream = null;
       }
-      video.srcObject = null;
+      video.src = '';
+      if (video.srcObject) {
+        video.srcObject = null;
+      }
       scanBtn.textContent = "Start Camera";
     }
 
-    function fallbackCamera() {
-      stopCamera();
-      fallbackMsg.style.display = "block";
-      alert("Camera not available. Please enter barcode manually.");
-    }
-
-    // Scan a single frame
     function scanFrame() {
-      if (!scanning || !video.videoWidth) return;
-
-      // Set canvas size to match video
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      if (canvas.width === 0 || canvas.height === 0) return;
-
       try {
+        if (!scanning || !video.videoWidth || !video.videoHeight) return;
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, canvas.width, canvas.height, {
-          inversionAttempts: "attemptBoth"
-        });
-
+        const code = jsQR(imageData.data, canvas.width, canvas.height);
+        
         if (code && code.data) {
+          debug('QR Code found: ' + code.data);
           barcodeBox.value = code.data;
           stopCamera();
         }
       } catch (e) {
-        console.log("Scan error:", e);
+        debug('Scan error: ' + e.message);
       }
     }
 
     // Button click handler
     scanBtn.onclick = function() {
+      debug('Button clicked. Current state: ' + (scanning ? 'scanning' : 'idle'));
       if (scanning) {
         stopCamera();
       } else {
-        barcodeBox.value = ""; // Clear previous result
         startCamera();
       }
     };
 
-    // Manual input fallback
-    barcodeBox.onkeypress = function(e) {
-      if (e.key === "Enter") {
-        if (barcodeBox.value.trim() !== "") {
-          alert("Barcode entered: " + barcodeBox.value);
-        }
+    // Manual entry
+    barcodeBox.onchange = function() {
+      if (barcodeBox.value) {
+        debug('Manual entry: ' + barcodeBox.value);
       }
     };
 
-    // Cleanup on page unload
+    // Cleanup
     window.addEventListener('beforeunload', function() {
       stopCamera();
     });
-
-    // Show instructions for Alcatel
-    setTimeout(function() {
-      if (!scanning) {
-        alert("Press 'Start Camera' to scan. If camera doesn't work, type barcode manually.");
-      }
-    }, 1000);
   </script>
 
 </body>
