@@ -6,15 +6,12 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Scan Screen</title>
 
-  <!-- jsQR decoder -->
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
       background: #111111;
       font-family: -apple-system, Roboto, "Segoe UI", sans-serif;
       color: #ffffff;
@@ -23,20 +20,15 @@
 
     .app {
       position: relative;
-      width: 100%;
-      height: 100%;
-      max-width: 360px;
-      max-height: 640px;
+      width: 100%; height: 100%;
+      max-width: 360px; max-height: 640px;
       margin: 0 auto;
       background: #111111;
     }
 
-    /* HEADER */
     .header {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 0; left: 0; right: 0;
       height: 48px;
       background: #415C83;
       border-bottom: 1px solid #2f3f55;
@@ -49,25 +41,18 @@
 
     .header-title {
       font-family: "Courier New", monospace;
-      font-size: 18px;
-      font-weight: 700;
-      color: #ffffff;
-      letter-spacing: 0.5px;
+      font-size: 18px; font-weight: 700;
     }
 
     .header-time {
       font-family: "Courier New", monospace;
-      font-size: 16px;
-      font-weight: 700;
-      color: #ffffff;
+      font-size: 16px; font-weight: 700;
     }
 
-    /* SCAN BAR */
     .scan-bar {
       position: absolute;
       top: 48px;
-      left: 0;
-      right: 0;
+      left: 0; right: 0;
       height: 64px;
       background: #A7C6E2;
       border-bottom: 1px solid #1f2f1f;
@@ -79,17 +64,11 @@
     }
 
     .scan-button {
-      width: 110px;
-      height: 48px;
+      width: 110px; height: 48px;
       background: darkgreen;
-      border-radius: 4px;
-      border: none;
-      color: #ffffff;
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
+      border-radius: 4px; border: none;
+      color: #fff; font-size: 16px; font-weight: 600;
       text-transform: uppercase;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
     }
 
     .barcode-input {
@@ -103,14 +82,12 @@
       color: #000000;
     }
 
-    /* CAMERA PREVIEW */
     .content {
       position: absolute;
       top: 112px;
       bottom: 0;
-      left: 0;
-      right: 0;
-      background: #000000;
+      left: 0; right: 0;
+      background: #000;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -127,28 +104,24 @@
 <body>
   <div class="app">
 
-    <!-- HEADER -->
     <div class="header">
       <div class="header-title">SCAN BARCODE</div>
       <div class="header-time" id="timeDisplay">--:--</div>
     </div>
 
-    <!-- SCAN BAR -->
     <div class="scan-bar">
       <button class="scan-button" id="scanBtn">Scan</button>
       <input type="text" class="barcode-input" id="barcodeBox" placeholder="Barcode" />
     </div>
 
-    <!-- CAMERA PREVIEW -->
     <div class="content">
-      <video id="video" autoplay playsinline></video>
+      <video id="video" autoplay></video>
       <canvas id="canvas" style="display:none;"></canvas>
     </div>
 
   </div>
 
   <script>
-    /* CLOCK */
     function updateTime() {
       const now = new Date();
       let h = now.getHours();
@@ -159,7 +132,6 @@
     updateTime();
     setInterval(updateTime, 1000);
 
-    /* CAMERA + SCANNER */
     const video = document.getElementById("video");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
@@ -175,47 +147,27 @@
     function startScanner() {
       if (scanning) return;
 
-      const legacyGetUserMedia =
+      const gum =
         navigator.getUserMedia ||
         navigator.webkitGetUserMedia ||
         navigator.mozGetUserMedia;
 
-      if (!legacyGetUserMedia) {
+      if (!gum) {
         alert("Camera not supported on this device.");
         return;
       }
 
-      // Enumerate devices to find back camera
-      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-        navigator.mediaDevices.enumerateDevices().then(devices => {
-          let backCam = null;
+      gum.call(navigator, { video: true }, function (s) {
+        stream = s;
 
-          devices.forEach(d => {
-            if (d.kind === "videoinput" && d.label.toLowerCase().includes("back")) {
-              backCam = d.deviceId;
-            }
-          });
+        // OLD Android 5 method
+        video.src = window.URL.createObjectURL(s);
 
-          const constraints = backCam
-            ? { video: { optional: [{ sourceId: backCam }] } }
-            : { video: true };
-
-          legacyGetUserMedia.call(navigator, constraints, handleStream, handleError);
-        });
-      } else {
-        legacyGetUserMedia.call(navigator, { video: true }, handleStream, handleError);
-      }
-    }
-
-    function handleStream(s) {
-      stream = s;
-      video.srcObject = s;
-      scanning = true;
-      scanLoop();
-    }
-
-    function handleError(err) {
-      alert("Camera error: " + err);
+        scanning = true;
+        scanLoop();
+      }, function (err) {
+        alert("Camera error: " + err);
+      });
     }
 
     function stopScanner() {
@@ -233,8 +185,8 @@
 
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imgData.data, canvas.width, canvas.height);
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(img.data, canvas.width, canvas.height);
 
       if (code) {
         barcodeBox.value = code.data;
