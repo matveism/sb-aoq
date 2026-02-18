@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>BARCODE SCANNER · CAMERA FIXED</title>
+<title>📦 COURIER SCANNER · LOCKED</title>
 <style>
 * { 
     box-sizing: border-box; 
@@ -20,10 +20,16 @@ body {
     min-height: 100vh; 
     font-family: Arial, Helvetica, sans-serif; 
     font-weight: bold; 
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
 }
 #phone { 
-    width: 360px; 
-    height: 640px; 
+    width: 100%; 
+    height: 100%; 
+    max-width: 400px;
+    max-height: 800px;
     background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
     color: #fff; 
     position: relative; 
@@ -31,10 +37,11 @@ body {
     display: flex; 
     flex-direction: column; 
     box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+    margin: auto;
 }
 #header { 
     width: 100%; 
-    height: 38px; 
+    height: 48px; 
     background: linear-gradient(180deg, #5180b0 0%, #2e5a88 100%); 
     border-bottom: 2px solid #1f3f5c; 
     display: flex; 
@@ -42,45 +49,45 @@ body {
     align-items: center; 
     padding: 0 12px; 
     font-weight: bold; 
-    font-size: 16px; 
+    font-size: 18px; 
     z-index: 2; 
     flex-shrink: 0; 
 }
 #leftText { color: #fff; } 
-#rightArea { color: #fff; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-#gpsIndicator { color: #ff4444; font-size: 16px; }
-#timeDisplay { color: #ffcc00; font-size: 14px; }
+#rightArea { color: #fff; font-size: 16px; display: flex; align-items: center; gap: 12px; }
+#gpsIndicator { color: #ff4444; font-size: 18px; }
+#timeDisplay { color: #ffcc00; font-size: 16px; }
 #scanButton { 
     width: calc(100% - 24px); 
-    height: 50px; 
+    height: 60px; 
     background: linear-gradient(180deg, #4CAF50 0%, #2b6e2f 100%); 
-    border: 2px solid #1e5a22; 
+    border: 3px solid #1e5a22; 
     color: #fff; 
-    font-size: 22px; 
+    font-size: 26px; 
     font-weight: bold; 
     text-align: center; 
-    line-height: 50px; 
+    line-height: 60px; 
     margin: 12px auto 8px auto; 
-    border-radius: 6px; 
+    border-radius: 8px; 
     z-index: 2; 
-    box-shadow: 0 4px 0 #145018; 
+    box-shadow: 0 5px 0 #145018; 
     cursor: pointer; 
     flex-shrink: 0; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    gap: 8px; 
+    gap: 10px; 
 }
 #scanButton:active { 
-    transform: translateY(2px); 
+    transform: translateY(3px); 
     box-shadow: 0 2px 0 #145018; 
     background: #3d9c42; 
 }
-.scan-button { display: flex; align-items: center; gap: 6px; font-size: 14px; }
-.icon { width: 16px; height: 12px; background: repeating-linear-gradient(to right, black, black 2px, white 2px, white 4px); }
+.scan-button { display: flex; align-items: center; gap: 8px; font-size: 18px; }
+.icon { width: 24px; height: 18px; background: repeating-linear-gradient(to right, black, black 3px, white 3px, white 6px); }
 #scanFrame { 
-    width: 280px; 
-    height: 160px; 
+    width: calc(100% - 24px); 
+    height: 220px; 
     margin: 4px auto 0 auto; 
     position: relative; 
     display: none; 
@@ -88,23 +95,45 @@ body {
     overflow: hidden; 
     flex-shrink: 0; 
     background: rgba(0,0,0,0.4); 
-    border: 2px solid #ffcc00;
-    border-radius: 4px;
+    border: 3px solid #ffcc00;
+    border-radius: 8px;
 }
 #preview { width: 100%; height: 100%; object-fit: cover; display: block; }
 .corner-bracket { 
     position: absolute; 
-    width: 28px; 
-    height: 28px; 
-    border: 4px solid #ffcc00; 
-    filter: drop-shadow(0 0 5px rgba(255,204,0,0.7)); 
+    width: 35px; 
+    height: 35px; 
+    border: 5px solid #ffcc00; 
+    filter: drop-shadow(0 0 8px rgba(255,204,0,0.9)); 
     pointer-events: none; 
     z-index: 10; 
 }
-.corner-tl { top: 4px; left: 4px; border-right: none; border-bottom: none; }
-.corner-tr { top: 4px; right: 4px; border-left: none; border-bottom: none; }
-.corner-bl { bottom: 4px; left: 4px; border-right: none; border-top: none; }
-.corner-br { bottom: 4px; right: 4px; border-left: none; border-top: none; }
+.corner-tl { top: 5px; left: 5px; border-right: none; border-bottom: none; }
+.corner-tr { top: 5px; right: 5px; border-left: none; border-bottom: none; }
+.corner-bl { bottom: 5px; left: 5px; border-right: none; border-top: none; }
+.corner-br { bottom: 5px; right: 5px; border-left: none; border-top: none; }
+
+#flashlightBtn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: rgba(0,0,0,0.7);
+    border: 2px solid #ffcc00;
+    border-radius: 50%;
+    color: #ffcc00;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+}
+#flashlightBtn.active {
+    background: #ffcc00;
+    color: #000;
+}
 
 #labelBlock { 
     display: flex; 
@@ -116,27 +145,28 @@ body {
     margin-top: 4px; 
 }
 #labelTitle { 
-    height: 32px; 
+    height: 40px; 
     background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
-    border: 1px solid #1f3f5c; 
+    border: 2px solid #1f3f5c; 
     display: flex; 
     align-items: center; 
-    padding-left: 12px; 
+    padding-left: 15px; 
     margin: 0 12px; 
     font-weight: bold; 
-    font-size: 14px; 
+    font-size: 16px; 
     color: #fff; 
     flex-shrink: 0; 
+    border-radius: 4px;
 }
 #labelBox { 
     width: calc(100% - 24px); 
-    min-height: 80px; 
-    max-height: 120px; 
+    min-height: 100px; 
+    max-height: 150px; 
     margin: 0 auto; 
     border: 3px solid #1f3f5c; 
     background: #A6BEEF; 
-    padding: 8px 10px; 
-    font-size: 16px; 
+    padding: 10px; 
+    font-size: 18px; 
     font-weight: bold; 
     color: #000; 
     white-space: pre-wrap; 
@@ -145,68 +175,70 @@ body {
     flex-shrink: 0; 
     line-height: 1.5; 
     font-family: monospace; 
-    box-shadow: inset 0 0 0 2px #fff; 
+    box-shadow: inset 0 0 0 3px #fff; 
+    border-radius: 4px;
 }
 #labelBox span.scan-entry { 
     display: block; 
     border-bottom: 2px solid #2b4b70; 
     background: #c0d4f5; 
-    padding: 4px 6px; 
-    margin: 4px 0; 
-    border-radius: 4px; 
+    padding: 6px 8px; 
+    margin: 6px 0; 
+    border-radius: 6px; 
     font-weight: bold; 
     color: #000; 
+    font-size: 16px;
 }
 #manualInputDiv { 
     background: #ffff99; 
-    border: 2px dashed #ffaa00; 
-    border-radius: 4px; 
-    padding: 6px; 
-    margin: 4px 0; 
+    border: 3px dashed #ffaa00; 
+    border-radius: 8px; 
+    padding: 8px; 
+    margin: 6px 0; 
     font-weight: bold; 
     color: #000; 
     display: flex; 
     align-items: center; 
-    gap: 6px; 
+    gap: 8px; 
 }
-#manualIndicator { background: #ffaa00; color: #000; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
-#manualText { flex: 1; font-family: monospace; letter-spacing: 1px; color: #0066cc; }
+#manualIndicator { background: #ffaa00; color: #000; padding: 4px 12px; border-radius: 16px; font-size: 14px; }
+#manualText { flex: 1; font-family: monospace; letter-spacing: 1px; color: #0066cc; font-size: 18px; }
 #labelButtons { 
-    height: 42px; 
+    height: 50px; 
     background: #7496C4; 
     display: flex; 
     align-items: center; 
     justify-content: space-between; 
-    border-radius: 4px; 
-    border: 2px solid #3a5f8a; 
-    margin: 8px 12px 0 12px; 
-    padding: 0 20px; 
+    border-radius: 8px; 
+    border: 3px solid #3a5f8a; 
+    margin: 10px 12px 0 12px; 
+    padding: 0 25px; 
     font-weight: bold; 
-    font-size: 18px; 
+    font-size: 22px; 
     color: #fff; 
     flex-shrink: 0; 
-    box-shadow: inset 0 -2px 0 #3a5f8a; 
+    box-shadow: inset 0 -3px 0 #3a5f8a; 
 }
 #labelButtons span { 
     cursor: pointer; 
-    padding: 4px 12px; 
+    padding: 6px 15px; 
     background: transparent; 
     display: inline-block;
 }
-#labelButtons span:active { background: #27ae60; border-radius: 4px; }
+#labelButtons span:active { background: #27ae60; border-radius: 6px; }
 #divider { color: rgba(255,255,255,0.7); padding: 0 !important; }
 #navBar { 
-    height: 36px; 
+    height: 44px; 
     background: linear-gradient(180deg, #4a7aa8 0%, #2b4b70 100%); 
     display: flex; 
     align-items: center; 
     justify-content: space-between; 
-    border-radius: 4px; 
-    border: 1px solid #1f3f5c; 
-    margin: 8px 12px 0 12px; 
-    padding: 0 16px; 
+    border-radius: 8px; 
+    border: 2px solid #1f3f5c; 
+    margin: 10px 12px 0 12px; 
+    padding: 0 20px; 
     font-weight: bold; 
-    font-size: 14px; 
+    font-size: 18px; 
     color: #fff; 
     flex-shrink: 0; 
 }
@@ -214,35 +246,35 @@ body {
     background: transparent; 
     border: none; 
     color: white; 
-    font-size: 20px; 
+    font-size: 24px; 
     font-weight: bold; 
     cursor: pointer; 
-    padding: 4px 8px; 
+    padding: 6px 12px; 
 }
 #navBar button:active { color: #4CAF50; }
 #keypadWrapper { 
     width: 100%; 
     background: linear-gradient(180deg, #2b4b70 0%, #1f3f5c 100%); 
-    border-top: 3px solid #ffcc00; 
+    border-top: 4px solid #ffcc00; 
     margin-top: auto; 
     flex-shrink: 0; 
     z-index: 2; 
-    padding-bottom: 4px; 
+    padding-bottom: 8px; 
 }
 #keyTabs {
     display: flex; 
-    gap: 8px; 
-    padding: 8px 12px 4px 12px;
+    gap: 10px; 
+    padding: 10px 15px 6px 15px;
 } 
 #keyTabs button {
     flex: 1; 
     background: #3a5f8a; 
-    border: 2px solid #1f3f5c; 
-    border-radius: 30px; 
+    border: 3px solid #1f3f5c; 
+    border-radius: 40px; 
     color: #fff; 
-    font-size: 14px; 
+    font-size: 18px; 
     font-weight: bold; 
-    padding: 8px 0; 
+    padding: 12px 0; 
     cursor: pointer;
 }
 #keyTabs button.active {
@@ -252,27 +284,27 @@ body {
 #numericPad {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    padding: 6px 15px 10px 15px;
+    gap: 10px;
+    padding: 8px 18px 15px 18px;
 }
 #numericPad button {
     background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%); 
-    border: 1px solid #1f3f5c; 
-    border-radius: 6px;
+    border: 2px solid #1f3f5c; 
+    border-radius: 10px;
     color: #fff; 
-    font-size: 22px; 
+    font-size: 28px; 
     font-weight: bold; 
-    height: 48px; 
+    height: 60px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
     cursor: pointer; 
-    box-shadow: 0 3px 0 #1f3f5c;
+    box-shadow: 0 4px 0 #1f3f5c;
     width: 100%;
     padding: 0;
 }
 #numericPad button:active {
-    transform: translateY(2px); 
+    transform: translateY(3px); 
     background: #4CAF50;
 }
 #numericPad button.backspace {
@@ -280,29 +312,29 @@ body {
 }
 #qwertyPad, #symbolPad {
     display: none; 
-    padding: 0 8px 12px 8px;
+    padding: 0 10px 15px 10px;
 }
 .row {
     display: flex; 
-    gap: 4px; 
-    margin-bottom: 4px; 
+    gap: 6px; 
+    margin-bottom: 6px; 
     justify-content: center;
 }
 .row button {
     flex: 1; 
-    max-width: 32px; 
+    max-width: 40px; 
     background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%); 
-    border: 1px solid #1f3f5c; 
-    border-radius: 6px; 
+    border: 2px solid #1f3f5c; 
+    border-radius: 8px; 
     color: #fff; 
-    font-size: 16px; 
+    font-size: 20px; 
     font-weight: bold; 
-    height: 40px; 
+    height: 50px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
     cursor: pointer; 
-    box-shadow: 0 2px 0 #1f3f5c;
+    box-shadow: 0 3px 0 #1f3f5c;
 }
 .row button:active {
     transform: translateY(2px); 
@@ -310,43 +342,43 @@ body {
 }
 .row button.special {
     background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%); 
-    max-width: 50px;
+    max-width: 60px;
 }
 .row button.space {
     flex: 3; 
-    max-width: 200px;
+    max-width: 250px;
 }
 #statusScreen {
     display: none; 
     flex-direction: column; 
     position: absolute; 
-    top: 38px; 
+    top: 48px; 
     left: 0; 
     right: 0; 
     bottom: 0; 
     background: rgba(28,48,70,0.98); 
     z-index: 100; 
-    padding: 20px 16px; 
+    padding: 25px 20px; 
     overflow-y: auto; 
-    gap: 10px;
+    gap: 12px;
 }
 .statusBtn {
     background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
-    border: 2px solid #ffcc00; 
+    border: 3px solid #ffcc00; 
     color: white; 
-    font-size: 18px; 
+    font-size: 22px; 
     font-weight: bold; 
-    padding: 16px 8px; 
+    padding: 20px 10px; 
     text-align: center; 
-    border-radius: 8px; 
+    border-radius: 12px; 
     cursor: pointer; 
-    margin-bottom: 2px;
+    margin-bottom: 5px;
 }
 .statusBtn:active { background: #4CAF50; }
 .statusBtn.back {
     background: linear-gradient(180deg, #3a5f8a 0%, #1f3f5c 100%); 
     border-color: #f1c40f; 
-    margin-top: 25px;
+    margin-top: 30px;
 }
 #successPopup {
     display: none; 
@@ -355,45 +387,89 @@ body {
     left: 0; 
     width: 100%; 
     height: 100%; 
-    background: rgba(0,0,0,0.7); 
+    background: rgba(0,0,0,0.8); 
     z-index: 1000; 
     align-items: center; 
     justify-content: center;
 }
 .popup-content {
     background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
-    border: 3px solid #27ae60; 
-    border-radius: 20px; 
-    padding: 30px 20px; 
+    border: 4px solid #27ae60; 
+    border-radius: 30px; 
+    padding: 40px 25px; 
     text-align: center; 
-    width: 280px; 
+    width: 320px; 
     animation: fadePop 0.2s;
 }
 .checkmark {
-    width: 70px;
-    height: 70px;
+    width: 90px;
+    height: 90px;
     background: #27ae60;
     border-radius: 50%; 
-    font-size: 48px; 
+    font-size: 60px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    margin: 0 auto 15px auto; 
+    margin: 0 auto 20px auto; 
     color: white;
 }
-.popup-message { font-size: 20px; font-weight: bold; }
-.popup-submessage { color: #ffcc00; font-size: 15px; margin-top: 5px; }
+.popup-message { font-size: 26px; font-weight: bold; }
+.popup-submessage { color: #ffcc00; font-size: 18px; margin-top: 8px; }
 @keyframes fadePop {
     0% { opacity: 0; transform: scale(0.7); }
     100% { opacity: 1; transform: scale(1); }
 }
-#barcodeType { font-size: 10px; color: #ffcc00; margin-left: 5px; }
+#barcodeType { font-size: 12px; color: #ffcc00; margin-left: 8px; }
+
+/* Exit button - hidden but can be triggered with password */
+#exitOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+#exitPassword {
+    width: 250px;
+    height: 60px;
+    font-size: 30px;
+    text-align: center;
+    margin: 20px;
+    background: #fff;
+    color: #000;
+    border: 3px solid #ffcc00;
+    border-radius: 10px;
+}
+#exitMessage {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #ffcc00;
+}
+#exitButton {
+    background: #4CAF50;
+    color: white;
+    font-size: 28px;
+    padding: 15px 40px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 3px solid #1e5a22;
+}
+#exitButton:active {
+    background: #3d9c42;
+}
 </style>
 </head>
 <body>
 <div id="phone">
     <div id="header">
-        <span id="leftText">SCAN ANY BARCODE</span>
+        <span id="leftText">📦 COURIER SCANNER</span>
         <span id="rightArea">
             GPS: <span id="gpsIndicator">🌐</span>
             <span>📶</span>
@@ -414,6 +490,7 @@ body {
         <div class="corner-bracket corner-tr"></div>
         <div class="corner-bracket corner-bl"></div>
         <div class="corner-bracket corner-br"></div>
+        <div id="flashlightBtn" onclick="toggleFlashlight()">🔦</div>
     </div>
     
     <div id="labelBlock">
@@ -554,10 +631,17 @@ body {
             <div class="popup-submessage" id="popupScanCount"></div>
         </div>
     </div>
+
+    <!-- Exit overlay with password -->
+    <div id="exitOverlay">
+        <div id="exitMessage">🔒 ENTER EXIT PASSWORD</div>
+        <input type="password" id="exitPassword" maxlength="6" inputmode="numeric" pattern="[0-9]*">
+        <div id="exitButton" onclick="checkPassword()">UNLOCK</div>
+    </div>
 </div>
 
 <script>
-// GLOBAL FUNCTIONS - defined for Android 5 compatibility
+// GLOBAL VARIABLES
 var scanCount = 0;
 var currentScans = [];
 var manualInput = '';
@@ -565,26 +649,40 @@ var currentLocation = null;
 var scanning = false;
 var stream = null;
 var scanTimeout = null;
+var flashlightTrack = null;
+var flashlightActive = false;
+
+// PREVENT ALL NAVIGATION AND BACK BUTTONS
+history.pushState(null, null, location.href);
+window.onpopstate = function () {
+    history.pushState(null, null, location.href);
+};
+
+// Disable all hardware buttons and gestures
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' || e.key === 'Backspace' || e.keyCode === 27) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
 
 // Time update
 function updateTime() {
     var d = new Date();
-    var month = (d.getMonth() + 1).toString();
-    if (month.length < 2) month = '0' + month;
-    var day = d.getDate().toString();
-    if (day.length < 2) day = '0' + day;
+    var month = (d.getMonth() + 1).toString().padStart(2,'0');
+    var day = d.getDate().toString().padStart(2,'0');
     var hours = d.getHours();
-    var minutes = d.getMinutes().toString();
-    if (minutes.length < 2) minutes = '0' + minutes;
+    var minutes = d.getMinutes().toString().padStart(2,'0');
     var ampm = hours >= 12 ? 'PM' : 'AM';
-    var hour12 = hours % 12;
-    if (hour12 === 0) hour12 = 12;
+    var hour12 = hours % 12 || 12;
     var timeStr = month + '/' + day + ' ' + hour12 + ':' + minutes + ' ' + ampm;
     
-    var timeDisplay = document.getElementById('timeDisplay');
-    var timeDisplay2 = document.getElementById('timeDisplay2');
-    if (timeDisplay) timeDisplay.innerText = timeStr;
-    if (timeDisplay2) timeDisplay2.innerText = timeStr;
+    document.getElementById('timeDisplay').innerText = timeStr;
+    document.getElementById('timeDisplay2').innerText = timeStr;
 }
 
 // GPS
@@ -596,25 +694,58 @@ function initGPS() {
                     lat: pos.coords.latitude,
                     lng: pos.coords.longitude
                 };
-                var gps = document.getElementById('gpsIndicator');
-                if (gps) {
-                    gps.innerHTML = '📍';
-                    gps.style.color = '#4CAF50';
-                }
+                document.getElementById('gpsIndicator').innerHTML = '📍';
+                document.getElementById('gpsIndicator').style.color = '#4CAF50';
             },
             function(err) {
-                var gps = document.getElementById('gpsIndicator');
-                if (gps) {
-                    gps.innerHTML = '🌐';
-                    gps.style.color = '#ff4444';
-                }
+                document.getElementById('gpsIndicator').innerHTML = '🌐';
+                document.getElementById('gpsIndicator').style.color = '#ff4444';
             },
-            { timeout: 10000 }
+            { timeout: 10000, enableHighAccuracy: true }
         );
     }
 }
 
-// CAMERA FUNCTIONS - COMPLETELY REWRITTEN FOR ANDROID 5
+// FLASHLIGHT FUNCTION
+function toggleFlashlight() {
+    if (!flashlightTrack) {
+        alert('Please start camera first');
+        return;
+    }
+    
+    try {
+        var btn = document.getElementById('flashlightBtn');
+        if (!flashlightActive) {
+            // Turn on flashlight
+            flashlightTrack.applyConstraints({
+                advanced: [{ torch: true }]
+            }).then(function() {
+                flashlightActive = true;
+                btn.classList.add('active');
+                btn.innerHTML = '🔆';
+            }).catch(function(e) {
+                alert('Flashlight not available');
+            });
+        } else {
+            // Turn off flashlight
+            flashlightTrack.applyConstraints({
+                advanced: [{ torch: false }]
+            }).then(function() {
+                flashlightActive = false;
+                btn.classList.remove('active');
+                btn.innerHTML = '🔦';
+            }).catch(function(e) {
+                flashlightActive = false;
+                btn.classList.remove('active');
+                btn.innerHTML = '🔦';
+            });
+        }
+    } catch(e) {
+        alert('Flashlight error: ' + e.message);
+    }
+}
+
+// CAMERA FUNCTIONS - FORCED BACK CAMERA ONLY
 function stopCamera() {
     scanning = false;
     if (scanTimeout) {
@@ -623,12 +754,17 @@ function stopCamera() {
     }
     if (stream) {
         try {
-            stream.getTracks().forEach(function(t) { t.stop(); });
+            stream.getTracks().forEach(function(t) { 
+                t.stop(); 
+            });
         } catch(e) {}
         stream = null;
+        flashlightTrack = null;
+        flashlightActive = false;
+        document.getElementById('flashlightBtn').innerHTML = '🔦';
+        document.getElementById('flashlightBtn').classList.remove('active');
     }
-    var frame = document.getElementById('scanFrame');
-    if (frame) frame.style.display = 'none';
+    document.getElementById('scanFrame').style.display = 'none';
 }
 
 function startScan() {
@@ -639,27 +775,30 @@ function startScan() {
     
     scanning = true;
     var frame = document.getElementById('scanFrame');
-    if (frame) frame.style.display = 'block';
-    
-    // DIFFERENT APPROACH FOR ANDROID 5 - try multiple video constraints
+    frame.style.display = 'block';
     var videoElement = document.getElementById('preview');
     
-    // First try: Standard approach
+    // Try multiple methods to get BACK camera only
+    var constraints = {
+        video: {
+            facingMode: { exact: "environment" }  // Force back camera
+        }
+    };
+    
+    // Method 1: Modern API
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: { exact: "environment" } 
-            } 
-        })
+        navigator.mediaDevices.getUserMedia(constraints)
         .then(function(s) {
             stream = s;
             videoElement.srcObject = stream;
             videoElement.play().catch(function(e){});
             
-            // Simulate barcode detection after 3 seconds (since real detection won't work)
+            // Store video track for flashlight
+            flashlightTrack = stream.getVideoTracks()[0];
+            
+            // Simulate barcode detection after 3 seconds
             scanTimeout = setTimeout(function() {
                 if (scanning) {
-                    // Generate a random barcode
                     var fakeCodes = ['5901234123457', '9780201379624', '036000291452', '4012345012345'];
                     var fakeCode = fakeCodes[Math.floor(Math.random() * fakeCodes.length)];
                     addScannedCode(fakeCode, 'EAN-13');
@@ -667,14 +806,14 @@ function startScan() {
             }, 3000);
         })
         .catch(function(err) {
-            // Second try: simpler constraints
-            navigator.mediaDevices.getUserMedia({ 
-                video: true 
-            })
+            // Try without facingMode constraint
+            navigator.mediaDevices.getUserMedia({ video: true })
             .then(function(s) {
                 stream = s;
                 videoElement.srcObject = stream;
                 videoElement.play().catch(function(e){});
+                
+                flashlightTrack = stream.getVideoTracks()[0];
                 
                 scanTimeout = setTimeout(function() {
                     if (scanning) {
@@ -683,10 +822,9 @@ function startScan() {
                 }, 3000);
             })
             .catch(function(err) {
-                // Third try: Use fallback for Android 5
+                // Try deprecated API
                 try {
-                    // For older Android, try using the deprecated API
-                    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+                    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
                     if (navigator.getUserMedia) {
                         navigator.getUserMedia(
                             { video: true },
@@ -695,6 +833,8 @@ function startScan() {
                                 videoElement.src = window.URL.createObjectURL(s);
                                 videoElement.play().catch(function(e){});
                                 
+                                flashlightTrack = stream.getVideoTracks()[0];
+                                
                                 scanTimeout = setTimeout(function() {
                                     if (scanning) {
                                         addScannedCode('5901234123457', 'EAN-13');
@@ -702,13 +842,13 @@ function startScan() {
                                 }, 3000);
                             },
                             function(err) {
-                                alert('Camera failed: ' + err.message);
+                                alert('Camera failed. Please check permissions.');
                                 scanning = false;
                                 frame.style.display = 'none';
                             }
                         );
                     } else {
-                        alert('No camera support on this device');
+                        alert('No camera support');
                         scanning = false;
                         frame.style.display = 'none';
                     }
@@ -720,39 +860,9 @@ function startScan() {
             });
         });
     } else {
-        // Try deprecated API for Android 5
-        try {
-            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-            if (navigator.getUserMedia) {
-                navigator.getUserMedia(
-                    { video: true },
-                    function(s) {
-                        stream = s;
-                        videoElement.src = window.URL.createObjectURL(s);
-                        videoElement.play().catch(function(e){});
-                        
-                        scanTimeout = setTimeout(function() {
-                            if (scanning) {
-                                addScannedCode('5901234123457', 'EAN-13');
-                            }
-                        }, 3000);
-                    },
-                    function(err) {
-                        alert('Camera failed: ' + err.message);
-                        scanning = false;
-                        frame.style.display = 'none';
-                    }
-                );
-            } else {
-                alert('Your device does not support camera access');
-                scanning = false;
-                frame.style.display = 'none';
-            }
-        } catch(e) {
-            alert('Camera error: ' + e.message);
-            scanning = false;
-            frame.style.display = 'none';
-        }
+        alert('Camera not supported on this device');
+        scanning = false;
+        frame.style.display = 'none';
     }
 }
 
@@ -778,7 +888,6 @@ function addScannedCode(code, type) {
     });
     
     var box = document.getElementById('labelBox');
-    if (!box) return;
     
     // Remove manual input if present
     var manualDiv = document.getElementById('manualInputDiv');
@@ -797,8 +906,7 @@ function clearScans() {
     scanCount = 0;
     currentScans = [];
     manualInput = '';
-    var box = document.getElementById('labelBox');
-    if (box) box.innerHTML = '';
+    document.getElementById('labelBox').innerHTML = '';
     var md = document.getElementById('manualInputDiv');
     if (md) md.remove();
 }
@@ -814,12 +922,10 @@ function goToStatus() {
         });
         
         var box = document.getElementById('labelBox');
-        if (box) {
-            var span = document.createElement('span');
-            span.className = 'scan-entry';
-            span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput.trim() + '<span id="barcodeType"> [MANUAL]</span>';
-            box.appendChild(span);
-        }
+        var span = document.createElement('span');
+        span.className = 'scan-entry';
+        span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput.trim() + '<span id="barcodeType"> [MANUAL]</span>';
+        box.appendChild(span);
         
         manualInput = '';
         var md = document.getElementById('manualInputDiv');
@@ -831,7 +937,6 @@ function goToStatus() {
         return;
     }
     
-    // Show status screen
     document.getElementById('labelBlock').style.display = 'none';
     document.getElementById('scanButton').style.display = 'none';
     document.getElementById('leftText').innerText = 'SELECT STATUS';
@@ -842,7 +947,7 @@ function goBackToScan() {
     document.getElementById('statusScreen').style.display = 'none';
     document.getElementById('labelBlock').style.display = 'flex';
     document.getElementById('scanButton').style.display = 'flex';
-    document.getElementById('leftText').innerText = 'SCAN ANY BARCODE';
+    document.getElementById('leftText').innerText = '📦 COURIER SCANNER';
 }
 
 function submitStatus(status) {
@@ -856,6 +961,27 @@ function submitStatus(status) {
         clearScans();
         goBackToScan();
     }, 2000);
+}
+
+// EXIT FUNCTION WITH PASSWORD 200606
+function showExitPrompt() {
+    document.getElementById('exitOverlay').style.display = 'flex';
+    document.getElementById('exitPassword').value = '';
+    document.getElementById('exitPassword').focus();
+}
+
+function checkPassword() {
+    var password = document.getElementById('exitPassword').value;
+    if (password === '200606') {
+        // Correct password - exit kiosk mode
+        document.getElementById('exitOverlay').style.display = 'none';
+        // Allow exit
+        window.onpopstate = null;
+        history.back();
+    } else {
+        alert('Wrong password!');
+        document.getElementById('exitPassword').value = '';
+    }
 }
 
 // Keypad functions
@@ -888,8 +1014,6 @@ function showSymbol() {
 
 function typeChar(c) {
     var box = document.getElementById('labelBox');
-    if (!box) return;
-    
     var manualDiv = document.getElementById('manualInputDiv');
     
     if (!manualDiv) {
@@ -900,8 +1024,7 @@ function typeChar(c) {
     }
     
     manualInput += c;
-    var manualText = document.getElementById('manualText');
-    if (manualText) manualText.innerText = manualInput;
+    document.getElementById('manualText').innerText = manualInput;
     box.scrollTop = box.scrollHeight;
 }
 
@@ -939,12 +1062,29 @@ function nextTab() {
     }
 }
 
+// Triple tap on time to show exit prompt
+var tapCount = 0;
+var tapTimer = null;
+document.getElementById('timeDisplay').addEventListener('click', function() {
+    tapCount++;
+    if (tapTimer) clearTimeout(tapTimer);
+    tapTimer = setTimeout(function() { tapCount = 0; }, 500);
+    if (tapCount >= 3) {
+        showExitPrompt();
+        tapCount = 0;
+    }
+});
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     initGPS();
     updateTime();
     setInterval(updateTime, 1000);
     showNumeric();
+    
+    // Prevent all navigation
+    document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+    document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
 });
 
 // Cleanup
