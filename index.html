@@ -481,6 +481,8 @@ body {
 /* Android 4+ touch scrolling */
 #labelBox { -webkit-overflow-scrolling: touch; overflow-y: auto; }
 </style>
+<!-- Include QuaggaJS for barcode scanning -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
 <body>
 <div id="phone">
@@ -496,8 +498,8 @@ body {
     <span class="icon"></span> SCAN 1D/2D
   </div>
   
-  <div id="scanFrame">
-    <video id="preview" autoplay playsinline></video>
+  <div id="scanFrame" style="display: none;">
+    <div id="interactive" class="viewport" style="width: 100%; height: 100%; position: relative;"></div>
     <div class="corner-bracket corner-tl"></div>
     <div class="corner-bracket corner-tr"></div>
     <div class="corner-bracket corner-bl"></div>
@@ -575,11 +577,9 @@ body {
   </div>
 </div>
 
-<!-- FIXED LEGACY JS - Android 4.0+ compatible -->
 <script>
 (function() {
-  // Use var for maximum compatibility (Android 4+ supports var)
-  var stream = null;
+  // Use var for maximum compatibility
   var scanning = false;
   var scanCount = 0;
   var currentScans = [];
@@ -587,42 +587,23 @@ body {
   var gpsWatchId = null;
   var manualInput = '';
   var isSubmitting = false;
-  var fakeTimer = null;
+  var quaggaInitialized = false;
   
   // XANO endpoint
   var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
   
-  // Safe console methods for old Android
+  // Safe console
   if (!window.console) {
-    window.console = {
-      log: function() {},
-      error: function() {},
-      warn: function() {}
-    };
+    window.console = { log: function() {}, error: function() {}, warn: function() {} };
   }
   
-  // Polyfill for Date.now() if needed (Android 4+ has it, but just in case)
-  if (!Date.now) {
-    Date.now = function() { return new Date().getTime(); };
-  }
-  
-  // Polyfill for String.trim() if needed (Android 4+ has it)
-  if (!String.prototype.trim) {
-    String.prototype.trim = function() {
-      return this.replace(/^\s+|\s+$/g, '');
-    };
-  }
-  
-  // GPS and reverse geocode with legacy XHR
+  // GPS functions
   function getCityStateFromCoords(lat, lng, callback) {
-    // Ensure callback exists
     callback = callback || function() {};
-    
     var xhr = new XMLHttpRequest();
     var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=18&addressdetails=1';
     
     xhr.open('GET', url, true);
-    // Set User-Agent (required by Nominatim)
     try { xhr.setRequestHeader('User-Agent', 'LegacyScanner/1.0'); } catch(e) {}
     
     xhr.onreadystatechange = function() {
@@ -638,61 +619,32 @@ body {
               callback({ city: city, state: state, zip: zip, display_name: city + ', ' + state + ' ' + zip });
               return;
             }
-          } catch(e) {
-            console.error('Parse error:', e);
-          }
+          } catch(e) {}
         }
-        // Fallback
         callback({ city: 'Unknown', state: 'XX', zip: '00000', display_name: lat.toFixed(4) + ', ' + lng.toFixed(4) });
       }
     };
-    
-    // Handle network errors
     xhr.onerror = function() {
       callback({ city: 'Unknown', state: 'XX', zip: '00000', display_name: lat.toFixed(4) + ', ' + lng.toFixed(4) });
     };
-    
     xhr.send();
   }
   
   function initGPS() {
     if (navigator.geolocation) {
-      // Get initial position
       navigator.geolocation.getCurrentPosition(
-        function(pos) {
-          updateLocation(pos);
-        },
-        function(error) {
-          console.warn('GPS error:', error);
-          updateGPSIndicator(false);
-          // Don't alert on every error, just update indicator
-        },
-        { 
-          enableHighAccuracy: true, 
-          timeout: 10000,
-          maximumAge: 60000 // Accept cached positions up to 1 minute old
-        }
+        function(pos) { updateLocation(pos); },
+        function(error) { updateGPSIndicator(false); },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
       );
       
-      // Watch position (with error handling)
       try {
         gpsWatchId = navigator.geolocation.watchPosition(
-          function(pos) {
-            updateLocation(pos);
-          },
-          function(error) {
-            console.warn('Watch error:', error);
-            updateGPSIndicator(false);
-          },
-          { 
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 60000
-          }
+          function(pos) { updateLocation(pos); },
+          function(error) { updateGPSIndicator(false); },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
         );
-      } catch(e) {
-        console.error('WatchPosition failed:', e);
-      }
+      } catch(e) {}
     } else {
       updateGPSIndicator(false);
     }
@@ -700,7 +652,6 @@ body {
   
   function updateLocation(pos) {
     if (!pos) return;
-    
     currentLocation = {
       lat: pos.coords.latitude,
       lng: pos.coords.longitude,
@@ -752,31 +703,23 @@ body {
     if (timeEl2) timeEl2.innerText = timeStr;
   }
   
-  function stopCamera() {
-    if (stream) {
+  // Stop scanning
+  function stopScanning() {
+    if (quaggaInitialized) {
       try {
-        if (stream.getTracks) {
-          var tracks = stream.getTracks();
-          for (var i = 0; i < tracks.length; i++) {
-            try { tracks[i].stop(); } catch(e) {}
-          }
-        }
+        Quagga.stop();
       } catch(e) {}
-      stream = null;
-    }
-    if (fakeTimer) {
-      clearInterval(fakeTimer);
-      fakeTimer = null;
+      quaggaInitialized = false;
     }
     scanning = false;
     var frame = document.getElementById('scanFrame');
     if (frame) frame.style.display = 'none';
   }
   
-  // LEGACY scan simulation (works on all Android versions)
+  // Start barcode scanning with QuaggaJS
   function startScan() {
     if (scanning) {
-      stopCamera();
+      stopScanning();
       return;
     }
     
@@ -784,73 +727,131 @@ body {
     var frame = document.getElementById('scanFrame');
     if (frame) frame.style.display = 'block';
     
-    // Try camera (with legacy navigator.getUserMedia if needed)
-    var video = document.getElementById('preview');
-    
-    // Modern API
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then(function(s) {
-          stream = s;
-          if (video) {
-            // For older Android, use src instead of srcObject if needed
-            if ('srcObject' in video) {
-              video.srcObject = stream;
-            } else {
-              // Fallback for very old browsers
-              video.src = window.URL.createObjectURL(stream);
-            }
-            video.onloadedmetadata = function() { 
-              video.play().catch(function(e) { console.warn('Play failed:', e); });
-            };
-          }
-        })
-        .catch(function(err) {
-          console.warn('Camera error:', err);
-          // Fallback: just simulate
-        });
-    } 
-    // Legacy API
-    else if (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia) {
-      var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-      getUserMedia.call(navigator, { video: true }, function(s) {
-        stream = s;
-        if (video) {
-          if ('srcObject' in video) {
-            video.srcObject = stream;
-          } else {
-            video.src = window.URL.createObjectURL(stream);
-          }
-          video.onloadedmetadata = function() { 
-            video.play().catch(function(e) { console.warn('Play failed:', e); });
-          };
-        }
-      }, function(err) {
-        console.warn('Legacy camera error:', err);
-      });
+    // Clear any previous Quagga instance
+    if (quaggaInitialized) {
+      try { Quagga.stop(); } catch(e) {}
     }
     
-    // Simulated detection every 3 sec
-    fakeTimer = setInterval(function() {
-      if (!scanning) return;
-      var codes = ['5901234123457', '9780201379624', 'https://legacy.scan', '036000291452', 'LEGACY-001'];
-      var randomCode = codes[Math.floor(Math.random() * codes.length)];
-      var type = randomCode.indexOf('http') === 0 ? 'URL/QR' : (randomCode.length > 13 ? 'CODE128' : 'EAN13');
-      onBarcodeDecoded(randomCode, type);
-    }, 3000);
+    // Configure Quagga for Alcatel back camera
+    Quagga.init({
+      inputStream: {
+        name: "Live",
+        type: "LiveStream",
+        target: document.querySelector('#interactive'),
+        constraints: {
+          width: 640,
+          height: 480,
+          facingMode: "environment" // Force back camera
+        },
+        area: { // Define scan area
+          top: "0%",
+          right: "0%",
+          left: "0%",
+          bottom: "0%"
+        }
+      },
+      decoder: {
+        readers: [
+          "ean_reader",
+          "ean_8_reader",
+          "code_128_reader",
+          "code_39_reader",
+          "code_39_vin_reader",
+          "codabar_reader",
+          "upc_reader",
+          "upc_e_reader",
+          "i2of5_reader"
+        ],
+        debug: {
+          showCanvas: false,
+          showPatches: false,
+          showFoundPatches: false,
+          showSkeleton: false,
+          showLabels: false,
+          showPatchLabels: false,
+          showRemainingPatchLabels: false,
+          boxFromPatches: {
+            showTransformed: false,
+            showTransformedBox: false,
+            showBB: false
+          }
+        }
+      },
+      locate: true,
+      locator: {
+        patchSize: "medium",
+        halfSample: true
+      }
+    }, function(err) {
+      if (err) {
+        console.error("Quagga init failed:", err);
+        alert("Camera error: " + (err.message || "Unknown error"));
+        stopScanning();
+        return;
+      }
+      
+      quaggaInitialized = true;
+      
+      // Start the stream
+      Quagga.start();
+      
+      // Add box around detected barcodes
+      Quagga.onProcessed(function(result) {
+        var drawingCtx = Quagga.canvas.ctx.overlay;
+        var drawingCanvas = Quagga.canvas.dom.overlay;
+        
+        if (result) {
+          if (result.boxes) {
+            drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.width), parseInt(drawingCanvas.height));
+            result.boxes.filter(function(box) {
+              return box !== result.box;
+            }).forEach(function(box) {
+              Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
+            });
+          }
+          
+          if (result.box) {
+            Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00FF00", lineWidth: 3});
+          }
+          
+          if (result.codeResult && result.codeResult.code) {
+            drawingCtx.font = "24px Arial";
+            drawingCtx.fillStyle = "#00FF00";
+            drawingCtx.fillText(result.codeResult.code, 10, 50);
+          }
+        }
+      });
+      
+      // Handle detected barcodes
+      Quagga.onDetected(function(result) {
+        if (result && result.codeResult && result.codeResult.code) {
+          var code = result.codeResult.code;
+          var type = result.codeResult.format || "UNKNOWN";
+          
+          // Stop scanning after detection
+          Quagga.stop();
+          quaggaInitialized = false;
+          scanning = false;
+          
+          // Hide frame
+          if (frame) frame.style.display = 'none';
+          
+          // Play success sound
+          try {
+            var audio = new Audio();
+            audio.src = 'data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVAAAAA8Pzw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PA==';
+            audio.play().catch(function(e) {});
+          } catch(e) {}
+          
+          // Process the barcode
+          processBarcode(code, type);
+        }
+      });
+    });
   }
   
-  function onBarcodeDecoded(code, type) {
-    scanning = false;
-    stopCamera();
-    
-    // Simple beep using Audio (if supported)
-    try {
-      var audio = new Audio();
-      audio.src = 'data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVAAAAA8Pzw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PA==';
-      audio.play().catch(function(e) {});
-    } catch(e) {}
-    
+  // Process detected barcode
+  function processBarcode(code, type) {
     scanCount++;
     var scanObj = { 
       number: scanCount, 
@@ -1127,9 +1128,8 @@ body {
         }
       };
       
-      // Error handling
       xhr.onerror = function() {
-        postOne(index + 1); // Continue even if one fails
+        postOne(index + 1);
       };
       
       xhr.send(data);
@@ -1202,17 +1202,14 @@ body {
   
   // Initialize
   function init() {
-    // Show compatibility message
-    alert('📍 LEGACY MODE – Manual entry works, camera simulated.\n(Compatible with Android 4.0+)');
+    alert('📱 BARCODE SCANNER READY\nPoint camera at barcode to scan\n(Back camera will be used)');
     
     initGPS();
     updateTime();
     setInterval(updateTime, 1000);
     
-    // Set default tab
     window.showNumeric();
     
-    // Bind events
     var scanBtn = document.getElementById('scanButton');
     if (scanBtn) scanBtn.onclick = startScan;
     
@@ -1222,7 +1219,6 @@ body {
     var statusBtn = document.getElementById('statusBtn');
     if (statusBtn) statusBtn.onclick = goToStatus;
     
-    // Status buttons
     var backs = document.querySelectorAll('.statusBtn.back');
     for (var i = 0; i < backs.length; i++) {
       backs[i].onclick = goBackToScan;
@@ -1239,20 +1235,19 @@ body {
     }
   }
   
-  // Run init when DOM is ready
   if (document.addEventListener) {
     document.addEventListener('DOMContentLoaded', init);
   } else {
-    // Fallback for very old browsers
     window.onload = init;
   }
   
-  // Cleanup on unload
   window.onbeforeunload = function() {
     if (gpsWatchId && navigator.geolocation && navigator.geolocation.clearWatch) {
       navigator.geolocation.clearWatch(gpsWatchId);
     }
-    stopCamera();
+    if (quaggaInitialized) {
+      try { Quagga.stop(); } catch(e) {}
+    }
   };
   
 })();
