@@ -1,840 +1,1337 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<!-- EXTREME COMPATIBILITY - ANDROID 2.3+ -->
-<meta name="viewport" content="width=320, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>U·BARCODE LEGACY</title>
-<style>
-/* ANDROID 2.3 SAFE RESET - NO ADVANCED SELECTORS */
-* { margin: 0; padding: 0; border: 0; }
-body { 
-    background: #000000; 
-    font-family: sans-serif; 
-    margin: 0; 
-    padding: 0; 
-    height: 100%; 
-}
-#phone {
-    width: 320px;
-    height: 480px; /* Standard old Android size */
-    background: #2b4b70;
-    color: #ffffff;
-    margin: 0 auto;
-    position: relative;
-    overflow: hidden;
-    border: 2px solid #1f3f5c;
-}
-/* NO FLEXBOX - USING OLD SCHOOL POSITIONING */
-#header {
-    height: 35px;
-    background: #2e5a88;
-    border-bottom: 2px solid #1f3f5c;
-    padding: 5px 8px 0 8px;
-    position: relative;
-}
-#leftText {
-    float: left;
-    font-size: 16px;
-    font-weight: bold;
-    color: #ffffff;
-    padding-top: 5px;
-}
-#rightArea {
-    float: right;
-}
-#gpsIndicator, #flashIndicator, #timeDisplay {
-    display: inline-block;
-    color: #ffffff;
-    font-size: 14px;
-    margin-left: 5px;
-    vertical-align: middle;
-}
-#flashIndicator {
-    background: #000000;
-    padding: 2px 8px;
-    border-radius: 3px;
-    cursor: pointer;
-}
-/* BUTTON - ABSOLUTELY NO CSS3 TRICKS */
-#scanBtn {
-    width: 300px;
-    height: 45px;
-    background: #2b6e2f;
-    border: 2px solid #1e5a22;
-    color: #ffffff;
-    font-size: 22px;
-    font-weight: bold;
-    text-align: center;
-    line-height: 45px;
-    margin: 8px auto;
-    cursor: pointer;
-    border-radius: 5px;
-    box-shadow: 0 4px 0 #145018;
-}
-#scanBtn:active {
-    background: #1e5a22;
-    margin-top: 10px;
-    box-shadow: 0 2px 0 #145018;
-}
-#scanFrame {
-    width: 300px;
-    height: 160px;
-    background: #000000;
-    border: 3px solid #ffcc00;
-    margin: 0 auto;
-    position: relative;
-    display: none;
-}
-#preview {
-    width: 100%;
-    height: 100%;
-    background: #000000;
-}
-/* CORNERS USING ABSOLUTE */
-.corner {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border: 3px solid #ffcc00;
-}
-.tl { top: 0; left: 0; border-right: none; border-bottom: none; }
-.tr { top: 0; right: 0; border-left: none; border-bottom: none; }
-.bl { bottom: 0; left: 0; border-right: none; border-top: none; }
-.br { bottom: 0; right: 0; border-left: none; border-top: none; }
-#torchBtn {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    background: #000000;
-    color: #ffcc00;
-    padding: 3px 10px;
-    border: 1px solid #ffcc00;
-    font-size: 12px;
-    cursor: pointer;
-    z-index: 10;
-}
-#labelBlock {
-    width: 300px;
-    margin: 0 auto;
-}
-#labelTitle {
-    background: #2b4b70;
-    border: 1px solid #1f3f5c;
-    padding: 5px;
-    font-size: 14px;
-    font-weight: bold;
-}
-#labelBox {
-    width: 290px;
-    height: 70px;
-    background: #a6beef;
-    border: 3px solid #1f3f5c;
-    padding: 3px;
-    margin: 3px auto;
-    overflow-y: scroll;
-    color: #000000;
-    font-family: monospace;
-}
-#labelBox span {
-    display: block;
-    background: #c0d4f5;
-    padding: 2px;
-    margin: 2px 0;
-    border-bottom: 1px solid #2b4b70;
-    font-size: 12px;
-}
-#labelButtons {
-    height: 35px;
-    background: #7496c4;
-    border: 2px solid #3a5f8a;
-    margin: 5px 0;
-    line-height: 35px;
-    text-align: center;
-}
-#labelButtons span {
-    display: inline-block;
-    padding: 0 15px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-}
-#navBar {
-    height: 30px;
-    background: #2b4b70;
-    border: 1px solid #1f3f5c;
-    margin: 5px 0;
-    line-height: 30px;
-    text-align: center;
-}
-#navBar button {
-    background: none;
-    color: #ffffff;
-    font-size: 20px;
-    padding: 0 15px;
-    cursor: pointer;
-    border: none;
-}
-/* KEYPAD - TABLE BASED FOR MAX COMPAT */
-#keypadWrapper {
-    background: #1f3f5c;
-    border-top: 3px solid #ffcc00;
-    padding: 5px 0;
-    width: 100%;
-}
-#keyTabs {
-    text-align: center;
-    margin: 5px 0;
-}
-#keyTabs button {
-    width: 80px;
-    height: 35px;
-    background: #3a5f8a;
-    border: 2px solid #1f3f5c;
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: bold;
-    margin: 0 2px;
-    cursor: pointer;
-    border-radius: 20px;
-}
-#keyTabs button.active {
-    background: #4caf50;
-    border-color: #145018;
-}
-.pad {
-    width: 300px;
-    margin: 0 auto;
-}
-.pad table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.pad td {
-    padding: 3px;
-}
-.pad button {
-    width: 100%;
-    height: 45px;
-    background: #3a5f8a;
-    border: 2px solid #1f3f5c;
-    color: #ffffff;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 5px;
-    box-shadow: 0 3px 0 #1f3f5c;
-}
-.pad button:active {
-    background: #4caf50;
-    margin-top: 2px;
-    box-shadow: 0 1px 0 #1f3f5c;
-}
-.backspace-btn {
-    background: #b94a48 !important;
-}
-.special-btn {
-    background: #2b4b70 !important;
-    font-size: 18px !important;
-}
-#numericPad, #qwertyPad, #symbolPad {
-    width: 300px;
-    margin: 0 auto;
-}
-#qwertyPad, #symbolPad {
-    display: none;
-}
-.qwerty-row {
-    margin: 2px 0;
-    text-align: center;
-}
-.qwerty-row button {
-    width: 28px;
-    height: 40px;
-    background: #3a5f8a;
-    border: 2px solid #1f3f5c;
-    color: #ffffff;
-    font-size: 16px;
-    margin: 1px;
-    cursor: pointer;
-    border-radius: 3px;
-    vertical-align: top;
-}
-.qwerty-row .wide-btn {
-    width: 80px;
-}
-.qwerty-row .space-btn {
-    width: 120px;
-}
-/* STATUS SCREEN */
-#statusScreen {
-    position: absolute;
-    top: 45px;
-    left: 0;
-    width: 320px;
-    height: 435px;
-    background: #1c3046;
-    z-index: 100;
-    overflow-y: scroll;
-    display: none;
-    padding: 5px 0;
-}
-.statBtn {
-    width: 290px;
-    background: #2b4b70;
-    border: 3px solid #ffcc00;
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: bold;
-    padding: 12px 0;
-    margin: 5px auto;
-    text-align: center;
-    cursor: pointer;
-    border-radius: 5px;
-}
-.statBtn:active {
-    background: #4caf50;
-}
-.backBtn {
-    border-color: #ffaa00;
-    background: #1f3f5c;
-}
-/* POPUP */
-#successPopup {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 320px;
-    height: 480px;
-    background: rgba(0,0,0,0.8);
-    z-index: 1000;
-    display: none;
-}
-.popup {
-    width: 250px;
-    background: #2b4b70;
-    border: 5px solid #27ae60;
-    margin: 100px auto 0;
-    padding: 15px;
-    text-align: center;
-    border-radius: 15px;
-}
-.check {
-    width: 50px;
-    height: 50px;
-    background: #27ae60;
-    border-radius: 25px;
-    margin: 0 auto 10px;
-    font-size: 30px;
-    line-height: 50px;
-    color: #ffffff;
-}
-#popupStatus {
-    color: #ffcc00;
-    font-size: 14px;
-    margin: 5px 0;
-}
-#popupScanCount {
-    font-size: 12px;
-}
-/* CLEAR FLOATS */
-.clear { clear: both; }
-</style>
-<!-- OLD SCHOOL ZXING CDN -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.0.1/ZXing.js"></script>
+  <meta charset="UTF-8" />
+  <title>XANO EXACT STATUS NAMES ✅</title>
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+  
+  <style>
+    /* YOUR ORIGINAL CSS - PRESERVED */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      color: #000;
+    }
+
+    .device {
+      width: 360px;
+      max-width: 100%;
+      height: 640px;
+      max-height: 100vh;
+      background: #f0f0f0;
+      border: 2px solid #333;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .header {
+      background: #003366;
+      color: #fff;
+      padding: 6px 8px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .header-time {
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .gps-status {
+      background: #2f4f4f;
+      color: white;
+      padding: 4px 10px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #1a2f2f;
+    }
+    
+    .gps-led {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    
+    .gps-green { background: #28a745; box-shadow: 0 0 8px #28a745; animation: pulse 2s infinite; }
+    .gps-yellow { background: #ffc107; box-shadow: 0 0 8px #ffc107; }
+    .gps-red { background: #dc3545; box-shadow: 0 0 8px #dc3545; }
+    .gps-gray { background: #6c757d; }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .tabs {
+      display: flex;
+      background: #d0d0d0;
+      border-bottom: 1px solid #999;
+      flex-shrink: 0;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 6px 0;
+      font-size: 13px;
+      border-right: 1px solid #999;
+      background: #e4e4e4;
+      white-space: nowrap;
+    }
+
+    .tab:last-child {
+      border-right: none;
+    }
+
+    .tab.active {
+      background: #ffffff;
+      font-weight: bold;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 0 0 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .label {
+      font-size: 13px;
+      margin-bottom: 4px;
+      padding-left: 10px;
+      padding-right: 10px;
+      flex-shrink: 0;
+    }
+
+    .input-box {
+      border: 1px solid #666;
+      background: #ffffff;
+      height: 40px;
+      margin: 0 10px 4px 10px;
+      padding: 6px;
+      font-size: 16px;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      word-break: break-all;
+      white-space: pre;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 0px;
+      padding-left: 10px;
+      padding-right: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .label-id-header {
+      background: #2f4f4f;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      padding: 6px 10px;
+      border-top: 2px solid black;
+      border-bottom: 2px solid black;
+      width: 100%;
+      margin: 0;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .lightblue-stretch {
+      background: rgba(173, 216, 230, 0.2);
+      min-height: 110px;
+      width: 100%;
+      border-top: 1px solid rgba(173, 216, 230, 0.5);
+      border-bottom: 1px solid rgba(173, 216, 230, 0.5);
+      margin: 0 0 4px 0;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .scan-entry {
+      background: #ffffff;
+      border: 2px solid #000;
+      font-weight: bold;
+      font-size: 15px;
+      padding: 8px 12px;
+      border-radius: 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      color: #000;
+      letter-spacing: 0.3px;
+      width: 100%;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      word-break: break-word;
+      position: relative;
+    }
+
+    .entry-index {
+      background: #2f4f4f;
+      color: white;
+      padding: 4px 10px;
+      font-weight: bold;
+      font-size: 15px;
+      border: 1px solid black;
+      display: inline-block;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .entry-value {
+      font-weight: bold;
+      color: #000;
+      word-break: break-all;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    
+    .status-Data-Received { background: #17a2b8; color: white; }
+    .status-Picked-Up { background: #ffc107; color: #000; }
+    .status-Depart-Post-Office { background: #fd7e14; color: white; }
+    .status-Arrival-Scan { background: #28a745; color: white; }
+    .status-Local-Scan { background: #6f42c1; color: white; }
+    .status-Out-For-Delivery { background: #dc3545; color: white; }
+    .status-Delivered { background: #28a745; color: white; }
+
+    .eta-badge {
+      background: #003366;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+
+    /* Sync indicator */
+    .sync-indicator {
+      font-size: 18px;
+      margin-left: 8px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #f0f0f0;
+    }
+    
+    .sync-success {
+      color: #28a745;
+      background: #e8f5e9;
+    }
+    
+    .sync-failed {
+      color: #dc3545;
+      background: #ffebee;
+    }
+    
+    .sync-pending {
+      color: #ffc107;
+      background: #fff3e0;
+    }
+
+    /* Connection status bar */
+    .connection-status {
+      background: #333;
+      color: white;
+      padding: 4px 10px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #666;
+    }
+    
+    .connection-led {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    
+    .led-green { background: #28a745; box-shadow: 0 0 8px #28a745; }
+    .led-red { background: #dc3545; box-shadow: 0 0 8px #dc3545; }
+    .led-yellow { background: #ffc107; box-shadow: 0 0 8px #ffc107; }
+
+    .spacer {
+      flex: 1;
+      min-height: 4px;
+    }
+
+    .action-bar {
+      display: flex;
+      background: #003366;
+      color: #fff;
+      font-size: 14px;
+      border-bottom: 1px solid #002244;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .action-btn {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0;
+      border-right: 1px solid #002244;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0.2);
+    }
+
+    .action-btn:last-child {
+      border-right: none;
+    }
+
+    .scan-hard-button {
+      background: #006400;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+      padding: 10px 0;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-bottom: 2px solid #004d00;
+      border-top: 2px solid #004d00;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: rgba(0,100,0,0.5);
+      flex-shrink: 0;
+      letter-spacing: 1px;
+    }
+
+    .scan-hard-button span {
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .keypad-mode-bar {
+      display: flex;
+      border-top: 1px solid #999;
+      border-bottom: 1px solid #999;
+      background: #d0d0d0;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .mode-btn {
+      flex: 1;
+      text-align: center;
+      padding: 6px 0;
+      font-size: 12px;
+      border-right: 1px solid #999;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0.2);
+    }
+
+    .mode-btn:last-child {
+      border-right: none;
+    }
+
+    .mode-btn.active {
+      background: #ffffff;
+      font-weight: bold;
+    }
+
+    .keypad {
+      background: #c0c0c0;
+      padding: 4px;
+      display: none;
+      flex-shrink: 0;
+    }
+
+    .keypad.active {
+      display: block;
+    }
+
+    .key-row {
+      display: flex;
+      margin-bottom: 4px;
+    }
+
+    .key {
+      flex: 1;
+      margin: 2px;
+      padding: 10px 0;
+      text-align: center;
+      font-size: 16px;
+      background: #ffffff;
+      border: 1px solid #666;
+      border-radius: 3px;
+      user-select: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: rgba(0,0,0,0.2);
+      touch-action: manipulation;
+    }
+
+    .key.wide {
+      flex: 1.8;
+    }
+
+    .key.small {
+      flex: 0.8;
+    }
+
+    .camera-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: black;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    
+    .camera-header {
+      background: #003366;
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .close-cam {
+      background: #990000;
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .flash-btn {
+      background: #ffaa00;
+      color: #000;
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    
+    .flash-btn.active {
+      background: #ffff00;
+      box-shadow: 0 0 15px yellow;
+    }
+    
+    #qr-reader {
+      width: 100%;
+      flex: 1;
+      background: #111;
+    }
+    
+    .camera-footer {
+      background: #003366;
+      color: white;
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .scan-region-highlight {
+      border: 3px solid #00ff00 !important;
+      border-radius: 20px !important;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.6) !important;
+    }
+    
+    .status-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 2500;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .status-box {
+      background: white;
+      width: 340px;
+      max-width: 95%;
+      border-radius: 16px;
+      overflow: hidden;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .status-header {
+      background: #2f4f4f;
+      color: white;
+      padding: 16px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    .gps-info {
+      background: #e3f2fd;
+      padding: 10px;
+      font-size: 12px;
+      border-bottom: 1px solid #bbdefb;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .status-option {
+      padding: 18px 20px;
+      border-bottom: 1px solid #ddd;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.2s;
+    }
+    
+    .status-option:last-child {
+      border-bottom: none;
+    }
+    
+    .status-option:hover {
+      filter: brightness(0.95);
+    }
+    
+    /* EXACT STATUS COLORS FROM YOUR IMAGE */
+    .status-option.data-received { background: #d1ecf1; color: #0c5460; }
+    .status-option.picked-up { background: #fff3cd; color: #856404; }
+    .status-option.depart-post-office { background: #ffe5d0; color: #a86400; }
+    .status-option.arrival-scan { background: #d4edda; color: #155724; }
+    .status-option.local-scan { background: #e2d5f7; color: #563d7c; }
+    .status-option.out-for-delivery { background: #f8d7da; color: #721c24; }
+    .status-option.delivered { background: #d4edda; color: #155724; }
+    
+    .status-close {
+      padding: 16px;
+      text-align: center;
+      background: #e0e0e0;
+      font-weight: bold;
+      cursor: pointer;
+      position: sticky;
+      bottom: 0;
+      border-top: 1px solid #ccc;
+    }
+
+    .eta-note {
+      font-size: 11px;
+      color: #666;
+      margin-left: auto;
+      background: rgba(0,0,0,0.05);
+      padding: 3px 8px;
+      border-radius: 12px;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 8px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-height: 600px) {
+      .key { padding: 6px 0; font-size: 14px; }
+      .lightblue-stretch { min-height: 80px; }
+      .scan-entry { padding: 5px 8px; }
+    }
+  </style>
 </head>
 <body>
-<div id="phone">
-    <div id="header">
-        <span id="leftText">SCAN QR</span>
-        <span id="rightArea">
-            <span id="flashIndicator" onclick="toggleFlashLegacy()">🔦</span>
-            <span id="gpsIndicator">📍</span>
-            <span id="timeDisplay"></span>
-        </span>
-        <div class="clear"></div>
+  <div class="device">
+    <div class="header">
+      <div class="header-title">Scan barcode</div>
+      <div class="header-time" id="currentTime">--:--</div>
     </div>
-    
-    <div id="scanBtn" onclick="startScanLegacy()">📷 SCAN BARCODE</div>
-    
-    <div id="scanFrame">
-        <video id="preview" autoplay playsinline style="width:100%;height:100%;"></video>
-        <div id="torchBtn" onclick="toggleFlashLegacy()">🔦 OFF</div>
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
+
+    <!-- GPS STATUS BAR -->
+    <div class="gps-status" id="gpsStatus">
+      <span class="gps-led gps-gray" id="gpsLed"></span>
+      <span id="gpsText">Requesting GPS location...</span>
+      <span style="margin-left: auto; font-size: 10px;" id="gpsCoords"></span>
     </div>
-    
-    <div id="labelBlock">
-        <div id="labelTitle">📋 SCANNED CODES</div>
-        <div id="labelBox"></div>
-        <div id="labelButtons">
-            <span onclick="clearAllLegacy()">CLEAR</span> | 
-            <span onclick="showStatusLegacy()">ENTER</span>
+
+    <!-- CONNECTION STATUS BAR -->
+    <div class="connection-status" id="connectionStatus">
+      <span class="connection-led led-yellow" id="connectionLed"></span>
+      <span id="connectionText">XANO ready</span>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active">Scan</div>
+      <div class="tab">Lookahead</div>
+    </div>
+
+    <div class="content">
+      <div class="label">Scan/key-in barcode:</div>
+      <div id="barcodeInput" class="input-box"></div>
+      <div class="hint"># LABEL ID</div>
+      <div class="label-id-header">
+        <span># LABEL ID</span>
+      </div>
+      <div id="scanHistoryContainer" class="lightblue-stretch">
+        <div style="color:#888; font-style:italic; padding:8px; text-align:center;">No scans yet</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="action-bar">
+        <div class="action-btn" id="escBtn">ESC</div>
+        <div class="action-btn" id="enterBtn">ENTER</div>
+      </div>
+      <div class="scan-hard-button" id="scanButton">
+        <span>◰</span> SCAN <span>◰</span>
+      </div>
+      <div class="keypad-mode-bar">
+        <div class="mode-btn active" data-mode="qwerty">QWERTY</div>
+        <div class="mode-btn" data-mode="numeric">123</div>
+        <div class="mode-btn" data-mode="sym">SYM</div>
+      </div>
+
+      <div id="keypad-qwerty" class="keypad active">
+        <div class="key-row">
+          <div class="key">Q</div><div class="key">W</div><div class="key">E</div><div class="key">R</div><div class="key">T</div><div class="key">Y</div><div class="key">U</div><div class="key">I</div><div class="key">O</div><div class="key">P</div>
         </div>
-        <div id="navBar">
-            <button onclick="alert('Prev')">◀</button>
-            <span id="timeDisplay2"></span>
-            <button onclick="alert('Next')">▶</button>
+        <div class="key-row">
+          <div class="key">A</div><div class="key">S</div><div class="key">D</div><div class="key">F</div><div class="key">G</div><div class="key">H</div><div class="key">J</div><div class="key">K</div><div class="key">L</div>
         </div>
-        
-        <div id="keypadWrapper">
-            <div id="keyTabs">
-                <button id="tabQ" onclick="showPadLegacy('q')">ABC</button>
-                <button id="tabN" onclick="showPadLegacy('n')" class="active">123</button>
-                <button id="tabS" onclick="showPadLegacy('s')">#+='</button>
-            </div>
-            
-            <!-- NUMERIC PAD -->
-            <div id="numericPad" class="pad">
-                <table>
-                    <tr><td><button onclick="addChar('1')">1</button></td><td><button onclick="addChar('2')">2</button></td><td><button onclick="addChar('3')">3</button></td></tr>
-                    <tr><td><button onclick="addChar('4')">4</button></td><td><button onclick="addChar('5')">5</button></td><td><button onclick="addChar('6')">6</button></td></tr>
-                    <tr><td><button onclick="addChar('7')">7</button></td><td><button onclick="addChar('8')">8</button></td><td><button onclick="addChar('9')">9</button></td></tr>
-                    <tr><td><button onclick="addChar('.')">.</button></td><td><button onclick="addChar('0')">0</button></td><td><button class="backspace-btn" onclick="backspaceLegacy()">⌫</button></td></tr>
-                </table>
-            </div>
-            
-            <!-- QWERTY PAD -->
-            <div id="qwertyPad">
-                <div class="qwerty-row">
-                    <button onclick="addChar('q')">q</button><button onclick="addChar('w')">w</button><button onclick="addChar('e')">e</button><button onclick="addChar('r')">r</button><button onclick="addChar('t')">t</button><button onclick="addChar('y')">y</button><button onclick="addChar('u')">u</button><button onclick="addChar('i')">i</button><button onclick="addChar('o')">o</button><button onclick="addChar('p')">p</button>
-                </div>
-                <div class="qwerty-row">
-                    <button onclick="addChar('a')">a</button><button onclick="addChar('s')">s</button><button onclick="addChar('d')">d</button><button onclick="addChar('f')">f</button><button onclick="addChar('g')">g</button><button onclick="addChar('h')">h</button><button onclick="addChar('j')">j</button><button onclick="addChar('k')">k</button><button onclick="addChar('l')">l</button>
-                </div>
-                <div class="qwerty-row">
-                    <button onclick="addChar('z')">z</button><button onclick="addChar('x')">x</button><button onclick="addChar('c')">c</button><button onclick="addChar('v')">v</button><button onclick="addChar('b')">b</button><button onclick="addChar('n')">n</button><button onclick="addChar('m')">m</button>
-                    <button class="backspace-btn" onclick="backspaceLegacy()">⌫</button>
-                </div>
-                <div class="qwerty-row">
-                    <button class="wide-btn" onclick="showPadLegacy('n')">123</button>
-                    <button class="space-btn" onclick="addChar(' ')">space</button>
-                    <button class="wide-btn" onclick="addChar('.')">.</button>
-                </div>
-            </div>
-            
-            <!-- SYMBOL PAD -->
-            <div id="symbolPad">
-                <div class="qwerty-row">
-                    <button onclick="addChar('@')">@</button><button onclick="addChar('#')">#</button><button onclick="addChar('$')">$</button><button onclick="addChar('%')">%</button><button onclick="addChar('&')">&</button><button onclick="addChar('*')">*</button>
-                </div>
-                <div class="qwerty-row">
-                    <button onclick="addChar('(')">(</button><button onclick="addChar(')')">)</button><button onclick="addChar('-')">-</button><button onclick="addChar('+')">+</button><button onclick="addChar('=')">=</button><button onclick="addChar('/')">/</button>
-                </div>
-                <div class="qwerty-row">
-                    <button onclick="addChar(':')">:</button><button onclick="addChar(';')">;</button><button onclick="addChar('"')">"</button><button onclick="addChar("'")">'</button><button onclick="addChar(',')">,</button>
-                    <button class="backspace-btn" onclick="backspaceLegacy()">⌫</button>
-                </div>
-                <div class="qwerty-row">
-                    <button class="wide-btn" onclick="showPadLegacy('q')">ABC</button>
-                    <button class="space-btn" onclick="addChar(' ')">space</button>
-                    <button class="wide-btn" onclick="addChar('.')">.</button>
-                </div>
-            </div>
+        <div class="key-row">
+          <div class="key small">⇧</div>
+          <div class="key">Z</div><div class="key">X</div><div class="key">C</div><div class="key">V</div><div class="key">B</div><div class="key">N</div><div class="key">M</div>
+          <div class="key small" data-action="backspace">⌫</div>
         </div>
-    </div>
-    
-    <div id="statusScreen">
-        <div class="statBtn" onclick="submitStatusLegacy('Data Received (+7)')">📦 Data Received (+7)</div>
-        <div class="statBtn" onclick="submitStatusLegacy('Picked Up (-1)')">📬 Picked Up (-1)</div>
-        <div class="statBtn" onclick="submitStatusLegacy('Depart Post Office (-2)')">🚚 Depart PO (-2)</div>
-        <div class="statBtn" onclick="submitStatusLegacy('Arrival Scan (-0.5)')">📍 Arrival Scan (-0.5)</div>
-        <div class="statBtn" onclick="submitStatusLegacy('Local Scan (-1.5)')">🏢 Local Scan (-1.5)</div>
-        <div class="statBtn" onclick="submitStatusLegacy('Out For Delivery (-2)')">🚛 Out For Delivery (-2)</div>
-        <div class="statBtn" onclick="submitStatusLegacy('Delivered (0)')">✅ Delivered (0)</div>
-        <div class="statBtn backBtn" onclick="hideStatusLegacy()">◀ BACK TO SCAN</div>
-    </div>
-    
-    <div id="successPopup">
-        <div class="popup">
-            <div class="check">✓</div>
-            <div id="popupMessage" style="font-size:18px;margin:10px 0;">Success!</div>
-            <div id="popupStatus"></div>
-            <div id="popupScanCount"></div>
+        <div class="key-row">
+          <div class="key wide" data-action="space">SPACE</div>
+          <div class="key small" data-action="dash">-</div>
+          <div class="key small" data-action="clear">CLR</div>
         </div>
+      </div>
+
+      <div id="keypad-numeric" class="keypad">
+        <div class="key-row"><div class="key">1</div><div class="key">2</div><div class="key">3</div></div>
+        <div class="key-row"><div class="key">4</div><div class="key">5</div><div class="key">6</div></div>
+        <div class="key-row"><div class="key">7</div><div class="key">8</div><div class="key">9</div></div>
+        <div class="key-row"><div class="key">0</div><div class="key" data-action="dash">-</div><div class="key" data-action="backspace">⌫</div></div>
+      </div>
+
+      <div id="keypad-sym" class="keypad">
+        <div class="key-row"><div class="key">#</div><div class="key">@</div><div class="key">*</div></div>
+        <div class="key-row"><div class="key">/</div><div class="key">+</div><div class="key">=</div></div>
+        <div class="key-row"><div class="key">(</div><div class="key">)</div><div class="key">.</div></div>
+        <div class="key-row"><div class="key" data-action="space">SPACE</div><div class="key" data-action="backspace">⌫</div><div class="key" data-action="clear">CLR</div></div>
+      </div>
     </div>
-</div>
+  </div>
 
-<script>
-// ========== LEGACY ANDROID 2.3+ COMPATIBLE CODE ==========
-// NO LET, NO CONST, NO ARROW FUNCTIONS, NO PROMISES, NO FETCH
+  <div id="cameraModal" class="camera-modal">
+    <div class="camera-header">
+      <span style="font-weight:bold;">◰ SCAN BARCODE</span>
+      <div style="display: flex;">
+        <div class="flash-btn" id="flashlightBtn">🔦 OFF</div>
+        <div class="close-cam" id="closeCameraBtn">✕ CLOSE</div>
+      </div>
+    </div>
+    <div id="qr-reader"></div>
+    <div class="camera-footer">
+      <span>⬤ POSITION BARCODE IN GREEN BOX</span>
+      <span id="flashStatus" style="font-size: 11px;">FLASH: OFF</span>
+    </div>
+  </div>
+  
+  <div id="statusModal" class="status-modal">
+    <div class="status-box">
+      <div class="status-header">SELECT STATUS GPS: 📶 <span id="modalGpsTime"></span></div>
+      
+      <!-- GPS INFO IN MODAL -->
+      <div class="gps-info" id="modalGpsInfo">
+        <span>📍 Getting location...</span>
+      </div>
+      
+      <!-- EXACT STATUSES FROM YOUR IMAGE WITH EXACT DATA-STATUS ATTRIBUTES -->
+      <div class="status-option data-received" data-status="Data Received">📦 Data Received (+7 days) <span class="eta-note">ETA +7d</span></div>
+      <div class="status-option picked-up" data-status="Picked Up">📋 Picked Up (-1 day) <span class="eta-note">ETA -1d</span></div>
+      <div class="status-option depart-post-office" data-status="Depart Post Office">🚚 Depart Post Office (-2 days) <span class="eta-note">ETA -2d</span></div>
+      <div class="status-option arrival-scan" data-status="Arrival Scan">🛬 Arrival Scan (-0.5 days) <span class="eta-note">ETA -12h</span></div>
+      <div class="status-option local-scan" data-status="Local Scan">🏠 Local Scan (-1.5 days) <span class="eta-note">ETA -36h</span></div>
+      <div class="status-option out-for-delivery" data-status="Out For Delivery">📤 Out For Delivery (-2 days) <span class="eta-note">ETA -2d</span></div>
+      <div class="status-option delivered" data-status="Delivered">✅ Delivered (0 days) <span class="eta-note">ETA 0d</span></div>
+      
+      <div class="status-close" id="closeStatusBtn">⬅️ BACK TO SCANNER</div>
+    </div>
+  </div>
 
-// Global variables
-var stream = null;
-var scanning = false;
-var scanCount = 0;
-var scans = [];
-var gps = null;
-var watchId = null;
-var videoElement = document.getElementById('preview');
-var frame = document.getElementById('scanFrame');
-var box = document.getElementById('labelBox');
-var leftTxt = document.getElementById('leftText');
-var gpsInd = document.getElementById('gpsIndicator');
-var torchBtn = document.getElementById('torchBtn');
-var flashInd = document.getElementById('flashIndicator');
-var statusScreen = document.getElementById('statusScreen');
-var labelBlock = document.getElementById('labelBlock');
-var scanBtn = document.getElementById('scanBtn');
-var successPopup = document.getElementById('successPopup');
-var popupStatus = document.getElementById('popupStatus');
-var popupScanCount = document.getElementById('popupScanCount');
+  <script>
+    (function() {
+      // ========== CONFIG ==========
+      var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+      var DEFAULT_BARCODE_TYPE = 'QR_CODE';
+      
+      // ========== DOM ELEMENTS ==========
+      var inputEl = document.getElementById('barcodeInput');
+      var historyContainer = document.getElementById('scanHistoryContainer');
+      var enterBtn = document.getElementById('enterBtn');
+      var escBtn = document.getElementById('escBtn');
+      var scanButton = document.getElementById('scanButton');
+      var cameraModal = document.getElementById('cameraModal');
+      var closeCameraBtn = document.getElementById('closeCameraBtn');
+      var statusModal = document.getElementById('statusModal');
+      var closeStatusBtn = document.getElementById('closeStatusBtn');
+      var flashlightBtn = document.getElementById('flashlightBtn');
+      var flashStatus = document.getElementById('flashStatus');
+      var connectionLed = document.getElementById('connectionLed');
+      var connectionText = document.getElementById('connectionText');
+      var gpsLed = document.getElementById('gpsLed');
+      var gpsText = document.getElementById('gpsText');
+      var gpsCoords = document.getElementById('gpsCoords');
+      var modalGpsInfo = document.getElementById('modalGpsInfo');
+      var modalGpsTime = document.getElementById('modalGpsTime');
 
-// Xano URL
-var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+      // ========== STATE ==========
+      var scanCounter = 1;
+      var maxEntries = 8;
+      var html5QrcodeScanner = null;
+      var isScannerInitialized = false;
+      var flashlightOn = false;
+      var currentTrack = null;
+      var pendingData = {
+        barcode: null,
+        status: null
+      };
+      
+      // GPS state
+      var currentLocation = {
+        lat: null,
+        lng: null,
+        accuracy: null,
+        timestamp: null,
+        address: 'Unknown location'
+      };
+      
+      var watchId = null;
 
-// ========== CLOCK UPDATE ==========
-function updateTime() {
-    var d = new Date();
-    var month = (d.getMonth() + 1);
-    if (month < 10) month = '0' + month;
-    var day = d.getDate();
-    if (day < 10) day = '0' + day;
-    var hours = d.getHours();
-    var ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    if (hours == 0) hours = 12;
-    var mins = d.getMinutes();
-    if (mins < 10) mins = '0' + mins;
-    var timeStr = month + '/' + day + ' ' + hours + ':' + mins + ' ' + ampm;
-    
-    document.getElementById('timeDisplay').innerHTML = timeStr;
-    document.getElementById('timeDisplay2').innerHTML = timeStr;
-}
-setInterval(updateTime, 1000);
-
-// ========== GPS ==========
-function updateGPSIndicator(hasFix) {
-    if (hasFix) {
-        gpsInd.innerHTML = '🛰️';
-        gpsInd.style.color = '#4CAF50';
-    } else {
-        gpsInd.innerHTML = '🌐';
-        gpsInd.style.color = '#ff4444';
-    }
-}
-
-function initGPS() {
-    if (!navigator.geolocation) {
-        updateGPSIndicator(false);
-        return;
-    }
-    
-    navigator.geolocation.getCurrentPosition(
-        function(position) {
-            gps = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-                acc: position.coords.accuracy
-            };
-            updateGPSIndicator(true);
-        },
-        function(error) {
-            updateGPSIndicator(false);
-        },
-        { enableHighAccuracy: true, timeout: 8000 }
-    );
-    
-    watchId = navigator.geolocation.watchPosition(
-        function(position) {
-            gps = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-                acc: position.coords.accuracy
-            };
-            updateGPSIndicator(true);
-        },
-        function(error) {
-            updateGPSIndicator(false);
-        },
-        { enableHighAccuracy: true, timeout: 8000 }
-    );
-}
-
-// ========== CAMERA ==========
-function stopCam() {
-    if (stream) {
-        try {
-            var tracks = stream.getTracks();
-            for (var i = 0; i < tracks.length; i++) {
-                tracks[i].stop();
-            }
-        } catch(e) {}
-        stream = null;
-    }
-    scanning = false;
-}
-
-function startScanLegacy() {
-    if (scanning) {
-        stopCam();
-        frame.style.display = 'none';
-        return;
-    }
-    
-    scanning = true;
-    frame.style.display = 'block';
-    torchBtn.innerHTML = '🔦 OFF';
-    
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('Camera not supported on this device');
-        stopCam();
-        frame.style.display = 'none';
-        return;
-    }
-    
-    navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
-    }).then(function(s) {
-        stream = s;
-        videoElement.srcObject = stream;
-        videoElement.play();
-        
-        // Use legacy ZXing
-        try {
-            var codeReader = new ZXing.BrowserMultiFormatReader();
-            codeReader.decodeFromVideoElement(videoElement, function(result, err) {
-                if (result) {
-                    onDecodeLegacy(result.getText(), result.getBarcodeFormat());
-                    codeReader.reset();
-                    stopCam();
-                    frame.style.display = 'none';
-                }
-            });
-        } catch(e) {
-            alert('Scanner error: ' + e.message);
-            stopCam();
-            frame.style.display = 'none';
+      // ========== GPS TRACKING ==========
+      function startGpsTracking() {
+        if (!navigator.geolocation) {
+          gpsLed.className = 'gps-led gps-red';
+          gpsText.textContent = 'GPS not supported';
+          return;
         }
-    }).catch(function(err) {
-        alert('Camera error: ' + err.message);
-        stopCam();
-        frame.style.display = 'none';
-    });
-}
-
-// ========== DECODE HANDLER ==========
-function onDecodeLegacy(code, type) {
-    // Beep
-    try {
-        var audio = new Audio();
-        audio.src = 'data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVoAAACAgICAf39/f3+AgIAAAACAgIAAAAAAAAAAAAD//wAAgIAAAAD//wAAgIAAAAD//wAAgID//wAAgID//wAAgIAAAAD//wAA';
-        audio.play();
-    } catch(e) {}
-    
-    scanCount++;
-    var scanObj = {
-        num: scanCount,
-        code: code,
-        type: type || 'QR_CODE',
-        time: new Date().toISOString(),
-        loc: gps
-    };
-    scans.push(scanObj);
-    
-    var span = document.createElement('span');
-    var gpsIcon = gps ? ' 📍' : '';
-    span.innerHTML = scanCount + ' ' + code + gpsIcon + ' [' + (type || 'QR') + ']';
-    box.appendChild(span);
-    box.scrollTop = box.scrollHeight;
-}
-
-// ========== CLEAR ==========
-function clearAllLegacy() {
-    scanCount = 0;
-    scans = [];
-    box.innerHTML = '';
-}
-
-// ========== STATUS SCREEN ==========
-function showStatusLegacy() {
-    if (scans.length == 0) {
-        alert('Scan a barcode first');
-        return;
-    }
-    labelBlock.style.display = 'none';
-    scanBtn.style.display = 'none';
-    leftTxt.innerHTML = 'SELECT STATUS';
-    statusScreen.style.display = 'block';
-}
-
-function hideStatusLegacy() {
-    statusScreen.style.display = 'none';
-    labelBlock.style.display = 'block';
-    scanBtn.style.display = 'block';
-    leftTxt.innerHTML = 'SCAN QR';
-}
-
-// ========== ETA CALC ==========
-function calculateETA(status) {
-    var d = new Date();
-    if (status.indexOf('Received') > -1) {
-        d.setDate(d.getDate() + 7);
-    } else if (status.indexOf('Picked') > -1) {
-        d.setDate(d.getDate() - 1);
-    } else if (status.indexOf('Depart') > -1) {
-        d.setDate(d.getDate() - 2);
-    } else if (status.indexOf('Arrival') > -1) {
-        d.setHours(d.getHours() - 12);
-    } else if (status.indexOf('Local') > -1) {
-        d.setHours(d.getHours() - 36);
-    } else if (status.indexOf('Out') > -1) {
-        d.setDate(d.getDate() - 2);
-    }
-    return (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + 
-           (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
-}
-
-// ========== SUBMIT STATUS ==========
-function submitStatusLegacy(statusText) {
-    if (scans.length == 0) return;
-    
-    // Try to get fresh GPS
-    if (!gps && navigator.geolocation) {
+        
+        // Request high accuracy location
+        var options = {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        };
+        
+        // Get initial position
         navigator.geolocation.getCurrentPosition(
-            function(position) {
-                gps = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                doSubmit(statusText);
-            },
-            function() {
-                doSubmit(statusText);
-            }
+          function(position) {
+            updateGpsPosition(position);
+            // Start watching for updates
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+            watchId = navigator.geolocation.watchPosition(
+              updateGpsPosition,
+              gpsError,
+              options
+            );
+          },
+          gpsError,
+          options
         );
-    } else {
-        doSubmit(statusText);
-    }
-}
-
-function doSubmit(statusText) {
-    var packs = [];
-    for (var i = 0; i < scans.length; i++) {
-        var s = scans[i];
-        var eta = calculateETA(statusText);
-        packs.push({
-            LABEL_ID: s.code,
-            BARCODE_TYPE: s.type,
-            TIME: new Date().toLocaleTimeString(),
-            DATE: new Date().toLocaleDateString(),
-            STATUS: statusText,
-            LOCATION: gps ? gps.lat + ',' + gps.lng : 'unavailable',
-            ETA: eta,
-            TIMESTAMP: new Date().toISOString()
-        });
-    }
-    
-    var body = {
-        scans: packs,
-        status: statusText,
-        timestamp: new Date().toISOString(),
-        location: gps,
-        batch_id: new Date().getTime() + ''
-    };
-    
-    // Use XMLHttpRequest for max compatibility
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', XANO_URL, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            if (xhr.status == 200 || xhr.status == 201) {
-                showPopup(statusText, packs);
-            } else {
-                alert('Server error: ' + xhr.status);
-            }
+      }
+      
+      function updateGpsPosition(position) {
+        currentLocation.lat = position.coords.latitude;
+        currentLocation.lng = position.coords.longitude;
+        currentLocation.accuracy = position.coords.accuracy;
+        currentLocation.timestamp = new Date(position.timestamp);
+        
+        // Format time for modal header
+        var timeStr = (currentLocation.timestamp.getMonth()+1) + '/' + 
+                      currentLocation.timestamp.getDate() + ' ' +
+                      currentLocation.timestamp.getHours() + ':' +
+                      (currentLocation.timestamp.getMinutes() < 10 ? '0' : '') + 
+                      currentLocation.timestamp.getMinutes() + ' ' +
+                      (currentLocation.timestamp.getHours() >= 12 ? 'PM' : 'AM');
+        
+        // Update UI
+        gpsLed.className = 'gps-led gps-green';
+        gpsText.textContent = 'GPS: Active';
+        gpsCoords.textContent = `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+        
+        // Update modal
+        if (modalGpsInfo) {
+          modalGpsInfo.innerHTML = `📍 Location: ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)} (±${currentLocation.accuracy.toFixed(0)}m)`;
         }
-    };
-    xhr.onerror = function() {
-        alert('Network error - check connection');
-    };
-    xhr.send(JSON.stringify(body));
-}
+        if (modalGpsTime) {
+          modalGpsTime.textContent = timeStr;
+        }
+        
+        // Try to get address from coordinates (reverse geocoding)
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLocation.lat}&lon=${currentLocation.lng}&zoom=18&addressdetails=1`)
+          .then(response => response.json())
+          .then(data => {
+            if (data && data.display_name) {
+              currentLocation.address = data.display_name.split(',').slice(0, 3).join(',');
+              gpsCoords.textContent = currentLocation.address;
+            }
+          })
+          .catch(() => {});
+      }
+      
+      function gpsError(error) {
+        console.warn('GPS error:', error);
+        gpsLed.className = 'gps-led gps-red';
+        
+        switch(error.code) {
+          case 1:
+            gpsText.textContent = 'GPS: Permission denied';
+            break;
+          case 2:
+            gpsText.textContent = 'GPS: Position unavailable';
+            break;
+          case 3:
+            gpsText.textContent = 'GPS: Timeout';
+            break;
+          default:
+            gpsText.textContent = 'GPS: Error';
+        }
+        
+        if (modalGpsInfo) {
+          modalGpsInfo.innerHTML = `⚠️ ${gpsText.textContent}`;
+        }
+      }
 
-function showPopup(status, packs) {
-    var html = '';
-    for (var i = 0; i < packs.length; i++) {
-        html += packs[i].LABEL_ID.substring(0,8) + '… ETA:' + packs[i].ETA + '<br>';
-    }
-    popupStatus.innerHTML = 'Status: ' + status;
-    popupScanCount.innerHTML = scanCount + ' QR(s)<br>' + html;
-    successPopup.style.display = 'block';
-    
-    setTimeout(function() {
-        successPopup.style.display = 'none';
-        clearAllLegacy();
-        hideStatusLegacy();
-    }, 4000);
-}
+      // ========== UPDATE CLOCK ==========
+      function updateClock() {
+        var d = new Date();
+        var timeStr = (d.getMonth()+1) + '/' + d.getDate() + ' ' + 
+                      d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+        document.getElementById('currentTime').textContent = timeStr;
+      }
+      updateClock();
+      setInterval(updateClock, 60000);
+      
+      // ========== CORRECT ETA CALCULATION BASED ON EXACT STATUS ==========
+      function calculateETA(status) {
+        var d = new Date();
+        var now = new Date();
+        
+        // Match EXACT status strings from your image
+        switch(status) {
+          case 'Data Received':
+            // +7 days
+            d.setDate(now.getDate() + 7);
+            break;
+          case 'Picked Up':
+            // -1 day (already 1 day in transit)
+            d.setDate(now.getDate() - 1);
+            break;
+          case 'Depart Post Office':
+            // -2 days
+            d.setDate(now.getDate() - 2);
+            break;
+          case 'Arrival Scan':
+            // -12 hours
+            d.setTime(now.getTime() - (12 * 60 * 60 * 1000));
+            break;
+          case 'Local Scan':
+            // -36 hours
+            d.setTime(now.getTime() - (36 * 60 * 60 * 1000));
+            break;
+          case 'Out For Delivery':
+            // -2 days
+            d.setDate(now.getDate() - 2);
+            break;
+          case 'Delivered':
+            // 0 days (today)
+            d = now;
+            break;
+          default:
+            d.setDate(now.getDate() + 7);
+        }
+        
+        // Format as MM/DD HH:MM
+        return (d.getMonth()+1) + '/' + d.getDate() + ' ' + 
+               d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+      }
 
-// ========== KEYPAD FUNCTIONS ==========
-function addChar(c) {
-    var span = document.createElement('span');
-    span.innerHTML = c;
-    box.appendChild(span);
-    box.scrollTop = box.scrollHeight;
-}
+      // ========== FORMAT DATE/TIME ==========
+      function getFormattedDate() {
+        var d = new Date();
+        return d.getFullYear() + '-' + 
+               String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(d.getDate()).padStart(2, '0');
+      }
+      
+      function getFormattedTime() {
+        var d = new Date();
+        return String(d.getHours()).padStart(2, '0') + ':' + 
+               String(d.getMinutes()).padStart(2, '0') + ':' + 
+               String(d.getSeconds()).padStart(2, '0');
+      }
+      
+      function getTimestamp() {
+        return new Date().toISOString();
+      }
 
-function backspaceLegacy() {
-    if (box.lastChild) {
-        box.removeChild(box.lastChild);
-    }
-}
+      // ========== SEND TO XANO WITH GPS AND EXACT STATUS ==========
+      function sendToXano(barcode, status, indicatorElement) {
+        // Show pending
+        indicatorElement.innerHTML = '⏳';
+        indicatorElement.className = 'sync-indicator sync-pending';
+        connectionLed.className = 'connection-led led-yellow';
+        connectionText.textContent = 'Sending to XANO...';
+        
+        // Get current date/time
+        var currentDate = getFormattedDate();
+        var currentTime = getFormattedTime();
+        var timestamp = getTimestamp();
+        var eta = calculateETA(status);
+        
+        // Create location string with GPS
+        var locationStr = currentLocation.address || 'Unknown';
+        if (currentLocation.lat && currentLocation.lng) {
+          locationStr += ` (${currentLocation.lat.toFixed(6)}, ${currentLocation.lng.toFixed(6)})`;
+        }
+        
+        // EXACT TABLE STRUCTURE with EXACT status string
+        var data = {
+          label_id: barcode,
+          barcode_type: DEFAULT_BARCODE_TYPE,
+          status: status,  // This will be EXACT string like "Data Received", "Picked Up", etc.
+          date: currentDate,
+          time: currentTime,
+          location: locationStr,
+          eta: eta,
+          timestamp: timestamp
+        };
+        
+        console.log('Sending to XANO:', data);
+        
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', XANO_URL, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Accept', 'application/json');
+        
+        xhr.timeout = 10000;
+        
+        xhr.onload = function() {
+          console.log('XANO response:', xhr.status, xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300) {
+            indicatorElement.innerHTML = '✅';
+            indicatorElement.className = 'sync-indicator sync-success';
+            connectionLed.className = 'connection-led led-green';
+            connectionText.textContent = 'XANO SUCCESS ✅';
+          } else {
+            indicatorElement.innerHTML = '❌';
+            indicatorElement.className = 'sync-indicator sync-failed';
+            connectionLed.className = 'connection-led led-red';
+            connectionText.textContent = 'XANO Error ' + xhr.status;
+          }
+        };
+        
+        xhr.onerror = function() {
+          indicatorElement.innerHTML = '❌';
+          indicatorElement.className = 'sync-indicator sync-failed';
+          connectionLed.className = 'connection-led led-red';
+          connectionText.textContent = 'Network Error';
+        };
+        
+        xhr.ontimeout = function() {
+          indicatorElement.innerHTML = '❌';
+          indicatorElement.className = 'sync-indicator sync-failed';
+          connectionLed.className = 'connection-led led-red';
+          connectionText.textContent = 'Timeout';
+        };
+        
+        xhr.send(JSON.stringify(data));
+      }
 
-function showPadLegacy(mode) {
-    document.getElementById('numericPad').style.display = 'none';
-    document.getElementById('qwertyPad').style.display = 'none';
-    document.getElementById('symbolPad').style.display = 'none';
-    
-    document.getElementById('tabN').className = '';
-    document.getElementById('tabQ').className = '';
-    document.getElementById('tabS').className = '';
-    
-    if (mode == 'n') {
-        document.getElementById('numericPad').style.display = 'block';
-        document.getElementById('tabN').className = 'active';
-    } else if (mode == 'q') {
-        document.getElementById('qwertyPad').style.display = 'block';
-        document.getElementById('tabQ').className = 'active';
-    } else {
-        document.getElementById('symbolPad').style.display = 'block';
-        document.getElementById('tabS').className = 'active';
-    }
-}
+      // ========== ADD SCAN ENTRY ==========
+      function addScanEntry(barcode, status, fromScan) {
+        if (!barcode || barcode.trim() === '') return;
 
-// ========== FLASH ==========
-function toggleFlashLegacy() {
-    if (!stream) return;
-    var track = stream.getVideoTracks()[0];
-    if (!track || !track.applyConstraints) return;
-    
-    var isOn = torchBtn.innerHTML.indexOf('OFF') > -1;
-    torchBtn.innerHTML = isOn ? '🔦 ON' : '🔦 OFF';
-    
-    try {
-        track.applyConstraints({ advanced: [{ torch: isOn }] });
-    } catch(e) {}
-}
+        if (historyContainer.children.length === 1 && 
+            historyContainer.children[0].textContent.indexOf('No scans yet') !== -1) {
+          historyContainer.innerHTML = '';
+        }
 
-// ========== INIT ==========
-window.onload = function() {
-    initGPS();
-    updateTime();
-    showPadLegacy('n'); // Show numeric pad by default
-};
+        var eta = calculateETA(status);
+        
+        var entryDiv = document.createElement('div');
+        entryDiv.className = 'scan-entry';
+        
+        var indexSpan = document.createElement('span');
+        indexSpan.className = 'entry-index';
+        indexSpan.textContent = scanCounter + ' |';
+        
+        var valueSpan = document.createElement('span');
+        valueSpan.className = 'entry-value';
+        valueSpan.textContent = barcode;
+        
+        var statusSpan = document.createElement('span');
+        // Convert status to CSS class (replace spaces with dashes)
+        var statusClass = 'status-' + status.replace(/ /g, '-');
+        statusSpan.className = 'status-badge ' + statusClass;
+        statusSpan.textContent = status.toUpperCase();
+        
+        var etaSpan = document.createElement('span');
+        etaSpan.className = 'eta-badge';
+        etaSpan.textContent = 'ETA: ' + eta;
+        
+        // GPS indicator
+        var gpsIcon = document.createElement('span');
+        gpsIcon.innerHTML = '📍';
+        gpsIcon.style.fontSize = '14px';
+        gpsIcon.title = currentLocation.address || 'GPS location';
+        
+        // Sync indicator
+        var syncIndicator = document.createElement('span');
+        syncIndicator.className = 'sync-indicator sync-pending';
+        syncIndicator.innerHTML = '⏳';
+        
+        entryDiv.appendChild(indexSpan);
+        entryDiv.appendChild(valueSpan);
+        entryDiv.appendChild(statusSpan);
+        entryDiv.appendChild(gpsIcon);
+        entryDiv.appendChild(etaSpan);
+        entryDiv.appendChild(syncIndicator);
+        
+        entryDiv.style.cursor = 'pointer';
+        entryDiv.addEventListener('click', function() {
+          pendingData = {
+            barcode: barcode,
+            status: status,
+            element: entryDiv,
+            valueSpan: valueSpan,
+            statusSpan: statusSpan,
+            etaSpan: etaSpan,
+            syncIndicator: syncIndicator
+          };
+          statusModal.style.display = 'flex';
+        });
+        
+        historyContainer.insertBefore(entryDiv, historyContainer.firstChild);
+        
+        // Send to XANO
+        if (fromScan) {
+          sendToXano(barcode, status, syncIndicator);
+        }
 
-// Cleanup
-window.onbeforeunload = function() {
-    if (watchId) {
-        navigator.geolocation.clearWatch(watchId);
-    }
-    stopCam();
-};
-</script>
+        scanCounter++;
+
+        while (historyContainer.children.length > maxEntries) {
+          historyContainer.removeChild(historyContainer.lastChild);
+        }
+      }
+
+      // ========== UPDATE STATUS ==========
+      function updateStatus(newStatus) {
+        if (!pendingData || !pendingData.element) return;
+        
+        var eta = calculateETA(newStatus);
+        
+        // Update existing entry
+        var statusClass = 'status-' + newStatus.replace(/ /g, '-');
+        pendingData.statusSpan.className = 'status-badge ' + statusClass;
+        pendingData.statusSpan.textContent = newStatus.toUpperCase();
+        pendingData.etaSpan.textContent = 'ETA: ' + eta;
+        
+        pendingData.syncIndicator.innerHTML = '⏳';
+        pendingData.syncIndicator.className = 'sync-indicator sync-pending';
+        
+        sendToXano(pendingData.barcode, newStatus, pendingData.syncIndicator);
+        
+        statusModal.style.display = 'none';
+        pendingData = null;
+      }
+
+      // ========== START SCAN FLOW ==========
+      function startScanFlow(barcodeValue) {
+        pendingData = {
+          barcode: barcodeValue
+        };
+        
+        // Update modal with current GPS
+        if (currentLocation.lat && currentLocation.lng) {
+          var timeStr = currentLocation.timestamp ? 
+            (currentLocation.timestamp.getMonth()+1) + '/' + 
+            currentLocation.timestamp.getDate() + ' ' +
+            currentLocation.timestamp.getHours() + ':' +
+            (currentLocation.timestamp.getMinutes() < 10 ? '0' : '') + 
+            currentLocation.timestamp.getMinutes() + ' ' +
+            (currentLocation.timestamp.getHours() >= 12 ? 'PM' : 'AM') : '';
+            
+          modalGpsInfo.innerHTML = `📍 Location: ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+          if (modalGpsTime) modalGpsTime.textContent = timeStr;
+        } else {
+          modalGpsInfo.innerHTML = '📍 Acquiring GPS...';
+        }
+        
+        statusModal.style.display = 'flex';
+      }
+
+      // ========== EVENT HANDLERS ==========
+      
+      enterBtn.addEventListener('click', function() {
+        var text = inputEl.textContent || '';
+        if (text.trim()) {
+          startScanFlow(text);
+        }
+      });
+
+      escBtn.addEventListener('click', function() {
+        historyContainer.innerHTML = '<div style="color:#888; font-style:italic; padding:8px; text-align:center;">No scans yet</div>';
+        scanCounter = 1;
+        inputEl.textContent = '';
+      });
+
+      function toggleFlashlight() {
+        if (!currentTrack) return;
+        
+        try {
+          if (flashlightOn) {
+            currentTrack.applyConstraints({ advanced: [{ torch: false }] });
+            flashlightBtn.textContent = '🔦 OFF';
+            flashlightBtn.style.background = '#ffaa00';
+            flashStatus.textContent = 'FLASH: OFF';
+            flashlightOn = false;
+          } else {
+            currentTrack.applyConstraints({ advanced: [{ torch: true }] });
+            flashlightBtn.textContent = '🔦 ON';
+            flashlightBtn.style.background = '#ffff00';
+            flashStatus.textContent = 'FLASH: ON';
+            flashlightOn = true;
+          }
+        } catch (e) {}
+      }
+
+      flashlightBtn.addEventListener('click', toggleFlashlight);
+
+      function closeCamera() {
+        if (html5QrcodeScanner && isScannerInitialized) {
+          html5QrcodeScanner.stop().then(function() {
+            html5QrcodeScanner.clear();
+            html5QrcodeScanner = null;
+            isScannerInitialized = false;
+            currentTrack = null;
+            flashlightOn = false;
+          }).catch(function() {});
+        }
+        cameraModal.style.display = 'none';
+      }
+
+      closeCameraBtn.addEventListener('click', closeCamera);
+
+      scanButton.addEventListener('click', function() {
+        cameraModal.style.display = 'flex';
+        
+        if (typeof Html5Qrcode === 'undefined') {
+          cameraModal.style.display = 'none';
+          alert('Camera library not loaded');
+          return;
+        }
+
+        try {
+          if (html5QrcodeScanner) closeCamera();
+          
+          html5QrcodeScanner = new Html5Qrcode("qr-reader");
+          
+          html5QrcodeScanner.start(
+            { facingMode: "environment" },
+            { fps: 5, qrbox: { width: 250, height: 150 } },
+            function(decodedText) {
+              inputEl.textContent = decodedText;
+              if (navigator.vibrate) navigator.vibrate(200);
+              closeCamera();
+              startScanFlow(decodedText);
+            },
+            function(error) {
+              // Scan error - ignore
+            }
+          ).then(function() {
+            isScannerInitialized = true;
+            setTimeout(function() {
+              try {
+                var videoElement = document.querySelector('#qr-reader video');
+                if (videoElement && videoElement.srcObject) {
+                  var tracks = videoElement.srcObject.getVideoTracks();
+                  if (tracks && tracks.length > 0) currentTrack = tracks[0];
+                }
+              } catch (e) {}
+            }, 1000);
+          }).catch(function(err) {
+            console.error('Camera error:', err);
+            cameraModal.style.display = 'none';
+            alert('Could not start camera: ' + err);
+          });
+        } catch (e) {
+          console.error('Camera exception:', e);
+          cameraModal.style.display = 'none';
+        }
+      });
+
+      // Status selection - USING EXACT STATUS STRINGS FROM YOUR IMAGE
+      document.querySelectorAll('.status-option').forEach(function(option) {
+        option.addEventListener('click', function() {
+          var selectedStatus = this.getAttribute('data-status'); // Gets EXACT string like "Data Received"
+          
+          if (pendingData && pendingData.barcode && !pendingData.status) {
+            // New scan
+            addScanEntry(pendingData.barcode, selectedStatus, true);
+            inputEl.textContent = '';
+            statusModal.style.display = 'none';
+            pendingData = null;
+          } else if (pendingData && pendingData.element) {
+            // Update existing
+            updateStatus(selectedStatus);
+          }
+        });
+      });
+
+      closeStatusBtn.addEventListener('click', function() {
+        statusModal.style.display = 'none';
+        pendingData = null;
+      });
+
+      // ========== KEYPAD LOGIC ==========
+      var modeButtons = document.querySelectorAll('.mode-btn');
+      var keypads = {
+        qwerty: document.getElementById('keypad-qwerty'),
+        numeric: document.getElementById('keypad-numeric'),
+        sym: document.getElementById('keypad-sym')
+      };
+
+      function setMode(mode) {
+        for (var i = 0; i < modeButtons.length; i++) {
+          modeButtons[i].classList.toggle('active', modeButtons[i].dataset.mode === mode);
+        }
+        for (var k in keypads) {
+          if (keypads.hasOwnProperty(k)) {
+            keypads[k].classList.toggle('active', k === mode);
+          }
+        }
+      }
+
+      for (var i = 0; i < modeButtons.length; i++) {
+        modeButtons[i].addEventListener('click', function() {
+          setMode(this.dataset.mode);
+        });
+      }
+
+      function appendChar(ch) { inputEl.textContent = (inputEl.textContent || '') + ch; }
+      function backspace() { inputEl.textContent = (inputEl.textContent || '').slice(0, -1); }
+      function clearInput() { inputEl.textContent = ''; }
+
+      function handleKeyClick(e) {
+        var key = e.target;
+        if (!key.classList.contains('key')) return;
+
+        var action = key.getAttribute('data-action');
+        if (action === 'backspace') backspace();
+        else if (action === 'space') appendChar(' ');
+        else if (action === 'clear') clearInput();
+        else if (action === 'dash') appendChar('-');
+        else {
+          var ch = key.textContent;
+          if (ch !== '⇧' && ch !== '⌫' && ch !== 'CLR' && ch !== 'SPACE') appendChar(ch);
+        }
+      }
+
+      if (keypads.qwerty) keypads.qwerty.addEventListener('click', handleKeyClick);
+      if (keypads.numeric) keypads.numeric.addEventListener('click', handleKeyClick);
+      if (keypads.sym) keypads.sym.addEventListener('click', handleKeyClick);
+
+      window.addEventListener('beforeunload', function() {
+        if (html5QrcodeScanner && isScannerInitialized) {
+          html5QrcodeScanner.stop().catch(function() {});
+        }
+        if (watchId) {
+          navigator.geolocation.clearWatch(watchId);
+        }
+      });
+
+      // ========== INITIALIZE ==========
+      // Start GPS immediately (user will be prompted)
+      setTimeout(startGpsTracking, 500);
+      
+      // Set connection status
+      connectionLed.className = 'connection-led led-green';
+      connectionText.textContent = 'XANO READY ✅';
+
+    })();
+  </script>
 </body>
 </html>
