@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>U-BARCODE · legacy</title>
+<title>U-BARCODE · Alcatel Fix</title>
 <style>
 /* EXTREME LEGACY RESET – works on Android 4+ */
 * {
@@ -26,12 +26,11 @@ body {
   height: 640px;
   background: #2b4b70;
   background: -webkit-gradient(linear, left top, left bottom, from(#3f6b9c), to(#2b4b70));
-  background: -webkit-linear-gradient(top, #3f6b9c 0%, #2b4b70 100%);
-  background: linear-gradient(to bottom, #3f6b9c 0%, #2b4b70 100%);
   color: #fff;
   margin: 0 auto;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: -webkit-box;
   display: -moz-box;
   display: -ms-flexbox;
@@ -48,8 +47,6 @@ body {
   width: 100%;
   height: 38px;
   background: #2e5a88;
-  background: -webkit-gradient(linear, left top, left bottom, from(#5180b0), to(#2e5a88));
-  background: -webkit-linear-gradient(top, #5180b0, #2e5a88);
   border-bottom: 2px solid #1f3f5c;
   display: -webkit-box;
   display: -moz-box;
@@ -76,20 +73,14 @@ body {
 
 /* SCAN BUTTON */
 #scanButton {
-  width: -webkit-calc(100% - 24px);
-  width: -moz-calc(100% - 24px);
   width: calc(100% - 24px);
   height: 50px;
   margin: 12px auto 8px auto;
   background: #2b6e2f;
-  background: -webkit-gradient(linear, left top, left bottom, from(#4CAF50), to(#2b6e2f));
-  background: -webkit-linear-gradient(top, #4CAF50, #2b6e2f);
   border: 2px solid #1e5a22;
   color: #fff;
   font-size: 22px;
   font-weight: bold;
-  text-align: center;
-  line-height: 48px;
   border-radius: 6px;
   box-shadow: 0 4px 0 #145018;
   cursor: pointer;
@@ -124,9 +115,9 @@ body {
   margin-right: 6px;
 }
 #scanFrame {
-  width: 280px;
-  height: 160px;
-  margin: 4px auto 0 auto;
+  width: 100%;
+  height: 200px;
+  margin: 4px auto;
   position: relative;
   display: none;
   z-index: 3;
@@ -134,18 +125,11 @@ body {
   border: 2px solid #ffcc00;
   overflow: hidden;
 }
-#interactive {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-#interactive canvas, #interactive video {
+#preview {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  position: absolute;
-  top: 0;
-  left: 0;
+  display: block;
 }
 /* corners */
 .corner-bracket {
@@ -198,8 +182,6 @@ body {
   color: #fff;
 }
 #labelBox {
-  width: -webkit-calc(100% - 24px);
-  width: -moz-calc(100% - 24px);
   width: calc(100% - 24px);
   min-height: 70px;
   max-height: 120px;
@@ -214,7 +196,6 @@ body {
   word-break: break-all;
   line-height: 1.4;
   font-family: monospace;
-  box-shadow: inset 0 0 0 2px #fff;
 }
 #labelBox span.scan-entry {
   display: block;
@@ -282,7 +263,6 @@ body {
   padding: 0 20px;
   font-size: 18px;
   color: #fff;
-  box-shadow: inset 0 -2px 0 #3a5f8a;
 }
 #labelButtons span { cursor: pointer; padding: 4px 12px; }
 #labelButtons span:active { background: #27ae60; border-radius: 4px; }
@@ -291,8 +271,6 @@ body {
 #navBar {
   height: 36px;
   background: #2b4b70;
-  background: -webkit-gradient(linear, left top, left bottom, from(#4a7aa8), to(#2b4b70));
-  background: -webkit-linear-gradient(top, #4a7aa8, #2b4b70);
   display: -webkit-box;
   display: -moz-box;
   display: -ms-flexbox;
@@ -317,8 +295,6 @@ body {
 #keypadWrapper {
   width: 100%;
   background: #1f3f5c;
-  background: -webkit-gradient(linear, left top, left bottom, from(#2b4b70), to(#1f3f5c));
-  background: -webkit-linear-gradient(top, #2b4b70, #1f3f5c);
   border-top: 3px solid #ffcc00;
   margin-top: auto;
   padding-bottom: 6px;
@@ -361,12 +337,8 @@ body {
   padding: 6px 12px 10px 12px;
 }
 #numericPad button {
-  width: -webkit-calc(33.333% - 6px);
-  width: -moz-calc(33.333% - 6px);
   width: calc(33.333% - 6px);
   background: #3a5f8a;
-  background: -webkit-gradient(linear, left top, left bottom, from(#5a7a9a), to(#3a5f8a));
-  background: -webkit-linear-gradient(top, #5a7a9a, #3a5f8a);
   border: 1px solid #1f3f5c;
   border-radius: 6px;
   color: #fff;
@@ -395,7 +367,6 @@ body {
 #numericPad button:active { background: #4CAF50; -webkit-transform: translateY(2px); -moz-transform: translateY(2px); -ms-transform: translateY(2px); transform: translateY(2px); }
 #numericPad button.backspace { font-size: 22px; background: #2b4b70; }
 
-/* QWERTY & SYMBOL */
 #qwertyPad, #symbolPad { display: none; padding: 0 8px 8px 8px; }
 .row { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: flex; margin-bottom: 4px; -webkit-box-pack: center; -moz-box-pack: center; -ms-flex-pack: center; justify-content: center; }
 .row button {
@@ -406,8 +377,6 @@ body {
   flex: 1;
   max-width: 34px;
   background: #3a5f8a;
-  background: -webkit-gradient(linear, left top, left bottom, from(#5a7a9a), to(#3a5f8a));
-  background: -webkit-linear-gradient(top, #5a7a9a, #3a5f8a);
   border: 1px solid #1f3f5c;
   border-radius: 6px;
   color: #fff;
@@ -427,15 +396,12 @@ body {
   position: absolute;
   top: 38px; left: 0; right: 0; bottom: 0;
   background: #1c3046;
-  background: rgba(28,48,70,0.98);
   z-index: 100;
   padding: 20px 15px;
   overflow-y: auto;
 }
 .statusBtn {
   background: #2b4b70;
-  background: -webkit-gradient(linear, left top, left bottom, from(#3f6b9c), to(#2b4b70));
-  background: -webkit-linear-gradient(top, #3f6b9c, #2b4b70);
   border: 2px solid #ffcc00;
   color: white;
   font-size: 18px;
@@ -470,8 +436,6 @@ body {
 }
 .popup-content {
   background: #2b4b70;
-  background: -webkit-gradient(linear, left top, left bottom, from(#3f6b9c), to(#2b4b70));
-  background: -webkit-linear-gradient(top, #3f6b9c, #2b4b70);
   border: 3px solid #27ae60;
   border-radius: 20px;
   padding: 25px 15px;
@@ -486,11 +450,10 @@ body {
 .popup-submessage { color: #ffcc00; font-size: 15px; }
 .eta-info { color: #4CAF50; font-size: 13px; border-top: 1px solid #fff; margin-top: 8px; padding-top: 6px; }
 
-/* Android 4+ touch scrolling */
 #labelBox { -webkit-overflow-scrolling: touch; overflow-y: auto; }
 </style>
-<!-- Include QuaggaJS for barcode scanning -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<!-- Use Instascan which works great on older Android -->
+<script src="https://raw.githack.com/schmich/instascan-builds/master/instascan.min.js"></script>
 </head>
 <body>
 <div id="phone">
@@ -507,7 +470,7 @@ body {
   </div>
   
   <div id="scanFrame">
-    <div id="interactive"></div>
+    <video id="preview" autoplay playsinline></video>
     <div class="corner-bracket corner-tl"></div>
     <div class="corner-bracket corner-tr"></div>
     <div class="corner-bracket corner-bl"></div>
@@ -537,7 +500,6 @@ body {
         <button id="tabSymbol" onclick="showSymbol()">SYM</button>
       </div>
       
-      <!-- NUMERIC -->
       <div id="numericPad">
         <button onclick="typeChar('1')">1</button><button onclick="typeChar('2')">2</button><button onclick="typeChar('3')">3</button>
         <button onclick="typeChar('4')">4</button><button onclick="typeChar('5')">5</button><button onclick="typeChar('6')">6</button>
@@ -546,7 +508,6 @@ body {
         <button class="backspace" onclick="backspace()">⌫</button>
       </div>
       
-      <!-- QWERTY -->
       <div id="qwertyPad">
         <div class="row"><button onclick="typeChar('q')">q</button><button onclick="typeChar('w')">w</button><button onclick="typeChar('e')">e</button><button onclick="typeChar('r')">r</button><button onclick="typeChar('t')">t</button><button onclick="typeChar('y')">y</button><button onclick="typeChar('u')">u</button><button onclick="typeChar('i')">i</button><button onclick="typeChar('o')">o</button><button onclick="typeChar('p')">p</button></div>
         <div class="row"><button onclick="typeChar('a')">a</button><button onclick="typeChar('s')">s</button><button onclick="typeChar('d')">d</button><button onclick="typeChar('f')">f</button><button onclick="typeChar('g')">g</button><button onclick="typeChar('h')">h</button><button onclick="typeChar('j')">j</button><button onclick="typeChar('k')">k</button><button onclick="typeChar('l')">l</button></div>
@@ -554,7 +515,6 @@ body {
         <div class="row"><button class="special" onclick="showNumeric()">123</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
       </div>
       
-      <!-- SYMBOL PAD -->
       <div id="symbolPad">
         <div class="row"><button onclick="typeChar('@')">@</button><button onclick="typeChar('#')">#</button><button onclick="typeChar('$')">$</button><button onclick="typeChar('%')">%</button><button onclick="typeChar('&')">&</button><button onclick="typeChar('*')">*</button><button onclick="typeChar('(')">(</button><button onclick="typeChar(')')">)</button></div>
         <div class="row"><button onclick="typeChar('!')">!</button><button onclick="typeChar('?')">?</button><button onclick="typeChar('/')">/</button><button onclick="typeChar(':')">:</button><button onclick="typeChar(';')">;</button><button onclick="typeChar('"')">"</button><button onclick="typeChar("'")">'</button><button onclick="typeChar(',')">,</button></div>
@@ -575,7 +535,7 @@ body {
     <div class="statusBtn back">BACK TO SCANNER</div>
   </div>
   
-  <div id="successPopup" style="display: none;">
+  <div id="successPopup">
     <div class="popup-content">
       <div class="checkmark">✓</div>
       <div class="popup-message">Barcode Recorded!</div>
@@ -588,6 +548,7 @@ body {
 <script>
 (function() {
   // Use var for maximum compatibility
+  var scanner = null;
   var scanning = false;
   var scanCount = 0;
   var currentScans = [];
@@ -595,7 +556,6 @@ body {
   var gpsWatchId = null;
   var manualInput = '';
   var isSubmitting = false;
-  var quaggaInitialized = false;
   
   // XANO endpoint
   var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
@@ -713,20 +673,25 @@ body {
   
   // Stop scanning
   function stopScanning() {
-    if (quaggaInitialized) {
+    if (scanner) {
       try {
-        Quagga.stop();
-      } catch(e) {
-        console.log("Quagga stop error:", e);
-      }
-      quaggaInitialized = false;
+        scanner.stop();
+      } catch(e) {}
+      scanner = null;
     }
     scanning = false;
     var frame = document.getElementById('scanFrame');
     if (frame) frame.style.display = 'none';
+    
+    // Turn off flashlight if on
+    try {
+      if (window.Instascan && window.Instascan.Camera) {
+        window.Instascan.Camera.off();
+      }
+    } catch(e) {}
   }
   
-  // Start barcode scanning with QuaggaJS
+  // Start barcode scanning with Instascan
   function startScan() {
     if (scanning) {
       stopScanning();
@@ -735,129 +700,75 @@ body {
     
     scanning = true;
     var frame = document.getElementById('scanFrame');
-    var interactive = document.getElementById('interactive');
+    var video = document.getElementById('preview');
     
-    if (!frame || !interactive) {
+    if (!frame || !video) {
       alert("Scanner elements not found");
+      scanning = false;
       return;
     }
     
     frame.style.display = 'block';
     
-    // Clear any previous Quagga instance
-    if (quaggaInitialized) {
-      try { Quagga.stop(); } catch(e) {}
-      quaggaInitialized = false;
-    }
-    
-    // Clear interactive div
-    interactive.innerHTML = '';
-    
-    // Small delay to ensure DOM is ready
-    setTimeout(function() {
-      // Configure Quagga for Alcatel back camera
-      Quagga.init({
-        inputStream: {
-          name: "Live",
-          type: "LiveStream",
-          target: interactive,
-          constraints: {
-            width: 640,
-            height: 480,
-            facingMode: "environment",
-            aspectRatio: { min: 1, max: 2 }
-          }
-        },
-        decoder: {
-          readers: [
-            "ean_reader",
-            "ean_8_reader",
-            "code_128_reader",
-            "code_39_reader",
-            "codabar_reader",
-            "upc_reader",
-            "upc_e_reader",
-            "i2of5_reader"
-          ],
-          debug: {
-            showCanvas: true,
-            showPatches: false,
-            showFoundPatches: false,
-            showSkeleton: false,
-            showLabels: false,
-            showPatchLabels: false,
-            showRemainingPatchLabels: false
-          }
-        },
-        locate: true,
-        locator: {
-          patchSize: "medium",
-          halfSample: true
-        },
-        numOfWorkers: 1,
-        frequency: 10
-      }, function(err) {
-        if (err) {
-          console.error("Quagga init failed:", err);
-          
-          var errorMsg = "Camera error: ";
-          if (err.message) errorMsg += err.message;
-          else if (err.code === "NotAllowedError") errorMsg += "Camera permission denied";
-          else if (err.code === "NotFoundError") errorMsg += "No camera found";
-          else if (err.code === "NotReadableError") errorMsg += "Camera already in use";
-          else errorMsg += "Could not access camera";
-          
-          alert(errorMsg);
-          stopScanning();
-          return;
-        }
-        
-        quaggaInitialized = true;
-        
-        // Start the stream
-        Quagga.start();
-        
-        // Add visual feedback
-        Quagga.onProcessed(function(result) {
-          var drawingCtx = Quagga.canvas.ctx.overlay;
-          var drawingCanvas = Quagga.canvas.dom.overlay;
-          
-          if (drawingCtx && drawingCanvas) {
-            drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.width), parseInt(drawingCanvas.height));
-            
-            if (result && result.box) {
-              Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00FF00", lineWidth: 3});
-            }
-          }
-        });
-        
-        // Handle detected barcodes
-        Quagga.onDetected(function(result) {
-          if (result && result.codeResult && result.codeResult.code) {
-            var code = result.codeResult.code;
-            var type = result.codeResult.format || "UNKNOWN";
-            
-            // Stop scanning after detection
-            Quagga.stop();
-            quaggaInitialized = false;
-            scanning = false;
-            
-            // Hide frame
-            if (frame) frame.style.display = 'none';
-            
-            // Play success sound
-            try {
-              var audio = new Audio();
-              audio.src = 'data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVAAAAA8Pzw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PA==';
-              audio.play().catch(function(e) {});
-            } catch(e) {}
-            
-            // Process the barcode
-            processBarcode(code, type);
-          }
-        });
+    // Create new scanner
+    try {
+      scanner = new Instascan.Scanner({ 
+        video: video,
+        scanPeriod: 5,
+        mirror: false,
+        backgroundScan: true,
+        continuous: true
       });
-    }, 100);
+      
+      // Add listener for scans
+      scanner.addListener('scan', function(content, image) {
+        // Stop scanning
+        scanner.stop();
+        scanning = false;
+        frame.style.display = 'none';
+        
+        // Play sound
+        try {
+          var audio = new Audio();
+          audio.src = 'data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVAAAAA8Pzw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PA==';
+          audio.play().catch(function(e) {});
+        } catch(e) {}
+        
+        // Process the barcode
+        processBarcode(content, 'SCAN');
+      });
+      
+      // Start scanning with back camera
+      Instascan.Camera.getCameras().then(function(cameras) {
+        if (cameras.length > 0) {
+          // Prefer back camera
+          var backCamera = cameras.find(function(camera) {
+            return camera.name.toLowerCase().indexOf('back') > -1 || 
+                   camera.name.toLowerCase().indexOf('rear') > -1 ||
+                   camera.name.toLowerCase().indexOf('environment') > -1;
+          });
+          
+          if (backCamera) {
+            scanner.start(backCamera);
+          } else {
+            // Use first camera
+            scanner.start(cameras[0]);
+          }
+        } else {
+          alert('No cameras found');
+          stopScanning();
+        }
+      }).catch(function(e) {
+        console.error('Camera error:', e);
+        alert('Camera error: ' + (e.message || 'Unknown error'));
+        stopScanning();
+      });
+      
+    } catch(e) {
+      console.error('Scanner init error:', e);
+      alert('Scanner initialization failed');
+      stopScanning();
+    }
   }
   
   // Process detected barcode
@@ -1085,7 +996,6 @@ body {
       default: etaDate.setDate(now.getDate() + 7);
     }
     
-    // Format date safely
     var etaMonth = etaDate.getMonth() + 1;
     var etaDay = etaDate.getDate();
     var etaHours = etaDate.getHours();
@@ -1104,7 +1014,6 @@ body {
       locationString = currentLocation.lat + ',' + currentLocation.lng;
     }
     
-    // Sequential submission
     function postOne(index) {
       if (index >= currentScans.length) {
         showSuccess(status, total, sentCount);
@@ -1160,7 +1069,6 @@ body {
     if (numPad) numPad.style.display = 'flex';
     if (qwertyPad) qwertyPad.style.display = 'none';
     if (symbolPad) symbolPad.style.display = 'none';
-    
     if (tabNum) tabNum.className = 'active';
     if (tabQwerty) tabQwerty.className = '';
     if (tabSymbol) tabSymbol.className = '';
@@ -1177,7 +1085,6 @@ body {
     if (numPad) numPad.style.display = 'none';
     if (qwertyPad) qwertyPad.style.display = 'block';
     if (symbolPad) symbolPad.style.display = 'none';
-    
     if (tabQwerty) tabQwerty.className = 'active';
     if (tabNum) tabNum.className = '';
     if (tabSymbol) tabSymbol.className = '';
@@ -1194,7 +1101,6 @@ body {
     if (numPad) numPad.style.display = 'none';
     if (qwertyPad) qwertyPad.style.display = 'none';
     if (symbolPad) symbolPad.style.display = 'block';
-    
     if (tabSymbol) tabSymbol.className = 'active';
     if (tabNum) tabNum.className = '';
     if (tabQwerty) tabQwerty.className = '';
@@ -1212,7 +1118,7 @@ body {
   
   // Initialize
   function init() {
-    alert('📱 BARCODE SCANNER READY\nClick SCAN button and point at barcode');
+    alert('📱 ALCATEL SCANNER READY\nClick SCAN button and point at barcode');
     
     initGPS();
     updateTime();
@@ -1255,8 +1161,8 @@ body {
     if (gpsWatchId && navigator.geolocation && navigator.geolocation.clearWatch) {
       navigator.geolocation.clearWatch(gpsWatchId);
     }
-    if (quaggaInitialized) {
-      try { Quagga.stop(); } catch(e) {}
+    if (scanner) {
+      try { scanner.stop(); } catch(e) {}
     }
   };
   
