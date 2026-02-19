@@ -307,9 +307,7 @@ var currentScans = [];
 var currentLocation = null;
 var gpsWatchId = null;
 var flashOn = false;
-var torchSupported = false;
-var scanFrameRate = 0;
-var lastScanTime = 0;
+var videoTrack = null;
 
 // Initialize when page loads
 function init() {
@@ -339,26 +337,6 @@ function init() {
     
     // Initial time
     updateTime();
-    
-    // Check camera support
-    checkCameraSupport();
-}
-
-function checkCameraSupport() {
-    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-        navigator.mediaDevices.enumerateDevices().then(function(devices) {
-            var hasCamera = false;
-            for (var i = 0; i < devices.length; i++) {
-                if (devices[i].kind === 'videoinput') {
-                    hasCamera = true;
-                    break;
-                }
-            }
-            if (!hasCamera) {
-                alert('No camera found on this device');
-            }
-        }).catch(function() {});
-    }
 }
 
 function setupKeypadListeners() {
@@ -452,7 +430,7 @@ function updateTime() {
     }
 }
 
-// Flashlight Functions
+// Flashlight Functions - FIXED
 function toggleFlash() {
     if (!stream) {
         alert('Start camera first');
@@ -462,26 +440,29 @@ function toggleFlash() {
     var track = stream.getVideoTracks()[0];
     if (!track) return;
     
-    // Check if torch supported
-    if (track.getCapabilities && track.getCapabilities().torch) {
-        torchSupported = true;
+    flashOn = !flashOn;
+    
+    // Try multiple methods for torch
+    try {
+        // Method 1: applyConstraints with torch
+        if (track.applyConstraints) {
+            track.applyConstraints({
+                advanced: [{ torch: flashOn }]
+            }).catch(function(e) {
+                console.log('Method 1 failed:', e);
+                // Method 2: Direct property
+                tryFlashDirect(track);
+            });
+        } else {
+            tryFlashDirect(track);
+        }
+    } catch (e) {
+        console.log('Flash error:', e);
+        alert('Flash not supported on this device');
+        flashOn = !flashOn; // Revert
     }
     
-    if (torchSupported) {
-        flashOn = !flashOn;
-        track.applyConstraints({
-            advanced: [{ torch: flashOn }]
-        }).catch(function(err) {
-            console.log('Flash error:', err);
-            flashOn = false;
-        });
-    } else {
-        // Fallback for older devices - just show message
-        alert('Flashlight not supported on this camera');
-        return;
-    }
-    
-    // Update button style
+    // Update button
     var flashBtn = document.getElementById('flashButton');
     if (flashOn) {
         flashBtn.innerHTML = '🔦 FLASH ON';
@@ -492,10 +473,21 @@ function toggleFlash() {
     }
 }
 
-// Camera Functions - OPTIMIZED for back camera
+function tryFlashDirect(track) {
+    try {
+        // Some cameras support direct property
+        if (track.torch !== undefined) {
+            track.torch = flashOn;
+        }
+    } catch (e) {
+        console.log('Direct flash failed');
+    }
+}
+
+// Camera Functions - FIXED for BACK CAMERA ONLY
 function stopCamera() {
     if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
+        clearTimeout(animationFrame);
         animationFrame = null;
     }
     if (stream) {
@@ -529,59 +521,112 @@ function startScan() {
     frame.style.display = 'block';
     laser.style.display = 'block';
     
-    // FIXED: Force back camera with specific constraints
+    // FIXED: Force back camera with multiple fallback methods
+    selectBackCamera();
+}
+
+function selectBackCamera() {
+    // Method 1: enumerate devices and find back camera
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        navigator.mediaDevices.enumerateDevices()
+            .then(function(devices) {
+                var backCamera = null;
+                for (var i = 0; i < devices.length; i++) {
+                    var device = devices[i];
+                    if (device.kind === 'videoinput') {
+                        // Look for back camera keywords
+                        var label = device.label.toLowerCase();
+                        if (label.indexOf('back') > -1 || 
+                            label.indexOf('rear') > -1 || 
+                            label.indexOf('environment') > -1 ||
+                            label.indexOf('0') > -1) { // Often back camera is first
+                            backCamera = device;
+                            break;
+                        }
+                    }
+                }
+                
+                if (backCamera) {
+                    // Found back camera by ID
+                    startCameraWithId(backCamera.deviceId);
+                } else {
+                    // Try facingMode constraint
+                    startCameraWithFacingMode();
+                }
+            })
+            .catch(function() {
+                // Fallback to facingMode
+                startCameraWithFacingMode();
+            });
+    } else {
+        // Fallback to facingMode
+        startCameraWithFacingMode();
+    }
+}
+
+function startCameraWithId(deviceId) {
     var constraints = {
         video: {
-            facingMode: { exact: 'environment' }, // Force back camera
+            deviceId: { exact: deviceId },
             width: { ideal: 640 },
             height: { ideal: 480 }
         }
     };
     
+    startCamera(constraints);
+}
+
+function startCameraWithFacingMode() {
+    var constraints = {
+        video: {
+            facingMode: { exact: 'environment' },
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+        }
+    };
+    
+    startCamera(constraints);
+}
+
+function startCamera(constraints) {
     try {
-        // Modern API
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia(constraints)
                 .then(function(s) {
                     stream = s;
+                    videoTrack = s.getVideoTracks()[0];
                     var video = document.getElementById('preview');
                     video.srcObject = s;
                     video.play();
-                    
-                    // Check if torch supported
-                    var track = s.getVideoTracks()[0];
-                    if (track && track.getCapabilities) {
-                        var caps = track.getCapabilities();
-                        torchSupported = !!(caps && caps.torch);
-                    }
-                    
                     startScanning();
                 })
                 .catch(function(err) {
-                    // If back camera fails, try any camera
-                    console.log('Back camera failed, trying any camera:', err);
-                    tryAnyCamera();
+                    console.log('Back camera failed:', err);
+                    // Final fallback - any camera
+                    fallbackAnyCamera();
                 });
-        } 
-        // Fallback for older Android
-        else {
-            tryAnyCamera();
+        } else {
+            fallbackAnyCamera();
         }
     } catch (e) {
-        tryAnyCamera();
+        fallbackAnyCamera();
     }
 }
 
-function tryAnyCamera() {
+function fallbackAnyCamera() {
     var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
     if (!getUserMedia) {
-        handleCameraError('No camera support');
+        alert('Camera not supported');
+        scanning = false;
+        document.getElementById('scanFrame').style.display = 'none';
+        document.getElementById('laser').style.display = 'none';
         return;
     }
     
     getUserMedia.call(navigator, { video: true },
         function(s) {
             stream = s;
+            videoTrack = s.getVideoTracks()[0];
             var video = document.getElementById('preview');
             
             if (window.URL && window.URL.createObjectURL) {
@@ -592,65 +637,51 @@ function tryAnyCamera() {
             
             video.play();
             startScanning();
+            
+            // Show warning but continue
+            document.getElementById('cameraWarning').style.display = 'block';
         },
         function(err) {
-            handleCameraError(err);
+            alert('Camera error: ' + (err.message || 'Unknown error'));
+            scanning = false;
+            document.getElementById('scanFrame').style.display = 'none';
+            document.getElementById('laser').style.display = 'none';
         }
     );
 }
 
-function handleCameraError(err) {
-    alert('Camera error: ' + (err.message || 'Could not access camera'));
-    scanning = false;
-    document.getElementById('scanFrame').style.display = 'none';
-    document.getElementById('laser').style.display = 'none';
-}
-
-// OPTIMIZED: Reduced frame rate for less lag
+// OPTIMIZED scanning
 function startScanning() {
     var video = document.getElementById('preview');
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     
-    // Set smaller canvas size for better performance
     canvas.width = 320;
     canvas.height = 240;
     
     function scanFrame() {
         if (!scanning || !video.videoWidth) {
             if (scanning) {
-                animationFrame = setTimeout(function() {
-                    scanFrame();
-                }, 100); // Slow down if video not ready
+                animationFrame = setTimeout(scanFrame, 200);
             }
             return;
         }
         
-        // Limit scan rate to reduce lag (scan every 200ms)
-        var now = Date.now();
-        if (now - lastScanTime > 200) {
-            lastScanTime = now;
+        try {
+            ctx.drawImage(video, 0, 0, 320, 240);
+            var imageData = ctx.getImageData(0, 0, 320, 240);
             
-            try {
-                // Draw at reduced size for performance
-                ctx.drawImage(video, 0, 0, 320, 240);
-                var imageData = ctx.getImageData(0, 0, 320, 240);
-                
-                var code = jsQR(imageData.data, 320, 240, {
-                    inversionAttempts: "dontInvert"
-                });
-                
-                if (code) {
-                    onBarcodeDecoded(code.data);
-                    return;
-                }
-            } catch (e) {
-                // Ignore QR errors
+            var code = jsQR(imageData.data, 320, 240, {
+                inversionAttempts: "dontInvert"
+            });
+            
+            if (code) {
+                onBarcodeDecoded(code.data);
+                return;
             }
-        }
+        } catch (e) {}
         
-        // Use setTimeout instead of requestAnimationFrame for better control
-        animationFrame = setTimeout(scanFrame, 100);
+        animationFrame = setTimeout(scanFrame, 150);
     }
     
     scanFrame();
@@ -764,7 +795,7 @@ window.onbeforeunload = function() {
     <div class="wince-window">
         <!-- WinCE Title Bar -->
         <div class="wince-titlebar">
-            <span>QR Scanner PRO</span>
+            <span>QR Scanner BACK CAM</span>
             <span id="timeDisplay">00:00:00</span>
         </div>
         
@@ -796,6 +827,11 @@ window.onbeforeunload = function() {
                 <div class="corner tr"></div>
                 <div class="corner bl"></div>
                 <div class="corner br"></div>
+            </div>
+            
+            <!-- Camera Warning (hidden by default) -->
+            <div id="cameraWarning" style="display: none; color: #ff0000; font-size: 10px; text-align: center; margin: 2px 0;">
+                ⚠ Using fallback camera
             </div>
             
             <!-- Scan Results Panel -->
@@ -866,9 +902,9 @@ window.onbeforeunload = function() {
         <div class="wince-statusbar">
             <span>QR Scanner</span>
             <span style="flex: 1;"></span>
-            <span>BACK CAM</span>
+            <span id="cameraStatus">BACK CAM</span>
             <span>|</span>
-            <span>TORCH ✓</span>
+            <span>FLASH ✓</span>
         </div>
     </div>
     
