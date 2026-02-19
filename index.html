@@ -55,7 +55,7 @@
 <div class="phone-screen">
     <div class="header">
         <div class="left">Scan barcode</div>
-        <div class="right" id="timeDisplay">00:00</div>
+        <div class="right" id="timeDisplay"></div>
     </div>
 </div>
 
@@ -66,7 +66,13 @@
         var m = now.getMinutes().toString().padStart(2, '0');
         document.getElementById("timeDisplay").textContent = h + ":" + m;
     }
-    updateTime();
+    
+    // Update immediately when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        updateTime();
+    });
+    
+    // Then update every second
     setInterval(updateTime, 1000);
 </script>
 
