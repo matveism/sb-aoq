@@ -12,12 +12,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ro
 #rightArea{font-size:13px;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:6px;}
 #gpsIndicator{color:#4CAF50;font-size:14px;}
 #timeDisplay{color:#ffcc00;font-size:13px;}
+#flashButton{background:#ffcc00;color:#000;border-radius:4px;padding:2px 6px;font-size:12px;font-weight:bold;cursor:pointer;}
 #scanButton{width:calc(100% - 20px);height:50px;background:-webkit-linear-gradient(top,#4CAF50 0%,#2b6e2f 100%);background:linear-gradient(180deg,#4CAF50 0%,#2b6e2f 100%);border:2px solid #1e5a22;color:#fff;font-size:20px;font-weight:700;text-align:center;line-height:48px;margin:10px auto 6px auto;border-radius:6px;z-index:2;box-shadow:0 4px 0 #145018;cursor:pointer;-webkit-flex-shrink:0;flex-shrink:0;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;gap:8px;letter-spacing:0.5px;}
 #scanButton:active{-webkit-transform:translateY(2px);transform:translateY(2px);box-shadow:0 2px 0 #145018;}
 .icon{width:16px;height:12px;background:-webkit-repeating-linear-gradient(left,black,black 2px,white 2px,white 4px);background:repeating-linear-gradient(to right,black,black 2px,white 2px,white 4px);}
 #scanFrame{width:92%;max-width:320px;height:150px;border:2px solid rgba(255,255,255,0.6);margin:4px auto 0 auto;position:relative;display:none;z-index:3;overflow:hidden;-webkit-flex-shrink:0;flex-shrink:0;background:rgba(0,0,0,0.4);}
 #preview{width:100%;height:100%;-o-object-fit:cover;object-fit:cover;display:block;background:#000;}
-#laser{position:absolute;top:0;left:0;width:100%;height:2px;background:#ff3333;box-shadow:0 0 10px #ff0000;-webkit-animation:laserMove 1.8s linear infinite;animation:laserMove 1.8s linear infinite;display:none;z-index:5;}
+#laser{position:absolute;top:0;left:0;width:100%;height:2px;background:#ff3333;box-shadow:0 0 10px #ff0000;-webkit-animation:laserMove 1.2s linear infinite;animation:laserMove 1.2s linear infinite;display:none;z-index:5;}
 @-webkit-keyframes laserMove{0%{top:0}50%{top:148px}100%{top:0}}
 @keyframes laserMove{0%{top:0}50%{top:148px}100%{top:0}}
 .corner{width:20px;height:20px;border:3px solid #ffcc00;position:absolute;pointer-events:none;}
@@ -76,7 +77,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ro
     <span id="leftText">SCAN QR CODE</span>
     <div id="rightArea">
       <span id="gpsIndicator">GPS: 📡</span>
-      <span>📶</span>
+      <span id="flashButton" onclick="toggleFlash()">🔦 OFF</span>
       <span id="timeDisplay"></span>
     </div>
   </div>
@@ -166,6 +167,9 @@ var scanning = false;
 var stream = null;
 var scanEntries = [];
 var rafId = 0;
+var flashOn = false;
+var scanTimeout = null;
+var lastScan = 0;
 
 // Time display
 function updateTime(){
@@ -192,19 +196,17 @@ function startScan(){
   var video = document.getElementById('preview');
   var laser = document.getElementById('laser');
   
-  // Show frame immediately
   frame.style.display = 'block';
   
-  // Camera constraints - simplified for better compatibility
+  // Force back camera only with specific constraints
   var constraints = {
     video: {
-      facingMode: 'environment',
-      width: { ideal: 640 },
-      height: { ideal: 480 }
+      facingMode: { exact: 'environment' }, // Force back camera
+      width: { min: 240, ideal: 480, max: 640 },
+      height: { min: 240, ideal: 480, max: 480 }
     }
   };
   
-  // Modern API
   if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     navigator.mediaDevices.getUserMedia(constraints)
     .then(function(mediaStream) {
@@ -216,54 +218,56 @@ function startScan(){
           laser.style.display = 'block';
           scanning = true;
           document.getElementById('scanBtnText').textContent = 'STOP SCAN';
-          scanLoop();
+          // Start scanning with lower FPS for better performance
+          setTimeout(scanLoop, 100);
         })
         .catch(function(e) {
-          err.textContent = 'Could not play video: ' + e.message;
+          err.textContent = 'Could not play video';
           err.style.display = 'block';
         });
       };
     })
     .catch(function(error) {
       console.log('Camera error:', error);
-      // Try fallback without facingMode
-      tryFallbackCamera();
+      // Try without exact facing mode
+      tryBackCamera();
     });
   } else {
-    // Try older API
-    tryFallbackCamera();
+    tryBackCamera();
   }
 }
 
-function tryFallbackCamera() {
+function tryBackCamera() {
   var err = document.getElementById('errorMessage');
   var video = document.getElementById('preview');
   var laser = document.getElementById('laser');
   
-  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+  var constraints = {
+    video: {
+      facingMode: 'environment' // Try without exact
+    }
+  };
   
-  if (getUserMedia) {
-    getUserMedia.call(navigator, 
-      { video: true }, 
-      function(mediaStream) {
-        stream = mediaStream;
-        video.src = window.URL.createObjectURL(mediaStream);
-        video.onloadedmetadata = function() {
-          video.play();
-          laser.style.display = 'block';
-          scanning = true;
-          document.getElementById('scanBtnText').textContent = 'STOP SCAN';
-          scanLoop();
-        };
-      },
-      function(error) {
-        err.textContent = 'Camera access denied or not available';
-        err.style.display = 'block';
-        document.getElementById('scanFrame').style.display = 'none';
-      }
-    );
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia(constraints)
+    .then(function(mediaStream) {
+      stream = mediaStream;
+      video.srcObject = mediaStream;
+      video.onloadedmetadata = function() {
+        video.play();
+        laser.style.display = 'block';
+        scanning = true;
+        document.getElementById('scanBtnText').textContent = 'STOP SCAN';
+        setTimeout(scanLoop, 100);
+      };
+    })
+    .catch(function(error) {
+      err.textContent = 'Could not access back camera';
+      err.style.display = 'block';
+      document.getElementById('scanFrame').style.display = 'none';
+    });
   } else {
-    err.textContent = 'Camera not supported on this device';
+    err.textContent = 'Camera not supported';
     err.style.display = 'block';
     document.getElementById('scanFrame').style.display = 'none';
   }
@@ -275,6 +279,10 @@ function stopScan(){
     cancelAnimationFrame(rafId);
     rafId = 0;
   }
+  if(scanTimeout) {
+    clearTimeout(scanTimeout);
+    scanTimeout = null;
+  }
   
   if(stream){
     if (stream.getTracks) {
@@ -282,23 +290,41 @@ function stopScan(){
       tracks.forEach(function(track) {
         track.stop();
       });
-    } else if (stream.stop) {
-      stream.stop();
     }
     stream = null;
   }
   
   var video = document.getElementById('preview');
   if (video) {
-    video.src = '';
-    if (video.srcObject) {
-      video.srcObject = null;
-    }
+    video.srcObject = null;
   }
   
   document.getElementById('scanFrame').style.display = 'none';
   document.getElementById('laser').style.display = 'none';
   document.getElementById('scanBtnText').textContent = 'SCAN QR CODE';
+  document.getElementById('flashButton').textContent = '🔦 OFF';
+  flashOn = false;
+}
+
+function toggleFlash() {
+  if (!stream) return;
+  
+  var track = stream.getVideoTracks()[0];
+  if (track) {
+    try {
+      if (flashOn) {
+        track.applyConstraints({ advanced: [{ torch: false }] });
+        document.getElementById('flashButton').textContent = '🔦 OFF';
+      } else {
+        track.applyConstraints({ advanced: [{ torch: true }] });
+        document.getElementById('flashButton').textContent = '🔦 ON';
+      }
+      flashOn = !flashOn;
+    } catch(e) {
+      console.log('Flash not supported');
+      document.getElementById('flashButton').style.display = 'none';
+    }
+  }
 }
 
 function scanLoop(){
@@ -307,35 +333,43 @@ function scanLoop(){
   var video = document.getElementById('preview');
   var canvas = document.getElementById('canvas');
   
-  if(!video || video.readyState !== video.HAVE_ENOUGH_DATA){
-    rafId = requestAnimationFrame(scanLoop);
+  if(!video || video.readyState !== video.HAVE_ENOUGH_DATA || video.videoWidth === 0){
+    scanTimeout = setTimeout(scanLoop, 200);
     return;
   }
   
   try {
-    if (video.videoWidth === 0 || video.videoHeight === 0) {
-      rafId = requestAnimationFrame(scanLoop);
-      return;
-    }
-    
+    // Use smaller canvas for better performance
     var ctx = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    var code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+    var width = Math.min(video.videoWidth, 320);
+    var height = Math.min(video.videoHeight, 240);
     
-    if(code && code.data && code.data.length > 0){
-      stopScan();
-      addEntry(code.data);
-      showPopup(code.data);
-      return;
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(video, 0, 0, width, height);
+    
+    var img = ctx.getImageData(0, 0, width, height);
+    var code = jsQR(img.data, img.width, img.height, {
+      inversionAttempts: 'dontInvert'
+    });
+    
+    if(code && code.data && code.data.length > 0) {
+      var now = Date.now();
+      // Prevent duplicate scans within 2 seconds
+      if (now - lastScan > 2000) {
+        lastScan = now;
+        stopScan();
+        addEntry(code.data);
+        showPopup(code.data);
+        return;
+      }
     }
   } catch(e) {
     console.log('Scan error:', e);
   }
   
-  rafId = requestAnimationFrame(scanLoop);
+  // Slower scan rate for better performance (5 fps)
+  scanTimeout = setTimeout(scanLoop, 200);
 }
 
 function addEntry(text){
@@ -431,10 +465,8 @@ function showPopup(data){
   setTimeout(function(){ popup.style.display = 'none'; }, 2000);
 }
 
-// Initialize: show ABC pad
+// Initialize
 showPad('abc');
-
-// Clear any default entries
 scanEntries = [];
 renderEntries();
 </script>
