@@ -135,6 +135,12 @@ body {
     background: #1a3a8a;
 }
 
+.wince-button.flash-on {
+    background: #ffaa00;
+    color: black;
+    border-color: #ffff00 #808080 #808080 #ffff00;
+}
+
 .wince-textbox {
     border: 2px solid;
     border-color: #808080 #ffffff #ffffff #808080;
@@ -170,7 +176,7 @@ body {
 
 #scanFrame {
     width: 100%;
-    height: 120px;
+    height: 140px;
     border: 2px solid;
     border-color: #808080 #ffffff #ffffff #808080;
     margin: 8px 0;
@@ -192,21 +198,23 @@ body {
     width: 100%;
     height: 2px;
     background: #ff0000;
-    animation: laserMove 2s linear infinite;
+    box-shadow: 0 0 10px #ff0000;
+    animation: laserMove 1.5s linear infinite;
     display: none;
 }
 
 @keyframes laserMove {
     0% { top: 0; }
-    50% { top: 118px; }
+    50% { top: 138px; }
     100% { top: 0; }
 }
 
 .corner {
-    width: 12px;
-    height: 12px;
+    width: 15px;
+    height: 15px;
     border: 2px solid #00ff00;
     position: absolute;
+    box-shadow: 0 0 5px #00ff00;
 }
 
 .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; }
@@ -228,7 +236,7 @@ body {
     color: black;
     font-size: 14px;
     font-weight: bold;
-    padding: 8px;
+    padding: 6px;
     cursor: pointer;
 }
 
@@ -290,7 +298,7 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
 <script>
-// Global functions for onclick handlers
+// Global variables
 var stream = null;
 var scanning = false;
 var scanCount = 0;
@@ -298,41 +306,61 @@ var animationFrame = null;
 var currentScans = [];
 var currentLocation = null;
 var gpsWatchId = null;
-var XANO_URL = 'https://your-xano-endpoint.com';
+var flashOn = false;
+var torchSupported = false;
+var scanFrameRate = 0;
+var lastScanTime = 0;
 
-// Initialize everything when page loads
+// Initialize when page loads
 function init() {
-    console.log('Initializing...');
     initGPS();
     updateTime();
     setInterval(updateTime, 1000);
     
-    // FIXED: Set button event listeners
+    // Set button listeners
     document.getElementById('scanButton').onclick = function() { startScan(); };
+    document.getElementById('flashButton').onclick = function() { toggleFlash(); };
     document.getElementById('clearBtn').onclick = function() { clearScans(); };
     document.getElementById('statusBtn').onclick = function() { showStatus(); };
     
-    // FIXED: Set menu item listeners
+    // Menu items
     var menuItems = document.getElementsByClassName('wince-menu-item');
     if (menuItems.length > 0) {
         menuItems[0].onclick = function() { clearScans(); };
         menuItems[1].onclick = function() { showStatus(); };
     }
     
-    // Set tab listeners
+    // Tabs
     document.getElementById('tabNumeric').onclick = function() { showNumeric(); };
     document.getElementById('tabQwerty').onclick = function() { showQwerty(); };
     
-    // FIXED: Set keypad button listeners
+    // Keypad buttons
     setupKeypadListeners();
     
-    // Initial time display
+    // Initial time
     updateTime();
     
-    console.log('Initialization complete');
+    // Check camera support
+    checkCameraSupport();
 }
 
-// FIXED: Set up all keypad button listeners
+function checkCameraSupport() {
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        navigator.mediaDevices.enumerateDevices().then(function(devices) {
+            var hasCamera = false;
+            for (var i = 0; i < devices.length; i++) {
+                if (devices[i].kind === 'videoinput') {
+                    hasCamera = true;
+                    break;
+                }
+            }
+            if (!hasCamera) {
+                alert('No camera found on this device');
+            }
+        }).catch(function() {});
+    }
+}
+
 function setupKeypadListeners() {
     // Numeric keypad
     var numericButtons = document.querySelectorAll('#numericPad button');
@@ -344,13 +372,12 @@ function setupKeypadListeners() {
             btn.onclick = function() { backspace(); };
         } else {
             btn.onclick = function() { 
-                var val = this.innerHTML;
-                typeChar(val); 
+                typeChar(this.innerHTML); 
             };
         }
     }
     
-    // QWERTY keypad buttons
+    // QWERTY keypad
     var qwertyButtons = document.querySelectorAll('#qwertyPad button');
     for (var i = 0; i < qwertyButtons.length; i++) {
         var btn = qwertyButtons[i];
@@ -409,14 +436,12 @@ function updateGPSIndicator(hasGPS) {
     }
 }
 
-// FIXED: Time display function
 function updateTime() {
     var d = new Date();
     var hours = d.getHours();
     var minutes = d.getMinutes();
     var seconds = d.getSeconds();
     
-    // Format with leading zeros
     var timeStr = (hours < 10 ? '0' + hours : hours) + ':' + 
                   (minutes < 10 ? '0' + minutes : minutes) + ':' + 
                   (seconds < 10 ? '0' + seconds : seconds);
@@ -427,7 +452,47 @@ function updateTime() {
     }
 }
 
-// Camera Functions
+// Flashlight Functions
+function toggleFlash() {
+    if (!stream) {
+        alert('Start camera first');
+        return;
+    }
+    
+    var track = stream.getVideoTracks()[0];
+    if (!track) return;
+    
+    // Check if torch supported
+    if (track.getCapabilities && track.getCapabilities().torch) {
+        torchSupported = true;
+    }
+    
+    if (torchSupported) {
+        flashOn = !flashOn;
+        track.applyConstraints({
+            advanced: [{ torch: flashOn }]
+        }).catch(function(err) {
+            console.log('Flash error:', err);
+            flashOn = false;
+        });
+    } else {
+        // Fallback for older devices - just show message
+        alert('Flashlight not supported on this camera');
+        return;
+    }
+    
+    // Update button style
+    var flashBtn = document.getElementById('flashButton');
+    if (flashOn) {
+        flashBtn.innerHTML = '🔦 FLASH ON';
+        flashBtn.className = 'wince-button flash-on';
+    } else {
+        flashBtn.innerHTML = '🔦 FLASH';
+        flashBtn.className = 'wince-button';
+    }
+}
+
+// Camera Functions - OPTIMIZED for back camera
 function stopCamera() {
     if (animationFrame) {
         cancelAnimationFrame(animationFrame);
@@ -440,6 +505,14 @@ function stopCamera() {
         stream = null;
     }
     scanning = false;
+    
+    // Reset flash button
+    flashOn = false;
+    var flashBtn = document.getElementById('flashButton');
+    if (flashBtn) {
+        flashBtn.innerHTML = '🔦 FLASH';
+        flashBtn.className = 'wince-button';
+    }
 }
 
 function startScan() {
@@ -456,54 +529,74 @@ function startScan() {
     frame.style.display = 'block';
     laser.style.display = 'block';
     
+    // FIXED: Force back camera with specific constraints
+    var constraints = {
+        video: {
+            facingMode: { exact: 'environment' }, // Force back camera
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+        }
+    };
+    
     try {
-        // Try modern API first
+        // Modern API
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true })
+            navigator.mediaDevices.getUserMedia(constraints)
                 .then(function(s) {
                     stream = s;
                     var video = document.getElementById('preview');
                     video.srcObject = s;
                     video.play();
+                    
+                    // Check if torch supported
+                    var track = s.getVideoTracks()[0];
+                    if (track && track.getCapabilities) {
+                        var caps = track.getCapabilities();
+                        torchSupported = !!(caps && caps.torch);
+                    }
+                    
                     startScanning();
                 })
                 .catch(function(err) {
-                    handleCameraError(err);
+                    // If back camera fails, try any camera
+                    console.log('Back camera failed, trying any camera:', err);
+                    tryAnyCamera();
                 });
         } 
         // Fallback for older Android
-        else if (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia) {
-            var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-            
-            getUserMedia.call(navigator, { video: true },
-                function(s) {
-                    stream = s;
-                    var video = document.getElementById('preview');
-                    
-                    if (window.URL && window.URL.createObjectURL) {
-                        video.src = window.URL.createObjectURL(s);
-                    } else if (window.webkitURL && window.webkitURL.createObjectURL) {
-                        video.src = window.webkitURL.createObjectURL(s);
-                    } else {
-                        video.src = s;
-                    }
-                    
-                    video.play();
-                    startScanning();
-                },
-                function(err) {
-                    handleCameraError(err);
-                }
-            );
-        } else {
-            alert('Camera not supported on this device');
-            scanning = false;
-            frame.style.display = 'none';
-            laser.style.display = 'none';
+        else {
+            tryAnyCamera();
         }
     } catch (e) {
-        handleCameraError(e);
+        tryAnyCamera();
     }
+}
+
+function tryAnyCamera() {
+    var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    if (!getUserMedia) {
+        handleCameraError('No camera support');
+        return;
+    }
+    
+    getUserMedia.call(navigator, { video: true },
+        function(s) {
+            stream = s;
+            var video = document.getElementById('preview');
+            
+            if (window.URL && window.URL.createObjectURL) {
+                video.src = window.URL.createObjectURL(s);
+            } else if (window.webkitURL && window.webkitURL.createObjectURL) {
+                video.src = window.webkitURL.createObjectURL(s);
+            }
+            
+            video.play();
+            startScanning();
+        },
+        function(err) {
+            handleCameraError(err);
+        }
+    );
 }
 
 function handleCameraError(err) {
@@ -513,38 +606,54 @@ function handleCameraError(err) {
     document.getElementById('laser').style.display = 'none';
 }
 
+// OPTIMIZED: Reduced frame rate for less lag
 function startScanning() {
     var video = document.getElementById('preview');
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     
+    // Set smaller canvas size for better performance
+    canvas.width = 320;
+    canvas.height = 240;
+    
     function scanFrame() {
         if (!scanning || !video.videoWidth) {
-            if (scanning) animationFrame = requestAnimationFrame(scanFrame);
+            if (scanning) {
+                animationFrame = setTimeout(function() {
+                    scanFrame();
+                }, 100); // Slow down if video not ready
+            }
             return;
         }
         
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        
-        try {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        // Limit scan rate to reduce lag (scan every 200ms)
+        var now = Date.now();
+        if (now - lastScanTime > 200) {
+            lastScanTime = now;
             
-            var code = jsQR(imageData.data, canvas.width, canvas.height);
-            
-            if (code) {
-                onBarcodeDecoded(code.data);
-                return;
+            try {
+                // Draw at reduced size for performance
+                ctx.drawImage(video, 0, 0, 320, 240);
+                var imageData = ctx.getImageData(0, 0, 320, 240);
+                
+                var code = jsQR(imageData.data, 320, 240, {
+                    inversionAttempts: "dontInvert"
+                });
+                
+                if (code) {
+                    onBarcodeDecoded(code.data);
+                    return;
+                }
+            } catch (e) {
+                // Ignore QR errors
             }
-        } catch (e) {
-            // Ignore QR errors
         }
         
-        animationFrame = requestAnimationFrame(scanFrame);
+        // Use setTimeout instead of requestAnimationFrame for better control
+        animationFrame = setTimeout(scanFrame, 100);
     }
     
-    animationFrame = requestAnimationFrame(scanFrame);
+    scanFrame();
 }
 
 function onBarcodeDecoded(code) {
@@ -655,7 +764,7 @@ window.onbeforeunload = function() {
     <div class="wince-window">
         <!-- WinCE Title Bar -->
         <div class="wince-titlebar">
-            <span>QR Scanner v1.0</span>
+            <span>QR Scanner PRO</span>
             <span id="timeDisplay">00:00:00</span>
         </div>
         
@@ -669,9 +778,14 @@ window.onbeforeunload = function() {
         
         <!-- Main Content -->
         <div class="wince-content">
-            <!-- Scan Button -->
-            <div id="scanButton" class="wince-button primary">
-                ▶ SCAN QR CODE
+            <!-- Scan Button and Flash -->
+            <div style="display: flex; gap: 4px;">
+                <div id="scanButton" class="wince-button primary" style="flex: 2;">
+                    ▶ SCAN QR
+                </div>
+                <div id="flashButton" class="wince-button" style="flex: 1;">
+                    🔦 FLASH
+                </div>
             </div>
             
             <!-- Camera Preview -->
@@ -752,9 +866,9 @@ window.onbeforeunload = function() {
         <div class="wince-statusbar">
             <span>QR Scanner</span>
             <span style="flex: 1;"></span>
-            <span>COM1</span>
+            <span>BACK CAM</span>
             <span>|</span>
-            <span>BAT: 100%</span>
+            <span>TORCH ✓</span>
         </div>
     </div>
     
