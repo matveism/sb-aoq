@@ -16,7 +16,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ro
 #scanButton:active{-webkit-transform:translateY(2px);transform:translateY(2px);box-shadow:0 2px 0 #145018;}
 .icon{width:16px;height:12px;background:-webkit-repeating-linear-gradient(left,black,black 2px,white 2px,white 4px);background:repeating-linear-gradient(to right,black,black 2px,white 2px,white 4px);}
 #scanFrame{width:92%;max-width:320px;height:150px;border:2px solid rgba(255,255,255,0.6);margin:4px auto 0 auto;position:relative;display:none;z-index:3;overflow:hidden;-webkit-flex-shrink:0;flex-shrink:0;background:rgba(0,0,0,0.4);}
-#preview{width:100%;height:100%;-o-object-fit:cover;object-fit:cover;display:block;}
+#preview{width:100%;height:100%;-o-object-fit:cover;object-fit:cover;display:block;background:#000;}
 #laser{position:absolute;top:0;left:0;width:100%;height:2px;background:#ff3333;box-shadow:0 0 10px #ff0000;-webkit-animation:laserMove 1.8s linear infinite;animation:laserMove 1.8s linear infinite;display:none;z-index:5;}
 @-webkit-keyframes laserMove{0%{top:0}50%{top:148px}100%{top:0}}
 @keyframes laserMove{0%{top:0}50%{top:148px}100%{top:0}}
@@ -75,8 +75,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ro
   <div id="header">
     <span id="leftText">SCAN QR CODE</span>
     <div id="rightArea">
-      <span id="gpsIndicator">GPS: &#x1F6F0;&#xFE0F;</span>
-      <span>&#x1F4F6;</span>
+      <span id="gpsIndicator">GPS: 📡</span>
+      <span>📶</span>
       <span id="timeDisplay"></span>
     </div>
   </div>
@@ -103,9 +103,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ro
       <span onclick="enterAction()">ENTER</span>
     </div>
     <div id="navBar">
-      <button onclick="showStatusScreen()">&#9668;</button>
-      <span id="scanCount">0 scanned</span>
-      <button>&#9658;</button>
+      <button onclick="showStatusScreen()">◀</button>
+      <span id="scanCount">0</span>
+      <button>▶</button>
     </div>
   </div>
   <div id="keypadWrapper">
@@ -126,18 +126,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ro
       <button onclick="typeChar('9')">9</button>
       <button onclick="typeChar('.')">.</button>
       <button onclick="typeChar('0')">0</button>
-      <button class="backspace" onclick="backspace()">&#9003;</button>
+      <button class="backspace" onclick="backspace()">⌫</button>
     </div>
     <div id="qwertyPad">
       <div class="row"><button onclick="typeChar('q')">q</button><button onclick="typeChar('w')">w</button><button onclick="typeChar('e')">e</button><button onclick="typeChar('r')">r</button><button onclick="typeChar('t')">t</button><button onclick="typeChar('y')">y</button><button onclick="typeChar('u')">u</button><button onclick="typeChar('i')">i</button><button onclick="typeChar('o')">o</button><button onclick="typeChar('p')">p</button></div>
       <div class="row"><button onclick="typeChar('a')">a</button><button onclick="typeChar('s')">s</button><button onclick="typeChar('d')">d</button><button onclick="typeChar('f')">f</button><button onclick="typeChar('g')">g</button><button onclick="typeChar('h')">h</button><button onclick="typeChar('j')">j</button><button onclick="typeChar('k')">k</button><button onclick="typeChar('l')">l</button></div>
-      <div class="row"><button onclick="typeChar('z')">z</button><button onclick="typeChar('x')">x</button><button onclick="typeChar('c')">c</button><button onclick="typeChar('v')">v</button><button onclick="typeChar('b')">b</button><button onclick="typeChar('n')">n</button><button onclick="typeChar('m')">m</button><button class="special" onclick="backspace()">&#9003;</button></div>
+      <div class="row"><button onclick="typeChar('z')">z</button><button onclick="typeChar('x')">x</button><button onclick="typeChar('c')">c</button><button onclick="typeChar('v')">v</button><button onclick="typeChar('b')">b</button><button onclick="typeChar('n')">n</button><button onclick="typeChar('m')">m</button><button class="special" onclick="backspace()">⌫</button></div>
       <div class="row"><button class="special" onclick="showPad('123')">123</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
     </div>
     <div id="symbolPad">
-      <div class="row"><button onclick="typeChar('@')">@</button><button onclick="typeChar('#')">#</button><button onclick="typeChar('$')">$</button><button onclick="typeChar('%')">%</button><button onclick="typeChar('&')">&amp;</button><button onclick="typeChar('*')">*</button><button onclick="typeChar('(')">(</button><button onclick="typeChar(')')">)</button></div>
-      <div class="row"><button onclick="typeChar('!')">!</button><button onclick="typeChar('?')">?</button><button onclick="typeChar('/')">/</button><button onclick="typeChar(':')">:</button><button onclick="typeChar(';')">;</button><button onclick="typeChar('&quot;')">"</button><button onclick="typeChar(&quot;'&quot;)'</button><button onclick="typeChar(',')">,</button></div>
-      <div class="row"><button onclick="typeChar('-')">-</button><button onclick="typeChar('+')">+</button><button onclick="typeChar('=')">=</button><button onclick="typeChar('<')">&lt;</button><button onclick="typeChar('>')">&gt;</button><button onclick="typeChar('[')">[</button><button onclick="typeChar(']')">]</button><button class="special" onclick="backspace()">&#9003;</button></div>
+      <div class="row"><button onclick="typeChar('@')">@</button><button onclick="typeChar('#')">#</button><button onclick="typeChar('$')">$</button><button onclick="typeChar('%')">%</button><button onclick="typeChar('&')">&</button><button onclick="typeChar('*')">*</button><button onclick="typeChar('(')">(</button><button onclick="typeChar(')')">)</button></div>
+      <div class="row"><button onclick="typeChar('!')">!</button><button onclick="typeChar('?')">?</button><button onclick="typeChar('/')">/</button><button onclick="typeChar(':')">:</button><button onclick="typeChar(';')">;</button><button onclick='typeChar("\"")'>"</button><button onclick="typeChar('\'')">'</button><button onclick="typeChar(',')">,</button></div>
+      <div class="row"><button onclick="typeChar('-')">-</button><button onclick="typeChar('+')">+</button><button onclick="typeChar('=')">=</button><button onclick="typeChar('<')">&lt;</button><button onclick="typeChar('>')">&gt;</button><button onclick="typeChar('[')">[</button><button onclick="typeChar(']')">]</button><button class="special" onclick="backspace()">⌫</button></div>
       <div class="row"><button class="special" onclick="showPad('abc')">ABC</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
     </div>
   </div>
@@ -153,18 +153,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ro
   </div>
   <div id="successPopup">
     <div class="popup-content">
-      <div class="checkmark">&#10003;</div>
+      <div class="checkmark">✓</div>
       <div class="popup-message">QR Code Recorded!</div>
       <div class="popup-submessage" id="popupData"></div>
       <div class="eta-info">ETA: Calculating...</div>
     </div>
   </div>
 </div>
+
 <script>
 var scanning = false;
 var stream = null;
 var scanEntries = [];
 var rafId = 0;
+
 // Time display
 function updateTime(){
   var d = new Date();
@@ -176,75 +178,173 @@ function updateTime(){
 }
 updateTime();
 setInterval(updateTime, 30000);
+
 function toggleScan(){
   if(scanning){ stopScan(); } else { startScan(); }
 }
+
 function startScan(){
   var err = document.getElementById('errorMessage');
   err.style.display = 'none';
+  err.textContent = '';
+  
   var frame = document.getElementById('scanFrame');
   var video = document.getElementById('preview');
   var laser = document.getElementById('laser');
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+  
+  // Show frame immediately
+  frame.style.display = 'block';
+  
+  // Camera constraints - simplified for better compatibility
+  var constraints = {
+    video: {
+      facingMode: 'environment',
+      width: { ideal: 640 },
+      height: { ideal: 480 }
+    }
+  };
+  
+  // Modern API
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia(constraints)
+    .then(function(mediaStream) {
+      stream = mediaStream;
+      video.srcObject = mediaStream;
+      video.onloadedmetadata = function() {
+        video.play()
+        .then(function() {
+          laser.style.display = 'block';
+          scanning = true;
+          document.getElementById('scanBtnText').textContent = 'STOP SCAN';
+          scanLoop();
+        })
+        .catch(function(e) {
+          err.textContent = 'Could not play video: ' + e.message;
+          err.style.display = 'block';
+        });
+      };
+    })
+    .catch(function(error) {
+      console.log('Camera error:', error);
+      // Try fallback without facingMode
+      tryFallbackCamera();
+    });
+  } else {
+    // Try older API
+    tryFallbackCamera();
+  }
+}
+
+function tryFallbackCamera() {
+  var err = document.getElementById('errorMessage');
+  var video = document.getElementById('preview');
+  var laser = document.getElementById('laser');
+  
+  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+  
+  if (getUserMedia) {
+    getUserMedia.call(navigator, 
+      { video: true }, 
+      function(mediaStream) {
+        stream = mediaStream;
+        video.src = window.URL.createObjectURL(mediaStream);
+        video.onloadedmetadata = function() {
+          video.play();
+          laser.style.display = 'block';
+          scanning = true;
+          document.getElementById('scanBtnText').textContent = 'STOP SCAN';
+          scanLoop();
+        };
+      },
+      function(error) {
+        err.textContent = 'Camera access denied or not available';
+        err.style.display = 'block';
+        document.getElementById('scanFrame').style.display = 'none';
+      }
+    );
+  } else {
     err.textContent = 'Camera not supported on this device';
     err.style.display = 'block';
-    return;
+    document.getElementById('scanFrame').style.display = 'none';
   }
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
-  }).then(function(s){
-    stream = s;
-    video.srcObject = s;
-    video.setAttribute('playsinline', 'true');
-    video.play();
-    frame.style.display = 'block';
-    laser.style.display = 'block';
-    scanning = true;
-    document.getElementById('scanBtnText').textContent = 'STOP SCAN';
-    scanLoop();
-  }).catch(function(){
-    err.textContent = 'Camera access denied';
-    err.style.display = 'block';
-  });
 }
+
 function stopScan(){
   scanning = false;
-  if(rafId) cancelAnimationFrame(rafId);
+  if(rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+  
   if(stream){
-    var tracks = stream.getTracks();
-    for(var i = 0; i < tracks.length; i++) tracks[i].stop();
+    if (stream.getTracks) {
+      var tracks = stream.getTracks();
+      tracks.forEach(function(track) {
+        track.stop();
+      });
+    } else if (stream.stop) {
+      stream.stop();
+    }
     stream = null;
   }
+  
+  var video = document.getElementById('preview');
+  if (video) {
+    video.src = '';
+    if (video.srcObject) {
+      video.srcObject = null;
+    }
+  }
+  
   document.getElementById('scanFrame').style.display = 'none';
   document.getElementById('laser').style.display = 'none';
   document.getElementById('scanBtnText').textContent = 'SCAN QR CODE';
 }
+
 function scanLoop(){
   if(!scanning) return;
+  
   var video = document.getElementById('preview');
   var canvas = document.getElementById('canvas');
-  if(video.readyState !== video.HAVE_ENOUGH_DATA){
+  
+  if(!video || video.readyState !== video.HAVE_ENOUGH_DATA){
     rafId = requestAnimationFrame(scanLoop);
     return;
   }
-  var ctx = canvas.getContext('2d');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  var code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
-  if(code){
-    stopScan();
-    addEntry(code.data);
-    showPopup(code.data);
-    return;
+  
+  try {
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      rafId = requestAnimationFrame(scanLoop);
+      return;
+    }
+    
+    var ctx = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+    
+    if(code && code.data && code.data.length > 0){
+      stopScan();
+      addEntry(code.data);
+      showPopup(code.data);
+      return;
+    }
+  } catch(e) {
+    console.log('Scan error:', e);
   }
+  
   rafId = requestAnimationFrame(scanLoop);
 }
+
 function addEntry(text){
-  scanEntries.push(text);
-  renderEntries();
+  if (text && text.trim() !== '') {
+    scanEntries.push(text);
+    renderEntries();
+  }
 }
+
 function renderEntries(){
   var box = document.getElementById('labelBox');
   var html = '';
@@ -253,18 +353,24 @@ function renderEntries(){
   }
   box.innerHTML = html;
   box.scrollTop = box.scrollHeight;
-  document.getElementById('scanCount').textContent = scanEntries.length + ' scanned';
+  document.getElementById('scanCount').textContent = scanEntries.length;
 }
+
 function escapeHtml(t){
+  if (!t) return '';
   var d = document.createElement('div');
   d.appendChild(document.createTextNode(t));
   return d.innerHTML;
 }
+
 function typeChar(c){
-  if(scanEntries.length === 0) scanEntries.push('');
+  if(scanEntries.length === 0) {
+    scanEntries.push('');
+  }
   scanEntries[scanEntries.length - 1] += c;
   renderEntries();
 }
+
 function backspace(){
   if(scanEntries.length === 0) return;
   var last = scanEntries[scanEntries.length - 1];
@@ -275,38 +381,48 @@ function backspace(){
   }
   renderEntries();
 }
+
 function enterAction(){
-  scanEntries.push('');
-  renderEntries();
+  if (scanEntries.length === 0 || scanEntries[scanEntries.length - 1] !== '') {
+    scanEntries.push('');
+    renderEntries();
+  }
 }
+
 function escAction(){
   stopScan();
   document.getElementById('errorMessage').style.display = 'none';
 }
+
 function showPad(type){
   var tabs = document.getElementById('keyTabs').children;
   for(var i = 0; i < tabs.length; i++) tabs[i].className = '';
+  
   document.getElementById('numericPad').style.display = 'none';
   document.getElementById('qwertyPad').style.display = 'none';
   document.getElementById('symbolPad').style.display = 'none';
+  
   if(type === '123'){
     document.getElementById('numericPad').style.display = 'grid';
     tabs[1].className = 'active';
   } else if(type === 'abc'){
     document.getElementById('qwertyPad').style.display = 'block';
     tabs[0].className = 'active';
-  } else {
+  } else if(type === 'sym'){
     document.getElementById('symbolPad').style.display = 'block';
     tabs[2].className = 'active';
   }
 }
+
 function showStatusScreen(){
   document.getElementById('statusScreen').style.display = '-webkit-flex';
   document.getElementById('statusScreen').style.display = 'flex';
 }
+
 function hideStatusScreen(){
   document.getElementById('statusScreen').style.display = 'none';
 }
+
 function showPopup(data){
   var popup = document.getElementById('successPopup');
   document.getElementById('popupData').textContent = data.length > 40 ? data.substring(0, 40) + '...' : data;
@@ -314,8 +430,13 @@ function showPopup(data){
   popup.style.display = 'flex';
   setTimeout(function(){ popup.style.display = 'none'; }, 2000);
 }
-// Init: show numeric pad, hide qwerty/symbol
+
+// Initialize: show ABC pad
 showPad('abc');
+
+// Clear any default entries
+scanEntries = [];
+renderEntries();
 </script>
 </body>
 </html>
