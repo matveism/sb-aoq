@@ -132,12 +132,20 @@ body {
   z-index: 3;
   background: #000;
   border: 2px solid #ffcc00;
+  overflow: hidden;
 }
-#preview {
+#interactive {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+#interactive canvas, #interactive video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 /* corners */
 .corner-bracket {
@@ -498,8 +506,8 @@ body {
     <span class="icon"></span> SCAN 1D/2D
   </div>
   
-  <div id="scanFrame" style="display: none;">
-    <div id="interactive" class="viewport" style="width: 100%; height: 100%; position: relative;"></div>
+  <div id="scanFrame">
+    <div id="interactive"></div>
     <div class="corner-bracket corner-tl"></div>
     <div class="corner-bracket corner-tr"></div>
     <div class="corner-bracket corner-bl"></div>
@@ -708,7 +716,9 @@ body {
     if (quaggaInitialized) {
       try {
         Quagga.stop();
-      } catch(e) {}
+      } catch(e) {
+        console.log("Quagga stop error:", e);
+      }
       quaggaInitialized = false;
     }
     scanning = false;
@@ -725,129 +735,129 @@ body {
     
     scanning = true;
     var frame = document.getElementById('scanFrame');
-    if (frame) frame.style.display = 'block';
+    var interactive = document.getElementById('interactive');
+    
+    if (!frame || !interactive) {
+      alert("Scanner elements not found");
+      return;
+    }
+    
+    frame.style.display = 'block';
     
     // Clear any previous Quagga instance
     if (quaggaInitialized) {
       try { Quagga.stop(); } catch(e) {}
+      quaggaInitialized = false;
     }
     
-    // Configure Quagga for Alcatel back camera
-    Quagga.init({
-      inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: document.querySelector('#interactive'),
-        constraints: {
-          width: 640,
-          height: 480,
-          facingMode: "environment" // Force back camera
+    // Clear interactive div
+    interactive.innerHTML = '';
+    
+    // Small delay to ensure DOM is ready
+    setTimeout(function() {
+      // Configure Quagga for Alcatel back camera
+      Quagga.init({
+        inputStream: {
+          name: "Live",
+          type: "LiveStream",
+          target: interactive,
+          constraints: {
+            width: 640,
+            height: 480,
+            facingMode: "environment",
+            aspectRatio: { min: 1, max: 2 }
+          }
         },
-        area: { // Define scan area
-          top: "0%",
-          right: "0%",
-          left: "0%",
-          bottom: "0%"
-        }
-      },
-      decoder: {
-        readers: [
-          "ean_reader",
-          "ean_8_reader",
-          "code_128_reader",
-          "code_39_reader",
-          "code_39_vin_reader",
-          "codabar_reader",
-          "upc_reader",
-          "upc_e_reader",
-          "i2of5_reader"
-        ],
-        debug: {
-          showCanvas: false,
-          showPatches: false,
-          showFoundPatches: false,
-          showSkeleton: false,
-          showLabels: false,
-          showPatchLabels: false,
-          showRemainingPatchLabels: false,
-          boxFromPatches: {
-            showTransformed: false,
-            showTransformedBox: false,
-            showBB: false
+        decoder: {
+          readers: [
+            "ean_reader",
+            "ean_8_reader",
+            "code_128_reader",
+            "code_39_reader",
+            "codabar_reader",
+            "upc_reader",
+            "upc_e_reader",
+            "i2of5_reader"
+          ],
+          debug: {
+            showCanvas: true,
+            showPatches: false,
+            showFoundPatches: false,
+            showSkeleton: false,
+            showLabels: false,
+            showPatchLabels: false,
+            showRemainingPatchLabels: false
           }
+        },
+        locate: true,
+        locator: {
+          patchSize: "medium",
+          halfSample: true
+        },
+        numOfWorkers: 1,
+        frequency: 10
+      }, function(err) {
+        if (err) {
+          console.error("Quagga init failed:", err);
+          
+          var errorMsg = "Camera error: ";
+          if (err.message) errorMsg += err.message;
+          else if (err.code === "NotAllowedError") errorMsg += "Camera permission denied";
+          else if (err.code === "NotFoundError") errorMsg += "No camera found";
+          else if (err.code === "NotReadableError") errorMsg += "Camera already in use";
+          else errorMsg += "Could not access camera";
+          
+          alert(errorMsg);
+          stopScanning();
+          return;
         }
-      },
-      locate: true,
-      locator: {
-        patchSize: "medium",
-        halfSample: true
-      }
-    }, function(err) {
-      if (err) {
-        console.error("Quagga init failed:", err);
-        alert("Camera error: " + (err.message || "Unknown error"));
-        stopScanning();
-        return;
-      }
-      
-      quaggaInitialized = true;
-      
-      // Start the stream
-      Quagga.start();
-      
-      // Add box around detected barcodes
-      Quagga.onProcessed(function(result) {
-        var drawingCtx = Quagga.canvas.ctx.overlay;
-        var drawingCanvas = Quagga.canvas.dom.overlay;
         
-        if (result) {
-          if (result.boxes) {
+        quaggaInitialized = true;
+        
+        // Start the stream
+        Quagga.start();
+        
+        // Add visual feedback
+        Quagga.onProcessed(function(result) {
+          var drawingCtx = Quagga.canvas.ctx.overlay;
+          var drawingCanvas = Quagga.canvas.dom.overlay;
+          
+          if (drawingCtx && drawingCanvas) {
             drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.width), parseInt(drawingCanvas.height));
-            result.boxes.filter(function(box) {
-              return box !== result.box;
-            }).forEach(function(box) {
-              Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
-            });
+            
+            if (result && result.box) {
+              Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00FF00", lineWidth: 3});
+            }
           }
-          
-          if (result.box) {
-            Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00FF00", lineWidth: 3});
+        });
+        
+        // Handle detected barcodes
+        Quagga.onDetected(function(result) {
+          if (result && result.codeResult && result.codeResult.code) {
+            var code = result.codeResult.code;
+            var type = result.codeResult.format || "UNKNOWN";
+            
+            // Stop scanning after detection
+            Quagga.stop();
+            quaggaInitialized = false;
+            scanning = false;
+            
+            // Hide frame
+            if (frame) frame.style.display = 'none';
+            
+            // Play success sound
+            try {
+              var audio = new Audio();
+              audio.src = 'data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVAAAAA8Pzw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PA==';
+              audio.play().catch(function(e) {});
+            } catch(e) {}
+            
+            // Process the barcode
+            processBarcode(code, type);
           }
-          
-          if (result.codeResult && result.codeResult.code) {
-            drawingCtx.font = "24px Arial";
-            drawingCtx.fillStyle = "#00FF00";
-            drawingCtx.fillText(result.codeResult.code, 10, 50);
-          }
-        }
+        });
       });
-      
-      // Handle detected barcodes
-      Quagga.onDetected(function(result) {
-        if (result && result.codeResult && result.codeResult.code) {
-          var code = result.codeResult.code;
-          var type = result.codeResult.format || "UNKNOWN";
-          
-          // Stop scanning after detection
-          Quagga.stop();
-          quaggaInitialized = false;
-          scanning = false;
-          
-          // Hide frame
-          if (frame) frame.style.display = 'none';
-          
-          // Play success sound
-          try {
-            var audio = new Audio();
-            audio.src = 'data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVAAAAA8Pzw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PA==';
-            audio.play().catch(function(e) {});
-          } catch(e) {}
-          
-          // Process the barcode
-          processBarcode(code, type);
-        }
-      });
-    });
+    }, 100);
   }
   
   // Process detected barcode
@@ -1202,7 +1212,7 @@ body {
   
   // Initialize
   function init() {
-    alert('📱 BARCODE SCANNER READY\nPoint camera at barcode to scan\n(Back camera will be used)');
+    alert('📱 BARCODE SCANNER READY\nClick SCAN button and point at barcode');
     
     initGPS();
     updateTime();
