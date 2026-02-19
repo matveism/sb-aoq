@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>XANO EXACT STATUS NAMES ✅</title>
+  <title>XANO WORKING CAMERA + GPS ✅</title>
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <!-- Load html5-qrcode from multiple CDNs to ensure it works -->
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+  <script>if (typeof Html5Qrcode === 'undefined') document.write('<script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"><\/script>');</script>
   
   <style>
     /* YOUR ORIGINAL CSS - PRESERVED */
@@ -616,11 +618,11 @@
       <div class="header-time" id="currentTime">--:--</div>
     </div>
 
-    <!-- GPS STATUS BAR -->
+    <!-- GPS STATUS BAR - SHOWS CITY/STATE ONLY -->
     <div class="gps-status" id="gpsStatus">
       <span class="gps-led gps-gray" id="gpsLed"></span>
       <span id="gpsText">Requesting GPS location...</span>
-      <span style="margin-left: auto; font-size: 10px;" id="gpsCoords"></span>
+      <span style="margin-left: auto; font-size: 10px;" id="gpsLocation"></span>
     </div>
 
     <!-- CONNECTION STATUS BAR -->
@@ -712,7 +714,7 @@
     <div class="status-box">
       <div class="status-header">SELECT STATUS GPS: 📶 <span id="modalGpsTime"></span></div>
       
-      <!-- GPS INFO IN MODAL -->
+      <!-- GPS INFO IN MODAL - SHOWS CITY/STATE ONLY -->
       <div class="gps-info" id="modalGpsInfo">
         <span>📍 Getting location...</span>
       </div>
@@ -752,7 +754,7 @@
       var connectionText = document.getElementById('connectionText');
       var gpsLed = document.getElementById('gpsLed');
       var gpsText = document.getElementById('gpsText');
-      var gpsCoords = document.getElementById('gpsCoords');
+      var gpsLocation = document.getElementById('gpsLocation');
       var modalGpsInfo = document.getElementById('modalGpsInfo');
       var modalGpsTime = document.getElementById('modalGpsTime');
 
@@ -768,24 +770,27 @@
         status: null
       };
       
-      // GPS state
+      // GPS state - store city/state only
       var currentLocation = {
+        city: 'Unknown',
+        state: '',
+        zip: '',
         lat: null,
         lng: null,
-        accuracy: null,
-        timestamp: null,
-        address: 'Unknown location'
+        timestamp: null
       };
       
       var watchId = null;
 
-      // ========== GPS TRACKING ==========
+      // ========== GPS TRACKING - CITY/STATE ONLY ==========
       function startGpsTracking() {
         if (!navigator.geolocation) {
           gpsLed.className = 'gps-led gps-red';
           gpsText.textContent = 'GPS not supported';
           return;
         }
+        
+        gpsText.textContent = 'Requesting GPS permission...';
         
         // Request high accuracy location
         var options = {
@@ -814,8 +819,12 @@
       function updateGpsPosition(position) {
         currentLocation.lat = position.coords.latitude;
         currentLocation.lng = position.coords.longitude;
-        currentLocation.accuracy = position.coords.accuracy;
         currentLocation.timestamp = new Date(position.timestamp);
+        
+        // Update UI with coordinates temporarily while we get address
+        gpsLed.className = 'gps-led gps-yellow';
+        gpsText.textContent = 'Getting location...';
+        gpsLocation.textContent = '📍 ...';
         
         // Format time for modal header
         var timeStr = (currentLocation.timestamp.getMonth()+1) + '/' + 
@@ -825,29 +834,68 @@
                       currentLocation.timestamp.getMinutes() + ' ' +
                       (currentLocation.timestamp.getHours() >= 12 ? 'PM' : 'AM');
         
-        // Update UI
-        gpsLed.className = 'gps-led gps-green';
-        gpsText.textContent = 'GPS: Active';
-        gpsCoords.textContent = `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
-        
-        // Update modal
-        if (modalGpsInfo) {
-          modalGpsInfo.innerHTML = `📍 Location: ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)} (±${currentLocation.accuracy.toFixed(0)}m)`;
-        }
         if (modalGpsTime) {
           modalGpsTime.textContent = timeStr;
         }
         
-        // Try to get address from coordinates (reverse geocoding)
+        // Get city/state/zip from coordinates using reverse geocoding
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLocation.lat}&lon=${currentLocation.lng}&zoom=18&addressdetails=1`)
           .then(response => response.json())
           .then(data => {
-            if (data && data.display_name) {
-              currentLocation.address = data.display_name.split(',').slice(0, 3).join(',');
-              gpsCoords.textContent = currentLocation.address;
+            if (data && data.address) {
+              // Extract only city, state, zip
+              var city = data.address.city || data.address.town || data.address.village || data.address.hamlet || '';
+              var state = data.address.state || '';
+              var zip = data.address.postcode || '';
+              
+              currentLocation.city = city;
+              currentLocation.state = state;
+              currentLocation.zip = zip;
+              
+              // Format: City, State Zip
+              var locationStr = '';
+              if (city) locationStr += city;
+              if (state) {
+                if (locationStr) locationStr += ', ';
+                locationStr += state;
+              }
+              if (zip) {
+                if (locationStr) locationStr += ' ';
+                locationStr += zip;
+              }
+              
+              if (!locationStr) locationStr = 'Location unavailable';
+              
+              // Update UI
+              gpsLed.className = 'gps-led gps-green';
+              gpsText.textContent = 'GPS: Active';
+              gpsLocation.textContent = locationStr;
+              
+              // Update modal
+              if (modalGpsInfo) {
+                modalGpsInfo.innerHTML = `📍 ${locationStr}`;
+              }
+            } else {
+              // Fallback to coordinates if no address
+              gpsLed.className = 'gps-led gps-green';
+              gpsText.textContent = 'GPS: Active';
+              gpsLocation.textContent = `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+              
+              if (modalGpsInfo) {
+                modalGpsInfo.innerHTML = `📍 ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+              }
             }
           })
-          .catch(() => {});
+          .catch(() => {
+            // Fallback to coordinates if geocoding fails
+            gpsLed.className = 'gps-led gps-green';
+            gpsText.textContent = 'GPS: Active';
+            gpsLocation.textContent = `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+            
+            if (modalGpsInfo) {
+              modalGpsInfo.innerHTML = `📍 ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+            }
+          });
       }
       
       function gpsError(error) {
@@ -857,15 +905,19 @@
         switch(error.code) {
           case 1:
             gpsText.textContent = 'GPS: Permission denied';
+            gpsLocation.textContent = '⚠️ No location';
             break;
           case 2:
             gpsText.textContent = 'GPS: Position unavailable';
+            gpsLocation.textContent = '⚠️ Unavailable';
             break;
           case 3:
             gpsText.textContent = 'GPS: Timeout';
+            gpsLocation.textContent = '⚠️ Timeout';
             break;
           default:
             gpsText.textContent = 'GPS: Error';
+            gpsLocation.textContent = '⚠️ Error';
         }
         
         if (modalGpsInfo) {
@@ -946,7 +998,7 @@
         return new Date().toISOString();
       }
 
-      // ========== SEND TO XANO WITH GPS AND EXACT STATUS ==========
+      // ========== SEND TO XANO WITH GPS (CITY/STATE ONLY) ==========
       function sendToXano(barcode, status, indicatorElement) {
         // Show pending
         indicatorElement.innerHTML = '⏳';
@@ -960,20 +1012,24 @@
         var timestamp = getTimestamp();
         var eta = calculateETA(status);
         
-        // Create location string with GPS
-        var locationStr = currentLocation.address || 'Unknown';
-        if (currentLocation.lat && currentLocation.lng) {
-          locationStr += ` (${currentLocation.lat.toFixed(6)}, ${currentLocation.lng.toFixed(6)})`;
+        // Create location string - CITY/STATE/ZIP ONLY (no coordinates)
+        var locationStr = 'Unknown';
+        if (currentLocation.city || currentLocation.state || currentLocation.zip) {
+          var parts = [];
+          if (currentLocation.city) parts.push(currentLocation.city);
+          if (currentLocation.state) parts.push(currentLocation.state);
+          if (currentLocation.zip) parts.push(currentLocation.zip);
+          locationStr = parts.join(' ');
         }
         
         // EXACT TABLE STRUCTURE with EXACT status string
         var data = {
           label_id: barcode,
           barcode_type: DEFAULT_BARCODE_TYPE,
-          status: status,  // This will be EXACT string like "Data Received", "Picked Up", etc.
+          status: status,  // EXACT string like "Data Received", "Picked Up", etc.
           date: currentDate,
           time: currentTime,
-          location: locationStr,
+          location: locationStr,  // City, State Zip only - NO COORDINATES
           eta: eta,
           timestamp: timestamp
         };
@@ -1051,11 +1107,11 @@
         etaSpan.className = 'eta-badge';
         etaSpan.textContent = 'ETA: ' + eta;
         
-        // GPS indicator
+        // GPS indicator - shows city only
         var gpsIcon = document.createElement('span');
         gpsIcon.innerHTML = '📍';
         gpsIcon.style.fontSize = '14px';
-        gpsIcon.title = currentLocation.address || 'GPS location';
+        gpsIcon.title = currentLocation.city || 'GPS location';
         
         // Sync indicator
         var syncIndicator = document.createElement('span');
@@ -1124,18 +1180,20 @@
           barcode: barcodeValue
         };
         
-        // Update modal with current GPS
-        if (currentLocation.lat && currentLocation.lng) {
-          var timeStr = currentLocation.timestamp ? 
-            (currentLocation.timestamp.getMonth()+1) + '/' + 
-            currentLocation.timestamp.getDate() + ' ' +
-            currentLocation.timestamp.getHours() + ':' +
-            (currentLocation.timestamp.getMinutes() < 10 ? '0' : '') + 
-            currentLocation.timestamp.getMinutes() + ' ' +
-            (currentLocation.timestamp.getHours() >= 12 ? 'PM' : 'AM') : '';
-            
-          modalGpsInfo.innerHTML = `📍 Location: ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
-          if (modalGpsTime) modalGpsTime.textContent = timeStr;
+        // Update modal with current GPS (city/state only)
+        if (currentLocation.city || currentLocation.state) {
+          var locationStr = '';
+          if (currentLocation.city) locationStr += currentLocation.city;
+          if (currentLocation.state) {
+            if (locationStr) locationStr += ', ';
+            locationStr += currentLocation.state;
+          }
+          if (currentLocation.zip) {
+            if (locationStr) locationStr += ' ';
+            locationStr += currentLocation.zip;
+          }
+          
+          modalGpsInfo.innerHTML = `📍 ${locationStr || 'Location available'}`;
         } else {
           modalGpsInfo.innerHTML = '📍 Acquiring GPS...';
         }
@@ -1196,14 +1254,23 @@
       closeCameraBtn.addEventListener('click', closeCamera);
 
       scanButton.addEventListener('click', function() {
-        cameraModal.style.display = 'flex';
-        
+        // Check if library loaded
         if (typeof Html5Qrcode === 'undefined') {
-          cameraModal.style.display = 'none';
-          alert('Camera library not loaded');
+          alert('Camera library loading... please try again in 2 seconds');
+          // Try to load it dynamically
+          var script = document.createElement('script');
+          script.src = 'https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js';
+          document.head.appendChild(script);
+          setTimeout(function() {
+            if (typeof Html5Qrcode !== 'undefined') {
+              alert('Camera library loaded! Please click SCAN again.');
+            }
+          }, 2000);
           return;
         }
-
+        
+        cameraModal.style.display = 'flex';
+        
         try {
           if (html5QrcodeScanner) closeCamera();
           
@@ -1330,6 +1397,19 @@
       // Set connection status
       connectionLed.className = 'connection-led led-green';
       connectionText.textContent = 'XANO READY ✅';
+      
+      // Check if camera library loaded
+      setTimeout(function() {
+        if (typeof Html5Qrcode === 'undefined') {
+          connectionText.textContent = 'Loading camera...';
+          // Load from alternate CDN
+          var script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js';
+          document.head.appendChild(script);
+        } else {
+          connectionText.textContent = 'Camera ready ✅';
+        }
+      }, 1000);
 
     })();
   </script>
