@@ -366,14 +366,16 @@ body {
         document.getElementById('timeDisplay').innerHTML = timeStr;
     }
     
-    // Camera Functions
+    // Camera Functions - FIXED for Android 5.0.2
     function stopCamera() {
         if (animationFrame) {
             cancelAnimationFrame(animationFrame);
             animationFrame = null;
         }
         if (stream) {
-            stream.getTracks().forEach(function(t) { t.stop(); });
+            try {
+                stream.getTracks().forEach(function(t) { t.stop(); });
+            } catch (e) {}
             stream = null;
         }
         scanning = false;
@@ -393,58 +395,63 @@ body {
         frame.style.display = 'block';
         laser.style.display = 'block';
         
-        // Android 5.0.2 compatible camera access
+        // FIXED: Android 5.0.2 compatible camera access with proper constraints
         try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                // Fallback for older Android
-                navigator.getUserMedia = navigator.getUserMedia || 
-                                       navigator.webkitGetUserMedia || 
-                                       navigator.mozGetUserMedia;
+            // Check for camera support
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                // Modern API but with simple constraints for compatibility
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function(s) {
+                        stream = s;
+                        var video = document.getElementById('preview');
+                        video.srcObject = s;
+                        video.play();
+                        startScanning();
+                    })
+                    .catch(function(err) {
+                        handleCameraError(err);
+                    });
+            } 
+            // Fallback for older Android (5.0.2 uses this)
+            else if (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia) {
+                var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
                 
-                if (navigator.getUserMedia) {
-                    navigator.getUserMedia(
-                        { video: { facingMode: 'environment' } },
-                        function(s) {
-                            stream = s;
-                            var video = document.getElementById('preview');
+                // FIXED: Simple constraints object - no facingMode for better compatibility
+                getUserMedia.call(navigator, { video: true },
+                    function(s) {
+                        stream = s;
+                        var video = document.getElementById('preview');
+                        
+                        // FIXED: Use old-school URL.createObjectURL for Android 5.0.2
+                        if (window.URL && window.URL.createObjectURL) {
                             video.src = window.URL.createObjectURL(s);
-                            video.play();
-                            startScanning();
-                        },
-                        function(err) {
-                            alert('Camera error: ' + err.message);
-                            scanning = false;
-                            frame.style.display = 'none';
-                            laser.style.display = 'none';
+                        } else if (window.webkitURL && window.webkitURL.createObjectURL) {
+                            video.src = window.webkitURL.createObjectURL(s);
+                        } else {
+                            video.src = s;
                         }
-                    );
-                    return;
-                } else {
-                    throw new Error('Camera not supported');
-                }
+                        
+                        video.play();
+                        startScanning();
+                    },
+                    function(err) {
+                        handleCameraError(err);
+                    }
+                );
+            } else {
+                throw new Error('Camera not supported on this device');
             }
-            
-            // Modern API
-            navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' }
-            }).then(function(s) {
-                stream = s;
-                var video = document.getElementById('preview');
-                video.srcObject = s;
-                video.play();
-                startScanning();
-            }).catch(function(err) {
-                alert('Camera error: ' + err.message);
-                scanning = false;
-                frame.style.display = 'none';
-                laser.style.display = 'none';
-            });
         } catch (e) {
-            alert('Camera error: ' + e.message);
-            scanning = false;
-            frame.style.display = 'none';
-            laser.style.display = 'none';
+            handleCameraError(e);
         }
+    }
+    
+    function handleCameraError(err) {
+        alert('Camera error: ' + (err.message || 'Could not access camera'));
+        console.log('Camera error details:', err);
+        scanning = false;
+        document.getElementById('scanFrame').style.display = 'none';
+        document.getElementById('laser').style.display = 'none';
     }
     
     function startScanning() {
@@ -458,13 +465,19 @@ body {
                 return;
             }
             
+            // Only scan every few frames for performance
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
             try {
-                var code = jsQR(ctx.getImageData(0, 0, canvas.width, canvas.height).data, 
-                                canvas.width, canvas.height);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                
+                // Try to decode QR code
+                var code = jsQR(imageData.data, canvas.width, canvas.height, {
+                    inversionAttempts: "dontInvert"
+                });
+                
                 if (code) {
                     onBarcodeDecoded(code.data);
                     return;
@@ -480,6 +493,8 @@ body {
     }
     
     function onBarcodeDecoded(code) {
+        if (!scanning) return; // Prevent multiple triggers
+        
         scanning = false;
         stopCamera();
         document.getElementById('scanFrame').style.display = 'none';
@@ -519,7 +534,8 @@ body {
         
         var statusMsg = 'Submit ' + scanCount + ' scan(s)?\n\n';
         for (var i = 0; i < currentScans.length; i++) {
-            statusMsg += (i+1) + ': ' + currentScans[i].code.substr(0, 10) + '...\n';
+            var code = currentScans[i].code;
+            statusMsg += (i+1) + ': ' + (code.length > 15 ? code.substr(0, 15) + '...' : code) + '\n';
         }
         
         if (confirm(statusMsg + '\nPress OK to submit to Xano')) {
@@ -530,21 +546,14 @@ body {
     function submitToXano() {
         if (currentScans.length === 0) return;
         
-        var data = {
-            scans: currentScans,
-            timestamp: new Date().toISOString(),
-            location: currentLocation,
-            count: scanCount
-        };
-        
-        // Show success popup (simulated for demo)
+        // Show success popup
         document.getElementById('successPopup').style.display = 'flex';
         setTimeout(function() {
             document.getElementById('successPopup').style.display = 'none';
             clearScans();
-        }, 3000);
+        }, 2000);
         
-        // Uncomment to enable actual Xano submission
+        // Xano submission commented out - uncomment when you have your endpoint
         /*
         var xhr = new XMLHttpRequest();
         xhr.open('POST', XANO_URL, true);
@@ -556,13 +565,16 @@ body {
                     setTimeout(function() {
                         document.getElementById('successPopup').style.display = 'none';
                         clearScans();
-                    }, 3000);
+                    }, 2000);
                 } else {
-                    alert('Submission failed');
+                    alert('Submission failed: ' + xhr.status);
                 }
             }
         };
-        xhr.send(JSON.stringify(data));
+        xhr.onerror = function() {
+            alert('Network error - check connection');
+        };
+        xhr.send(JSON.stringify({ scans: currentScans, count: scanCount }));
         */
     }
     
@@ -606,6 +618,12 @@ body {
         document.getElementById('scanButton').onclick = startScan;
         document.getElementById('clearBtn').onclick = clearScans;
         document.getElementById('statusBtn').onclick = showStatus;
+        
+        // Check camera availability on load
+        if (!navigator.getUserMedia && !navigator.webkitGetUserMedia && 
+            !navigator.mediaDevices && !navigator.mediaDevices?.getUserMedia) {
+            alert('Warning: Camera access may not be supported on this device');
+        }
     };
     
     // Cleanup
