@@ -25,21 +25,14 @@ body {
   width: 360px;
   height: 640px;
   background: #2b4b70;
-  background: -webkit-gradient(linear, left top, left bottom, from(#3f6b9c), to(#2b4b70));
   color: #fff;
   margin: 0 auto;
   position: relative;
   overflow-y: auto;
   overflow-x: hidden;
   display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
   display: flex;
   -webkit-box-orient: vertical;
-  -moz-box-orient: vertical;
-  -webkit-flex-direction: column;
-  -ms-flex-direction: column;
   flex-direction: column;
   box-shadow: 0 10px 25px #000;
 }
@@ -49,25 +42,16 @@ body {
   background: #2e5a88;
   border-bottom: 2px solid #1f3f5c;
   display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
   display: flex;
   -webkit-box-pack: justify;
-  -moz-box-pack: justify;
-  -ms-flex-pack: justify;
-  -webkit-justify-content: space-between;
   justify-content: space-between;
   -webkit-box-align: center;
-  -moz-box-align: center;
-  -ms-flex-align: center;
-  -webkit-align-items: center;
   align-items: center;
   padding: 0 8px 0 12px;
   font-size: 16px;
 }
 #leftText { color: #fff; white-space: nowrap; }
-#rightArea { color: #fff; font-size: 14px; display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -moz-box-align: center; -ms-flex-align: center; align-items: center; }
+#rightArea { color: #fff; font-size: 14px; display: -webkit-box; display: flex; -webkit-box-align: center; align-items: center; }
 #gpsIndicator { color: #4CAF50; font-size: 18px; line-height: 1; padding-right: 4px; }
 #timeDisplay { color: #ffcc00; font-size: 14px; white-space: nowrap; }
 
@@ -85,26 +69,15 @@ body {
   box-shadow: 0 4px 0 #145018;
   cursor: pointer;
   display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
   display: flex;
   -webkit-box-align: center;
-  -moz-box-align: center;
-  -ms-flex-align: center;
-  -webkit-align-items: center;
   align-items: center;
   -webkit-box-pack: center;
-  -moz-box-pack: center;
-  -ms-flex-pack: center;
-  -webkit-justify-content: center;
   justify-content: center;
 }
 #scanButton:active {
   background: #2b6e2f;
   -webkit-transform: translateY(2px);
-  -moz-transform: translateY(2px);
-  -ms-transform: translateY(2px);
   transform: translateY(2px);
   box-shadow: 0 2px 0 #145018;
 }
@@ -147,19 +120,10 @@ body {
 
 #labelBlock {
   display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
   display: flex;
   -webkit-box-orient: vertical;
-  -moz-box-orient: vertical;
-  -webkit-flex-direction: column;
-  -ms-flex-direction: column;
   flex-direction: column;
   -webkit-box-flex: 1;
-  -moz-box-flex: 1;
-  -webkit-flex: 1;
-  -ms-flex: 1;
   flex: 1;
   width: 100%;
   min-height: 0;
@@ -169,12 +133,8 @@ body {
   background: #2b4b70;
   border: 1px solid #1f3f5c;
   display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
   display: flex;
   -webkit-box-align: center;
-  -moz-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
   padding-left: 12px;
   margin: 0 12px;
@@ -214,12 +174,8 @@ body {
   font-weight: bold;
   color: #000;
   display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
   display: flex;
   -webkit-box-align: center;
-  -moz-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
 }
 #manualIndicator {
@@ -232,9 +188,6 @@ body {
 }
 #manualText { 
   -webkit-box-flex: 1; 
-  -moz-box-flex: 1; 
-  -webkit-flex: 1; 
-  -ms-flex: 1; 
   flex: 1; 
   font-family: monospace; 
   color: #0066cc; 
@@ -247,16 +200,10 @@ body {
   height: 42px;
   background: #7496C4;
   display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
   display: flex;
   -webkit-box-align: center;
-  -moz-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
   -webkit-box-pack: justify;
-  -moz-box-pack: justify;
-  -ms-flex-pack: justify;
   justify-content: space-between;
   border: 2px solid #3a5f8a;
   margin: 8px 12px 0 12px;
@@ -272,16 +219,10 @@ body {
   height: 36px;
   background: #2b4b70;
   display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
   display: flex;
   -webkit-box-align: center;
-  -moz-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
   -webkit-box-pack: justify;
-  -moz-box-pack: justify;
-  -ms-flex-pack: justify;
   justify-content: space-between;
   border: 1px solid #1f3f5c;
   margin: 8px 12px 0 12px;
@@ -301,16 +242,11 @@ body {
 }
 #keyTabs {
   display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
   display: flex;
   padding: 8px 12px 4px 12px;
 }
 #keyTabs button {
   -webkit-box-flex: 1;
-  -moz-box-flex: 1;
-  -webkit-flex: 1;
-  -ms-flex: 1;
   flex: 1;
   background: #3a5f8a;
   border: 2px solid #1f3f5c;
@@ -327,12 +263,8 @@ body {
 
 #numericPad {
   display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
   display: flex;
   -webkit-flex-wrap: wrap;
-  -ms-flex-wrap: wrap;
   flex-wrap: wrap;
   padding: 6px 12px 10px 12px;
 }
@@ -346,34 +278,22 @@ body {
   font-weight: bold;
   height: 48px;
   display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
   display: flex;
   -webkit-box-align: center;
-  -moz-box-align: center;
-  -ms-flex-align: center;
-  -webkit-align-items: center;
   align-items: center;
   -webkit-box-pack: center;
-  -moz-box-pack: center;
-  -ms-flex-pack: center;
-  -webkit-justify-content: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 3px 0 #1f3f5c;
   margin: 3px;
 }
-#numericPad button:active { background: #4CAF50; -webkit-transform: translateY(2px); -moz-transform: translateY(2px); -ms-transform: translateY(2px); transform: translateY(2px); }
+#numericPad button:active { background: #4CAF50; -webkit-transform: translateY(2px); transform: translateY(2px); }
 #numericPad button.backspace { font-size: 22px; background: #2b4b70; }
 
 #qwertyPad, #symbolPad { display: none; padding: 0 8px 8px 8px; }
-.row { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: flex; margin-bottom: 4px; -webkit-box-pack: center; -moz-box-pack: center; -ms-flex-pack: center; justify-content: center; }
+.row { display: -webkit-box; display: flex; margin-bottom: 4px; -webkit-box-pack: center; justify-content: center; }
 .row button {
   -webkit-box-flex: 1;
-  -moz-box-flex: 1;
-  -webkit-flex: 1;
-  -ms-flex: 1;
   flex: 1;
   max-width: 34px;
   background: #3a5f8a;
@@ -387,9 +307,9 @@ body {
   cursor: pointer;
   box-shadow: 0 2px 0 #1f3f5c;
 }
-.row button:active { background: #4CAF50; -webkit-transform: translateY(2px); -moz-transform: translateY(2px); -ms-transform: translateY(2px); transform: translateY(2px); }
+.row button:active { background: #4CAF50; -webkit-transform: translateY(2px); transform: translateY(2px); }
 .row button.special { max-width: 50px; background: #2b4b70; }
-.row button.space { -webkit-box-flex: 3; -moz-box-flex: 3; -webkit-flex: 3; -ms-flex: 3; flex: 3; max-width: 180px; }
+.row button.space { -webkit-box-flex: 3; flex: 3; max-width: 180px; }
 
 #statusScreen {
   display: none;
@@ -422,16 +342,10 @@ body {
   background: rgba(0,0,0,0.7);
   z-index: 1000;
   display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
   display: flex;
   -webkit-box-align: center;
-  -moz-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
   -webkit-box-pack: center;
-  -moz-box-pack: center;
-  -ms-flex-pack: center;
   justify-content: center;
 }
 .popup-content {
@@ -535,7 +449,7 @@ body {
     <div class="statusBtn back">BACK TO SCANNER</div>
   </div>
   
-  <div id="successPopup">
+  <div id="successPopup" style="display: none;">
     <div class="popup-content">
       <div class="checkmark">✓</div>
       <div class="popup-message">Barcode Recorded!</div>
@@ -556,6 +470,7 @@ body {
   var gpsWatchId = null;
   var manualInput = '';
   var isSubmitting = false;
+  var popupTimer = null;
   
   // XANO endpoint
   var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
@@ -682,13 +597,6 @@ body {
     scanning = false;
     var frame = document.getElementById('scanFrame');
     if (frame) frame.style.display = 'none';
-    
-    // Turn off flashlight if on
-    try {
-      if (window.Instascan && window.Instascan.Camera) {
-        window.Instascan.Camera.off();
-      }
-    } catch(e) {}
   }
   
   // Start barcode scanning with Instascan
@@ -928,6 +836,12 @@ body {
     
     if (!pop || !popupStatus || !popupScanCount) return;
     
+    // Clear any existing timer
+    if (popupTimer) {
+      clearTimeout(popupTimer);
+      popupTimer = null;
+    }
+    
     popupStatus.innerText = 'Status: ' + status;
     
     var locText = 'unknown';
@@ -938,11 +852,13 @@ body {
     popupScanCount.innerHTML = total + ' barcode(s)<br>' + sent + ' sent<br><div class="eta-info">📍 ' + locText + '</div>';
     pop.style.display = 'flex';
     
-    setTimeout(function() {
+    // Set timer to hide popup
+    popupTimer = setTimeout(function() {
       pop.style.display = 'none';
       clearScans();
       goBackToScan();
       isSubmitting = false;
+      popupTimer = null;
     }, 3500);
   }
   
@@ -1017,7 +933,6 @@ body {
     function postOne(index) {
       if (index >= currentScans.length) {
         showSuccess(status, total, sentCount);
-        isSubmitting = false;
         return;
       }
       
@@ -1163,6 +1078,9 @@ body {
     }
     if (scanner) {
       try { scanner.stop(); } catch(e) {}
+    }
+    if (popupTimer) {
+      clearTimeout(popupTimer);
     }
   };
   
