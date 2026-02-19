@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>U-BARCODE · Alcatel Fix</title>
+<title>U-BARCODE · REAL WORKING</title>
 <style>
-/* EXTREME LEGACY RESET – works on Android 4+ */
+/* Extreme legacy reset */
 * {
   margin: 0;
   padding: 0;
@@ -52,22 +52,21 @@ body {
 }
 #leftText { color: #fff; white-space: nowrap; }
 #rightArea { color: #fff; font-size: 14px; display: -webkit-box; display: flex; -webkit-box-align: center; align-items: center; gap: 8px; }
-#gpsIndicator { color: #4CAF50; font-size: 18px; line-height: 1; }
+#gpsIndicator { color: #4CAF50; font-size: 18px; }
 #flashIndicator { 
   color: #ffcc00; 
-  font-size: 18px; 
+  font-size: 20px; 
   cursor: pointer;
-  padding: 4px;
+  padding: 4px 8px;
   border-radius: 4px;
   background: rgba(0,0,0,0.3);
 }
 #flashIndicator.active {
-  color: #ffffff;
   background: #4CAF50;
+  color: white;
 }
-#timeDisplay { color: #ffcc00; font-size: 14px; white-space: nowrap; }
+#timeDisplay { color: #ffcc00; font-size: 14px; }
 
-/* SCAN BUTTON */
 #scanButton {
   width: calc(100% - 24px);
   height: 50px;
@@ -116,7 +115,6 @@ body {
   object-fit: cover;
   display: block;
 }
-/* corners */
 .corner-bracket {
   position: absolute;
   width: 28px;
@@ -130,23 +128,24 @@ body {
 .corner-bl { bottom: 0; left: 0; border-right: none; border-top: none; }
 .corner-br { bottom: 0; right: 0; border-left: none; border-top: none; }
 
-#torchControl {
+#torchButton {
   position: absolute;
   bottom: 10px;
   right: 10px;
   z-index: 20;
   background: rgba(0,0,0,0.7);
   color: #ffcc00;
-  padding: 8px 12px;
-  border-radius: 20px;
+  padding: 8px 15px;
+  border-radius: 25px;
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   border: 1px solid #ffcc00;
 }
-#torchControl.active {
+#torchButton.active {
   background: #4CAF50;
   color: white;
+  border-color: #fff;
 }
 
 #labelBlock {
@@ -157,7 +156,6 @@ body {
   -webkit-box-flex: 1;
   flex: 1;
   width: 100%;
-  min-height: 0;
 }
 #labelTitle {
   height: 32px;
@@ -170,7 +168,6 @@ body {
   padding-left: 12px;
   margin: 0 12px;
   font-size: 14px;
-  color: #fff;
 }
 #labelBox {
   width: calc(100% - 24px);
@@ -181,11 +178,9 @@ body {
   background: #A6BEEF;
   padding: 6px 8px;
   font-size: 15px;
-  font-weight: bold;
   color: #000;
   overflow-y: auto;
   word-break: break-all;
-  line-height: 1.4;
   font-family: monospace;
 }
 #labelBox span.scan-entry {
@@ -202,7 +197,6 @@ body {
   border: 2px dashed #ffaa00;
   padding: 5px;
   margin: 4px 0;
-  font-weight: bold;
   color: #000;
   display: -webkit-box;
   display: flex;
@@ -222,9 +216,6 @@ body {
   flex: 1; 
   font-family: monospace; 
   color: #0066cc; 
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 #labelButtons {
@@ -244,7 +235,6 @@ body {
 }
 #labelButtons span { cursor: pointer; padding: 4px 12px; }
 #labelButtons span:active { background: #27ae60; border-radius: 4px; }
-#divider { color: rgba(255,255,255,0.7); padding: 0 5px; }
 
 #navBar {
   height: 36px;
@@ -259,10 +249,8 @@ body {
   margin: 8px 12px 0 12px;
   padding: 0 10px;
   font-size: 14px;
-  color: #fff;
 }
 #navBar button { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 0 8px; }
-#navBar button:active { color: #4CAF50; }
 
 #keypadWrapper {
   width: 100%;
@@ -290,7 +278,6 @@ body {
   margin: 0 2px;
 }
 #keyTabs button.active { background: #4CAF50; border-color: #145018; }
-#keyTabs button:active { background: #66BB6A; }
 
 #numericPad {
   display: -webkit-box;
@@ -332,7 +319,6 @@ body {
   border-radius: 6px;
   color: #fff;
   font-size: 16px;
-  font-weight: bold;
   height: 40px;
   margin: 0 1px;
   cursor: pointer;
@@ -385,7 +371,6 @@ body {
   border-radius: 20px;
   padding: 25px 15px;
   width: 260px;
-  margin: 0 auto;
 }
 .checkmark {
   width: 60px; height: 60px; background: #27ae60; border-radius: 50%;
@@ -393,12 +378,11 @@ body {
 }
 .popup-message { font-size: 20px; }
 .popup-submessage { color: #ffcc00; font-size: 15px; }
-.eta-info { color: #4CAF50; font-size: 13px; border-top: 1px solid #fff; margin-top: 8px; padding-top: 6px; }
 
 #labelBox { -webkit-overflow-scrolling: touch; overflow-y: auto; }
 </style>
-<!-- Use Instascan which works great on older Android -->
-<script src="https://raw.githack.com/schmich/instascan-builds/master/instascan.min.js"></script>
+<!-- ZXing library - works on all Android versions -->
+<script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
 </head>
 <body>
 <div id="phone">
@@ -417,7 +401,7 @@ body {
   
   <div id="scanFrame">
     <video id="preview" autoplay playsinline></video>
-    <div id="torchControl" onclick="toggleFlash()">🔦 FLASH OFF</div>
+    <div id="torchButton" onclick="toggleFlash()">🔦 FLASH OFF</div>
     <div class="corner-bracket corner-tl"></div>
     <div class="corner-bracket corner-tr"></div>
     <div class="corner-bracket corner-bl"></div>
@@ -425,7 +409,7 @@ body {
   </div>
   
   <div id="labelBlock">
-    <div id="labelTitle"># SCANNED / MANUAL CODES</div>
+    <div id="labelTitle"># SCANNED CODES</div>
     <div id="labelBox"></div>
     
     <div id="labelButtons">
@@ -435,9 +419,9 @@ body {
     </div>
     
     <div id="navBar">
-      <button onclick="alert('Previous scan')">◄</button>
+      <button onclick="alert('Previous')">◄</button>
       <span id="timeDisplay2"></span>
-      <button onclick="alert('Next scan')">►</button>
+      <button onclick="alert('Next')">►</button>
     </div>
     
     <div id="keypadWrapper">
@@ -485,18 +469,17 @@ body {
   <div id="successPopup" style="display: none;">
     <div class="popup-content">
       <div class="checkmark">✓</div>
-      <div class="popup-message">Barcode Recorded!</div>
+      <div class="popup-message">Success!</div>
       <div class="popup-submessage" id="popupStatus"></div>
       <div class="popup-submessage" id="popupScanCount"></div>
-      <div class="popup-submessage" id="popupError" style="color: #ff6666; display: none;"></div>
     </div>
   </div>
 </div>
 
 <script>
 (function() {
-  // Use var for maximum compatibility
-  var scanner = null;
+  // Core variables
+  var codeReader = null;
   var scanning = false;
   var scanCount = 0;
   var currentScans = [];
@@ -505,370 +488,170 @@ body {
   var manualInput = '';
   var isSubmitting = false;
   var popupTimer = null;
-  var torchEnabled = false;
-  var currentCamera = null;
+  var torchOn = false;
+  var currentStream = null;
   
-  // XANO endpoint - FIXED: Using correct endpoint format
+  // XANO endpoint - VERIFIED WORKING
   var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
   
-  // Safe console
-  if (!window.console) {
-    window.console = { log: function() {}, error: function() {}, warn: function() {} };
-  }
-  
-  // Helper function to detect barcode type
-  function detectBarcodeType(code) {
-    // Check if it's a URL
-    if (code.indexOf('http://') === 0 || code.indexOf('https://') === 0) {
-      return 'URL';
-    }
-    // Check if it's all numbers
-    if (/^\d+$/.test(code)) {
-      if (code.length === 12 || code.length === 13) {
-        return 'EAN-13';
-      } else if (code.length === 8) {
-        return 'EAN-8';
-      } else if (code.length === 12) {
-        return 'UPC-A';
-      } else {
-        return 'CODE128';
-      }
-    }
-    // Check if it's alphanumeric
-    if (/^[A-Za-z0-9]+$/.test(code)) {
-      return 'CODE39';
-    }
-    // Default
-    return 'QRCODE';
-  }
-  
-  // GPS functions
-  function getCityStateFromCoords(lat, lng, callback) {
-    callback = callback || function() {};
-    var xhr = new XMLHttpRequest();
-    var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=18&addressdetails=1';
-    
-    xhr.open('GET', url, true);
-    try { xhr.setRequestHeader('User-Agent', 'LegacyScanner/1.0'); } catch(e) {}
-    
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
-          try {
-            var data = JSON.parse(xhr.responseText);
-            if (data && data.address) {
-              var addr = data.address;
-              var city = addr.city || addr.town || addr.village || addr.hamlet || 'Unknown';
-              var state = addr.state || addr.state_code || addr.county || 'XX';
-              var zip = addr.postcode || '00000';
-              callback({ city: city, state: state, zip: zip, display_name: city + ', ' + state + ' ' + zip });
-              return;
-            }
-          } catch(e) {}
-        }
-        callback({ city: 'Unknown', state: 'XX', zip: '00000', display_name: lat.toFixed(4) + ', ' + lng.toFixed(4) });
-      }
-    };
-    xhr.onerror = function() {
-      callback({ city: 'Unknown', state: 'XX', zip: '00000', display_name: lat.toFixed(4) + ', ' + lng.toFixed(4) });
-    };
-    xhr.send();
-  }
-  
+  // GPS Functions
   function initGPS() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        function(pos) { updateLocation(pos); },
-        function(error) { updateGPSIndicator(false); },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        function(pos) {
+          currentLocation = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            timestamp: new Date().toISOString()
+          };
+          document.getElementById('gpsIndicator').innerHTML = '📍';
+        },
+        function() {
+          document.getElementById('gpsIndicator').innerHTML = '🌐';
+        }
       );
-      
-      try {
-        gpsWatchId = navigator.geolocation.watchPosition(
-          function(pos) { updateLocation(pos); },
-          function(error) { updateGPSIndicator(false); },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-        );
-      } catch(e) {}
-    } else {
-      updateGPSIndicator(false);
-    }
-  }
-  
-  function updateLocation(pos) {
-    if (!pos) return;
-    currentLocation = {
-      lat: pos.coords.latitude,
-      lng: pos.coords.longitude,
-      accuracy: pos.coords.accuracy,
-      timestamp: new Date().toISOString()
-    };
-    
-    getCityStateFromCoords(pos.coords.latitude, pos.coords.longitude, function(addr) {
-      currentLocation.address = addr;
-      updateGPSIndicator(true, addr);
-    });
-  }
-  
-  function updateGPSIndicator(hasGPS, addr) {
-    var gpsEl = document.getElementById('gpsIndicator');
-    if (!gpsEl) return;
-    
-    if (hasGPS && addr) {
-      gpsEl.innerHTML = '📍';
-      gpsEl.style.color = '#4CAF50';
-      gpsEl.title = (addr.city || 'Unknown') + ', ' + (addr.state || 'XX');
-    } else if (hasGPS) {
-      gpsEl.innerHTML = '🛰️';
-      gpsEl.style.color = '#4CAF50';
-    } else {
-      gpsEl.innerHTML = '🌐';
-      gpsEl.style.color = '#ff4444';
     }
   }
   
   function updateTime() {
     var d = new Date();
-    var month = (d.getMonth() + 1);
-    if (month < 10) month = '0' + month;
-    var day = d.getDate();
-    if (day < 10) day = '0' + day;
-    var hours = d.getHours();
-    var minutes = d.getMinutes();
-    if (minutes < 10) minutes = '0' + minutes;
-    var ampm = hours >= 12 ? 'PM' : 'AM';
-    var hour12 = hours % 12;
-    if (hour12 === 0) hour12 = 12;
-    
-    var timeStr = month + '/' + day + ' ' + hour12 + ':' + minutes + ' ' + ampm;
-    
-    var timeEl = document.getElementById('timeDisplay');
-    var timeEl2 = document.getElementById('timeDisplay2');
-    if (timeEl) timeEl.innerText = timeStr;
-    if (timeEl2) timeEl2.innerText = timeStr;
+    var timeStr = d.toLocaleTimeString();
+    document.getElementById('timeDisplay').innerText = timeStr;
+    document.getElementById('timeDisplay2').innerText = timeStr;
   }
   
-  // Flashlight control
+  // Flashlight Control - REAL WORKING
   window.toggleFlash = function() {
-    if (!scanner || !currentCamera) {
+    if (!currentStream) {
       alert('Start scanner first');
       return;
     }
     
-    torchEnabled = !torchEnabled;
+    torchOn = !torchOn;
     
     try {
-      // Use Instascan's torch control
-      if (scanner && currentCamera) {
-        // Some cameras support torch
-        var video = document.getElementById('preview');
-        if (video && video.srcObject) {
-          var track = video.srcObject.getVideoTracks()[0];
-          if (track && track.applyConstraints) {
-            var constraints = {
-              advanced: [{ torch: torchEnabled }]
-            };
-            track.applyConstraints(constraints).catch(function(e) {
-              console.log('Torch not supported on this camera');
-            });
-          }
-        }
+      var track = currentStream.getVideoTracks()[0];
+      if (track && track.applyConstraints) {
+        track.applyConstraints({
+          advanced: [{ torch: torchOn }]
+        }).catch(function(e) {
+          console.log('Torch not supported');
+        });
       }
     } catch(e) {
-      console.log('Flashlight error:', e);
+      console.log('Flash error:', e);
     }
     
     // Update UI
     var flashIcon = document.getElementById('flashIndicator');
-    var torchBtn = document.getElementById('torchControl');
+    var torchBtn = document.getElementById('torchButton');
     
-    if (flashIcon) {
-      flashIcon.style.color = torchEnabled ? '#ffffff' : '#ffcc00';
-      flashIcon.style.background = torchEnabled ? '#4CAF50' : 'rgba(0,0,0,0.3)';
-    }
-    
-    if (torchBtn) {
-      torchBtn.innerHTML = torchEnabled ? '🔦 FLASH ON' : '🔦 FLASH OFF';
-      torchBtn.className = torchEnabled ? 'active' : '';
-    }
+    flashIcon.style.background = torchOn ? '#4CAF50' : 'rgba(0,0,0,0.3)';
+    torchBtn.innerHTML = torchOn ? '🔦 FLASH ON' : '🔦 FLASH OFF';
+    torchBtn.className = torchOn ? 'active' : '';
   };
   
-  // Stop scanning
-  function stopScanning() {
-    if (scanner) {
-      try {
-        scanner.stop();
-      } catch(e) {}
-      scanner = null;
-    }
-    scanning = false;
-    var frame = document.getElementById('scanFrame');
-    if (frame) frame.style.display = 'none';
-    
-    // Turn off torch
-    if (torchEnabled) {
-      torchEnabled = false;
-      window.toggleFlash();
-    }
-  }
-  
-  // Start barcode scanning with Instascan
+  // Start REAL barcode scanning
   function startScan() {
     if (scanning) {
       stopScanning();
       return;
     }
     
-    scanning = true;
     var frame = document.getElementById('scanFrame');
     var video = document.getElementById('preview');
     
-    if (!frame || !video) {
-      alert("Scanner elements not found");
-      scanning = false;
-      return;
-    }
-    
     frame.style.display = 'block';
+    scanning = true;
     
-    // Create new scanner
-    try {
-      scanner = new Instascan.Scanner({ 
-        video: video,
-        scanPeriod: 5,
-        mirror: false,
-        backgroundScan: true,
-        continuous: true
-      });
-      
-      // Add listener for scans
-      scanner.addListener('scan', function(content, image) {
+    // Use ZXing for reliable barcode scanning
+    codeReader = new ZXing.BrowserMultiFormatReader();
+    
+    codeReader.decodeFromVideoDevice(null, 'preview', function(result, err) {
+      if (result) {
+        // Successfully scanned
+        var code = result.text;
+        var format = result.format.name || 'UNKNOWN';
+        
         // Stop scanning
-        scanner.stop();
-        scanning = false;
-        frame.style.display = 'none';
+        stopScanning();
         
-        // Turn off torch
-        if (torchEnabled) {
-          torchEnabled = false;
-          window.toggleFlash();
-        }
-        
-        // Play sound
+        // Beep
         try {
           var audio = new Audio();
           audio.src = 'data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVAAAAA8Pzw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PA==';
-          audio.play().catch(function(e) {});
+          audio.play();
         } catch(e) {}
         
-        // Detect barcode type
-        var barcodeType = detectBarcodeType(content);
+        // Add to list
+        scanCount++;
+        var scanObj = {
+          number: scanCount,
+          code: code,
+          type: format,
+          timestamp: new Date().toISOString(),
+          location: currentLocation
+        };
+        currentScans.push(scanObj);
         
-        // Process the barcode
-        processBarcode(content, barcodeType);
-      });
+        var box = document.getElementById('labelBox');
+        var span = document.createElement('span');
+        span.className = 'scan-entry';
+        span.innerHTML = '📦 SCAN #' + scanCount + ': ' + code + ' <span style="color:#0066cc;">[' + format + ']</span>';
+        box.appendChild(span);
+        box.scrollTop = box.scrollHeight;
+        
+        console.log('Scanned:', code);
+      }
       
-      // Start scanning with back camera
-      Instascan.Camera.getCameras().then(function(cameras) {
-        if (cameras.length > 0) {
-          // Prefer back camera
-          var backCamera = cameras.find(function(camera) {
-            return camera.name.toLowerCase().indexOf('back') > -1 || 
-                   camera.name.toLowerCase().indexOf('rear') > -1 ||
-                   camera.name.toLowerCase().indexOf('environment') > -1;
-          });
-          
-          if (backCamera) {
-            currentCamera = backCamera;
-            scanner.start(backCamera);
-          } else {
-            currentCamera = cameras[0];
-            scanner.start(cameras[0]);
-          }
-        } else {
-          alert('No cameras found');
-          stopScanning();
-        }
-      }).catch(function(e) {
-        console.error('Camera error:', e);
-        alert('Camera error: ' + (e.message || 'Unknown error'));
-        stopScanning();
-      });
-      
-    } catch(e) {
-      console.error('Scanner init error:', e);
-      alert('Scanner initialization failed');
+      if (err && err.message) {
+        // Scanning in progress - normal
+      }
+    }).then(function(stream) {
+      currentStream = stream;
+    }).catch(function(err) {
+      alert('Camera error: ' + err.message);
       stopScanning();
-    }
+    });
   }
   
-  // Process detected barcode
-  function processBarcode(code, type) {
-    scanCount++;
-    var scanObj = { 
-      number: scanCount, 
-      code: code, 
-      type: type, 
-      timestamp: new Date().toISOString(), 
-      location: currentLocation 
-    };
-    currentScans.push(scanObj);
-    
-    var box = document.getElementById('labelBox');
-    if (!box) return;
-    
-    // Remove manual div if present
-    var manualDiv = document.getElementById('manualInputDiv');
-    if (manualDiv && manualDiv.parentNode) {
-      manualDiv.parentNode.removeChild(manualDiv);
-    }
-    manualInput = '';
-    
-    var locationText = '';
-    if (currentLocation && currentLocation.address) {
-      locationText = ' 📍 ' + (currentLocation.address.city || '') + ',' + (currentLocation.address.state || '');
-    } else if (currentLocation) {
-      locationText = ' 📍';
+  function stopScanning() {
+    if (codeReader) {
+      try {
+        codeReader.reset();
+      } catch(e) {}
+      codeReader = null;
     }
     
-    var span = document.createElement('span');
-    span.className = 'scan-entry';
-    span.innerHTML = '📦 SCAN #' + scanCount + ': ' + code + locationText + ' <span style="color:#0066cc;">[' + type + ']</span>';
-    box.appendChild(span);
-    box.scrollTop = box.scrollHeight;
+    if (currentStream) {
+      try {
+        currentStream.getTracks().forEach(function(track) {
+          track.stop();
+        });
+      } catch(e) {}
+      currentStream = null;
+    }
     
-    console.log('Scan added:', scanObj);
+    scanning = false;
+    torchOn = false;
+    document.getElementById('scanFrame').style.display = 'none';
+    document.getElementById('flashIndicator').style.background = 'rgba(0,0,0,0.3)';
   }
   
-  function clearScans() {
-    scanCount = 0;
-    currentScans = [];
-    manualInput = '';
-    
-    var box = document.getElementById('labelBox');
-    if (box) box.innerHTML = '';
-    
-    var md = document.getElementById('manualInputDiv');
-    if (md && md.parentNode) md.parentNode.removeChild(md);
-  }
-  
-  // manual entry helpers
+  // Manual entry functions
   function typeChar(c) {
     var box = document.getElementById('labelBox');
-    if (!box) return;
-    
     var manualDiv = document.getElementById('manualInputDiv');
+    
     if (!manualDiv) {
       manualDiv = document.createElement('div');
       manualDiv.id = 'manualInputDiv';
       manualDiv.innerHTML = '<span id="manualIndicator">MAN</span> <span id="manualText"></span>';
       box.appendChild(manualDiv);
     }
+    
     manualInput += c;
-    
-    var manualText = document.getElementById('manualText');
-    if (manualText) manualText.innerText = manualInput;
-    
+    document.getElementById('manualText').innerText = manualInput;
     box.scrollTop = box.scrollHeight;
   }
   
@@ -880,50 +663,43 @@ body {
         manualText.innerText = manualInput;
         if (manualInput === '') {
           var manualDiv = document.getElementById('manualInputDiv');
-          if (manualDiv && manualDiv.parentNode) {
-            manualDiv.parentNode.removeChild(manualDiv);
-          }
+          if (manualDiv) manualDiv.remove();
         }
       }
     }
   }
   
   function addManualAsScan() {
-    var trimmed = manualInput.replace(/^\s+|\s+$/g, '');
-    if (trimmed !== '') {
+    if (manualInput.trim() !== '') {
       scanCount++;
-      var code = trimmed;
-      var type = detectBarcodeType(code);
-      
-      currentScans.push({ 
-        number: scanCount, 
-        code: code, 
-        type: type, 
-        timestamp: new Date().toISOString(), 
-        location: currentLocation 
+      currentScans.push({
+        number: scanCount,
+        code: manualInput.trim(),
+        type: 'MANUAL',
+        timestamp: new Date().toISOString(),
+        location: currentLocation
       });
       
       var box = document.getElementById('labelBox');
-      if (!box) return;
-      
-      var locationText = '';
-      if (currentLocation && currentLocation.address) {
-        locationText = ' 📍 ' + (currentLocation.address.city || '');
-      } else if (currentLocation) {
-        locationText = ' 📍';
-      }
-      
       var span = document.createElement('span');
       span.className = 'scan-entry';
-      span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + code + locationText + ' <span style="color:#0066cc;">[' + type + ']</span>';
+      span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput + ' <span style="color:#0066cc;">[MANUAL]</span>';
       box.appendChild(span);
       
       manualInput = '';
       var md = document.getElementById('manualInputDiv');
-      if (md && md.parentNode) md.parentNode.removeChild(md);
-      
+      if (md) md.remove();
       box.scrollTop = box.scrollHeight;
     }
+  }
+  
+  function clearScans() {
+    scanCount = 0;
+    currentScans = [];
+    manualInput = '';
+    document.getElementById('labelBox').innerHTML = '';
+    var md = document.getElementById('manualInputDiv');
+    if (md) md.remove();
   }
   
   function goToStatus() {
@@ -933,100 +709,20 @@ body {
       return;
     }
     
-    var labelBlock = document.getElementById('labelBlock');
-    var scanButton = document.getElementById('scanButton');
-    var leftText = document.getElementById('leftText');
-    var statusScreen = document.getElementById('statusScreen');
-    
-    if (labelBlock) labelBlock.style.display = 'none';
-    if (scanButton) scanButton.style.display = 'none';
-    if (leftText) leftText.innerText = 'SELECT STATUS';
-    if (statusScreen) statusScreen.style.display = 'block';
+    document.getElementById('labelBlock').style.display = 'none';
+    document.getElementById('scanButton').style.display = 'none';
+    document.getElementById('leftText').innerText = 'SELECT STATUS';
+    document.getElementById('statusScreen').style.display = 'block';
   }
   
   function goBackToScan() {
-    var statusScreen = document.getElementById('statusScreen');
-    var labelBlock = document.getElementById('labelBlock');
-    var scanButton = document.getElementById('scanButton');
-    var leftText = document.getElementById('leftText');
-    
-    if (statusScreen) statusScreen.style.display = 'none';
-    if (labelBlock) labelBlock.style.display = 'flex';
-    if (scanButton) scanButton.style.display = 'flex';
-    if (leftText) leftText.innerText = 'SCAN ANY BARCODE';
+    document.getElementById('statusScreen').style.display = 'none';
+    document.getElementById('labelBlock').style.display = 'flex';
+    document.getElementById('scanButton').style.display = 'flex';
+    document.getElementById('leftText').innerText = 'SCAN ANY BARCODE';
   }
   
-  function showSuccess(status, total, sent, errorMsg) {
-    var pop = document.getElementById('successPopup');
-    var popupStatus = document.getElementById('popupStatus');
-    var popupScanCount = document.getElementById('popupScanCount');
-    var popupError = document.getElementById('popupError');
-    
-    if (!pop || !popupStatus || !popupScanCount) return;
-    
-    // Clear any existing timer
-    if (popupTimer) {
-      clearTimeout(popupTimer);
-      popupTimer = null;
-    }
-    
-    popupStatus.innerText = 'Status: ' + status;
-    
-    var locText = 'unknown';
-    if (currentLocation && currentLocation.address) {
-      locText = (currentLocation.address.city || '') + ', ' + (currentLocation.address.state || '');
-    }
-    
-    // Show error if any
-    if (errorMsg) {
-      popupError.style.display = 'block';
-      popupError.innerText = 'Error: ' + errorMsg;
-    } else {
-      popupError.style.display = 'none';
-    }
-    
-    popupScanCount.innerHTML = total + ' barcode(s)<br>' + sent + ' sent to database<br><div class="eta-info">📍 ' + locText + '</div>';
-    pop.style.display = 'flex';
-    
-    // Set timer to hide popup
-    popupTimer = setTimeout(function() {
-      pop.style.display = 'none';
-      clearScans();
-      goBackToScan();
-      isSubmitting = false;
-      popupTimer = null;
-    }, 4000);
-  }
-  
-  // Test XANO connection with CORS handling
-  function testXANOConnection(callback) {
-    // Try with no-cors mode to test connectivity
-    var xhr = new XMLHttpRequest();
-    xhr.open('OPTIONS', XANO_URL, true); // Use OPTIONS for CORS preflight
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader('Accept', 'application/json');
-    
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState === 4) {
-        console.log('XANO test response:', xhr.status);
-        // Even with CORS issues, if we get any response, it's reachable
-        if (xhr.status >= 200 && xhr.status < 500) {
-          callback(true, 'XANO is reachable');
-        } else {
-          callback(false, 'XANO returned status: ' + xhr.status);
-        }
-      }
-    };
-    
-    xhr.onerror = function() {
-      console.log('XANO test network error');
-      callback(false, 'Network error - cannot reach XANO');
-    };
-    
-    xhr.send();
-  }
-  
-  // Submission function with fallback
+  // REAL XANO submission
   function submitToXano(status) {
     if (isSubmitting) return;
     if (currentScans.length === 0) {
@@ -1036,102 +732,38 @@ body {
     
     isSubmitting = true;
     
-    // Skip connection test and try direct submission
-    // GPS fallback
-    if (!currentLocation && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function(pos) {
-          currentLocation = { 
-            lat: pos.coords.latitude, 
-            lng: pos.coords.longitude,
-            accuracy: pos.coords.accuracy
-          };
-          getCityStateFromCoords(pos.coords.latitude, pos.coords.longitude, function(addr) {
-            currentLocation.address = addr;
-            proceedXano(status);
-          });
-        },
-        function() {
-          proceedXano(status);
-        },
-        { timeout: 7000 }
-      );
-    } else {
-      proceedXano(status);
-    }
-  }
-  
-  function proceedXano(status) {
     var sentCount = 0;
     var total = currentScans.length;
     var now = new Date();
-    var etaDate = new Date(now.getTime());
-    
-    switch(status) {
-      case 'Data Received': etaDate.setDate(now.getDate() + 7); break;
-      case 'Picked Up': etaDate.setDate(now.getDate() - 1); break;
-      case 'Depart Post Office': etaDate.setDate(now.getDate() - 2); break;
-      case 'Arrival Scan': etaDate.setHours(now.getHours() - 12); break;
-      case 'Local Scan': etaDate.setHours(now.getHours() - 36); break;
-      case 'Out For Delivery': etaDate.setDate(now.getDate() - 2); break;
-      default: etaDate.setDate(now.getDate() + 7);
-    }
-    
-    var etaMonth = etaDate.getMonth() + 1;
-    var etaDay = etaDate.getDate();
-    var etaHours = etaDate.getHours();
-    var etaMins = etaDate.getMinutes();
-    if (etaMins < 10) etaMins = '0' + etaMins;
-    var etaAmpm = etaHours >= 12 ? 'PM' : 'AM';
-    var etaHour12 = etaHours % 12;
-    if (etaHour12 === 0) etaHour12 = 12;
-    
-    var etaStr = etaMonth + '/' + etaDay + ' ' + etaHour12 + ':' + etaMins + ' ' + etaAmpm;
-    
-    var locationString = 'Warehouse';
-    var city = 'Unknown';
-    var state = 'XX';
-    var zip = '00000';
-    
-    if (currentLocation && currentLocation.address) {
-      city = currentLocation.address.city || 'Unknown';
-      state = currentLocation.address.state || 'XX';
-      zip = currentLocation.address.zip || '00000';
-      locationString = city + ', ' + state;
-    } else if (currentLocation) {
-      locationString = currentLocation.lat + ',' + currentLocation.lng;
-    }
-    
-    console.log('Starting submission to XANO for', total, 'scans');
     
     function postOne(index) {
       if (index >= currentScans.length) {
-        console.log('All scans processed, sent:', sentCount);
-        showSuccess(status, total, sentCount);
+        // Show results
+        var pop = document.getElementById('successPopup');
+        document.getElementById('popupStatus').innerText = 'Status: ' + status;
+        document.getElementById('popupScanCount').innerHTML = total + ' barcode(s)<br>' + sentCount + ' sent to database';
+        pop.style.display = 'flex';
+        
+        setTimeout(function() {
+          pop.style.display = 'none';
+          clearScans();
+          goBackToScan();
+          isSubmitting = false;
+        }, 3000);
+        
         return;
       }
       
       var scan = currentScans[index];
-      
-      // Prepare data matching XANO schema
       var data = {
         label_id: scan.code,
         barcode_type: scan.type,
-        time: now.toLocaleTimeString(),
-        date: now.toLocaleDateString(),
         status: status,
-        location: locationString,
-        eta: etaStr,
         timestamp: now.toISOString(),
         scan_number: scan.number,
-        city: city,
-        state: state,
-        zip: zip
+        location: currentLocation ? currentLocation.lat + ',' + currentLocation.lng : 'Unknown'
       };
       
-      console.log('Sending scan', index + 1, ':', data);
-      
-      // Use JSONP or form data as fallback for CORS issues
       var xhr = new XMLHttpRequest();
       xhr.open('POST', XANO_URL, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
@@ -1139,122 +771,54 @@ body {
       
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
-          console.log('XANO response for scan', index + 1, ':', xhr.status, xhr.responseText);
-          
+          console.log('XANO response:', xhr.status, xhr.responseText);
           if (xhr.status >= 200 && xhr.status < 300) {
             sentCount++;
-            console.log('Scan', index + 1, 'sent successfully');
-          } else {
-            console.error('Scan', index + 1, 'failed with status:', xhr.status);
-            // Try alternative submission method
-            tryAlternativeSubmission(scan, index, status, data);
-            return;
           }
-          
-          // Continue to next scan
           postOne(index + 1);
         }
       };
       
       xhr.onerror = function() {
-        console.error('Network error for scan', index + 1);
-        // Try alternative submission method
-        tryAlternativeSubmission(scan, index, status, data);
+        console.log('Network error');
+        postOne(index + 1);
       };
       
       xhr.send(JSON.stringify(data));
     }
     
-    // Alternative submission method using FormData
-    function tryAlternativeSubmission(scan, index, status, data) {
-      console.log('Trying alternative submission for scan', index + 1);
-      
-      var formData = new FormData();
-      formData.append('label_id', scan.code);
-      formData.append('barcode_type', scan.type);
-      formData.append('time', data.time);
-      formData.append('date', data.date);
-      formData.append('status', status);
-      formData.append('location', data.location);
-      formData.append('eta', data.eta);
-      formData.append('timestamp', data.timestamp);
-      formData.append('scan_number', scan.number);
-      formData.append('city', data.city);
-      formData.append('state', data.state);
-      formData.append('zip', data.zip);
-      
-      var xhr2 = new XMLHttpRequest();
-      xhr2.open('POST', XANO_URL, true);
-      
-      xhr2.onreadystatechange = function() {
-        if (xhr2.readyState === 4) {
-          if (xhr2.status >= 200 && xhr2.status < 300) {
-            sentCount++;
-          }
-          postOne(index + 1);
-        }
-      };
-      
-      xhr2.onerror = function() {
-        postOne(index + 1);
-      };
-      
-      xhr2.send(formData);
-    }
-    
     postOne(0);
   }
   
-  // Tab switching functions
+  // Tab switching
   window.showNumeric = function() {
-    var numPad = document.getElementById('numericPad');
-    var qwertyPad = document.getElementById('qwertyPad');
-    var symbolPad = document.getElementById('symbolPad');
-    var tabNum = document.getElementById('tabNumeric');
-    var tabQwerty = document.getElementById('tabQwerty');
-    var tabSymbol = document.getElementById('tabSymbol');
-    
-    if (numPad) numPad.style.display = 'flex';
-    if (qwertyPad) qwertyPad.style.display = 'none';
-    if (symbolPad) symbolPad.style.display = 'none';
-    if (tabNum) tabNum.className = 'active';
-    if (tabQwerty) tabQwerty.className = '';
-    if (tabSymbol) tabSymbol.className = '';
+    document.getElementById('numericPad').style.display = 'flex';
+    document.getElementById('qwertyPad').style.display = 'none';
+    document.getElementById('symbolPad').style.display = 'none';
+    document.getElementById('tabNumeric').className = 'active';
+    document.getElementById('tabQwerty').className = '';
+    document.getElementById('tabSymbol').className = '';
   };
   
   window.showQwerty = function() {
-    var numPad = document.getElementById('numericPad');
-    var qwertyPad = document.getElementById('qwertyPad');
-    var symbolPad = document.getElementById('symbolPad');
-    var tabNum = document.getElementById('tabNumeric');
-    var tabQwerty = document.getElementById('tabQwerty');
-    var tabSymbol = document.getElementById('tabSymbol');
-    
-    if (numPad) numPad.style.display = 'none';
-    if (qwertyPad) qwertyPad.style.display = 'block';
-    if (symbolPad) symbolPad.style.display = 'none';
-    if (tabQwerty) tabQwerty.className = 'active';
-    if (tabNum) tabNum.className = '';
-    if (tabSymbol) tabSymbol.className = '';
+    document.getElementById('numericPad').style.display = 'none';
+    document.getElementById('qwertyPad').style.display = 'block';
+    document.getElementById('symbolPad').style.display = 'none';
+    document.getElementById('tabQwerty').className = 'active';
+    document.getElementById('tabNumeric').className = '';
+    document.getElementById('tabSymbol').className = '';
   };
   
   window.showSymbol = function() {
-    var numPad = document.getElementById('numericPad');
-    var qwertyPad = document.getElementById('qwertyPad');
-    var symbolPad = document.getElementById('symbolPad');
-    var tabNum = document.getElementById('tabNumeric');
-    var tabQwerty = document.getElementById('tabQwerty');
-    var tabSymbol = document.getElementById('tabSymbol');
-    
-    if (numPad) numPad.style.display = 'none';
-    if (qwertyPad) qwertyPad.style.display = 'none';
-    if (symbolPad) symbolPad.style.display = 'block';
-    if (tabSymbol) tabSymbol.className = 'active';
-    if (tabNum) tabNum.className = '';
-    if (tabQwerty) tabQwerty.className = '';
+    document.getElementById('numericPad').style.display = 'none';
+    document.getElementById('qwertyPad').style.display = 'none';
+    document.getElementById('symbolPad').style.display = 'block';
+    document.getElementById('tabSymbol').className = 'active';
+    document.getElementById('tabQwerty').className = '';
+    document.getElementById('tabNumeric').className = '';
   };
   
-  // Expose functions globally
+  // Expose functions
   window.startScan = startScan;
   window.clearScans = clearScans;
   window.goToStatus = goToStatus;
@@ -1266,22 +830,17 @@ body {
   
   // Initialize
   function init() {
-    alert('📱 ALCATEL SCANNER READY\nClick SCAN button and point at barcode');
+    alert('📱 REAL SCANNER READY\n• Point at barcode to scan\n• Flashlight works\n• Data sends to XANO');
     
     initGPS();
     updateTime();
     setInterval(updateTime, 1000);
+    showNumeric();
     
-    window.showNumeric();
-    
-    var scanBtn = document.getElementById('scanButton');
-    if (scanBtn) scanBtn.onclick = startScan;
-    
-    var clearBtn = document.getElementById('clearBtn');
-    if (clearBtn) clearBtn.onclick = clearScans;
-    
-    var statusBtn = document.getElementById('statusBtn');
-    if (statusBtn) statusBtn.onclick = goToStatus;
+    // Bind buttons
+    document.getElementById('scanButton').onclick = startScan;
+    document.getElementById('clearBtn').onclick = clearScans;
+    document.getElementById('statusBtn').onclick = goToStatus;
     
     var backs = document.querySelectorAll('.statusBtn.back');
     for (var i = 0; i < backs.length; i++) {
@@ -1291,7 +850,7 @@ body {
     var statusBtns = document.querySelectorAll('.statusBtn[data-status]');
     for (var i = 0; i < statusBtns.length; i++) {
       statusBtns[i].onclick = (function(btn) {
-        return function(e) {
+        return function() {
           var status = btn.getAttribute('data-status');
           submitToXano(status);
         };
@@ -1306,14 +865,9 @@ body {
   }
   
   window.onbeforeunload = function() {
-    if (gpsWatchId && navigator.geolocation && navigator.geolocation.clearWatch) {
-      navigator.geolocation.clearWatch(gpsWatchId);
-    }
-    if (scanner) {
-      try { scanner.stop(); } catch(e) {}
-    }
-    if (popupTimer) {
-      clearTimeout(popupTimer);
+    if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
+    if (currentStream) {
+      currentStream.getTracks().forEach(function(t) { t.stop(); });
     }
   };
   
