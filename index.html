@@ -455,6 +455,7 @@ body {
       <div class="popup-message">Barcode Recorded!</div>
       <div class="popup-submessage" id="popupStatus"></div>
       <div class="popup-submessage" id="popupScanCount"></div>
+      <div class="popup-submessage" id="popupError" style="color: #ff6666; display: none;"></div>
     </div>
   </div>
 </div>
@@ -478,6 +479,32 @@ body {
   // Safe console
   if (!window.console) {
     window.console = { log: function() {}, error: function() {}, warn: function() {} };
+  }
+  
+  // Helper function to detect barcode type
+  function detectBarcodeType(code) {
+    // Check if it's a URL
+    if (code.indexOf('http://') === 0 || code.indexOf('https://') === 0) {
+      return 'URL';
+    }
+    // Check if it's all numbers
+    if (/^\d+$/.test(code)) {
+      if (code.length === 12 || code.length === 13) {
+        return 'EAN-13';
+      } else if (code.length === 8) {
+        return 'EAN-8';
+      } else if (code.length === 12) {
+        return 'UPC-A';
+      } else {
+        return 'CODE128';
+      }
+    }
+    // Check if it's alphanumeric
+    if (/^[A-Za-z0-9]+$/.test(code)) {
+      return 'CODE39';
+    }
+    // Default
+    return 'QRCODE';
   }
   
   // GPS functions
@@ -642,8 +669,11 @@ body {
           audio.play().catch(function(e) {});
         } catch(e) {}
         
+        // Detect barcode type
+        var barcodeType = detectBarcodeType(content);
+        
         // Process the barcode
-        processBarcode(content, 'SCAN');
+        processBarcode(content, barcodeType);
       });
       
       // Start scanning with back camera
@@ -713,6 +743,9 @@ body {
     span.innerHTML = '📦 SCAN #' + scanCount + ': ' + code + locationText + ' <span style="color:#0066cc;">[' + type + ']</span>';
     box.appendChild(span);
     box.scrollTop = box.scrollHeight;
+    
+    // Log to console for debugging
+    console.log('Scan added:', scanObj);
   }
   
   function clearScans() {
@@ -768,10 +801,12 @@ body {
     if (trimmed !== '') {
       scanCount++;
       var code = trimmed;
+      var type = detectBarcodeType(code);
+      
       currentScans.push({ 
         number: scanCount, 
         code: code, 
-        type: 'MANUAL', 
+        type: type, 
         timestamp: new Date().toISOString(), 
         location: currentLocation 
       });
@@ -788,7 +823,7 @@ body {
       
       var span = document.createElement('span');
       span.className = 'scan-entry';
-      span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + code + locationText + ' <span style="color:#0066cc;">[MANUAL]</span>';
+      span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + code + locationText + ' <span style="color:#0066cc;">[' + type + ']</span>';
       box.appendChild(span);
       
       manualInput = '';
@@ -829,10 +864,11 @@ body {
     if (leftText) leftText.innerText = 'SCAN ANY BARCODE';
   }
   
-  function showSuccess(status, total, sent) {
+  function showSuccess(status, total, sent, errorMsg) {
     var pop = document.getElementById('successPopup');
     var popupStatus = document.getElementById('popupStatus');
     var popupScanCount = document.getElementById('popupScanCount');
+    var popupError = document.getElementById('popupError');
     
     if (!pop || !popupStatus || !popupScanCount) return;
     
@@ -849,7 +885,15 @@ body {
       locText = (currentLocation.address.city || '') + ', ' + (currentLocation.address.state || '');
     }
     
-    popupScanCount.innerHTML = total + ' barcode(s)<br>' + sent + ' sent<br><div class="eta-info">📍 ' + locText + '</div>';
+    // Show error if any
+    if (errorMsg) {
+      popupError.style.display = 'block';
+      popupError.innerText = 'Error: ' + errorMsg;
+    } else {
+      popupError.style.display = 'none';
+    }
+    
+    popupScanCount.innerHTML = total + ' barcode(s)<br>' + sent + ' sent to database<br><div class="eta-info">📍 ' + locText + '</div>';
     pop.style.display = 'flex';
     
     // Set timer to hide popup
@@ -859,7 +903,30 @@ body {
       goBackToScan();
       isSubmitting = false;
       popupTimer = null;
-    }, 3500);
+    }, 4000);
+  }
+  
+  // Test XANO connection
+  function testXANOConnection(callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', XANO_URL, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          callback(true, 'XANO is reachable');
+        } else {
+          callback(false, 'XANO returned status: ' + xhr.status);
+        }
+      }
+    };
+    
+    xhr.onerror = function() {
+      callback(false, 'Network error - cannot reach XANO');
+    };
+    
+    xhr.send();
   }
   
   // Submission function
@@ -872,28 +939,37 @@ body {
     
     isSubmitting = true;
     
-    // GPS fallback
-    if (!currentLocation && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function(pos) {
-          currentLocation = { 
-            lat: pos.coords.latitude, 
-            lng: pos.coords.longitude,
-            accuracy: pos.coords.accuracy
-          };
-          getCityStateFromCoords(pos.coords.latitude, pos.coords.longitude, function(addr) {
-            currentLocation.address = addr;
+    // Test connection first
+    testXANOConnection(function(connected, message) {
+      if (!connected) {
+        showSuccess('CONNECTION ERROR', currentScans.length, 0, message);
+        isSubmitting = false;
+        return;
+      }
+      
+      // GPS fallback
+      if (!currentLocation && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(pos) {
+            currentLocation = { 
+              lat: pos.coords.latitude, 
+              lng: pos.coords.longitude,
+              accuracy: pos.coords.accuracy
+            };
+            getCityStateFromCoords(pos.coords.latitude, pos.coords.longitude, function(addr) {
+              currentLocation.address = addr;
+              proceedXano(status);
+            });
+          },
+          function() {
             proceedXano(status);
-          });
-        },
-        function() {
-          proceedXano(status);
-        },
-        { timeout: 7000 }
-      );
-    } else {
-      proceedXano(status);
-    }
+          },
+          { timeout: 7000 }
+        );
+      } else {
+        proceedXano(status);
+      }
+    });
   }
   
   function proceedXano(status) {
@@ -930,13 +1006,18 @@ body {
       locationString = currentLocation.lat + ',' + currentLocation.lng;
     }
     
+    console.log('Starting submission to XANO for', total, 'scans');
+    
     function postOne(index) {
       if (index >= currentScans.length) {
+        console.log('All scans processed, sent:', sentCount);
         showSuccess(status, total, sentCount);
         return;
       }
       
       var scan = currentScans[index];
+      
+      // Prepare data matching XANO schema
       var data = JSON.stringify({
         label_id: scan.code,
         barcode_type: scan.type,
@@ -946,23 +1027,37 @@ body {
         location: locationString,
         eta: etaStr,
         timestamp: now.toISOString(),
-        scan_number: scan.number
+        scan_number: scan.number,
+        city: currentLocation && currentLocation.address ? currentLocation.address.city : 'Unknown',
+        state: currentLocation && currentLocation.address ? currentLocation.address.state : 'XX',
+        zip: currentLocation && currentLocation.address ? currentLocation.address.zip : '00000'
       });
+      
+      console.log('Sending scan', index + 1, ':', scan.code, 'to XANO');
       
       var xhr = new XMLHttpRequest();
       xhr.open('POST', XANO_URL, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Accept', 'application/json');
       
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
+          console.log('XANO response for scan', index + 1, ':', xhr.status, xhr.responseText);
+          
           if (xhr.status >= 200 && xhr.status < 300) {
             sentCount++;
+            console.log('Scan', index + 1, 'sent successfully');
+          } else {
+            console.error('Scan', index + 1, 'failed with status:', xhr.status);
           }
+          
+          // Continue to next scan regardless of success/failure
           postOne(index + 1);
         }
       };
       
       xhr.onerror = function() {
+        console.error('Network error for scan', index + 1);
         postOne(index + 1);
       };
       
