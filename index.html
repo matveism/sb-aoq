@@ -2,40 +2,30 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-
-<!-- HARD‑LOCKED PHONE VIEWPORT -->
-<meta name="viewport"
-      content="width=360, height=640,
-               initial-scale=1.0,
-               maximum-scale=1.0,
-               minimum-scale=1.0,
-               user-scalable=no,
-               target-densitydpi=device-dpi">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    /* LOCK THE SCREEN TO EXACT PHONE SIZE */
+    /* REMOVED fixed width/height - now flexible */
     html, body {
         margin: 0;
         padding: 0;
-        width: 360px;
-        height: 640px;
-        overflow: hidden;
-        background: #A4BEF2; /* full background under header */
+        width: 100%;
+        height: 100vh;
+        background: #A4BEF2;
         font-family: Arial, sans-serif;
     }
 
-    /* PHONE FRAME SIMULATION (OPTIONAL) */
+    /* REMOVED fixed dimensions - now fills any screen */
     .phone-screen {
-        width: 360px;
-        height: 640px;
+        width: 100%;
+        height: 100vh;
         background: #A4BEF2;
-        overflow: hidden;
         position: relative;
     }
 
-    /* HEADER */
+    /* HEADER - now responsive */
     .header {
-        width: 360px;
+        width: 100%;
         height: 50px;
         background: #263E68;
         color: #CADAEA;
@@ -44,16 +34,18 @@
         justify-content: space-between;
         padding: 0 14px;
         box-sizing: border-box;
-        font-size: 20px;
+        font-size: clamp(16px, 4vw, 20px);
         font-weight: bold;
     }
 
     .left {
         text-align: left;
+        white-space: nowrap;
     }
 
     .right {
         text-align: right;
+        white-space: nowrap;
     }
 </style>
 </head>
@@ -61,12 +53,10 @@
 <body>
 
 <div class="phone-screen">
-
     <div class="header">
         <div class="left">Scan barcode</div>
         <div class="right" id="timeDisplay">00:00</div>
     </div>
-
 </div>
 
 <script>
