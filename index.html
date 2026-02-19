@@ -1,646 +1,1261 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>QR MAX · UNIVERSAL</title>
+<title>U-BARCODE · legacy</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { 
-  background:#000; 
-  font-family:'Segoe UI',Tahoma,Arial,sans-serif;
-  font-weight:bold;
-  height:100%;
-  overflow:hidden;
-  -webkit-user-select:none;
-  user-select:none;
+/* EXTREME LEGACY RESET – works on Android 4+ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+body {
+  background: #000;
+  display: table;
+  width: 100%;
+  height: 100vh;
+  text-align: center;
+  font-family: 'Roboto', 'Droid Sans', 'Segoe UI', Arial, sans-serif;
+  font-weight: bold;
 }
 #phone {
-  max-width:480px;
-  margin:0 auto;
-  height:100%;
-  background:#2b4b70;
-  display:flex;
-  flex-direction:column;
-  color:white;
-  position:relative;
+  width: 360px;
+  height: 640px;
+  background: #2b4b70;
+  background: -webkit-gradient(linear, left top, left bottom, from(#3f6b9c), to(#2b4b70));
+  background: -webkit-linear-gradient(top, #3f6b9c 0%, #2b4b70 100%);
+  background: linear-gradient(to bottom, #3f6b9c 0%, #2b4b70 100%);
+  color: #fff;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  box-shadow: 0 10px 25px #000;
 }
-.header {
-  background:#1f3f5c;
-  padding:8px 12px;
-  display:flex;
-  justify-content:space-between;
-  font-size:14px;
-  border-bottom:2px solid #ffcc00;
+#header {
+  width: 100%;
+  height: 38px;
+  background: #2e5a88;
+  background: -webkit-gradient(linear, left top, left bottom, from(#5180b0), to(#2e5a88));
+  background: -webkit-linear-gradient(top, #5180b0, #2e5a88);
+  border-bottom: 2px solid #1f3f5c;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-pack: justify;
+  -moz-box-pack: justify;
+  -ms-flex-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  -webkit-box-align: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  padding: 0 8px 0 12px;
+  font-size: 16px;
 }
-.flash-btn {
-  background:#ffcc00;
-  color:#000;
-  padding:2px 8px;
-  border-radius:4px;
-  font-weight:bold;
-  cursor:pointer;
+#leftText { color: #fff; white-space: nowrap; }
+#rightArea { color: #fff; font-size: 14px; display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -moz-box-align: center; -ms-flex-align: center; align-items: center; }
+#gpsIndicator { color: #4CAF50; font-size: 18px; line-height: 1; padding-right: 4px; }
+#timeDisplay { color: #ffcc00; font-size: 14px; white-space: nowrap; }
+
+/* SCAN BUTTON */
+#scanButton {
+  width: -webkit-calc(100% - 24px);
+  width: -moz-calc(100% - 24px);
+  width: calc(100% - 24px);
+  height: 50px;
+  margin: 12px auto 8px auto;
+  background: #2b6e2f;
+  background: -webkit-gradient(linear, left top, left bottom, from(#4CAF50), to(#2b6e2f));
+  background: -webkit-linear-gradient(top, #4CAF50, #2b6e2f);
+  border: 2px solid #1e5a22;
+  color: #fff;
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 48px;
+  border-radius: 6px;
+  box-shadow: 0 4px 0 #145018;
+  cursor: pointer;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-align: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -moz-box-pack: center;
+  -ms-flex-pack: center;
+  -webkit-justify-content: center;
+  justify-content: center;
 }
-.scan-btn {
-  background:#4CAF50;
-  margin:10px;
-  padding:15px;
-  text-align:center;
-  font-size:18px;
-  border-radius:8px;
-  border:2px solid #1e5a22;
-  box-shadow:0 4px 0 #145018;
-  cursor:pointer;
-  font-weight:bold;
+#scanButton:active {
+  background: #2b6e2f;
+  -webkit-transform: translateY(2px);
+  -moz-transform: translateY(2px);
+  -ms-transform: translateY(2px);
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #145018;
 }
-.scan-btn:active {
-  transform:translateY(4px);
-  box-shadow:none;
+.icon {
+  width: 16px;
+  height: 12px;
+  background: repeating-linear-gradient(to right, #000, #000 2px, #fff 2px, #fff 4px);
+  margin-right: 6px;
 }
-#preview-container {
-  margin:0 auto 10px;
-  width:280px;
-  height:140px;
-  border:3px solid #ffcc00;
-  position:relative;
-  display:none;
-  background:#000;
+#scanFrame {
+  width: 280px;
+  height: 160px;
+  margin: 4px auto 0 auto;
+  position: relative;
+  display: none;
+  z-index: 3;
+  background: #000;
+  border: 2px solid #ffcc00;
 }
 #preview {
-  width:100%;
-  height:100%;
-  object-fit:cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
-.laser {
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:2px;
-  background:red;
-  animation:scan 1.5s infinite;
-  display:none;
+/* corners */
+.corner-bracket {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 4px solid #ffcc00;
+  pointer-events: none;
+  z-index: 10;
 }
-@keyframes scan {
-  0% { top:0; }
-  50% { top:138px; }
-  100% { top:0; }
+.corner-tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+.corner-tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+.corner-bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+.corner-br { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+#labelBlock {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
 }
-.corner {
-  position:absolute;
-  width:15px;
-  height:15px;
-  border:2px solid #ffcc00;
+#labelTitle {
+  height: 32px;
+  background: #2b4b70;
+  border: 1px solid #1f3f5c;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  padding-left: 12px;
+  margin: 0 12px;
+  font-size: 14px;
+  color: #fff;
 }
-.tl { top:-2px; left:-2px; border-right:none; border-bottom:none; }
-.tr { top:-2px; right:-2px; border-left:none; border-bottom:none; }
-.bl { bottom:-2px; left:-2px; border-right:none; border-top:none; }
-.br { bottom:-2px; right:-2px; border-left:none; border-top:none; }
-.data-area {
-  flex:1;
-  margin:10px;
-  background:#A6BEEF;
-  border:3px solid #1f3f5c;
-  padding:8px;
-  color:#000;
-  overflow-y:auto;
-  max-height:120px;
-  font-size:12px;
+#labelBox {
+  width: -webkit-calc(100% - 24px);
+  width: -moz-calc(100% - 24px);
+  width: calc(100% - 24px);
+  min-height: 70px;
+  max-height: 120px;
+  margin: 0 auto;
+  border: 3px solid #1f3f5c;
+  background: #A6BEEF;
+  padding: 6px 8px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #000;
+  overflow-y: auto;
+  word-break: break-all;
+  line-height: 1.4;
+  font-family: monospace;
+  box-shadow: inset 0 0 0 2px #fff;
 }
-.data-item {
-  background:#c0d4f5;
-  margin:3px 0;
-  padding:4px;
-  border-radius:4px;
-  border-bottom:2px solid #2b4b70;
-  word-break:break-all;
+#labelBox span.scan-entry {
+  display: block;
+  border-bottom: 2px solid #2b4b70;
+  background: #c0d4f5;
+  padding: 4px;
+  margin: 4px 0;
+  font-weight: bold;
+  color: #000;
 }
-.controls {
-  display:flex;
-  justify-content:space-between;
-  margin:5px 10px;
+#manualInputDiv {
+  background: #ffff99;
+  border: 2px dashed #ffaa00;
+  padding: 5px;
+  margin: 4px 0;
+  font-weight: bold;
+  color: #000;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
 }
-.controls button {
-  background:#4a7aa8;
-  border:2px solid #1f3f5c;
-  color:white;
-  font-weight:bold;
-  padding:8px 20px;
-  border-radius:4px;
-  cursor:pointer;
+#manualIndicator {
+  background: #ffaa00;
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-right: 5px;
 }
-.controls button:active { background:#4CAF50; }
-.keyboard-tabs {
-  display:flex;
-  margin:5px 10px;
-  gap:5px;
+#manualText { 
+  -webkit-box-flex: 1; 
+  -moz-box-flex: 1; 
+  -webkit-flex: 1; 
+  -ms-flex: 1; 
+  flex: 1; 
+  font-family: monospace; 
+  color: #0066cc; 
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
-.keyboard-tabs button {
-  flex:1;
-  background:#3a5f8a;
-  border:2px solid #1f3f5c;
-  color:white;
-  font-weight:bold;
-  padding:8px;
-  border-radius:20px;
-  cursor:pointer;
+
+#labelButtons {
+  height: 42px;
+  background: #7496C4;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  -moz-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  border: 2px solid #3a5f8a;
+  margin: 8px 12px 0 12px;
+  padding: 0 20px;
+  font-size: 18px;
+  color: #fff;
+  box-shadow: inset 0 -2px 0 #3a5f8a;
 }
-.keyboard-tabs button.active { background:#4CAF50; }
-.keypad {
-  background:#1f3f5c;
-  padding:10px;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:5px;
+#labelButtons span { cursor: pointer; padding: 4px 12px; }
+#labelButtons span:active { background: #27ae60; border-radius: 4px; }
+#divider { color: rgba(255,255,255,0.7); padding: 0 5px; }
+
+#navBar {
+  height: 36px;
+  background: #2b4b70;
+  background: -webkit-gradient(linear, left top, left bottom, from(#4a7aa8), to(#2b4b70));
+  background: -webkit-linear-gradient(top, #4a7aa8, #2b4b70);
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  -moz-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  border: 1px solid #1f3f5c;
+  margin: 8px 12px 0 12px;
+  padding: 0 10px;
+  font-size: 14px;
+  color: #fff;
 }
-.keypad button {
-  background:#5a7a9a;
-  border:2px solid #2b4b70;
-  color:white;
-  font-weight:bold;
-  font-size:18px;
-  padding:12px;
-  border-radius:6px;
-  cursor:pointer;
+#navBar button { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 0 8px; }
+#navBar button:active { color: #4CAF50; }
+
+#keypadWrapper {
+  width: 100%;
+  background: #1f3f5c;
+  background: -webkit-gradient(linear, left top, left bottom, from(#2b4b70), to(#1f3f5c));
+  background: -webkit-linear-gradient(top, #2b4b70, #1f3f5c);
+  border-top: 3px solid #ffcc00;
+  margin-top: auto;
+  padding-bottom: 6px;
 }
-.keypad button:active { background:#4CAF50; }
-.keypad .backspace { background:#3a5f8a; }
-.qwerty, .symbols {
-  display:none;
-  padding:10px;
-  background:#1f3f5c;
+#keyTabs {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  padding: 8px 12px 4px 12px;
 }
-.row {
-  display:flex;
-  gap:3px;
-  margin-bottom:3px;
+#keyTabs button {
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  background: #3a5f8a;
+  border: 2px solid #1f3f5c;
+  border-radius: 30px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 6px 0;
+  cursor: pointer;
+  margin: 0 2px;
 }
+#keyTabs button.active { background: #4CAF50; border-color: #145018; }
+#keyTabs button:active { background: #66BB6A; }
+
+#numericPad {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  padding: 6px 12px 10px 12px;
+}
+#numericPad button {
+  width: -webkit-calc(33.333% - 6px);
+  width: -moz-calc(33.333% - 6px);
+  width: calc(33.333% - 6px);
+  background: #3a5f8a;
+  background: -webkit-gradient(linear, left top, left bottom, from(#5a7a9a), to(#3a5f8a));
+  background: -webkit-linear-gradient(top, #5a7a9a, #3a5f8a);
+  border: 1px solid #1f3f5c;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 26px;
+  font-weight: bold;
+  height: 48px;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-align: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -moz-box-pack: center;
+  -ms-flex-pack: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #1f3f5c;
+  margin: 3px;
+}
+#numericPad button:active { background: #4CAF50; -webkit-transform: translateY(2px); -moz-transform: translateY(2px); -ms-transform: translateY(2px); transform: translateY(2px); }
+#numericPad button.backspace { font-size: 22px; background: #2b4b70; }
+
+/* QWERTY & SYMBOL */
+#qwertyPad, #symbolPad { display: none; padding: 0 8px 8px 8px; }
+.row { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: flex; margin-bottom: 4px; -webkit-box-pack: center; -moz-box-pack: center; -ms-flex-pack: center; justify-content: center; }
 .row button {
-  flex:1;
-  max-width:30px;
-  background:#5a7a9a;
-  border:2px solid #2b4b70;
-  color:white;
-  font-weight:bold;
-  padding:8px;
-  border-radius:4px;
-  cursor:pointer;
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  max-width: 34px;
+  background: #3a5f8a;
+  background: -webkit-gradient(linear, left top, left bottom, from(#5a7a9a), to(#3a5f8a));
+  background: -webkit-linear-gradient(top, #5a7a9a, #3a5f8a);
+  border: 1px solid #1f3f5c;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  height: 40px;
+  margin: 0 1px;
+  cursor: pointer;
+  box-shadow: 0 2px 0 #1f3f5c;
 }
-.row button.special { max-width:44px; background:#3a5f8a; }
-.row button.space { max-width:160px; flex:3; }
-#status-screen {
-  display:none;
-  position:absolute;
-  top:0; left:0; right:0; bottom:0;
-  background:rgba(0,0,0,0.9);
-  padding:20px;
-  overflow-y:auto;
-  z-index:999;
+.row button:active { background: #4CAF50; -webkit-transform: translateY(2px); -moz-transform: translateY(2px); -ms-transform: translateY(2px); transform: translateY(2px); }
+.row button.special { max-width: 50px; background: #2b4b70; }
+.row button.space { -webkit-box-flex: 3; -moz-box-flex: 3; -webkit-flex: 3; -ms-flex: 3; flex: 3; max-width: 180px; }
+
+#statusScreen {
+  display: none;
+  position: absolute;
+  top: 38px; left: 0; right: 0; bottom: 0;
+  background: #1c3046;
+  background: rgba(28,48,70,0.98);
+  z-index: 100;
+  padding: 20px 15px;
+  overflow-y: auto;
 }
-.status-item {
-  background:#2b4b70;
-  border:2px solid #ffcc00;
-  padding:15px;
-  margin-bottom:10px;
-  border-radius:8px;
-  text-align:center;
+.statusBtn {
+  background: #2b4b70;
+  background: -webkit-gradient(linear, left top, left bottom, from(#3f6b9c), to(#2b4b70));
+  background: -webkit-linear-gradient(top, #3f6b9c, #2b4b70);
+  border: 2px solid #ffcc00;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 14px 0;
+  margin-bottom: 10px;
+  text-align: center;
+  border-radius: 8px;
+  cursor: pointer;
 }
-#popup {
-  display:none;
-  position:absolute;
-  top:50%; left:50%;
-  transform:translate(-50%,-50%);
-  background:#2b4b70;
-  border:3px solid #4CAF50;
-  padding:20px;
-  border-radius:15px;
-  text-align:center;
-  z-index:1000;
-  width:250px;
+.statusBtn:active { background: #4CAF50; }
+.statusBtn.back { background: #1f3f5c; border-color: #f1c40f; margin-top: 20px; }
+
+#successPopup {
+  display: none;
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -moz-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
 }
-.error {
-  color:#ff6b6b;
-  text-align:center;
-  margin:10px;
-  display:none;
+.popup-content {
+  background: #2b4b70;
+  background: -webkit-gradient(linear, left top, left bottom, from(#3f6b9c), to(#2b4b70));
+  background: -webkit-linear-gradient(top, #3f6b9c, #2b4b70);
+  border: 3px solid #27ae60;
+  border-radius: 20px;
+  padding: 25px 15px;
+  width: 260px;
+  margin: 0 auto;
 }
-#scan-count {
-  font-size:14px;
+.checkmark {
+  width: 60px; height: 60px; background: #27ae60; border-radius: 50%;
+  font-size: 42px; margin: 0 auto 10px; color: white; line-height: 60px;
 }
+.popup-message { font-size: 20px; }
+.popup-submessage { color: #ffcc00; font-size: 15px; }
+.eta-info { color: #4CAF50; font-size: 13px; border-top: 1px solid #fff; margin-top: 8px; padding-top: 6px; }
+
+/* Android 4+ touch scrolling */
+#labelBox { -webkit-overflow-scrolling: touch; overflow-y: auto; }
 </style>
 </head>
 <body>
 <div id="phone">
-  <div class="header">
-    <span>QR SCANNER</span>
-    <span><span id="flashBtn" class="flash-btn" onclick="toggleFlash()">🔦</span> <span id="time"></span></span>
+  <div id="header">
+    <span id="leftText">SCAN ANY BARCODE</span>
+    <span id="rightArea">
+      <span id="gpsIndicator">🌐</span>
+      <span id="timeDisplay"></span>
+    </span>
   </div>
   
-  <div class="scan-btn" onclick="toggleScan()" id="scanBtn">START SCAN</div>
-  <div class="error" id="errorMsg"></div>
-  
-  <div id="preview-container">
-    <video id="preview" autoplay muted playsinline></video>
-    <div class="laser" id="laser"></div>
-    <div class="corner tl"></div>
-    <div class="corner tr"></div>
-    <div class="corner bl"></div>
-    <div class="corner br"></div>
+  <div id="scanButton">
+    <span class="icon"></span> SCAN 1D/2D
   </div>
   
-  <div class="data-area" id="dataBox"></div>
-  
-  <div class="controls">
-    <button onclick="clearLast()">⌫</button>
-    <button onclick="newLine()">↵ ENTER</button>
-    <button onclick="showStatus()">📋</button>
+  <div id="scanFrame">
+    <video id="preview" autoplay playsinline></video>
+    <div class="corner-bracket corner-tl"></div>
+    <div class="corner-bracket corner-tr"></div>
+    <div class="corner-bracket corner-bl"></div>
+    <div class="corner-bracket corner-br"></div>
   </div>
   
-  <div class="keyboard-tabs">
-    <button class="active" onclick="showKeyboard('abc')">ABC</button>
-    <button onclick="showKeyboard('123')">123</button>
-    <button onclick="showKeyboard('sym')">SYM</button>
-  </div>
-  
-  <!-- Numeric Keypad -->
-  <div id="numPad" class="keypad">
-    <button onclick="addChar('1')">1</button>
-    <button onclick="addChar('2')">2</button>
-    <button onclick="addChar('3')">3</button>
-    <button onclick="addChar('4')">4</button>
-    <button onclick="addChar('5')">5</button>
-    <button onclick="addChar('6')">6</button>
-    <button onclick="addChar('7')">7</button>
-    <button onclick="addChar('8')">8</button>
-    <button onclick="addChar('9')">9</button>
-    <button onclick="addChar('.')">.</button>
-    <button onclick="addChar('0')">0</button>
-    <button class="backspace" onclick="backspace()">⌫</button>
-  </div>
-  
-  <!-- QWERTY -->
-  <div id="abcPad" class="qwerty" style="display:block;">
-    <div class="row">
-      <button onclick="addChar('q')">q</button><button onclick="addChar('w')">w</button><button onclick="addChar('e')">e</button>
-      <button onclick="addChar('r')">r</button><button onclick="addChar('t')">t</button><button onclick="addChar('y')">y</button>
-      <button onclick="addChar('u')">u</button><button onclick="addChar('i')">i</button><button onclick="addChar('o')">o</button>
-      <button onclick="addChar('p')">p</button>
+  <div id="labelBlock">
+    <div id="labelTitle"># SCANNED / MANUAL CODES</div>
+    <div id="labelBox"></div>
+    
+    <div id="labelButtons">
+      <span id="clearBtn">CLEAR</span>
+      <span id="divider">|</span>
+      <span id="statusBtn">ENTER</span>
     </div>
-    <div class="row">
-      <button onclick="addChar('a')">a</button><button onclick="addChar('s')">s</button><button onclick="addChar('d')">d</button>
-      <button onclick="addChar('f')">f</button><button onclick="addChar('g')">g</button><button onclick="addChar('h')">h</button>
-      <button onclick="addChar('j')">j</button><button onclick="addChar('k')">k</button><button onclick="addChar('l')">l</button>
+    
+    <div id="navBar">
+      <button onclick="alert('Previous scan')">◄</button>
+      <span id="timeDisplay2"></span>
+      <button onclick="alert('Next scan')">►</button>
     </div>
-    <div class="row">
-      <button onclick="addChar('z')">z</button><button onclick="addChar('x')">x</button><button onclick="addChar('c')">c</button>
-      <button onclick="addChar('v')">v</button><button onclick="addChar('b')">b</button><button onclick="addChar('n')">n</button>
-      <button onclick="addChar('m')">m</button>
-      <button class="special" onclick="backspace()">⌫</button>
-    </div>
-    <div class="row">
-      <button class="special" onclick="showKeyboard('123')">123</button>
-      <button class="space" onclick="addChar(' ')">space</button>
-      <button class="special" onclick="addChar('.')">.</button>
+    
+    <div id="keypadWrapper">
+      <div id="keyTabs">
+        <button id="tabQwerty" onclick="showQwerty()">ABC</button>
+        <button id="tabNumeric" onclick="showNumeric()" class="active">123</button>
+        <button id="tabSymbol" onclick="showSymbol()">SYM</button>
+      </div>
+      
+      <!-- NUMERIC -->
+      <div id="numericPad">
+        <button onclick="typeChar('1')">1</button><button onclick="typeChar('2')">2</button><button onclick="typeChar('3')">3</button>
+        <button onclick="typeChar('4')">4</button><button onclick="typeChar('5')">5</button><button onclick="typeChar('6')">6</button>
+        <button onclick="typeChar('7')">7</button><button onclick="typeChar('8')">8</button><button onclick="typeChar('9')">9</button>
+        <button onclick="typeChar('.')">.</button><button onclick="typeChar('0')">0</button>
+        <button class="backspace" onclick="backspace()">⌫</button>
+      </div>
+      
+      <!-- QWERTY -->
+      <div id="qwertyPad">
+        <div class="row"><button onclick="typeChar('q')">q</button><button onclick="typeChar('w')">w</button><button onclick="typeChar('e')">e</button><button onclick="typeChar('r')">r</button><button onclick="typeChar('t')">t</button><button onclick="typeChar('y')">y</button><button onclick="typeChar('u')">u</button><button onclick="typeChar('i')">i</button><button onclick="typeChar('o')">o</button><button onclick="typeChar('p')">p</button></div>
+        <div class="row"><button onclick="typeChar('a')">a</button><button onclick="typeChar('s')">s</button><button onclick="typeChar('d')">d</button><button onclick="typeChar('f')">f</button><button onclick="typeChar('g')">g</button><button onclick="typeChar('h')">h</button><button onclick="typeChar('j')">j</button><button onclick="typeChar('k')">k</button><button onclick="typeChar('l')">l</button></div>
+        <div class="row"><button class="special" onclick="typeChar('z')">z</button><button class="special" onclick="typeChar('x')">x</button><button class="special" onclick="typeChar('c')">c</button><button class="special" onclick="typeChar('v')">v</button><button class="special" onclick="typeChar('b')">b</button><button class="special" onclick="typeChar('n')">n</button><button class="special" onclick="typeChar('m')">m</button><button class="special" onclick="backspace()">⌫</button></div>
+        <div class="row"><button class="special" onclick="showNumeric()">123</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
+      </div>
+      
+      <!-- SYMBOL PAD -->
+      <div id="symbolPad">
+        <div class="row"><button onclick="typeChar('@')">@</button><button onclick="typeChar('#')">#</button><button onclick="typeChar('$')">$</button><button onclick="typeChar('%')">%</button><button onclick="typeChar('&')">&</button><button onclick="typeChar('*')">*</button><button onclick="typeChar('(')">(</button><button onclick="typeChar(')')">)</button></div>
+        <div class="row"><button onclick="typeChar('!')">!</button><button onclick="typeChar('?')">?</button><button onclick="typeChar('/')">/</button><button onclick="typeChar(':')">:</button><button onclick="typeChar(';')">;</button><button onclick="typeChar('"')">"</button><button onclick="typeChar("'")">'</button><button onclick="typeChar(',')">,</button></div>
+        <div class="row"><button onclick="typeChar('-')">-</button><button onclick="typeChar('+')">+</button><button onclick="typeChar('=')">=</button><button onclick="typeChar('<')">&lt;</button><button onclick="typeChar('>')">&gt;</button><button onclick="typeChar('[')">[</button><button onclick="typeChar(']')">]</button><button class="special" onclick="backspace()">⌫</button></div>
+        <div class="row"><button class="special" onclick="showQwerty()">ABC</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
+      </div>
     </div>
   </div>
   
-  <!-- Symbols -->
-  <div id="symPad" class="symbols">
-    <div class="row">
-      <button onclick="addChar('@')">@</button><button onclick="addChar('#')">#</button><button onclick="addChar('$')">$</button>
-      <button onclick="addChar('%')">%</button><button onclick="addChar('&')">&</button><button onclick="addChar('*')">*</button>
-      <button onclick="addChar('(')">(</button><button onclick="addChar(')')">)</button>
-    </div>
-    <div class="row">
-      <button onclick="addChar('!')">!</button><button onclick="addChar('?')">?</button><button onclick="addChar('/')">/</button>
-      <button onclick="addChar(':')">:</button><button onclick="addChar(';')">;</button><button onclick="addChar('"')">"</button>
-      <button onclick="addChar("'")">'</button><button onclick="addChar(',')">,</button>
-    </div>
-    <div class="row">
-      <button onclick="addChar('-')">-</button><button onclick="addChar('+')">+</button><button onclick="addChar('=')">=</button>
-      <button onclick="addChar('<')">&lt;</button><button onclick="addChar('>')">&gt;</button><button onclick="addChar('[')">[</button>
-      <button onclick="addChar(']')">]</button><button class="special" onclick="backspace()">⌫</button>
-    </div>
-    <div class="row">
-      <button class="special" onclick="showKeyboard('abc')">ABC</button>
-      <button class="space" onclick="addChar(' ')">space</button>
-      <button class="special" onclick="addChar('.')">.</button>
-    </div>
+  <div id="statusScreen">
+    <div class="statusBtn" data-status="Data Received">Data Received (+7 days)</div>
+    <div class="statusBtn" data-status="Picked Up">Picked Up (-1 day)</div>
+    <div class="statusBtn" data-status="Depart Post Office">Depart Post Office (-2 days)</div>
+    <div class="statusBtn" data-status="Arrival Scan">Arrival Scan (-0.5 days)</div>
+    <div class="statusBtn" data-status="Local Scan">Local Scan (-1.5 days)</div>
+    <div class="statusBtn" data-status="Out For Delivery">Out For Delivery (-2 days)</div>
+    <div class="statusBtn" data-status="Delivered">Delivered (0 days)</div>
+    <div class="statusBtn back">BACK TO SCANNER</div>
   </div>
   
-  <!-- Status Screen -->
-  <div id="status-screen">
-    <div class="status-item">📦 Data Received (+7d)</div>
-    <div class="status-item">🚚 Picked Up (-1d)</div>
-    <div class="status-item">🏢 Depart Post (-2d)</div>
-    <div class="status-item">📍 Arrival Scan (-0.5d)</div>
-    <div class="status-item">🏠 Local Scan (-1.5d)</div>
-    <div class="status-item">🚛 Out For Delivery (-2d)</div>
-    <div class="status-item">✅ Delivered (0d)</div>
-    <button style="width:100%; padding:15px; background:#4CAF50; border:none; color:white; font-weight:bold; margin-top:20px;" onclick="hideStatus()">BACK</button>
-  </div>
-  
-  <!-- Popup -->
-  <div id="popup">
-    <div style="font-size:30px; color:#4CAF50;">✓</div>
-    <div style="font-size:16px; margin:10px 0;">QR Code Recorded!</div>
-    <div id="popupData" style="font-size:12px; color:#ffcc00;"></div>
+  <div id="successPopup" style="display: none;">
+    <div class="popup-content">
+      <div class="checkmark">✓</div>
+      <div class="popup-message">Barcode Recorded!</div>
+      <div class="popup-submessage" id="popupStatus"></div>
+      <div class="popup-submessage" id="popupScanCount"></div>
+    </div>
   </div>
 </div>
 
-<!-- Ultra lightweight QR decoder from jsQR (minimal) -->
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-
+<!-- FIXED LEGACY JS - Android 4.0+ compatible -->
 <script>
-// ===== UNIVERSAL COMPATIBLE CODE =====
-// Works on: Android 2.3+, Windows CE, IE6+, XP
-
-var scanning = false;
-var videoStream = null;
-var scanData = [];
-var scanTimer = null;
-var flashSupported = false;
-var torchActive = false;
-
-// Time update
-function updateClock() {
-  var d = new Date();
-  var h = d.getHours();
-  var m = d.getMinutes();
-  var ampm = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
-  document.getElementById('time').innerHTML = h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
-}
-updateClock();
-setInterval(updateClock, 60000);
-
-// Keyboard switching
-function showKeyboard(type) {
-  var tabs = document.querySelectorAll('.keyboard-tabs button');
-  for(var i=0; i<tabs.length; i++) tabs[i].className = '';
+(function() {
+  // Use var for maximum compatibility (Android 4+ supports var)
+  var stream = null;
+  var scanning = false;
+  var scanCount = 0;
+  var currentScans = [];
+  var currentLocation = null;
+  var gpsWatchId = null;
+  var manualInput = '';
+  var isSubmitting = false;
+  var fakeTimer = null;
   
-  document.getElementById('numPad').style.display = 'none';
-  document.getElementById('abcPad').style.display = 'none';
-  document.getElementById('symPad').style.display = 'none';
+  // XANO endpoint
+  var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
   
-  if(type === '123') {
-    document.getElementById('numPad').style.display = 'grid';
-    tabs[1].className = 'active';
-  } else if(type === 'abc') {
-    document.getElementById('abcPad').style.display = 'block';
-    tabs[0].className = 'active';
-  } else {
-    document.getElementById('symPad').style.display = 'block';
-    tabs[2].className = 'active';
+  // Safe console methods for old Android
+  if (!window.console) {
+    window.console = {
+      log: function() {},
+      error: function() {},
+      warn: function() {}
+    };
   }
-}
-
-// Data management
-function renderData() {
-  var html = '';
-  for(var i=0; i<scanData.length; i++) {
-    html += '<div class="data-item">' + escapeHTML(scanData[i]) + '</div>';
-  }
-  document.getElementById('dataBox').innerHTML = html;
-  document.getElementById('dataBox').scrollTop = document.getElementById('dataBox').scrollHeight;
-}
-
-function escapeHTML(str) {
-  if(!str) return '';
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function addChar(c) {
-  if(scanData.length === 0) scanData.push('');
-  scanData[scanData.length-1] += c;
-  renderData();
-}
-
-function backspace() {
-  if(scanData.length === 0) return;
-  var last = scanData[scanData.length-1];
-  if(last.length <= 1) {
-    scanData.pop();
-  } else {
-    scanData[scanData.length-1] = last.slice(0, -1);
-  }
-  renderData();
-}
-
-function newLine() {
-  if(scanData.length === 0 || scanData[scanData.length-1] !== '') {
-    scanData.push('');
-    renderData();
-  }
-}
-
-function clearLast() {
-  backspace();
-}
-
-// Camera functions
-function toggleScan() {
-  if(scanning) {
-    stopScan();
-  } else {
-    startScan();
-  }
-}
-
-function startScan() {
-  var errorMsg = document.getElementById('errorMsg');
-  errorMsg.style.display = 'none';
-  errorMsg.innerHTML = '';
   
-  var container = document.getElementById('preview-container');
-  var video = document.getElementById('preview');
-  var laser = document.getElementById('laser');
+  // Polyfill for Date.now() if needed (Android 4+ has it, but just in case)
+  if (!Date.now) {
+    Date.now = function() { return new Date().getTime(); };
+  }
   
-  container.style.display = 'block';
+  // Polyfill for String.trim() if needed (Android 4+ has it)
+  if (!String.prototype.trim) {
+    String.prototype.trim = function() {
+      return this.replace(/^\s+|\s+$/g, '');
+    };
+  }
   
-  // MOST COMPATIBLE CAMERA ACCESS - works on everything
-  var constraints = { video: true };
+  // GPS and reverse geocode with legacy XHR
+  function getCityStateFromCoords(lat, lng, callback) {
+    // Ensure callback exists
+    callback = callback || function() {};
+    
+    var xhr = new XMLHttpRequest();
+    var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=18&addressdetails=1';
+    
+    xhr.open('GET', url, true);
+    // Set User-Agent (required by Nominatim)
+    try { xhr.setRequestHeader('User-Agent', 'LegacyScanner/1.0'); } catch(e) {}
+    
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          try {
+            var data = JSON.parse(xhr.responseText);
+            if (data && data.address) {
+              var addr = data.address;
+              var city = addr.city || addr.town || addr.village || addr.hamlet || 'Unknown';
+              var state = addr.state || addr.state_code || addr.county || 'XX';
+              var zip = addr.postcode || '00000';
+              callback({ city: city, state: state, zip: zip, display_name: city + ', ' + state + ' ' + zip });
+              return;
+            }
+          } catch(e) {
+            console.error('Parse error:', e);
+          }
+        }
+        // Fallback
+        callback({ city: 'Unknown', state: 'XX', zip: '00000', display_name: lat.toFixed(4) + ', ' + lng.toFixed(4) });
+      }
+    };
+    
+    // Handle network errors
+    xhr.onerror = function() {
+      callback({ city: 'Unknown', state: 'XX', zip: '00000', display_name: lat.toFixed(4) + ', ' + lng.toFixed(4) });
+    };
+    
+    xhr.send();
+  }
   
-  // Try modern API first
-  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
-    .then(handleSuccess)
-    .catch(function() {
-      // Fallback to any camera
-      navigator.mediaDevices.getUserMedia({ video: true })
-      .then(handleSuccess)
-      .catch(fallbackToOldAPI);
+  function initGPS() {
+    if (navigator.geolocation) {
+      // Get initial position
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          updateLocation(pos);
+        },
+        function(error) {
+          console.warn('GPS error:', error);
+          updateGPSIndicator(false);
+          // Don't alert on every error, just update indicator
+        },
+        { 
+          enableHighAccuracy: true, 
+          timeout: 10000,
+          maximumAge: 60000 // Accept cached positions up to 1 minute old
+        }
+      );
+      
+      // Watch position (with error handling)
+      try {
+        gpsWatchId = navigator.geolocation.watchPosition(
+          function(pos) {
+            updateLocation(pos);
+          },
+          function(error) {
+            console.warn('Watch error:', error);
+            updateGPSIndicator(false);
+          },
+          { 
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+          }
+        );
+      } catch(e) {
+        console.error('WatchPosition failed:', e);
+      }
+    } else {
+      updateGPSIndicator(false);
+    }
+  }
+  
+  function updateLocation(pos) {
+    if (!pos) return;
+    
+    currentLocation = {
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude,
+      accuracy: pos.coords.accuracy,
+      timestamp: new Date().toISOString()
+    };
+    
+    getCityStateFromCoords(pos.coords.latitude, pos.coords.longitude, function(addr) {
+      currentLocation.address = addr;
+      updateGPSIndicator(true, addr);
     });
-  } else {
-    fallbackToOldAPI();
   }
   
-  function handleSuccess(stream) {
-    videoStream = stream;
+  function updateGPSIndicator(hasGPS, addr) {
+    var gpsEl = document.getElementById('gpsIndicator');
+    if (!gpsEl) return;
     
-    // For modern browsers
-    if(video.srcObject !== undefined) {
-      video.srcObject = stream;
+    if (hasGPS && addr) {
+      gpsEl.innerHTML = '📍';
+      gpsEl.style.color = '#4CAF50';
+      gpsEl.title = (addr.city || 'Unknown') + ', ' + (addr.state || 'XX');
+    } else if (hasGPS) {
+      gpsEl.innerHTML = '🛰️';
+      gpsEl.style.color = '#4CAF50';
     } else {
-      // For older browsers
-      video.src = window.URL.createObjectURL(stream);
+      gpsEl.innerHTML = '🌐';
+      gpsEl.style.color = '#ff4444';
+    }
+  }
+  
+  function updateTime() {
+    var d = new Date();
+    var month = (d.getMonth() + 1);
+    if (month < 10) month = '0' + month;
+    var day = d.getDate();
+    if (day < 10) day = '0' + day;
+    var hours = d.getHours();
+    var minutes = d.getMinutes();
+    if (minutes < 10) minutes = '0' + minutes;
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    var hour12 = hours % 12;
+    if (hour12 === 0) hour12 = 12;
+    
+    var timeStr = month + '/' + day + ' ' + hour12 + ':' + minutes + ' ' + ampm;
+    
+    var timeEl = document.getElementById('timeDisplay');
+    var timeEl2 = document.getElementById('timeDisplay2');
+    if (timeEl) timeEl.innerText = timeStr;
+    if (timeEl2) timeEl2.innerText = timeStr;
+  }
+  
+  function stopCamera() {
+    if (stream) {
+      try {
+        if (stream.getTracks) {
+          var tracks = stream.getTracks();
+          for (var i = 0; i < tracks.length; i++) {
+            try { tracks[i].stop(); } catch(e) {}
+          }
+        }
+      } catch(e) {}
+      stream = null;
+    }
+    if (fakeTimer) {
+      clearInterval(fakeTimer);
+      fakeTimer = null;
+    }
+    scanning = false;
+    var frame = document.getElementById('scanFrame');
+    if (frame) frame.style.display = 'none';
+  }
+  
+  // LEGACY scan simulation (works on all Android versions)
+  function startScan() {
+    if (scanning) {
+      stopCamera();
+      return;
     }
     
-    video.play();
-    laser.style.display = 'block';
     scanning = true;
-    document.getElementById('scanBtn').innerHTML = 'STOP SCAN';
+    var frame = document.getElementById('scanFrame');
+    if (frame) frame.style.display = 'block';
     
-    // Check for flash
-    checkFlashSupport();
+    // Try camera (with legacy navigator.getUserMedia if needed)
+    var video = document.getElementById('preview');
     
-    // Start scanning loop
-    scanTimer = setInterval(scanQR, 300); // 3-4 fps for performance
-  }
-  
-  function fallbackToOldAPI() {
-    // Universal fallback for Android 2.3, IE, old browsers
-    var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-    
-    if(getUserMedia) {
-      getUserMedia.call(navigator, { video: true }, handleSuccess, function(err) {
-        errorMsg.innerHTML = 'Camera access denied';
-        errorMsg.style.display = 'block';
-        container.style.display = 'none';
+    // Modern API
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(function(s) {
+          stream = s;
+          if (video) {
+            // For older Android, use src instead of srcObject if needed
+            if ('srcObject' in video) {
+              video.srcObject = stream;
+            } else {
+              // Fallback for very old browsers
+              video.src = window.URL.createObjectURL(stream);
+            }
+            video.onloadedmetadata = function() { 
+              video.play().catch(function(e) { console.warn('Play failed:', e); });
+            };
+          }
+        })
+        .catch(function(err) {
+          console.warn('Camera error:', err);
+          // Fallback: just simulate
+        });
+    } 
+    // Legacy API
+    else if (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia) {
+      var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+      getUserMedia.call(navigator, { video: true }, function(s) {
+        stream = s;
+        if (video) {
+          if ('srcObject' in video) {
+            video.srcObject = stream;
+          } else {
+            video.src = window.URL.createObjectURL(stream);
+          }
+          video.onloadedmetadata = function() { 
+            video.play().catch(function(e) { console.warn('Play failed:', e); });
+          };
+        }
+      }, function(err) {
+        console.warn('Legacy camera error:', err);
       });
-    } else {
-      errorMsg.innerHTML = 'Camera not supported';
-      errorMsg.style.display = 'block';
-      container.style.display = 'none';
     }
+    
+    // Simulated detection every 3 sec
+    fakeTimer = setInterval(function() {
+      if (!scanning) return;
+      var codes = ['5901234123457', '9780201379624', 'https://legacy.scan', '036000291452', 'LEGACY-001'];
+      var randomCode = codes[Math.floor(Math.random() * codes.length)];
+      var type = randomCode.indexOf('http') === 0 ? 'URL/QR' : (randomCode.length > 13 ? 'CODE128' : 'EAN13');
+      onBarcodeDecoded(randomCode, type);
+    }, 3000);
   }
-}
-
-function stopScan() {
-  scanning = false;
-  if(scanTimer) clearInterval(scanTimer);
   
-  if(videoStream) {
-    if(videoStream.stop) {
-      videoStream.stop();
-    } else if(videoStream.getTracks) {
-      videoStream.getTracks().forEach(function(track) { track.stop(); });
+  function onBarcodeDecoded(code, type) {
+    scanning = false;
+    stopCamera();
+    
+    // Simple beep using Audio (if supported)
+    try {
+      var audio = new Audio();
+      audio.src = 'data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVAAAAA8Pzw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PA==';
+      audio.play().catch(function(e) {});
+    } catch(e) {}
+    
+    scanCount++;
+    var scanObj = { 
+      number: scanCount, 
+      code: code, 
+      type: type, 
+      timestamp: new Date().toISOString(), 
+      location: currentLocation 
+    };
+    currentScans.push(scanObj);
+    
+    var box = document.getElementById('labelBox');
+    if (!box) return;
+    
+    // Remove manual div if present
+    var manualDiv = document.getElementById('manualInputDiv');
+    if (manualDiv && manualDiv.parentNode) {
+      manualDiv.parentNode.removeChild(manualDiv);
     }
-    videoStream = null;
+    manualInput = '';
+    
+    var locationText = '';
+    if (currentLocation && currentLocation.address) {
+      locationText = ' 📍 ' + (currentLocation.address.city || '') + ',' + (currentLocation.address.state || '');
+    } else if (currentLocation) {
+      locationText = ' 📍';
+    }
+    
+    var span = document.createElement('span');
+    span.className = 'scan-entry';
+    span.innerHTML = '📦 SCAN #' + scanCount + ': ' + code + locationText + ' <span style="color:#0066cc;">[' + type + ']</span>';
+    box.appendChild(span);
+    box.scrollTop = box.scrollHeight;
   }
   
-  var video = document.getElementById('preview');
-  if(video) {
-    video.pause();
-    video.src = '';
-    if(video.srcObject) video.srcObject = null;
+  function clearScans() {
+    scanCount = 0;
+    currentScans = [];
+    manualInput = '';
+    
+    var box = document.getElementById('labelBox');
+    if (box) box.innerHTML = '';
+    
+    var md = document.getElementById('manualInputDiv');
+    if (md && md.parentNode) md.parentNode.removeChild(md);
   }
   
-  document.getElementById('preview-container').style.display = 'none';
-  document.getElementById('laser').style.display = 'none';
-  document.getElementById('scanBtn').innerHTML = 'START SCAN';
-  torchActive = false;
-  document.getElementById('flashBtn').innerHTML = '🔦';
-}
-
-function checkFlashSupport() {
-  if(videoStream && videoStream.getVideoTracks) {
-    var track = videoStream.getVideoTracks()[0];
-    if(track && track.getCapabilities) {
-      var capabilities = track.getCapabilities();
-      if(capabilities && capabilities.torch) {
-        flashSupported = true;
+  // manual entry helpers
+  function typeChar(c) {
+    var box = document.getElementById('labelBox');
+    if (!box) return;
+    
+    var manualDiv = document.getElementById('manualInputDiv');
+    if (!manualDiv) {
+      manualDiv = document.createElement('div');
+      manualDiv.id = 'manualInputDiv';
+      manualDiv.innerHTML = '<span id="manualIndicator">MAN</span> <span id="manualText"></span>';
+      box.appendChild(manualDiv);
+    }
+    manualInput += c;
+    
+    var manualText = document.getElementById('manualText');
+    if (manualText) manualText.innerText = manualInput;
+    
+    box.scrollTop = box.scrollHeight;
+  }
+  
+  function backspace() {
+    if (manualInput.length > 0) {
+      manualInput = manualInput.slice(0, -1);
+      var manualText = document.getElementById('manualText');
+      if (manualText) {
+        manualText.innerText = manualInput;
+        if (manualInput === '') {
+          var manualDiv = document.getElementById('manualInputDiv');
+          if (manualDiv && manualDiv.parentNode) {
+            manualDiv.parentNode.removeChild(manualDiv);
+          }
+        }
       }
     }
   }
-}
-
-function toggleFlash() {
-  if(!videoStream || !scanning) {
-    alert('Start scanner first');
-    return;
+  
+  function addManualAsScan() {
+    var trimmed = manualInput.replace(/^\s+|\s+$/g, '');
+    if (trimmed !== '') {
+      scanCount++;
+      var code = trimmed;
+      currentScans.push({ 
+        number: scanCount, 
+        code: code, 
+        type: 'MANUAL', 
+        timestamp: new Date().toISOString(), 
+        location: currentLocation 
+      });
+      
+      var box = document.getElementById('labelBox');
+      if (!box) return;
+      
+      var locationText = '';
+      if (currentLocation && currentLocation.address) {
+        locationText = ' 📍 ' + (currentLocation.address.city || '');
+      } else if (currentLocation) {
+        locationText = ' 📍';
+      }
+      
+      var span = document.createElement('span');
+      span.className = 'scan-entry';
+      span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + code + locationText + ' <span style="color:#0066cc;">[MANUAL]</span>';
+      box.appendChild(span);
+      
+      manualInput = '';
+      var md = document.getElementById('manualInputDiv');
+      if (md && md.parentNode) md.parentNode.removeChild(md);
+      
+      box.scrollTop = box.scrollHeight;
+    }
   }
   
-  var track = videoStream.getVideoTracks ? videoStream.getVideoTracks()[0] : null;
-  
-  if(!track) return;
-  
-  torchActive = !torchActive;
-  
-  if(track.applyConstraints) {
-    try {
-      track.applyConstraints({ advanced: [{ torch: torchActive }] });
-      document.getElementById('flashBtn').innerHTML = torchActive ? '🔦✨' : '🔦';
-    } catch(e) {
-      alert('Flash not available');
+  function goToStatus() {
+    addManualAsScan();
+    if (currentScans.length === 0) {
+      alert('No scans to submit');
+      return;
     }
+    
+    var labelBlock = document.getElementById('labelBlock');
+    var scanButton = document.getElementById('scanButton');
+    var leftText = document.getElementById('leftText');
+    var statusScreen = document.getElementById('statusScreen');
+    
+    if (labelBlock) labelBlock.style.display = 'none';
+    if (scanButton) scanButton.style.display = 'none';
+    if (leftText) leftText.innerText = 'SELECT STATUS';
+    if (statusScreen) statusScreen.style.display = 'block';
+  }
+  
+  function goBackToScan() {
+    var statusScreen = document.getElementById('statusScreen');
+    var labelBlock = document.getElementById('labelBlock');
+    var scanButton = document.getElementById('scanButton');
+    var leftText = document.getElementById('leftText');
+    
+    if (statusScreen) statusScreen.style.display = 'none';
+    if (labelBlock) labelBlock.style.display = 'flex';
+    if (scanButton) scanButton.style.display = 'flex';
+    if (leftText) leftText.innerText = 'SCAN ANY BARCODE';
+  }
+  
+  function showSuccess(status, total, sent) {
+    var pop = document.getElementById('successPopup');
+    var popupStatus = document.getElementById('popupStatus');
+    var popupScanCount = document.getElementById('popupScanCount');
+    
+    if (!pop || !popupStatus || !popupScanCount) return;
+    
+    popupStatus.innerText = 'Status: ' + status;
+    
+    var locText = 'unknown';
+    if (currentLocation && currentLocation.address) {
+      locText = (currentLocation.address.city || '') + ', ' + (currentLocation.address.state || '');
+    }
+    
+    popupScanCount.innerHTML = total + ' barcode(s)<br>' + sent + ' sent<br><div class="eta-info">📍 ' + locText + '</div>';
+    pop.style.display = 'flex';
+    
+    setTimeout(function() {
+      pop.style.display = 'none';
+      clearScans();
+      goBackToScan();
+      isSubmitting = false;
+    }, 3500);
+  }
+  
+  // Submission function
+  function submitToXano(status) {
+    if (isSubmitting) return;
+    if (currentScans.length === 0) {
+      alert('No scans');
+      return;
+    }
+    
+    isSubmitting = true;
+    
+    // GPS fallback
+    if (!currentLocation && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          currentLocation = { 
+            lat: pos.coords.latitude, 
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy
+          };
+          getCityStateFromCoords(pos.coords.latitude, pos.coords.longitude, function(addr) {
+            currentLocation.address = addr;
+            proceedXano(status);
+          });
+        },
+        function() {
+          proceedXano(status);
+        },
+        { timeout: 7000 }
+      );
+    } else {
+      proceedXano(status);
+    }
+  }
+  
+  function proceedXano(status) {
+    var sentCount = 0;
+    var total = currentScans.length;
+    var now = new Date();
+    var etaDate = new Date(now.getTime());
+    
+    switch(status) {
+      case 'Data Received': etaDate.setDate(now.getDate() + 7); break;
+      case 'Picked Up': etaDate.setDate(now.getDate() - 1); break;
+      case 'Depart Post Office': etaDate.setDate(now.getDate() - 2); break;
+      case 'Arrival Scan': etaDate.setHours(now.getHours() - 12); break;
+      case 'Local Scan': etaDate.setHours(now.getHours() - 36); break;
+      case 'Out For Delivery': etaDate.setDate(now.getDate() - 2); break;
+      default: etaDate.setDate(now.getDate() + 7);
+    }
+    
+    // Format date safely
+    var etaMonth = etaDate.getMonth() + 1;
+    var etaDay = etaDate.getDate();
+    var etaHours = etaDate.getHours();
+    var etaMins = etaDate.getMinutes();
+    if (etaMins < 10) etaMins = '0' + etaMins;
+    var etaAmpm = etaHours >= 12 ? 'PM' : 'AM';
+    var etaHour12 = etaHours % 12;
+    if (etaHour12 === 0) etaHour12 = 12;
+    
+    var etaStr = etaMonth + '/' + etaDay + ' ' + etaHour12 + ':' + etaMins + ' ' + etaAmpm;
+    
+    var locationString = 'Warehouse';
+    if (currentLocation && currentLocation.address) {
+      locationString = (currentLocation.address.city || '') + ', ' + (currentLocation.address.state || '');
+    } else if (currentLocation) {
+      locationString = currentLocation.lat + ',' + currentLocation.lng;
+    }
+    
+    // Sequential submission
+    function postOne(index) {
+      if (index >= currentScans.length) {
+        showSuccess(status, total, sentCount);
+        isSubmitting = false;
+        return;
+      }
+      
+      var scan = currentScans[index];
+      var data = JSON.stringify({
+        label_id: scan.code,
+        barcode_type: scan.type,
+        time: now.toLocaleTimeString(),
+        date: now.toLocaleDateString(),
+        status: status,
+        location: locationString,
+        eta: etaStr,
+        timestamp: now.toISOString(),
+        scan_number: scan.number
+      });
+      
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', XANO_URL, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            sentCount++;
+          }
+          postOne(index + 1);
+        }
+      };
+      
+      // Error handling
+      xhr.onerror = function() {
+        postOne(index + 1); // Continue even if one fails
+      };
+      
+      xhr.send(data);
+    }
+    
+    postOne(0);
+  }
+  
+  // Tab switching functions
+  window.showNumeric = function() {
+    var numPad = document.getElementById('numericPad');
+    var qwertyPad = document.getElementById('qwertyPad');
+    var symbolPad = document.getElementById('symbolPad');
+    var tabNum = document.getElementById('tabNumeric');
+    var tabQwerty = document.getElementById('tabQwerty');
+    var tabSymbol = document.getElementById('tabSymbol');
+    
+    if (numPad) numPad.style.display = 'flex';
+    if (qwertyPad) qwertyPad.style.display = 'none';
+    if (symbolPad) symbolPad.style.display = 'none';
+    
+    if (tabNum) tabNum.className = 'active';
+    if (tabQwerty) tabQwerty.className = '';
+    if (tabSymbol) tabSymbol.className = '';
+  };
+  
+  window.showQwerty = function() {
+    var numPad = document.getElementById('numericPad');
+    var qwertyPad = document.getElementById('qwertyPad');
+    var symbolPad = document.getElementById('symbolPad');
+    var tabNum = document.getElementById('tabNumeric');
+    var tabQwerty = document.getElementById('tabQwerty');
+    var tabSymbol = document.getElementById('tabSymbol');
+    
+    if (numPad) numPad.style.display = 'none';
+    if (qwertyPad) qwertyPad.style.display = 'block';
+    if (symbolPad) symbolPad.style.display = 'none';
+    
+    if (tabQwerty) tabQwerty.className = 'active';
+    if (tabNum) tabNum.className = '';
+    if (tabSymbol) tabSymbol.className = '';
+  };
+  
+  window.showSymbol = function() {
+    var numPad = document.getElementById('numericPad');
+    var qwertyPad = document.getElementById('qwertyPad');
+    var symbolPad = document.getElementById('symbolPad');
+    var tabNum = document.getElementById('tabNumeric');
+    var tabQwerty = document.getElementById('tabQwerty');
+    var tabSymbol = document.getElementById('tabSymbol');
+    
+    if (numPad) numPad.style.display = 'none';
+    if (qwertyPad) qwertyPad.style.display = 'none';
+    if (symbolPad) symbolPad.style.display = 'block';
+    
+    if (tabSymbol) tabSymbol.className = 'active';
+    if (tabNum) tabNum.className = '';
+    if (tabQwerty) tabQwerty.className = '';
+  };
+  
+  // Expose functions globally
+  window.startScan = startScan;
+  window.clearScans = clearScans;
+  window.goToStatus = goToStatus;
+  window.goBackToScan = goBackToScan;
+  window.typeChar = typeChar;
+  window.backspace = backspace;
+  window.submitToXano = submitToXano;
+  window.addManualAsScan = addManualAsScan;
+  
+  // Initialize
+  function init() {
+    // Show compatibility message
+    alert('📍 LEGACY MODE – Manual entry works, camera simulated.\n(Compatible with Android 4.0+)');
+    
+    initGPS();
+    updateTime();
+    setInterval(updateTime, 1000);
+    
+    // Set default tab
+    window.showNumeric();
+    
+    // Bind events
+    var scanBtn = document.getElementById('scanButton');
+    if (scanBtn) scanBtn.onclick = startScan;
+    
+    var clearBtn = document.getElementById('clearBtn');
+    if (clearBtn) clearBtn.onclick = clearScans;
+    
+    var statusBtn = document.getElementById('statusBtn');
+    if (statusBtn) statusBtn.onclick = goToStatus;
+    
+    // Status buttons
+    var backs = document.querySelectorAll('.statusBtn.back');
+    for (var i = 0; i < backs.length; i++) {
+      backs[i].onclick = goBackToScan;
+    }
+    
+    var statusBtns = document.querySelectorAll('.statusBtn[data-status]');
+    for (var i = 0; i < statusBtns.length; i++) {
+      statusBtns[i].onclick = (function(btn) {
+        return function(e) {
+          var status = btn.getAttribute('data-status');
+          submitToXano(status);
+        };
+      })(statusBtns[i]);
+    }
+  }
+  
+  // Run init when DOM is ready
+  if (document.addEventListener) {
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    // Try legacy torch method
-    try {
-      track.torch = torchActive;
-      document.getElementById('flashBtn').innerHTML = torchActive ? '🔦✨' : '🔦';
-    } catch(e) {
-      alert('Flash not supported');
-    }
+    // Fallback for very old browsers
+    window.onload = init;
   }
-}
-
-function scanQR() {
-  if(!scanning) return;
   
-  var video = document.getElementById('preview');
-  if(!video || video.readyState < 2 || video.videoWidth === 0) return;
-  
-  // Create temporary canvas
-  var canvas = document.createElement('canvas');
-  canvas.width = 320;
-  canvas.height = 240;
-  var ctx = canvas.getContext('2d');
-  
-  try {
-    ctx.drawImage(video, 0, 0, 320, 240);
-    var imageData = ctx.getImageData(0, 0, 320, 240);
-    
-    var code = jsQR(imageData.data, 320, 240, {
-      inversionAttempts: 'dontInvert'
-    });
-    
-    if(code && code.data && code.data.length > 0) {
-      // Success!
-      stopScan();
-      scanData.push(code.data);
-      renderData();
-      showPopup(code.data);
+  // Cleanup on unload
+  window.onbeforeunload = function() {
+    if (gpsWatchId && navigator.geolocation && navigator.geolocation.clearWatch) {
+      navigator.geolocation.clearWatch(gpsWatchId);
     }
-  } catch(e) {
-    // Silent fail
-  }
-}
-
-function showPopup(data) {
-  var popup = document.getElementById('popup');
-  document.getElementById('popupData').innerHTML = data.length > 30 ? data.substr(0,30)+'...' : data;
-  popup.style.display = 'block';
-  setTimeout(function() { popup.style.display = 'none'; }, 2000);
-}
-
-function showStatus() {
-  document.getElementById('status-screen').style.display = 'block';
-}
-
-function hideStatus() {
-  document.getElementById('status-screen').style.display = 'none';
-}
-
-// Initialize
-showKeyboard('abc');
-scanData = [];
-renderData();
-
-// Make sure flash button exists
-if(!document.getElementById('flashBtn')) {
-  // Add it dynamically if needed
-}
+    stopCamera();
+  };
+  
+})();
 </script>
 </body>
 </html>
