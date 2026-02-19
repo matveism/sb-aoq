@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    /* REMOVED fixed width/height - now flexible */
     html, body {
         margin: 0;
         padding: 0;
@@ -13,17 +12,19 @@
         height: 100vh;
         background: #A4BEF2;
         font-family: Arial, sans-serif;
+        overflow: hidden;
     }
 
-    /* REMOVED fixed dimensions - now fills any screen */
     .phone-screen {
         width: 100%;
         height: 100vh;
         background: #A4BEF2;
         position: relative;
+        display: flex;
+        flex-direction: column;
     }
 
-    /* HEADER - now responsive */
+    /* HEADER */
     .header {
         width: 100%;
         height: 50px;
@@ -36,6 +37,7 @@
         box-sizing: border-box;
         font-size: clamp(16px, 4vw, 20px);
         font-weight: bold;
+        flex-shrink: 0;
     }
 
     .left {
@@ -47,29 +49,97 @@
         text-align: right;
         white-space: nowrap;
     }
+
+    /* MAIN CONTENT AREA - EMPTY FOR NOW */
+    .content {
+        flex: 1;
+        width: 100%;
+    }
+
+    /* BOTTOM FIXED FOOTER - LIKE YOUR SCREENSHOT */
+    .bottom-footer {
+        width: 100%;
+        height: 80px;
+        background: #263E68;
+        color: #CADAEA;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: clamp(24px, 6vw, 32px);
+        font-weight: bold;
+        letter-spacing: 2px;
+    }
+
+    .footer-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .enter-text {
+        color: #CADAEA;
+    }
+
+    .datetime {
+        color: #CADAEA;
+        font-family: monospace;
+        font-size: clamp(20px, 5vw, 28px);
+    }
 </style>
 </head>
 
 <body>
 
 <div class="phone-screen">
+    <!-- HEADER -->
     <div class="header">
         <div class="left">Scan barcode</div>
         <div class="right" id="timeDisplay"></div>
+    </div>
+
+    <!-- MAIN CONTENT (EMPTY FOR NOW) -->
+    <div class="content">
+        <!-- Your main content would go here -->
+    </div>
+
+    <!-- BOTTOM FOOTER - ENTER WITH DATE/TIME -->
+    <div class="bottom-footer">
+        <div class="footer-content">
+            <span class="enter-text">ENTER</span>
+            <span class="datetime" id="footerDateTime">06/10 4:41 PM</span>
+        </div>
     </div>
 </div>
 
 <script>
     function updateTime() {
         var timeElement = document.getElementById("timeDisplay");
-        if (timeElement) {
+        var footerElement = document.getElementById("footerDateTime");
+        
+        if (timeElement || footerElement) {
             var now = new Date();
+            
+            // Format for header (HH:MM)
             var h = now.getHours().toString().padStart(2, '0');
             var m = now.getMinutes().toString().padStart(2, '0');
-            timeElement.textContent = h + ":" + m;
-            console.log("Time updated: " + h + ":" + m); // Debug line
-        } else {
-            console.log("timeDisplay element not found!");
+            
+            // Format for footer (MM/DD HH:MM AM/PM)
+            var month = (now.getMonth() + 1).toString().padStart(2, '0');
+            var day = now.getDate().toString().padStart(2, '0');
+            var hours = now.getHours();
+            var minutes = now.getMinutes().toString().padStart(2, '0');
+            var ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 12-hour format
+            
+            if (timeElement) {
+                timeElement.textContent = h + ":" + m;
+            }
+            
+            if (footerElement) {
+                footerElement.textContent = month + "/" + day + " " + hours + ":" + minutes + " " + ampm;
+            }
         }
     }
     
