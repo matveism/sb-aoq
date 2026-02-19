@@ -61,19 +61,28 @@
 
 <script>
     function updateTime() {
-        var now = new Date();
-        var h = now.getHours().toString().padStart(2, '0');
-        var m = now.getMinutes().toString().padStart(2, '0');
-        document.getElementById("timeDisplay").textContent = h + ":" + m;
+        var timeElement = document.getElementById("timeDisplay");
+        if (timeElement) {
+            var now = new Date();
+            var h = now.getHours().toString().padStart(2, '0');
+            var m = now.getMinutes().toString().padStart(2, '0');
+            timeElement.textContent = h + ":" + m;
+            console.log("Time updated: " + h + ":" + m); // Debug line
+        } else {
+            console.log("timeDisplay element not found!");
+        }
     }
     
-    // Update immediately when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        updateTime();
-    });
+    // Update immediately
+    updateTime();
     
     // Then update every second
     setInterval(updateTime, 1000);
+    
+    // Also update when page fully loads
+    window.onload = function() {
+        updateTime();
+    };
 </script>
 
 </body>
