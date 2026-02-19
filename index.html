@@ -2,713 +2,839 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- FIXED VIEWPORT FOR ALCATEL 7046T (5 INCH, ANDROID 5.0.2) -->
-<meta name="viewport" content="width=360, initial-scale=1, maximum-scale=1, user-scalable=no, target-densitydpi=device-dpi">
-<title>U·BARCODE · FIXED</title>
+<!-- EXTREME COMPATIBILITY - ANDROID 2.3+ -->
+<meta name="viewport" content="width=320, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>U·BARCODE LEGACY</title>
 <style>
-/* RESET & HARDWARE ACCELERATION */
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;outline:none;}
-input,textarea,button,select{outline:none;border:none;background:none;}
-
-body{
-    background:#000;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    min-height:100vh;
-    font-family:system-ui,'Segoe UI',Roboto,sans-serif;
-    font-weight:bold;
-    margin:0;
-    padding:0;
+/* ANDROID 2.3 SAFE RESET - NO ADVANCED SELECTORS */
+* { margin: 0; padding: 0; border: 0; }
+body { 
+    background: #000000; 
+    font-family: sans-serif; 
+    margin: 0; 
+    padding: 0; 
+    height: 100%; 
 }
-
-/* EXACT DEVICE FRAME – NO SCROLLING ON 5" 640x360 (ALCATEL 7046T) */
-#phone{
-    width:360px;
-    height:640px;
-    background:#2b4b70;
-    color:#fff;
-    display:flex;
-    flex-direction:column;
-    box-shadow:0 10px 25px #000;
-    overflow:hidden;            /* no outer scroll */
-    position:relative;
-    touch-action:pan-y;         /* prevent pull-to-refresh interference */
+#phone {
+    width: 320px;
+    height: 480px; /* Standard old Android size */
+    background: #2b4b70;
+    color: #ffffff;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #1f3f5c;
 }
-
-/* HEADER 38px */
-#header{
-    height:38px;
-    background:#2e5a88;
-    border-bottom:2px solid #1f3f5c;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:0 8px 0 12px;
-    font-size:16px;
-    flex-shrink:0;
+/* NO FLEXBOX - USING OLD SCHOOL POSITIONING */
+#header {
+    height: 35px;
+    background: #2e5a88;
+    border-bottom: 2px solid #1f3f5c;
+    padding: 5px 8px 0 8px;
+    position: relative;
 }
-#leftText{color:#fff;white-space:nowrap;}
-#rightArea{display:flex;align-items:center;gap:6px;}
-#gpsIndicator{font-size:18px;}
-#flashIndicator{font-size:20px;padding:2px 6px;background:#0004;border-radius:4px;cursor:pointer;}
-#timeDisplay{color:#ffcc00;font-size:13px;}
-
-/* SCAN BUTTON – fixed size, no movement */
-#scanBtn{
-    width:calc(100% - 24px);
-    height:48px;
-    margin:8px auto;
-    background:#2b6e2f;
-    border:2px solid #1e5a22;
-    color:#fff;
-    font-size:22px;
-    font-weight:bold;
-    border-radius:6px;
-    box-shadow:0 4px 0 #145018;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    flex-shrink:0;
-    -webkit-touch-callout:none;
-    -webkit-user-select:none;
-    user-select:none;
-    touch-action:manipulation;   /* force native click handling */
+#leftText {
+    float: left;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    padding-top: 5px;
 }
-/* active state but no layout shift */
-#scanBtn:active{
-    background:#2b8c3a;
-    transform:translateY(2px);
-    box-shadow:0 2px 0 #145018;
+#rightArea {
+    float: right;
 }
-
-/* SCAN FRAME */
-#scanFrame{
-    width:100%;
-    height:200px;
-    background:#000;
-    border:2px solid #fc0;
-    position:relative;
-    display:none;
-    flex-shrink:0;
-    overflow:hidden;
+#gpsIndicator, #flashIndicator, #timeDisplay {
+    display: inline-block;
+    color: #ffffff;
+    font-size: 14px;
+    margin-left: 5px;
+    vertical-align: middle;
 }
-#preview{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
+#flashIndicator {
+    background: #000000;
+    padding: 2px 8px;
+    border-radius: 3px;
+    cursor: pointer;
 }
-.corner{
-    position:absolute;
-    width:28px;
-    height:28px;
-    border:4px solid #fc0;
-    pointer-events:none;
+/* BUTTON - ABSOLUTELY NO CSS3 TRICKS */
+#scanBtn {
+    width: 300px;
+    height: 45px;
+    background: #2b6e2f;
+    border: 2px solid #1e5a22;
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 45px;
+    margin: 8px auto;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0 4px 0 #145018;
 }
-.tl{top:0;left:0;border-right:none;border-bottom:none;}
-.tr{top:0;right:0;border-left:none;border-bottom:none;}
-.bl{bottom:0;left:0;border-right:none;border-top:none;}
-.br{bottom:0;right:0;border-left:none;border-top:none;}
-#torchBtn{
-    position:absolute;
-    bottom:8px;
-    right:8px;
-    background:#000c;
-    color:#fc0;
-    padding:6px 12px;
-    border-radius:20px;
-    font-size:13px;
-    font-weight:bold;
-    cursor:pointer;
-    border:1px solid #fc0;
-    z-index:20;
+#scanBtn:active {
+    background: #1e5a22;
+    margin-top: 10px;
+    box-shadow: 0 2px 0 #145018;
 }
-
-/* LABEL BLOCK */
-#labelBlock{
-    display:flex;
-    flex-direction:column;
-    flex:1;
-    min-height:0;
-    width:100%;
+#scanFrame {
+    width: 300px;
+    height: 160px;
+    background: #000000;
+    border: 3px solid #ffcc00;
+    margin: 0 auto;
+    position: relative;
+    display: none;
 }
-#labelTitle{
-    height:32px;
-    background:#2b4b70;
-    border:1px solid #1f3f5c;
-    display:flex;
-    align-items:center;
-    padding-left:12px;
-    margin:0 12px;
-    font-size:14px;
-    flex-shrink:0;
+#preview {
+    width: 100%;
+    height: 100%;
+    background: #000000;
 }
-#labelBox{
-    width:calc(100% - 24px);
-    margin:0 auto;
-    border:3px solid #1f3f5c;
-    background:#A6BEEF;
-    padding:6px;
-    font-size:14px;
-    color:#000;
-    overflow-y:auto;
-    min-height:70px;
-    max-height:120px;
-    font-family:monospace;
-    -webkit-overflow-scrolling:touch; /* smooth scroll but not needed */
+/* CORNERS USING ABSOLUTE */
+.corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #ffcc00;
 }
-#labelBox span{
-    display:block;
-    background:#c0d4f5;
-    padding:4px;
-    margin:4px 0;
-    border-bottom:2px solid #2b4b70;
-    font-weight:bold;
-    word-break:break-all;
+.tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+.tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+.bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+.br { bottom: 0; right: 0; border-left: none; border-top: none; }
+#torchBtn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: #000000;
+    color: #ffcc00;
+    padding: 3px 10px;
+    border: 1px solid #ffcc00;
+    font-size: 12px;
+    cursor: pointer;
+    z-index: 10;
 }
-#labelButtons{
-    height:42px;
-    background:#7496C4;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    border:2px solid #3a5f8a;
-    margin:8px 12px 0;
-    padding:0 16px;
-    font-size:18px;
-    color:#fff;
-    flex-shrink:0;
+#labelBlock {
+    width: 300px;
+    margin: 0 auto;
 }
-#labelButtons span{
-    cursor:pointer;
-    padding:4px 12px;
-    touch-action:manipulation;
+#labelTitle {
+    background: #2b4b70;
+    border: 1px solid #1f3f5c;
+    padding: 5px;
+    font-size: 14px;
+    font-weight: bold;
 }
-#labelButtons span:active{
-    background:#27ae60;
-    border-radius:4px;
+#labelBox {
+    width: 290px;
+    height: 70px;
+    background: #a6beef;
+    border: 3px solid #1f3f5c;
+    padding: 3px;
+    margin: 3px auto;
+    overflow-y: scroll;
+    color: #000000;
+    font-family: monospace;
 }
-
-/* NAV BAR */
-#navBar{
-    height:36px;
-    background:#2b4b70;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    border:1px solid #1f3f5c;
-    margin:6px 12px 0;
-    padding:0 8px;
-    font-size:14px;
-    flex-shrink:0;
+#labelBox span {
+    display: block;
+    background: #c0d4f5;
+    padding: 2px;
+    margin: 2px 0;
+    border-bottom: 1px solid #2b4b70;
+    font-size: 12px;
 }
-#navBar button{
-    background:none;
-    border:none;
-    color:#fff;
-    font-size:22px;
-    cursor:pointer;
-    padding:0 6px;
-    touch-action:manipulation;
+#labelButtons {
+    height: 35px;
+    background: #7496c4;
+    border: 2px solid #3a5f8a;
+    margin: 5px 0;
+    line-height: 35px;
+    text-align: center;
 }
-
-/* KEYPAD WRAPPER – ALWAYS VISIBLE */
-#keypadWrapper{
-    background:#1f3f5c;
-    border-top:3px solid #fc0;
-    margin-top:auto;           /* push to bottom */
-    padding-bottom:6px;
-    flex-shrink:0;
+#labelButtons span {
+    display: inline-block;
+    padding: 0 15px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
 }
-#keyTabs{
-    display:flex;
-    padding:6px 12px;
-    gap:4px;
+#navBar {
+    height: 30px;
+    background: #2b4b70;
+    border: 1px solid #1f3f5c;
+    margin: 5px 0;
+    line-height: 30px;
+    text-align: center;
 }
-#keyTabs button{
-    flex:1;
-    background:#3a5f8a;
-    border:2px solid #1f3f5c;
-    border-radius:30px;
-    color:#fff;
-    font-weight:bold;
-    padding:5px 0;
-    cursor:pointer;
-    touch-action:manipulation;
-    font-size:16px;
+#navBar button {
+    background: none;
+    color: #ffffff;
+    font-size: 20px;
+    padding: 0 15px;
+    cursor: pointer;
+    border: none;
 }
-#keyTabs button.active{
-    background:#4CAF50;
-    border-color:#145018;
+/* KEYPAD - TABLE BASED FOR MAX COMPAT */
+#keypadWrapper {
+    background: #1f3f5c;
+    border-top: 3px solid #ffcc00;
+    padding: 5px 0;
+    width: 100%;
 }
-#numericPad{
-    display:flex;
-    flex-wrap:wrap;
-    padding:4px 12px 8px;
-    gap:4px;
+#keyTabs {
+    text-align: center;
+    margin: 5px 0;
 }
-#numericPad button{
-    width:calc(33.333% - 4px);
-    background:#3a5f8a;
-    border:1px solid #1f3f5c;
-    border-radius:6px;
-    color:#fff;
-    font-size:26px;
-    font-weight:bold;
-    height:48px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    box-shadow:0 3px 0 #1f3f5c;
-    margin:0;
-    touch-action:manipulation;
+#keyTabs button {
+    width: 80px;
+    height: 35px;
+    background: #3a5f8a;
+    border: 2px solid #1f3f5c;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 2px;
+    cursor: pointer;
+    border-radius: 20px;
 }
-#numericPad button:active{
-    background:#4CAF50;
-    transform:translateY(2px);
+#keyTabs button.active {
+    background: #4caf50;
+    border-color: #145018;
 }
-.backspace{
-    background:#2b4b70!important;
-    font-size:22px;
+.pad {
+    width: 300px;
+    margin: 0 auto;
 }
-#qwertyPad,#symbolPad{
-    display:none;
-    padding:0 8px 8px;
+.pad table {
+    width: 100%;
+    border-collapse: collapse;
 }
-.row{
-    display:flex;
-    margin-bottom:4px;
-    justify-content:center;
+.pad td {
+    padding: 3px;
 }
-.row button{
-    flex:1;
-    max-width:34px;
-    background:#3a5f8a;
-    border:1px solid #1f3f5c;
-    border-radius:6px;
-    color:#fff;
-    font-size:16px;
-    height:40px;
-    margin:0 1px;
-    cursor:pointer;
-    box-shadow:0 2px 0 #1f3f5c;
-    touch-action:manipulation;
+.pad button {
+    width: 100%;
+    height: 45px;
+    background: #3a5f8a;
+    border: 2px solid #1f3f5c;
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0 3px 0 #1f3f5c;
 }
-.row button:active{
-    background:#4CAF50;
-    transform:translateY(2px);
+.pad button:active {
+    background: #4caf50;
+    margin-top: 2px;
+    box-shadow: 0 1px 0 #1f3f5c;
 }
-.special{
-    max-width:50px!important;
-    background:#2b4b70!important;
+.backspace-btn {
+    background: #b94a48 !important;
 }
-.space{
-    flex:3!important;
-    max-width:180px!important;
+.special-btn {
+    background: #2b4b70 !important;
+    font-size: 18px !important;
 }
-
-/* STATUS OVERLAY */
-#statusScreen{
-    display:none;
-    position:absolute;
-    top:38px;
-    left:0;
-    right:0;
-    bottom:0;
-    background:#1c3046;
-    z-index:100;
-    padding:20px 15px;
-    overflow-y:auto;
-    flex-direction:column;
+#numericPad, #qwertyPad, #symbolPad {
+    width: 300px;
+    margin: 0 auto;
 }
-.statBtn{
-    background:#2b4b70;
-    border:2px solid #fc0;
-    color:#fff;
-    font-size:18px;
-    font-weight:bold;
-    padding:14px;
-    margin-bottom:10px;
-    text-align:center;
-    border-radius:8px;
-    cursor:pointer;
-    touch-action:manipulation;
+#qwertyPad, #symbolPad {
+    display: none;
 }
-.statBtn:active{
-    background:#4CAF50;
+.qwerty-row {
+    margin: 2px 0;
+    text-align: center;
 }
-.backBtn{
-    background:#1f3f5c;
-    border-color:#f1c40f;
-    margin-top:20px;
+.qwerty-row button {
+    width: 28px;
+    height: 40px;
+    background: #3a5f8a;
+    border: 2px solid #1f3f5c;
+    color: #ffffff;
+    font-size: 16px;
+    margin: 1px;
+    cursor: pointer;
+    border-radius: 3px;
+    vertical-align: top;
 }
-
-/* SUCCESS POPUP */
-#successPopup{
-    display:none;
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:#000b;
-    z-index:1000;
-    align-items:center;
-    justify-content:center;
+.qwerty-row .wide-btn {
+    width: 80px;
 }
-.popup{
-    background:#2b4b70;
-    border:3px solid #27ae60;
-    border-radius:20px;
-    padding:25px 15px;
-    width:260px;
-    text-align:center;
+.qwerty-row .space-btn {
+    width: 120px;
 }
-.check{
-    width:60px;
-    height:60px;
-    background:#27ae60;
-    border-radius:50%;
-    font-size:42px;
-    line-height:60px;
-    margin:0 auto 10px;
-    color:#fff;
+/* STATUS SCREEN */
+#statusScreen {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    width: 320px;
+    height: 435px;
+    background: #1c3046;
+    z-index: 100;
+    overflow-y: scroll;
+    display: none;
+    padding: 5px 0;
 }
-#popupStatus{color:#ffcc00;font-size:15px;margin:5px 0;}
+.statBtn {
+    width: 290px;
+    background: #2b4b70;
+    border: 3px solid #ffcc00;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 0;
+    margin: 5px auto;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.statBtn:active {
+    background: #4caf50;
+}
+.backBtn {
+    border-color: #ffaa00;
+    background: #1f3f5c;
+}
+/* POPUP */
+#successPopup {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 320px;
+    height: 480px;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    display: none;
+}
+.popup {
+    width: 250px;
+    background: #2b4b70;
+    border: 5px solid #27ae60;
+    margin: 100px auto 0;
+    padding: 15px;
+    text-align: center;
+    border-radius: 15px;
+}
+.check {
+    width: 50px;
+    height: 50px;
+    background: #27ae60;
+    border-radius: 25px;
+    margin: 0 auto 10px;
+    font-size: 30px;
+    line-height: 50px;
+    color: #ffffff;
+}
+#popupStatus {
+    color: #ffcc00;
+    font-size: 14px;
+    margin: 5px 0;
+}
+#popupScanCount {
+    font-size: 12px;
+}
+/* CLEAR FLOATS */
+.clear { clear: both; }
 </style>
-<!-- ZXING LIBRARY (legacy for android 5) -->
-<script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+<!-- OLD SCHOOL ZXING CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.0.1/ZXing.js"></script>
 </head>
 <body>
 <div id="phone">
-  <div id="header">
-    <span id="leftText">SCAN QR</span>
-    <span id="rightArea">
-      <span id="flashIndicator" onclick="toggleFlash()">🔦</span>
-      <span id="gpsIndicator">🌐</span>
-      <span id="timeDisplay"></span>
-    </span>
-  </div>
-  <!-- SCAN BUTTON: ensure event is direct -->
-  <div id="scanBtn"><span style="width:16px;height:12px;background:repeating-linear-gradient(90deg,#000,#000 2px,#fff 2px,#fff 4px);margin-right:8px"></span>SCAN 1D/2D</div>
-  <div id="scanFrame">
-    <video id="preview" autoplay playsinline></video>
-    <div id="torchBtn" onclick="toggleFlash()">🔦 OFF</div>
-    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-  </div>
-  <div id="labelBlock">
-    <div id="labelTitle"># SCANNED CODES</div>
-    <div id="labelBox"></div>
-    <div id="labelButtons"><span id="clearBtn">CLEAR</span><span>|</span><span id="statusBtn">ENTER</span></div>
-    <div id="navBar"><button onclick="alert('Prev')">◄</button><span id="timeDisplay2"></span><button onclick="alert('Next')">►</button></div>
-    <!-- KEYPAD AREA -->
-    <div id="keypadWrapper">
-      <div id="keyTabs">
-        <button id="tabQ" onclick="showPad('q')">ABC</button>
-        <button id="tabN" onclick="showPad('n')" class="active">123</button>
-        <button id="tabS" onclick="showPad('s')">SYM</button>
-      </div>
-      <!-- NUMERIC PAD (default) -->
-      <div id="numericPad">
-        <button onclick="add('1')">1</button><button onclick="add('2')">2</button><button onclick="add('3')">3</button>
-        <button onclick="add('4')">4</button><button onclick="add('5')">5</button><button onclick="add('6')">6</button>
-        <button onclick="add('7')">7</button><button onclick="add('8')">8</button><button onclick="add('9')">9</button>
-        <button onclick="add('.')">.</button><button onclick="add('0')">0</button>
-        <button class="backspace" onclick="bs()">⌫</button>
-      </div>
-      <!-- QWERTY -->
-      <div id="qwertyPad">
-        <div class="row"><button onclick="add('q')">q</button><button onclick="add('w')">w</button><button onclick="add('e')">e</button><button onclick="add('r')">r</button><button onclick="add('t')">t</button><button onclick="add('y')">y</button><button onclick="add('u')">u</button><button onclick="add('i')">i</button><button onclick="add('o')">o</button><button onclick="add('p')">p</button></div>
-        <div class="row"><button onclick="add('a')">a</button><button onclick="add('s')">s</button><button onclick="add('d')">d</button><button onclick="add('f')">f</button><button onclick="add('g')">g</button><button onclick="add('h')">h</button><button onclick="add('j')">j</button><button onclick="add('k')">k</button><button onclick="add('l')">l</button></div>
-        <div class="row"><button class="special" onclick="add('z')">z</button><button class="special" onclick="add('x')">x</button><button class="special" onclick="add('c')">c</button><button class="special" onclick="add('v')">v</button><button class="special" onclick="add('b')">b</button><button class="special" onclick="add('n')">n</button><button class="special" onclick="add('m')">m</button><button class="special" onclick="bs()">⌫</button></div>
-        <div class="row"><button class="special" onclick="showPad('n')">123</button><button class="space" onclick="add(' ')">space</button><button class="special" onclick="add('.')">.</button></div>
-      </div>
-      <!-- SYMBOL -->
-      <div id="symbolPad">
-        <div class="row"><button onclick="add('@')">@</button><button onclick="add('#')">#</button><button onclick="add('$')">$</button><button onclick="add('%')">%</button><button onclick="add('&')">&</button><button onclick="add('*')">*</button><button onclick="add('(')">(</button><button onclick="add(')')">)</button></div>
-        <div class="row"><button onclick="add('!')">!</button><button onclick="add('?')">?</button><button onclick="add('/')">/</button><button onclick="add(':')">:</button><button onclick="add(';')">;</button><button onclick="add('"')">"</button><button onclick="add("'")">'</button><button onclick="add(',')">,</button></div>
-        <div class="row"><button onclick="add('-')">-</button><button onclick="add('+')">+</button><button onclick="add('=')">=</button><button onclick="add('<')">&lt;</button><button onclick="add('>')">&gt;</button><button onclick="add('[')">[</button><button onclick="add(']')">]</button><button class="special" onclick="bs()">⌫</button></div>
-        <div class="row"><button class="special" onclick="showPad('q')">ABC</button><button class="space" onclick="add(' ')">space</button><button class="special" onclick="add('.')">.</button></div>
-      </div>
+    <div id="header">
+        <span id="leftText">SCAN QR</span>
+        <span id="rightArea">
+            <span id="flashIndicator" onclick="toggleFlashLegacy()">🔦</span>
+            <span id="gpsIndicator">📍</span>
+            <span id="timeDisplay"></span>
+        </span>
+        <div class="clear"></div>
     </div>
-  </div>
-  <!-- STATUS SCREEN -->
-  <div id="statusScreen">
-    <div class="statBtn" data-st="Data Received">Data Received (+7)</div>
-    <div class="statBtn" data-st="Picked Up">Picked Up (-1)</div>
-    <div class="statBtn" data-st="Depart Post Office">Depart PO (-2)</div>
-    <div class="statBtn" data-st="Arrival Scan">Arrival (-0.5)</div>
-    <div class="statBtn" data-st="Local Scan">Local (-1.5)</div>
-    <div class="statBtn" data-st="Out For Delivery">Out (-2)</div>
-    <div class="statBtn" data-st="Delivered">Delivered (0)</div>
-    <div class="statBtn backBtn" id="backToScan">BACK</div>
-  </div>
-  <div id="successPopup"><div class="popup"><div class="check">✓</div><div class="popup-message">Success!</div><div id="popupStatus"></div><div id="popupScanCount"></div></div></div>
+    
+    <div id="scanBtn" onclick="startScanLegacy()">📷 SCAN BARCODE</div>
+    
+    <div id="scanFrame">
+        <video id="preview" autoplay playsinline style="width:100%;height:100%;"></video>
+        <div id="torchBtn" onclick="toggleFlashLegacy()">🔦 OFF</div>
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+    </div>
+    
+    <div id="labelBlock">
+        <div id="labelTitle">📋 SCANNED CODES</div>
+        <div id="labelBox"></div>
+        <div id="labelButtons">
+            <span onclick="clearAllLegacy()">CLEAR</span> | 
+            <span onclick="showStatusLegacy()">ENTER</span>
+        </div>
+        <div id="navBar">
+            <button onclick="alert('Prev')">◀</button>
+            <span id="timeDisplay2"></span>
+            <button onclick="alert('Next')">▶</button>
+        </div>
+        
+        <div id="keypadWrapper">
+            <div id="keyTabs">
+                <button id="tabQ" onclick="showPadLegacy('q')">ABC</button>
+                <button id="tabN" onclick="showPadLegacy('n')" class="active">123</button>
+                <button id="tabS" onclick="showPadLegacy('s')">#+='</button>
+            </div>
+            
+            <!-- NUMERIC PAD -->
+            <div id="numericPad" class="pad">
+                <table>
+                    <tr><td><button onclick="addChar('1')">1</button></td><td><button onclick="addChar('2')">2</button></td><td><button onclick="addChar('3')">3</button></td></tr>
+                    <tr><td><button onclick="addChar('4')">4</button></td><td><button onclick="addChar('5')">5</button></td><td><button onclick="addChar('6')">6</button></td></tr>
+                    <tr><td><button onclick="addChar('7')">7</button></td><td><button onclick="addChar('8')">8</button></td><td><button onclick="addChar('9')">9</button></td></tr>
+                    <tr><td><button onclick="addChar('.')">.</button></td><td><button onclick="addChar('0')">0</button></td><td><button class="backspace-btn" onclick="backspaceLegacy()">⌫</button></td></tr>
+                </table>
+            </div>
+            
+            <!-- QWERTY PAD -->
+            <div id="qwertyPad">
+                <div class="qwerty-row">
+                    <button onclick="addChar('q')">q</button><button onclick="addChar('w')">w</button><button onclick="addChar('e')">e</button><button onclick="addChar('r')">r</button><button onclick="addChar('t')">t</button><button onclick="addChar('y')">y</button><button onclick="addChar('u')">u</button><button onclick="addChar('i')">i</button><button onclick="addChar('o')">o</button><button onclick="addChar('p')">p</button>
+                </div>
+                <div class="qwerty-row">
+                    <button onclick="addChar('a')">a</button><button onclick="addChar('s')">s</button><button onclick="addChar('d')">d</button><button onclick="addChar('f')">f</button><button onclick="addChar('g')">g</button><button onclick="addChar('h')">h</button><button onclick="addChar('j')">j</button><button onclick="addChar('k')">k</button><button onclick="addChar('l')">l</button>
+                </div>
+                <div class="qwerty-row">
+                    <button onclick="addChar('z')">z</button><button onclick="addChar('x')">x</button><button onclick="addChar('c')">c</button><button onclick="addChar('v')">v</button><button onclick="addChar('b')">b</button><button onclick="addChar('n')">n</button><button onclick="addChar('m')">m</button>
+                    <button class="backspace-btn" onclick="backspaceLegacy()">⌫</button>
+                </div>
+                <div class="qwerty-row">
+                    <button class="wide-btn" onclick="showPadLegacy('n')">123</button>
+                    <button class="space-btn" onclick="addChar(' ')">space</button>
+                    <button class="wide-btn" onclick="addChar('.')">.</button>
+                </div>
+            </div>
+            
+            <!-- SYMBOL PAD -->
+            <div id="symbolPad">
+                <div class="qwerty-row">
+                    <button onclick="addChar('@')">@</button><button onclick="addChar('#')">#</button><button onclick="addChar('$')">$</button><button onclick="addChar('%')">%</button><button onclick="addChar('&')">&</button><button onclick="addChar('*')">*</button>
+                </div>
+                <div class="qwerty-row">
+                    <button onclick="addChar('(')">(</button><button onclick="addChar(')')">)</button><button onclick="addChar('-')">-</button><button onclick="addChar('+')">+</button><button onclick="addChar('=')">=</button><button onclick="addChar('/')">/</button>
+                </div>
+                <div class="qwerty-row">
+                    <button onclick="addChar(':')">:</button><button onclick="addChar(';')">;</button><button onclick="addChar('"')">"</button><button onclick="addChar("'")">'</button><button onclick="addChar(',')">,</button>
+                    <button class="backspace-btn" onclick="backspaceLegacy()">⌫</button>
+                </div>
+                <div class="qwerty-row">
+                    <button class="wide-btn" onclick="showPadLegacy('q')">ABC</button>
+                    <button class="space-btn" onclick="addChar(' ')">space</button>
+                    <button class="wide-btn" onclick="addChar('.')">.</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="statusScreen">
+        <div class="statBtn" onclick="submitStatusLegacy('Data Received (+7)')">📦 Data Received (+7)</div>
+        <div class="statBtn" onclick="submitStatusLegacy('Picked Up (-1)')">📬 Picked Up (-1)</div>
+        <div class="statBtn" onclick="submitStatusLegacy('Depart Post Office (-2)')">🚚 Depart PO (-2)</div>
+        <div class="statBtn" onclick="submitStatusLegacy('Arrival Scan (-0.5)')">📍 Arrival Scan (-0.5)</div>
+        <div class="statBtn" onclick="submitStatusLegacy('Local Scan (-1.5)')">🏢 Local Scan (-1.5)</div>
+        <div class="statBtn" onclick="submitStatusLegacy('Out For Delivery (-2)')">🚛 Out For Delivery (-2)</div>
+        <div class="statBtn" onclick="submitStatusLegacy('Delivered (0)')">✅ Delivered (0)</div>
+        <div class="statBtn backBtn" onclick="hideStatusLegacy()">◀ BACK TO SCAN</div>
+    </div>
+    
+    <div id="successPopup">
+        <div class="popup">
+            <div class="check">✓</div>
+            <div id="popupMessage" style="font-size:18px;margin:10px 0;">Success!</div>
+            <div id="popupStatus"></div>
+            <div id="popupScanCount"></div>
+        </div>
+    </div>
 </div>
 
 <script>
-(function(){
-    // ========== CONFIG ==========
-    const XANO_URL='https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans'; 
+// ========== LEGACY ANDROID 2.3+ COMPATIBLE CODE ==========
+// NO LET, NO CONST, NO ARROW FUNCTIONS, NO PROMISES, NO FETCH
 
-    let stream=null, scanning=false, scanCount=0, scans=[], gps=null, watchId=null;
-    let audioCtx=null;
-    const video=document.getElementById('preview');
-    const frame=document.getElementById('scanFrame');
-    const box=document.getElementById('labelBox');
-    const leftTxt=document.getElementById('leftText');
-    const gpsInd=document.getElementById('gpsIndicator');
-    const torch=document.getElementById('torchBtn');
-    const flash=document.getElementById('flashIndicator');
+// Global variables
+var stream = null;
+var scanning = false;
+var scanCount = 0;
+var scans = [];
+var gps = null;
+var watchId = null;
+var videoElement = document.getElementById('preview');
+var frame = document.getElementById('scanFrame');
+var box = document.getElementById('labelBox');
+var leftTxt = document.getElementById('leftText');
+var gpsInd = document.getElementById('gpsIndicator');
+var torchBtn = document.getElementById('torchBtn');
+var flashInd = document.getElementById('flashIndicator');
+var statusScreen = document.getElementById('statusScreen');
+var labelBlock = document.getElementById('labelBlock');
+var scanBtn = document.getElementById('scanBtn');
+var successPopup = document.getElementById('successPopup');
+var popupStatus = document.getElementById('popupStatus');
+var popupScanCount = document.getElementById('popupScanCount');
 
-    // ----- AUDIO FEEDBACK (android 5 compatible) -----
-    function playBeep(){
-        try{
-            if(!audioCtx){
-                audioCtx=new (window.AudioContext || window.webkitAudioContext)();
+// Xano URL
+var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+
+// ========== CLOCK UPDATE ==========
+function updateTime() {
+    var d = new Date();
+    var month = (d.getMonth() + 1);
+    if (month < 10) month = '0' + month;
+    var day = d.getDate();
+    if (day < 10) day = '0' + day;
+    var hours = d.getHours();
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    if (hours == 0) hours = 12;
+    var mins = d.getMinutes();
+    if (mins < 10) mins = '0' + mins;
+    var timeStr = month + '/' + day + ' ' + hours + ':' + mins + ' ' + ampm;
+    
+    document.getElementById('timeDisplay').innerHTML = timeStr;
+    document.getElementById('timeDisplay2').innerHTML = timeStr;
+}
+setInterval(updateTime, 1000);
+
+// ========== GPS ==========
+function updateGPSIndicator(hasFix) {
+    if (hasFix) {
+        gpsInd.innerHTML = '🛰️';
+        gpsInd.style.color = '#4CAF50';
+    } else {
+        gpsInd.innerHTML = '🌐';
+        gpsInd.style.color = '#ff4444';
+    }
+}
+
+function initGPS() {
+    if (!navigator.geolocation) {
+        updateGPSIndicator(false);
+        return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            gps = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                acc: position.coords.accuracy
+            };
+            updateGPSIndicator(true);
+        },
+        function(error) {
+            updateGPSIndicator(false);
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+    );
+    
+    watchId = navigator.geolocation.watchPosition(
+        function(position) {
+            gps = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                acc: position.coords.accuracy
+            };
+            updateGPSIndicator(true);
+        },
+        function(error) {
+            updateGPSIndicator(false);
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+    );
+}
+
+// ========== CAMERA ==========
+function stopCam() {
+    if (stream) {
+        try {
+            var tracks = stream.getTracks();
+            for (var i = 0; i < tracks.length; i++) {
+                tracks[i].stop();
             }
-            if(audioCtx.state==='suspended'){
-                audioCtx.resume().then(()=>beep(audioCtx));
-            }else{
-                beep(audioCtx);
-            }
-        }catch(e){}
+        } catch(e) {}
+        stream = null;
     }
-    function beep(ctx){
-        const o=ctx.createOscillator();
-        const g=ctx.createGain();
-        o.type='sine';
-        o.frequency.value=880;
-        g.gain.setValueAtTime(0.3,ctx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.15);
-        o.connect(g).connect(ctx.destination);
-        o.start();
-        o.stop(ctx.currentTime+0.15);
-    }
+    scanning = false;
+}
 
-    // ----- GPS -----
-    function updateGPS(has){
-        gpsInd.innerHTML=has?'🛰️':'🌐';
-        gpsInd.style.color=has?'#4CAF50':'#ff4444';
+function startScanLegacy() {
+    if (scanning) {
+        stopCam();
+        frame.style.display = 'none';
+        return;
     }
-    function initGPS(){
-        if(!navigator.geolocation){updateGPS(0); return;}
-        navigator.geolocation.getCurrentPosition(
-            p=>{gps={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy}; updateGPS(1);},
-            ()=>updateGPS(0),
-            {enableHighAccuracy:true,timeout:8000}
-        );
-        watchId=navigator.geolocation.watchPosition(
-            p=>{gps={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy}; updateGPS(1);},
-            ()=>updateGPS(0),
-            {enableHighAccuracy:true,maximumAge:0}
-        );
+    
+    scanning = true;
+    frame.style.display = 'block';
+    torchBtn.innerHTML = '🔦 OFF';
+    
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Camera not supported on this device');
+        stopCam();
+        frame.style.display = 'none';
+        return;
     }
-
-    // ----- CAMERA CONTROL -----
-    function stopCam(){
-        if(stream){
-            stream.getTracks().forEach(t=>t.stop());
-            stream=null;
-        }
-        scanning=false;
-    }
-    async function startScan(){
-        if(scanning){
-            stopCam();
-            frame.style.display='none';
-            return;
-        }
-        scanning=true;
-        frame.style.display='block';
-        torch.innerText='🔦 OFF';
-        torch.style.background='#000c';
-        torch.style.color='#fc0';
-        try{
-            stream = await navigator.mediaDevices.getUserMedia({
-                video:{facingMode:'environment', width:640, height:480}
-            });
-            video.srcObject = stream;
-            await video.play();
-            const codeReader = new ZXing.BrowserMultiFormatReader();
-            codeReader.decodeFromVideoElement(video, (result, err) => {
-                if(result){
-                    onDecode(result.getText(), result.getBarcodeFormat());
+    
+    navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+    }).then(function(s) {
+        stream = s;
+        videoElement.srcObject = stream;
+        videoElement.play();
+        
+        // Use legacy ZXing
+        try {
+            var codeReader = new ZXing.BrowserMultiFormatReader();
+            codeReader.decodeFromVideoElement(videoElement, function(result, err) {
+                if (result) {
+                    onDecodeLegacy(result.getText(), result.getBarcodeFormat());
                     codeReader.reset();
                     stopCam();
-                    frame.style.display='none';
+                    frame.style.display = 'none';
                 }
             });
-        }catch(e){
-            console.log(e);
-            alert('Camera failed');
+        } catch(e) {
+            alert('Scanner error: ' + e.message);
             stopCam();
-            frame.style.display='none';
-            scanning=false;
+            frame.style.display = 'none';
         }
-    }
-
-    // ----- DECODE HANDLER -----
-    function onDecode(code, type){
-        playBeep();
-        scanCount++;
-        scans.push({num:scanCount, code, type: type||'QR_CODE', time:new Date().toISOString(), loc:gps});
-        const span=document.createElement('span');
-        span.innerHTML = scanCount+' '+code+(gps?' 📍':'')+' ['+(type||'QR')+']';
-        box.appendChild(span);
-        box.scrollTop = box.scrollHeight;
-    }
-
-    // ----- CLEAR, STATUS NAVIGATION -----
-    function clearAll(){
-        scanCount=0;
-        scans=[];
-        box.innerHTML='';
-    }
-    function showStatus(){
-        if(!scans.length){alert('Scan first'); return;}
-        document.getElementById('labelBlock').style.display='none';
-        document.getElementById('scanBtn').style.display='none';
-        leftTxt.innerText='SELECT STATUS';
-        document.getElementById('statusScreen').style.display='flex';
-    }
-    function goBack(){
-        document.getElementById('statusScreen').style.display='none';
-        document.getElementById('labelBlock').style.display='flex';
-        document.getElementById('scanBtn').style.display='flex';
-        leftTxt.innerText='SCAN QR';
-    }
-    function etaCalc(st){
-        const d=new Date();
-        if(st.includes('Received')) d.setDate(d.getDate()+7);
-        else if(st.includes('Picked')) d.setDate(d.getDate()-1);
-        else if(st.includes('Depart')) d.setDate(d.getDate()-2);
-        else if(st.includes('Arrival')) d.setHours(d.getHours()-12);
-        else if(st.includes('Local')) d.setHours(d.getHours()-36);
-        else if(st.includes('Out')) d.setDate(d.getDate()-2);
-        return d.toLocaleString('en-US',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-    }
-    async function submitStatus(status){
-        if(!scans.length) return;
-        if(!gps){
-            try{
-                gps = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:5000}));
-                updateGPS(!!gps);
-            }catch(e){}
-        }
-        const packs = scans.map(s=>({
-            LABEL_ID:s.code,
-            BARCODE_TYPE:s.type,
-            TIME:new Date().toLocaleTimeString(),
-            DATE:new Date().toLocaleDateString(),
-            STATUS:status,
-            LOCATION:gps?`${gps.lat},${gps.lng}`:'unavailable',
-            ETA:etaCalc(status),
-            TIMESTAMP:new Date().toISOString()
-        }));
-        const body={scans:packs, status, timestamp:new Date().toISOString(), location:gps, batch_id:Date.now()+''};
-        try{
-            let r=await fetch(XANO_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-            if(r.ok){
-                popup(status,packs);
-            }else{
-                alert('Xano error '+r.status);
-            }
-        }catch(e){alert('Network fail');}
-    }
-    function popup(st,packs){
-        let html=packs.map(p=>`${p.LABEL_ID.slice(0,8)}… ETA:${p.ETA}`).join('<br>');
-        document.getElementById('popupStatus').innerText='Status: '+st;
-        document.getElementById('popupScanCount').innerHTML=scanCount+' QR(s)<br>'+html;
-        document.getElementById('successPopup').style.display='flex';
-        setTimeout(()=>{
-            document.getElementById('successPopup').style.display='none';
-            clearAll();
-            goBack();
-        },4000);
-    }
-
-    // ========== KEYPAD FUNCTIONS (FIXED FOR TOUCH) ==========
-    window.add = function(c){
-        const s=document.createElement('span');
-        s.innerText = c;
-        box.appendChild(s);
-        box.scrollTop = box.scrollHeight;
-    };
-    window.bs = function(){
-        if(box.lastChild) box.removeChild(box.lastChild);
-    };
-    window.showPad = function(mode){
-        document.getElementById('numericPad').style.display='none';
-        document.getElementById('qwertyPad').style.display='none';
-        document.getElementById('symbolPad').style.display='none';
-        document.getElementById('tabN').classList.remove('active');
-        document.getElementById('tabQ').classList.remove('active');
-        document.getElementById('tabS').classList.remove('active');
-        if(mode==='n'){
-            document.getElementById('numericPad').style.display='flex';
-            document.getElementById('tabN').classList.add('active');
-        } else if(mode==='q'){
-            document.getElementById('qwertyPad').style.display='block';
-            document.getElementById('tabQ').classList.add('active');
-        } else {
-            document.getElementById('symbolPad').style.display='block';
-            document.getElementById('tabS').classList.add('active');
-        }
-    };
-
-    // FLASH (torch) with error prevention
-    window.toggleFlash = function(){
-        if(!stream) return;
-        const track = stream.getVideoTracks()[0];
-        if(!track || !track.applyConstraints) return;
-        const newState = torch.innerText.includes('OFF') ? 'ON' : 'OFF';
-        torch.innerText = newState==='ON' ? '🔦 ON' : '🔦 OFF';
-        flash.style.background = newState==='ON' ? '#4CAF50' : '#0004';
-        try{
-            track.applyConstraints({advanced:[{torch: newState==='ON'}]});
-        }catch(e){}
-    };
-
-    // CLOCK
-    function updateClock(){
-        const d=new Date();
-        const m=(d.getMonth()+1).toString().padStart(2,'0');
-        const day=d.getDate().toString().padStart(2,'0');
-        let h=d.getHours()%12; if(h===0) h=12;
-        const min=d.getMinutes().toString().padStart(2,'0');
-        const ap=d.getHours()>=12?'PM':'AM';
-        document.getElementById('timeDisplay').innerText=m+'/'+day+' '+h+':'+min+' '+ap;
-        document.getElementById('timeDisplay2').innerText=m+'/'+day+' '+h+':'+min+' '+ap;
-    }
-    setInterval(updateClock,1000);
-
-    // ========== INIT ==========
-    window.onload=function(){
-        initGPS();
-        updateClock();
-        showPad('n');   // numeric default
-
-        // DIRECT EVENT LISTENERS (no complex delegation)
-        document.getElementById('scanBtn').addEventListener('click', startScan);
-        document.getElementById('clearBtn').addEventListener('click', clearAll);
-        document.getElementById('statusBtn').addEventListener('click', showStatus);
-        document.getElementById('backToScan').addEventListener('click', goBack);
-        document.querySelectorAll('.statBtn[data-st]').forEach(b=>{
-            b.addEventListener('click', ()=>submitStatus(b.dataset.st));
-        });
-
-        if(!navigator.mediaDevices) alert('No camera support');
-    };
-
-    window.addEventListener('beforeunload',()=>{
-        if(watchId) navigator.geolocation.clearWatch(watchId);
+    }).catch(function(err) {
+        alert('Camera error: ' + err.message);
         stopCam();
+        frame.style.display = 'none';
     });
-})();
+}
+
+// ========== DECODE HANDLER ==========
+function onDecodeLegacy(code, type) {
+    // Beep
+    try {
+        var audio = new Audio();
+        audio.src = 'data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVoAAACAgICAf39/f3+AgIAAAACAgIAAAAAAAAAAAAD//wAAgIAAAAD//wAAgIAAAAD//wAAgID//wAAgID//wAAgIAAAAD//wAA';
+        audio.play();
+    } catch(e) {}
+    
+    scanCount++;
+    var scanObj = {
+        num: scanCount,
+        code: code,
+        type: type || 'QR_CODE',
+        time: new Date().toISOString(),
+        loc: gps
+    };
+    scans.push(scanObj);
+    
+    var span = document.createElement('span');
+    var gpsIcon = gps ? ' 📍' : '';
+    span.innerHTML = scanCount + ' ' + code + gpsIcon + ' [' + (type || 'QR') + ']';
+    box.appendChild(span);
+    box.scrollTop = box.scrollHeight;
+}
+
+// ========== CLEAR ==========
+function clearAllLegacy() {
+    scanCount = 0;
+    scans = [];
+    box.innerHTML = '';
+}
+
+// ========== STATUS SCREEN ==========
+function showStatusLegacy() {
+    if (scans.length == 0) {
+        alert('Scan a barcode first');
+        return;
+    }
+    labelBlock.style.display = 'none';
+    scanBtn.style.display = 'none';
+    leftTxt.innerHTML = 'SELECT STATUS';
+    statusScreen.style.display = 'block';
+}
+
+function hideStatusLegacy() {
+    statusScreen.style.display = 'none';
+    labelBlock.style.display = 'block';
+    scanBtn.style.display = 'block';
+    leftTxt.innerHTML = 'SCAN QR';
+}
+
+// ========== ETA CALC ==========
+function calculateETA(status) {
+    var d = new Date();
+    if (status.indexOf('Received') > -1) {
+        d.setDate(d.getDate() + 7);
+    } else if (status.indexOf('Picked') > -1) {
+        d.setDate(d.getDate() - 1);
+    } else if (status.indexOf('Depart') > -1) {
+        d.setDate(d.getDate() - 2);
+    } else if (status.indexOf('Arrival') > -1) {
+        d.setHours(d.getHours() - 12);
+    } else if (status.indexOf('Local') > -1) {
+        d.setHours(d.getHours() - 36);
+    } else if (status.indexOf('Out') > -1) {
+        d.setDate(d.getDate() - 2);
+    }
+    return (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + 
+           (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+}
+
+// ========== SUBMIT STATUS ==========
+function submitStatusLegacy(statusText) {
+    if (scans.length == 0) return;
+    
+    // Try to get fresh GPS
+    if (!gps && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                gps = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                doSubmit(statusText);
+            },
+            function() {
+                doSubmit(statusText);
+            }
+        );
+    } else {
+        doSubmit(statusText);
+    }
+}
+
+function doSubmit(statusText) {
+    var packs = [];
+    for (var i = 0; i < scans.length; i++) {
+        var s = scans[i];
+        var eta = calculateETA(statusText);
+        packs.push({
+            LABEL_ID: s.code,
+            BARCODE_TYPE: s.type,
+            TIME: new Date().toLocaleTimeString(),
+            DATE: new Date().toLocaleDateString(),
+            STATUS: statusText,
+            LOCATION: gps ? gps.lat + ',' + gps.lng : 'unavailable',
+            ETA: eta,
+            TIMESTAMP: new Date().toISOString()
+        });
+    }
+    
+    var body = {
+        scans: packs,
+        status: statusText,
+        timestamp: new Date().toISOString(),
+        location: gps,
+        batch_id: new Date().getTime() + ''
+    };
+    
+    // Use XMLHttpRequest for max compatibility
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', XANO_URL, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            if (xhr.status == 200 || xhr.status == 201) {
+                showPopup(statusText, packs);
+            } else {
+                alert('Server error: ' + xhr.status);
+            }
+        }
+    };
+    xhr.onerror = function() {
+        alert('Network error - check connection');
+    };
+    xhr.send(JSON.stringify(body));
+}
+
+function showPopup(status, packs) {
+    var html = '';
+    for (var i = 0; i < packs.length; i++) {
+        html += packs[i].LABEL_ID.substring(0,8) + '… ETA:' + packs[i].ETA + '<br>';
+    }
+    popupStatus.innerHTML = 'Status: ' + status;
+    popupScanCount.innerHTML = scanCount + ' QR(s)<br>' + html;
+    successPopup.style.display = 'block';
+    
+    setTimeout(function() {
+        successPopup.style.display = 'none';
+        clearAllLegacy();
+        hideStatusLegacy();
+    }, 4000);
+}
+
+// ========== KEYPAD FUNCTIONS ==========
+function addChar(c) {
+    var span = document.createElement('span');
+    span.innerHTML = c;
+    box.appendChild(span);
+    box.scrollTop = box.scrollHeight;
+}
+
+function backspaceLegacy() {
+    if (box.lastChild) {
+        box.removeChild(box.lastChild);
+    }
+}
+
+function showPadLegacy(mode) {
+    document.getElementById('numericPad').style.display = 'none';
+    document.getElementById('qwertyPad').style.display = 'none';
+    document.getElementById('symbolPad').style.display = 'none';
+    
+    document.getElementById('tabN').className = '';
+    document.getElementById('tabQ').className = '';
+    document.getElementById('tabS').className = '';
+    
+    if (mode == 'n') {
+        document.getElementById('numericPad').style.display = 'block';
+        document.getElementById('tabN').className = 'active';
+    } else if (mode == 'q') {
+        document.getElementById('qwertyPad').style.display = 'block';
+        document.getElementById('tabQ').className = 'active';
+    } else {
+        document.getElementById('symbolPad').style.display = 'block';
+        document.getElementById('tabS').className = 'active';
+    }
+}
+
+// ========== FLASH ==========
+function toggleFlashLegacy() {
+    if (!stream) return;
+    var track = stream.getVideoTracks()[0];
+    if (!track || !track.applyConstraints) return;
+    
+    var isOn = torchBtn.innerHTML.indexOf('OFF') > -1;
+    torchBtn.innerHTML = isOn ? '🔦 ON' : '🔦 OFF';
+    
+    try {
+        track.applyConstraints({ advanced: [{ torch: isOn }] });
+    } catch(e) {}
+}
+
+// ========== INIT ==========
+window.onload = function() {
+    initGPS();
+    updateTime();
+    showPadLegacy('n'); // Show numeric pad by default
+};
+
+// Cleanup
+window.onbeforeunload = function() {
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+    }
+    stopCam();
+};
 </script>
 </body>
 </html>
