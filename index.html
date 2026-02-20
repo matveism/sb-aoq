@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>XANO WORKING CAMERA + GPS ✅</title>
+  <title>SCANNER ANDROID 5.0.2 ✅</title>
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
+  <!-- jsQR for QR scanning -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.0.0/dist/jsQR.min.js"></script>
   
   <style>
     /* YOUR ORIGINAL CSS - PRESERVED COMPLETELY */
@@ -454,6 +457,47 @@
       cursor: pointer;
     }
     
+    .flash-btn {
+      background: #ffaa00;
+      color: #000;
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    
+    .flash-btn.active {
+      background: #ffff00;
+      box-shadow: 0 0 15px yellow;
+    }
+    
+    #qr-reader {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: #111;
+      overflow: hidden;
+    }
+    
+    #cameraCanvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+    }
+    
+    .camera-footer {
+      background: #003366;
+      color: white;
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
     .scan-region-highlight {
       border: 3px solid #00ff00 !important;
       border-radius: 20px !important;
@@ -566,43 +610,6 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* Hidden file input for camera */
-    #cameraInput {
-      display: none;
-    }
-    
-    .camera-preview {
-      flex: 1;
-      background: #111;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: white;
-    }
-    
-    .camera-preview video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .capture-btn {
-      background: #006400;
-      color: white;
-      font-size: 24px;
-      padding: 20px;
-      border-radius: 60px;
-      width: 80px;
-      height: 80px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 20px auto;
-      cursor: pointer;
-      border: 4px solid white;
-    }
-
     @media (max-height: 600px) {
       .key { padding: 6px 0; font-size: 14px; }
       .lightblue-stretch { min-height: 80px; }
@@ -648,13 +655,9 @@
         <div class="action-btn" id="escBtn">ESC</div>
         <div class="action-btn" id="enterBtn">ENTER</div>
       </div>
-      
-      <!-- SIMPLE FILE INPUT FOR CAMERA -->
-      <input type="file" id="cameraInput" accept="image/*" capture="environment">
       <div class="scan-hard-button" id="scanButton">
         <span>◰</span> SCAN <span>◰</span>
       </div>
-      
       <div class="keypad-mode-bar">
         <div class="mode-btn active" data-mode="qwerty">QWERTY</div>
         <div class="mode-btn" data-mode="numeric">123</div>
@@ -695,6 +698,25 @@
       </div>
     </div>
   </div>
+
+  <!-- CAMERA MODAL WITH CANVAS FOR LEGACY WEBKIT -->
+  <div id="cameraModal" class="camera-modal">
+    <div class="camera-header">
+      <span style="font-weight:bold;">◰ SCAN BARCODE</span>
+      <div style="display: flex;">
+        <div class="flash-btn" id="flashlightBtn">🔦 OFF</div>
+        <div class="close-cam" id="closeCameraBtn">✕ CLOSE</div>
+      </div>
+    </div>
+    <div id="qr-reader">
+      <video id="cameraVideo" style="display: none;"></video>
+      <canvas id="cameraCanvas" width="640" height="480"></canvas>
+    </div>
+    <div class="camera-footer">
+      <span>⬤ POSITION BARCODE IN FRAME</span>
+      <span id="flashStatus" style="font-size: 11px;">FLASH: OFF</span>
+    </div>
+  </div>
   
   <div id="statusModal" class="status-modal">
     <div class="status-box">
@@ -714,7 +736,8 @@
   </div>
 
   <script>
-    // ANDROID 5.0.2 COMPATIBLE - USING FILE INPUT FOR CAMERA
+    // ANDROID 5.0.2 (CHROME 39) COMPATIBLE VERSION
+    // USING LEGACY webkitGetUserMedia AND jsQR
     (function() {
       // ========== YOUR XANO URL ==========
       var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
@@ -725,14 +748,22 @@
       var enterBtn = document.getElementById('enterBtn');
       var escBtn = document.getElementById('escBtn');
       var scanButton = document.getElementById('scanButton');
-      var cameraInput = document.getElementById('cameraInput');
+      var cameraModal = document.getElementById('cameraModal');
+      var closeCameraBtn = document.getElementById('closeCameraBtn');
       var statusModal = document.getElementById('statusModal');
       var closeStatusBtn = document.getElementById('closeStatusBtn');
+      var flashlightBtn = document.getElementById('flashlightBtn');
+      var flashStatus = document.getElementById('flashStatus');
       var connectionLed = document.getElementById('connectionLed');
       var connectionText = document.getElementById('connectionText');
       var gpsLed = document.getElementById('gpsLed');
       var gpsText = document.getElementById('gpsText');
       var gpsLocation = document.getElementById('gpsLocation');
+      
+      // Camera elements
+      var video = document.getElementById('cameraVideo');
+      var canvas = document.getElementById('cameraCanvas');
+      var ctx = canvas.getContext('2d');
 
       // ========== STATE ==========
       var scanCounter = 1;
@@ -740,6 +771,10 @@
       var pendingBarcode = null;
       var currentLat = '';
       var currentLng = '';
+      var localStream = null;
+      var scanning = false;
+      var scanInterval = null;
+      var flashOn = false;
 
       // ========== GPS ==========
       function startGPS() {
@@ -767,7 +802,7 @@
             gpsLed.className = 'gps-led gps-red';
             gpsText.textContent = 'GPS: Error';
           },
-          { timeout: 10000 }
+          { timeout: 10000, enableHighAccuracy: true }
         );
       }
 
@@ -890,45 +925,116 @@
         }
       }
 
-      // ========== SIMPLE BARCODE SCANNER USING IMAGE ==========
-      function scanImage(file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          var img = new Image();
-          img.onload = function() {
-            // Use BarcodeDetector if available (Android 5 doesn't have it)
-            if ('BarcodeDetector' in window) {
-              var detector = new BarcodeDetector();
-              detector.detect(img).then(function(barcodes) {
-                if (barcodes.length > 0) {
-                  inputEl.textContent = barcodes[0].rawValue;
-                  pendingBarcode = barcodes[0].rawValue;
-                  statusModal.style.display = 'flex';
-                } else {
-                  alert('No barcode found in image. Please try again or enter manually.');
-                }
-              })['catch'](function() {
-                // Fallback - prompt manual entry
-                var manual = prompt('Barcode detection failed. Enter barcode manually:');
-                if (manual) {
-                  inputEl.textContent = manual;
-                  pendingBarcode = manual;
-                  statusModal.style.display = 'flex';
-                }
-              });
-            } else {
-              // Android 5 - no BarcodeDetector, prompt manual entry
-              var manual = prompt('Camera opened. Please enter barcode manually:');
-              if (manual) {
-                inputEl.textContent = manual;
-                pendingBarcode = manual;
-                statusModal.style.display = 'flex';
-              }
-            }
-          };
-          img.src = e.target.result;
+      // ========== LEGACY CAMERA API FOR ANDROID 5 ==========
+      function startCamera() {
+        // Use legacy webkitGetUserMedia for Android 5
+        navigator.webkitGetUserMedia = navigator.webkitGetUserMedia || navigator.getUserMedia;
+        
+        if (!navigator.webkitGetUserMedia) {
+          alert('Camera not supported on this device');
+          return false;
+        }
+        
+        var constraints = {
+          video: {
+            facingMode: 'environment',
+            optional: []
+          },
+          audio: false
         };
-        reader.readAsDataURL(file);
+        
+        navigator.webkitGetUserMedia(
+          constraints,
+          function(stream) {
+            localStream = stream;
+            
+            // Legacy WebKit requires URL.createObjectURL
+            video.src = window.URL.createObjectURL(stream);
+            video.play();
+            
+            scanning = true;
+            
+            // Start scanning loop
+            if (scanInterval) clearInterval(scanInterval);
+            scanInterval = setInterval(scanFrame, 200); // 5 fps
+          },
+          function(err) {
+            alert('Camera error: ' + err.message);
+            cameraModal.style.display = 'none';
+          }
+        );
+        
+        return true;
+      }
+
+      function scanFrame() {
+        if (!scanning || !video.videoWidth) return;
+        
+        // Draw video frame to canvas
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Get image data for jsQR
+        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Use jsQR to scan
+        var code = jsQR(imageData.data, canvas.width, canvas.height, {
+          inversionAttempts: 'dontInvert'
+        });
+        
+        if (code) {
+          // Found a QR code
+          if (navigator.vibrate) navigator.vibrate(200);
+          stopCamera();
+          inputEl.textContent = code.data;
+          pendingBarcode = code.data;
+          statusModal.style.display = 'flex';
+        }
+      }
+
+      function stopCamera() {
+        scanning = false;
+        if (scanInterval) {
+          clearInterval(scanInterval);
+          scanInterval = null;
+        }
+        
+        if (localStream) {
+          var tracks = localStream.getTracks();
+          for (var i = 0; i < tracks.length; i++) {
+            tracks[i].stop();
+          }
+          localStream = null;
+        }
+        
+        video.src = '';
+      }
+
+      function toggleFlashlight() {
+        if (!localStream) return;
+        
+        var track = localStream.getVideoTracks()[0];
+        if (!track) return;
+        
+        try {
+          if (flashOn) {
+            track.applyConstraints({ advanced: [{ torch: false }] });
+            flashlightBtn.textContent = '🔦 OFF';
+            flashStatus.textContent = 'FLASH: OFF';
+            flashOn = false;
+          } else {
+            track.applyConstraints({ advanced: [{ torch: true }] });
+            flashlightBtn.textContent = '🔦 ON';
+            flashStatus.textContent = 'FLASH: ON';
+            flashOn = true;
+          }
+        } catch(e) {}
+      }
+
+      function closeCamera() {
+        stopCamera();
+        cameraModal.style.display = 'none';
       }
 
       // ========== EVENT HANDLERS ==========
@@ -946,19 +1052,19 @@
         inputEl.textContent = '';
       });
 
-      // SCAN BUTTON - opens camera via file input
+      closeCameraBtn.addEventListener('click', closeCamera);
+
       scanButton.addEventListener('click', function() {
-        cameraInput.click();
+        cameraModal.style.display = 'flex';
+        // Small delay to let modal open
+        setTimeout(function() {
+          if (!startCamera()) {
+            cameraModal.style.display = 'none';
+          }
+        }, 200);
       });
 
-      // Handle camera image
-      cameraInput.addEventListener('change', function(e) {
-        if (e.target.files && e.target.files[0]) {
-          scanImage(e.target.files[0]);
-        }
-        // Reset input so same file can be selected again
-        cameraInput.value = '';
-      });
+      flashlightBtn.addEventListener('click', toggleFlashlight);
 
       // Status options
       var options = document.querySelectorAll('.status-option');
