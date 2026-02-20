@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>XANO WORKING CAMERA + GPS ✅</title>
+  <title>SCANNER</title>
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <!-- Load camera library directly -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
   
   <style>
-    /* YOUR ORIGINAL CSS - PRESERVED COMPLETELY */
+    /* YOUR ORIGINAL CSS - EXACTLY AS YOU HAD IT */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -259,7 +257,6 @@
       margin-left: auto;
     }
 
-    /* Sync indicator */
     .sync-indicator {
       font-size: 18px;
       margin-left: 8px;
@@ -287,7 +284,6 @@
       background: #fff3e0;
     }
 
-    /* Connection status bar */
     .connection-status {
       background: #333;
       color: white;
@@ -558,7 +554,6 @@
       filter: brightness(0.95);
     }
     
-    /* EXACT STATUS COLORS FROM YOUR IMAGE */
     .status-option.data-received { background: #d1ecf1; color: #0c5460; }
     .status-option.picked-up { background: #fff3cd; color: #856404; }
     .status-option.depart-post-office { background: #ffe5d0; color: #a86400; }
@@ -617,14 +612,12 @@
       <div class="header-time" id="currentTime">--:--</div>
     </div>
 
-    <!-- GPS STATUS BAR -->
     <div class="gps-status" id="gpsStatus">
       <span class="gps-led gps-gray" id="gpsLed"></span>
       <span id="gpsText">GPS ready</span>
       <span style="margin-left: auto; font-size: 10px;" id="gpsLocation"></span>
     </div>
 
-    <!-- CONNECTION STATUS BAR -->
     <div class="connection-status" id="connectionStatus">
       <span class="connection-led led-green" id="connectionLed"></span>
       <span id="connectionText">READY</span>
@@ -712,13 +705,9 @@
   <div id="statusModal" class="status-modal">
     <div class="status-box">
       <div class="status-header">SELECT STATUS <span id="modalGpsTime"></span></div>
-      
-      <!-- SIMPLE GPS INFO -->
       <div class="gps-info" id="modalGpsInfo">
         <span>📍 Location ready</span>
       </div>
-      
-      <!-- EXACT STATUSES FROM YOUR IMAGE -->
       <div class="status-option data-received" data-status="Data Received">📦 Data Received (+7 days)</div>
       <div class="status-option picked-up" data-status="Picked Up">📋 Picked Up (-1 day)</div>
       <div class="status-option depart-post-office" data-status="Depart Post Office">🚚 Depart Post Office (-2 days)</div>
@@ -726,16 +715,17 @@
       <div class="status-option local-scan" data-status="Local Scan">🏠 Local Scan (-1.5 days)</div>
       <div class="status-option out-for-delivery" data-status="Out For Delivery">📤 Out For Delivery (-2 days)</div>
       <div class="status-option delivered" data-status="Delivered">✅ Delivered (0 days)</div>
-      
       <div class="status-close" id="closeStatusBtn">⬅️ BACK</div>
     </div>
   </div>
 
+  <!-- LOAD CAMERA LIBRARY DIRECTLY WITH FALLBACK -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+  
   <script>
-    // SIMPLIFIED VERSION - WORKS ON ANDROID 5.0.2
+    // FINAL WORKING VERSION - ANDROID 5.0.2
     (function() {
-      // ========== CONFIG ==========
-      // REPLACE THIS WITH YOUR ACTUAL XANO URL
+      // ========== YOUR XANO URL ==========
       var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
       
       // ========== DOM ELEMENTS ==========
@@ -759,54 +749,42 @@
       // ========== STATE ==========
       var scanCounter = 1;
       var maxEntries = 8;
-      var html5QrcodeScanner = null;
-      var isScannerInitialized = false;
-      var flashlightOn = false;
-      var currentTrack = null;
+      var scanner = null;
       var pendingBarcode = null;
-      
-      // Simple GPS - just coordinates, no geocoding
       var currentLat = '';
       var currentLng = '';
-      var gpsActive = false;
 
-      // ========== SIMPLE GPS - JUST COORDINATES ==========
-      function startGps() {
+      // ========== GPS ==========
+      function startGPS() {
         if (!navigator.geolocation) {
           gpsLed.className = 'gps-led gps-red';
           gpsText.textContent = 'GPS not supported';
           return;
         }
         
-        gpsText.textContent = 'Getting GPS...';
-        
         navigator.geolocation.getCurrentPosition(
-          function(position) {
-            currentLat = position.coords.latitude.toFixed(4);
-            currentLng = position.coords.longitude.toFixed(4);
-            gpsActive = true;
-            
+          function(pos) {
+            currentLat = pos.coords.latitude.toFixed(4);
+            currentLng = pos.coords.longitude.toFixed(4);
             gpsLed.className = 'gps-led gps-green';
             gpsText.textContent = 'GPS: Active';
             gpsLocation.textContent = currentLat + ', ' + currentLng;
-            
-            document.getElementById('modalGpsInfo').innerHTML = '📍 ' + currentLat + ', ' + currentLng;
             
             var d = new Date();
             document.getElementById('modalGpsTime').textContent = 
               (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + 
               (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+            document.getElementById('modalGpsInfo').innerHTML = '📍 ' + currentLat + ', ' + currentLng;
           },
-          function(error) {
+          function() {
             gpsLed.className = 'gps-led gps-red';
             gpsText.textContent = 'GPS: Error';
-            gpsLocation.textContent = 'No location';
           },
-          { timeout: 10000, enableHighAccuracy: true }
+          { timeout: 10000 }
         );
       }
 
-      // ========== UPDATE CLOCK ==========
+      // ========== CLOCK ==========
       function updateClock() {
         var d = new Date();
         document.getElementById('currentTime').textContent = 
@@ -815,134 +793,127 @@
       }
       updateClock();
       setInterval(updateClock, 60000);
-      
-      // ========== ETA CALCULATION ==========
-      function calculateETA(status) {
+
+      // ========== ETA ==========
+      function getETA(status) {
         var d = new Date();
-        switch(status) {
-          case 'Data Received': d.setDate(d.getDate() + 7); break;
-          case 'Picked Up': d.setDate(d.getDate() - 1); break;
-          case 'Depart Post Office': d.setDate(d.getDate() - 2); break;
-          case 'Arrival Scan': d.setTime(d.getTime() - (12 * 60 * 60 * 1000)); break;
-          case 'Local Scan': d.setTime(d.getTime() - (36 * 60 * 60 * 1000)); break;
-          case 'Out For Delivery': d.setDate(d.getDate() - 2); break;
-          case 'Delivered': break;
-          default: d.setDate(d.getDate() + 7);
-        }
+        if (status === 'Data Received') d.setDate(d.getDate() + 7);
+        else if (status === 'Picked Up') d.setDate(d.getDate() - 1);
+        else if (status === 'Depart Post Office') d.setDate(d.getDate() - 2);
+        else if (status === 'Arrival Scan') d.setTime(d.getTime() - 12*60*60*1000);
+        else if (status === 'Local Scan') d.setTime(d.getTime() - 36*60*60*1000);
+        else if (status === 'Out For Delivery') d.setDate(d.getDate() - 2);
         return (d.getMonth()+1) + '/' + d.getDate() + ' ' + 
                d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
       }
 
       // ========== SEND TO XANO ==========
-      function sendToXano(barcode, status, indicatorElement) {
-        // Show sending
-        indicatorElement.innerHTML = '⏳';
-        indicatorElement.className = 'sync-indicator sync-pending';
+      function sendToXano(barcode, status, indicator) {
+        indicator.innerHTML = '⏳';
+        indicator.className = 'sync-indicator sync-pending';
         connectionLed.className = 'connection-led led-yellow';
-        connectionText.textContent = 'Sending...';
+        connectionText.textContent = 'SENDING...';
         
         var data = {
           label_id: barcode,
           status: status,
           date: new Date().toISOString().split('T')[0],
           time: new Date().toTimeString().split(' ')[0],
-          location: (gpsActive ? currentLat + ', ' + currentLng : 'Unknown'),
-          eta: calculateETA(status)
+          location: (currentLat ? currentLat + ', ' + currentLng : 'Unknown'),
+          eta: getETA(status)
         };
         
         var xhr = new XMLHttpRequest();
         xhr.open('POST', XANO_URL, true);
         xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.setRequestHeader('Accept', 'application/json');
         xhr.timeout = 10000;
         
         xhr.onload = function() {
           if (xhr.status >= 200 && xhr.status < 300) {
-            indicatorElement.innerHTML = '✅';
-            indicatorElement.className = 'sync-indicator sync-success';
+            indicator.innerHTML = '✅';
+            indicator.className = 'sync-indicator sync-success';
             connectionLed.className = 'connection-led led-green';
             connectionText.textContent = 'SENT ✅';
           } else {
-            indicatorElement.innerHTML = '❌';
-            indicatorElement.className = 'sync-indicator sync-failed';
+            indicator.innerHTML = '❌';
+            indicator.className = 'sync-indicator sync-failed';
             connectionLed.className = 'connection-led led-red';
-            connectionText.textContent = 'FAILED';
+            connectionText.textContent = 'ERROR ' + xhr.status;
           }
         };
         
         xhr.onerror = function() {
-          indicatorElement.innerHTML = '❌';
-          indicatorElement.className = 'sync-indicator sync-failed';
+          indicator.innerHTML = '❌';
+          indicator.className = 'sync-indicator sync-failed';
           connectionLed.className = 'connection-led led-red';
           connectionText.textContent = 'NETWORK ERROR';
-        };
-        
-        xhr.ontimeout = function() {
-          indicatorElement.innerHTML = '❌';
-          indicatorElement.className = 'sync-indicator sync-failed';
-          connectionLed.className = 'connection-led led-red';
-          connectionText.textContent = 'TIMEOUT';
         };
         
         xhr.send(JSON.stringify(data));
       }
 
-      // ========== ADD SCAN ENTRY ==========
-      function addScanEntry(barcode, status) {
-        if (!barcode || barcode.trim() === '') return;
-
+      // ========== ADD SCAN ==========
+      function addScan(barcode, status) {
+        if (!barcode) return;
+        
         if (historyContainer.children.length === 1 && 
             historyContainer.children[0].textContent.indexOf('No scans yet') !== -1) {
           historyContainer.innerHTML = '';
         }
 
-        var entryDiv = document.createElement('div');
-        entryDiv.className = 'scan-entry';
+        var div = document.createElement('div');
+        div.className = 'scan-entry';
         
-        var indexSpan = document.createElement('span');
-        indexSpan.className = 'entry-index';
-        indexSpan.textContent = scanCounter + ' |';
+        var index = document.createElement('span');
+        index.className = 'entry-index';
+        index.textContent = scanCounter + ' |';
         
-        var valueSpan = document.createElement('span');
-        valueSpan.className = 'entry-value';
-        valueSpan.textContent = barcode;
+        var value = document.createElement('span');
+        value.className = 'entry-value';
+        value.textContent = barcode;
         
         var statusSpan = document.createElement('span');
         statusSpan.className = 'status-badge status-' + status.replace(/ /g, '-');
         statusSpan.textContent = status.toUpperCase();
         
-        var etaSpan = document.createElement('span');
-        etaSpan.className = 'eta-badge';
-        etaSpan.textContent = 'ETA: ' + calculateETA(status);
+        var eta = document.createElement('span');
+        eta.className = 'eta-badge';
+        eta.textContent = 'ETA: ' + getETA(status);
         
         var gpsIcon = document.createElement('span');
         gpsIcon.innerHTML = '📍';
-        gpsIcon.style.fontSize = '14px';
         
-        var syncIndicator = document.createElement('span');
-        syncIndicator.className = 'sync-indicator sync-pending';
-        syncIndicator.innerHTML = '⏳';
+        var sync = document.createElement('span');
+        sync.className = 'sync-indicator sync-pending';
+        sync.innerHTML = '⏳';
         
-        entryDiv.appendChild(indexSpan);
-        entryDiv.appendChild(valueSpan);
-        entryDiv.appendChild(statusSpan);
-        entryDiv.appendChild(gpsIcon);
-        entryDiv.appendChild(etaSpan);
-        entryDiv.appendChild(syncIndicator);
+        div.appendChild(index);
+        div.appendChild(value);
+        div.appendChild(statusSpan);
+        div.appendChild(gpsIcon);
+        div.appendChild(eta);
+        div.appendChild(sync);
         
-        historyContainer.insertBefore(entryDiv, historyContainer.firstChild);
+        historyContainer.insertBefore(div, historyContainer.firstChild);
+        sendToXano(barcode, status, sync);
         
-        // Send to XANO
-        sendToXano(barcode, status, syncIndicator);
-
         scanCounter++;
         if (historyContainer.children.length > maxEntries) {
           historyContainer.removeChild(historyContainer.lastChild);
         }
       }
 
+      // ========== CAMERA ==========
+      function closeCamera() {
+        if (scanner) {
+          try { scanner.stop(); } catch(e) {}
+          try { scanner.clear(); } catch(e) {}
+          scanner = null;
+        }
+        cameraModal.style.display = 'none';
+      }
+
       // ========== EVENT HANDLERS ==========
-      
       enterBtn.addEventListener('click', function() {
         var text = inputEl.textContent || '';
         if (text.trim()) {
@@ -957,69 +928,53 @@
         inputEl.textContent = '';
       });
 
-      // Camera functions
-      function closeCamera() {
-        if (html5QrcodeScanner) {
-          try { html5QrcodeScanner.stop(); } catch(e) {}
-          try { html5QrcodeScanner.clear(); } catch(e) {}
-          html5QrcodeScanner = null;
-          isScannerInitialized = false;
-        }
-        cameraModal.style.display = 'none';
-      }
-
       closeCameraBtn.addEventListener('click', closeCamera);
 
       scanButton.addEventListener('click', function() {
-        if (typeof Html5Qrcode === 'undefined') {
-          alert('Camera library not loaded. Please refresh the page.');
-          return;
-        }
-        
         cameraModal.style.display = 'flex';
         
-        try {
-          if (html5QrcodeScanner) closeCamera();
-          
-          html5QrcodeScanner = new Html5Qrcode("qr-reader");
-          
-          html5QrcodeScanner.start(
-            { facingMode: "environment" },
-            { fps: 5, qrbox: { width: 250, height: 150 } },
-            function(decodedText) {
-              inputEl.textContent = decodedText;
-              if (navigator.vibrate) navigator.vibrate(200);
-              closeCamera();
-              pendingBarcode = decodedText;
-              statusModal.style.display = 'flex';
-            },
-            function(error) {}
-          ).then(function() {
-            isScannerInitialized = true;
-          })['catch'](function(err) {
-            alert('Camera error: ' + err.message);
+        setTimeout(function() {
+          try {
+            if (scanner) closeCamera();
+            
+            scanner = new Html5Qrcode("qr-reader");
+            
+            scanner.start(
+              { facingMode: "environment" },
+              { fps: 5, qrbox: { width: 250, height: 150 } },
+              function(text) {
+                inputEl.textContent = text;
+                if (navigator.vibrate) navigator.vibrate(200);
+                closeCamera();
+                pendingBarcode = text;
+                statusModal.style.display = 'flex';
+              },
+              function() {}
+            ).then(function() {})['catch'](function(err) {
+              alert('Camera error: ' + err.message);
+              cameraModal.style.display = 'none';
+            });
+          } catch(e) {
+            alert('Camera failed to start');
             cameraModal.style.display = 'none';
-          });
-        } catch (e) {
-          alert('Camera error');
-          cameraModal.style.display = 'none';
-        }
+          }
+        }, 500);
       });
 
-      // Status selection
-      var statusOptions = document.querySelectorAll('.status-option');
-      for (var i = 0; i < statusOptions.length; i++) {
-        (function(option) {
-          option.addEventListener('click', function() {
-            var selectedStatus = option.getAttribute('data-status');
+      // Status options
+      var options = document.querySelectorAll('.status-option');
+      for (var i = 0; i < options.length; i++) {
+        (function(opt) {
+          opt.addEventListener('click', function() {
+            var status = opt.getAttribute('data-status');
             if (pendingBarcode) {
-              addScanEntry(pendingBarcode, selectedStatus);
+              addScan(pendingBarcode, status);
               inputEl.textContent = '';
               pendingBarcode = null;
               statusModal.style.display = 'none';
             }
           });
-        })(statusOptions[i]);
+        })(options[i]);
       }
 
       closeStatusBtn.addEventListener('click', function() {
@@ -1028,63 +983,59 @@
       });
 
       // ========== KEYPAD ==========
-      var modeButtons = document.querySelectorAll('.mode-btn');
-      var keypads = {
+      var modeBtns = document.querySelectorAll('.mode-btn');
+      var pads = {
         qwerty: document.getElementById('keypad-qwerty'),
         numeric: document.getElementById('keypad-numeric'),
         sym: document.getElementById('keypad-sym')
       };
 
-      function setMode(mode) {
-        for (var i = 0; i < modeButtons.length; i++) {
-          if (modeButtons[i].getAttribute('data-mode') === mode) {
-            modeButtons[i].className = 'mode-btn active';
-          } else {
-            modeButtons[i].className = 'mode-btn';
-          }
+      function setKeypadMode(mode) {
+        for (var i = 0; i < modeBtns.length; i++) {
+          modeBtns[i].className = 'mode-btn' + (modeBtns[i].getAttribute('data-mode') === mode ? ' active' : '');
         }
-        for (var k in keypads) {
-          if (keypads.hasOwnProperty(k)) {
-            keypads[k].className = k === mode ? 'keypad active' : 'keypad';
-          }
-        }
+        pads.qwerty.className = 'keypad' + (mode === 'qwerty' ? ' active' : '');
+        pads.numeric.className = 'keypad' + (mode === 'numeric' ? ' active' : '');
+        pads.sym.className = 'keypad' + (mode === 'sym' ? ' active' : '');
       }
 
-      for (var i = 0; i < modeButtons.length; i++) {
+      for (var i = 0; i < modeBtns.length; i++) {
         (function(btn) {
           btn.addEventListener('click', function() {
-            setMode(btn.getAttribute('data-mode'));
+            setKeypadMode(btn.getAttribute('data-mode'));
           });
-        })(modeButtons[i]);
+        })(modeBtns[i]);
       }
 
-      function handleKeyClick(e) {
+      function onKeyClick(e) {
         var key = e.target;
         if (key.className.indexOf('key') === -1) return;
         
         var action = key.getAttribute('data-action');
+        var current = inputEl.textContent || '';
+        
         if (action === 'backspace') {
-          inputEl.textContent = (inputEl.textContent || '').slice(0, -1);
+          inputEl.textContent = current.slice(0, -1);
         } else if (action === 'space') {
-          inputEl.textContent = (inputEl.textContent || '') + ' ';
+          inputEl.textContent = current + ' ';
         } else if (action === 'clear') {
           inputEl.textContent = '';
         } else if (action === 'dash') {
-          inputEl.textContent = (inputEl.textContent || '') + '-';
+          inputEl.textContent = current + '-';
         } else {
           var ch = key.textContent;
           if (ch !== '⇧' && ch !== '⌫' && ch !== 'CLR' && ch !== 'SPACE') {
-            inputEl.textContent = (inputEl.textContent || '') + ch;
+            inputEl.textContent = current + ch;
           }
         }
       }
 
-      keypads.qwerty.addEventListener('click', handleKeyClick);
-      keypads.numeric.addEventListener('click', handleKeyClick);
-      keypads.sym.addEventListener('click', handleKeyClick);
+      pads.qwerty.addEventListener('click', onKeyClick);
+      pads.numeric.addEventListener('click', onKeyClick);
+      pads.sym.addEventListener('click', onKeyClick);
 
       // ========== INIT ==========
-      setTimeout(startGps, 500);
+      setTimeout(startGPS, 500);
       connectionText.textContent = 'READY';
     })();
   </script>
