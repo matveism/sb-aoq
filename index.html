@@ -9,7 +9,7 @@
   <script>if (typeof Html5Qrcode === 'undefined') document.write('<script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"><\/script>');</script>
   
   <style>
-    /* YOUR ORIGINAL CSS - PRESERVED */
+    /* YOUR ORIGINAL CSS - PRESERVED COMPLETELY */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -733,6 +733,7 @@
   </div>
 
   <script>
+    // ANDROID 5.0.2 COMPATIBLE VERSION - ES5, NO CONST/LET, NO ARROW FUNCTIONS
     (function() {
       // ========== CONFIG ==========
       var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
@@ -781,6 +782,30 @@
       };
       
       var watchId = null;
+
+      // ========== HELPER FUNCTIONS ==========
+      function hasClass(el, className) {
+        if (el.classList) {
+          return el.classList.contains(className);
+        }
+        return new RegExp('(^| )' + className + '( |$)', 'gi').test(el.className);
+      }
+
+      function addClass(el, className) {
+        if (el.classList) {
+          el.classList.add(className);
+        } else {
+          el.className += ' ' + className;
+        }
+      }
+
+      function removeClass(el, className) {
+        if (el.classList) {
+          el.classList.remove(className);
+        } else {
+          el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+        }
+      }
 
       // ========== GPS TRACKING - CITY/STATE ONLY ==========
       function startGpsTracking() {
@@ -839,63 +864,90 @@
         }
         
         // Get city/state/zip from coordinates using reverse geocoding
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLocation.lat}&lon=${currentLocation.lng}&zoom=18&addressdetails=1`)
-          .then(response => response.json())
-          .then(data => {
-            if (data && data.address) {
-              // Extract only city, state, zip
-              var city = data.address.city || data.address.town || data.address.village || data.address.hamlet || '';
-              var state = data.address.state || '';
-              var zip = data.address.postcode || '';
-              
-              currentLocation.city = city;
-              currentLocation.state = state;
-              currentLocation.zip = zip;
-              
-              // Format: City, State Zip
-              var locationStr = '';
-              if (city) locationStr += city;
-              if (state) {
-                if (locationStr) locationStr += ', ';
-                locationStr += state;
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + currentLocation.lat + '&lon=' + currentLocation.lng + '&zoom=18&addressdetails=1', true);
+        
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              if (data && data.address) {
+                // Extract only city, state, zip
+                var city = data.address.city || data.address.town || data.address.village || data.address.hamlet || '';
+                var state = data.address.state || '';
+                var zip = data.address.postcode || '';
+                
+                currentLocation.city = city;
+                currentLocation.state = state;
+                currentLocation.zip = zip;
+                
+                // Format: City, State Zip
+                var locationStr = '';
+                if (city) locationStr += city;
+                if (state) {
+                  if (locationStr) locationStr += ', ';
+                  locationStr += state;
+                }
+                if (zip) {
+                  if (locationStr) locationStr += ' ';
+                  locationStr += zip;
+                }
+                
+                if (!locationStr) locationStr = 'Location unavailable';
+                
+                // Update UI
+                gpsLed.className = 'gps-led gps-green';
+                gpsText.textContent = 'GPS: Active';
+                gpsLocation.textContent = locationStr;
+                
+                // Update modal
+                if (modalGpsInfo) {
+                  modalGpsInfo.innerHTML = '📍 ' + locationStr;
+                }
+              } else {
+                // Fallback to coordinates if no address
+                gpsLed.className = 'gps-led gps-green';
+                gpsText.textContent = 'GPS: Active';
+                gpsLocation.textContent = currentLocation.lat.toFixed(4) + ', ' + currentLocation.lng.toFixed(4);
+                
+                if (modalGpsInfo) {
+                  modalGpsInfo.innerHTML = '📍 ' + currentLocation.lat.toFixed(4) + ', ' + currentLocation.lng.toFixed(4);
+                }
               }
-              if (zip) {
-                if (locationStr) locationStr += ' ';
-                locationStr += zip;
-              }
-              
-              if (!locationStr) locationStr = 'Location unavailable';
-              
-              // Update UI
+            } catch (e) {
+              // Fallback to coordinates if parsing fails
               gpsLed.className = 'gps-led gps-green';
               gpsText.textContent = 'GPS: Active';
-              gpsLocation.textContent = locationStr;
-              
-              // Update modal
-              if (modalGpsInfo) {
-                modalGpsInfo.innerHTML = `📍 ${locationStr}`;
-              }
-            } else {
-              // Fallback to coordinates if no address
-              gpsLed.className = 'gps-led gps-green';
-              gpsText.textContent = 'GPS: Active';
-              gpsLocation.textContent = `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+              gpsLocation.textContent = currentLocation.lat.toFixed(4) + ', ' + currentLocation.lng.toFixed(4);
               
               if (modalGpsInfo) {
-                modalGpsInfo.innerHTML = `📍 ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+                modalGpsInfo.innerHTML = '📍 ' + currentLocation.lat.toFixed(4) + ', ' + currentLocation.lng.toFixed(4);
               }
             }
-          })
-          .catch(() => {
-            // Fallback to coordinates if geocoding fails
+          } else {
+            // Fallback to coordinates if request fails
             gpsLed.className = 'gps-led gps-green';
             gpsText.textContent = 'GPS: Active';
-            gpsLocation.textContent = `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+            gpsLocation.textContent = currentLocation.lat.toFixed(4) + ', ' + currentLocation.lng.toFixed(4);
             
             if (modalGpsInfo) {
-              modalGpsInfo.innerHTML = `📍 ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+              modalGpsInfo.innerHTML = '📍 ' + currentLocation.lat.toFixed(4) + ', ' + currentLocation.lng.toFixed(4);
             }
-          });
+          }
+        };
+        
+        xhr.onerror = function() {
+          // Fallback to coordinates if network error
+          gpsLed.className = 'gps-led gps-green';
+          gpsText.textContent = 'GPS: Active';
+          gpsLocation.textContent = currentLocation.lat.toFixed(4) + ', ' + currentLocation.lng.toFixed(4);
+          
+          if (modalGpsInfo) {
+            modalGpsInfo.innerHTML = '📍 ' + currentLocation.lat.toFixed(4) + ', ' + currentLocation.lng.toFixed(4);
+          }
+        };
+        
+        xhr.send();
       }
       
       function gpsError(error) {
@@ -921,7 +973,7 @@
         }
         
         if (modalGpsInfo) {
-          modalGpsInfo.innerHTML = `⚠️ ${gpsText.textContent}`;
+          modalGpsInfo.innerHTML = '⚠️ ' + gpsText.textContent;
         }
       }
 
@@ -983,15 +1035,15 @@
       function getFormattedDate() {
         var d = new Date();
         return d.getFullYear() + '-' + 
-               String(d.getMonth() + 1).padStart(2, '0') + '-' + 
-               String(d.getDate()).padStart(2, '0');
+               (d.getMonth() + 1 < 10 ? '0' + (d.getMonth() + 1) : (d.getMonth() + 1)) + '-' + 
+               (d.getDate() < 10 ? '0' + d.getDate() : d.getDate());
       }
       
       function getFormattedTime() {
         var d = new Date();
-        return String(d.getHours()).padStart(2, '0') + ':' + 
-               String(d.getMinutes()).padStart(2, '0') + ':' + 
-               String(d.getSeconds()).padStart(2, '0');
+        return (d.getHours() < 10 ? '0' + d.getHours() : d.getHours()) + ':' + 
+               (d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()) + ':' + 
+               (d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds());
       }
       
       function getTimestamp() {
@@ -1126,18 +1178,22 @@
         entryDiv.appendChild(syncIndicator);
         
         entryDiv.style.cursor = 'pointer';
-        entryDiv.addEventListener('click', function() {
-          pendingData = {
-            barcode: barcode,
-            status: status,
-            element: entryDiv,
-            valueSpan: valueSpan,
-            statusSpan: statusSpan,
-            etaSpan: etaSpan,
-            syncIndicator: syncIndicator
-          };
-          statusModal.style.display = 'flex';
-        });
+        
+        // Use a closure to capture the values
+        (function(bc, st, sp, et, si, ed) {
+          entryDiv.addEventListener('click', function() {
+            pendingData = {
+              barcode: bc,
+              status: st,
+              element: ed,
+              valueSpan: valueSpan,
+              statusSpan: sp,
+              etaSpan: et,
+              syncIndicator: si
+            };
+            statusModal.style.display = 'flex';
+          });
+        })(barcode, status, statusSpan, etaSpan, syncIndicator, entryDiv);
         
         historyContainer.insertBefore(entryDiv, historyContainer.firstChild);
         
@@ -1171,13 +1227,17 @@
         sendToXano(pendingData.barcode, newStatus, pendingData.syncIndicator);
         
         statusModal.style.display = 'none';
-        pendingData = null;
+        pendingData = {
+          barcode: null,
+          status: null
+        };
       }
 
       // ========== START SCAN FLOW ==========
       function startScanFlow(barcodeValue) {
         pendingData = {
-          barcode: barcodeValue
+          barcode: barcodeValue,
+          status: null
         };
         
         // Update modal with current GPS (city/state only)
@@ -1193,7 +1253,7 @@
             locationStr += currentLocation.zip;
           }
           
-          modalGpsInfo.innerHTML = `📍 ${locationStr || 'Location available'}`;
+          modalGpsInfo.innerHTML = '📍 ' + (locationStr || 'Location available');
         } else {
           modalGpsInfo.innerHTML = '📍 Acquiring GPS...';
         }
@@ -1246,7 +1306,7 @@
             isScannerInitialized = false;
             currentTrack = null;
             flashlightOn = false;
-          }).catch(function() {});
+          })['catch'](function() {});
         }
         cameraModal.style.display = 'none';
       }
@@ -1299,7 +1359,7 @@
                 }
               } catch (e) {}
             }, 1000);
-          }).catch(function(err) {
+          })['catch'](function(err) {
             console.error('Camera error:', err);
             cameraModal.style.display = 'none';
             alert('Could not start camera: ' + err);
@@ -1311,26 +1371,35 @@
       });
 
       // Status selection - USING EXACT STATUS STRINGS FROM YOUR IMAGE
-      document.querySelectorAll('.status-option').forEach(function(option) {
-        option.addEventListener('click', function() {
-          var selectedStatus = this.getAttribute('data-status'); // Gets EXACT string like "Data Received"
-          
-          if (pendingData && pendingData.barcode && !pendingData.status) {
-            // New scan
-            addScanEntry(pendingData.barcode, selectedStatus, true);
-            inputEl.textContent = '';
-            statusModal.style.display = 'none';
-            pendingData = null;
-          } else if (pendingData && pendingData.element) {
-            // Update existing
-            updateStatus(selectedStatus);
-          }
-        });
-      });
+      var statusOptions = document.querySelectorAll('.status-option');
+      for (var i = 0; i < statusOptions.length; i++) {
+        (function(option) {
+          option.addEventListener('click', function() {
+            var selectedStatus = option.getAttribute('data-status'); // Gets EXACT string like "Data Received"
+            
+            if (pendingData && pendingData.barcode && !pendingData.status) {
+              // New scan
+              addScanEntry(pendingData.barcode, selectedStatus, true);
+              inputEl.textContent = '';
+              statusModal.style.display = 'none';
+              pendingData = {
+                barcode: null,
+                status: null
+              };
+            } else if (pendingData && pendingData.element) {
+              // Update existing
+              updateStatus(selectedStatus);
+            }
+          });
+        })(statusOptions[i]);
+      }
 
       closeStatusBtn.addEventListener('click', function() {
         statusModal.style.display = 'none';
-        pendingData = null;
+        pendingData = {
+          barcode: null,
+          status: null
+        };
       });
 
       // ========== KEYPAD LOGIC ==========
@@ -1343,28 +1412,46 @@
 
       function setMode(mode) {
         for (var i = 0; i < modeButtons.length; i++) {
-          modeButtons[i].classList.toggle('active', modeButtons[i].dataset.mode === mode);
+          if (modeButtons[i].dataset.mode === mode) {
+            addClass(modeButtons[i], 'active');
+          } else {
+            removeClass(modeButtons[i], 'active');
+          }
         }
         for (var k in keypads) {
           if (keypads.hasOwnProperty(k)) {
-            keypads[k].classList.toggle('active', k === mode);
+            if (k === mode) {
+              addClass(keypads[k], 'active');
+            } else {
+              removeClass(keypads[k], 'active');
+            }
           }
         }
       }
 
       for (var i = 0; i < modeButtons.length; i++) {
-        modeButtons[i].addEventListener('click', function() {
-          setMode(this.dataset.mode);
-        });
+        (function(btn) {
+          btn.addEventListener('click', function() {
+            setMode(btn.dataset.mode);
+          });
+        })(modeButtons[i]);
       }
 
-      function appendChar(ch) { inputEl.textContent = (inputEl.textContent || '') + ch; }
-      function backspace() { inputEl.textContent = (inputEl.textContent || '').slice(0, -1); }
-      function clearInput() { inputEl.textContent = ''; }
+      function appendChar(ch) { 
+        inputEl.textContent = (inputEl.textContent || '') + ch; 
+      }
+      
+      function backspace() { 
+        inputEl.textContent = (inputEl.textContent || '').slice(0, -1); 
+      }
+      
+      function clearInput() { 
+        inputEl.textContent = ''; 
+      }
 
       function handleKeyClick(e) {
         var key = e.target;
-        if (!key.classList.contains('key')) return;
+        if (!hasClass(key, 'key')) return;
 
         var action = key.getAttribute('data-action');
         if (action === 'backspace') backspace();
@@ -1381,9 +1468,10 @@
       if (keypads.numeric) keypads.numeric.addEventListener('click', handleKeyClick);
       if (keypads.sym) keypads.sym.addEventListener('click', handleKeyClick);
 
+      // Clean up on page unload
       window.addEventListener('beforeunload', function() {
         if (html5QrcodeScanner && isScannerInitialized) {
-          html5QrcodeScanner.stop().catch(function() {});
+          html5QrcodeScanner.stop()['catch'](function() {});
         }
         if (watchId) {
           navigator.geolocation.clearWatch(watchId);
