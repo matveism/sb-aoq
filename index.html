@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
   <style>
-    /* YOUR EXACT CSS - UNCHANGED - keep all your existing CSS */
+    /* YOUR EXACT CSS - UNCHANGED */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -575,9 +575,14 @@
         <div class="action-btn" id="escBtn">ESC</div>
         <div class="action-btn" id="enterBtn">ENTER</div>
       </div>
-      <div class="scan-hard-button" id="scanButton">
-        <span>◰</span> SCAN <span>◰</span>
-      </div>
+      
+      <!-- FIXED: SCAN button as an A tag with proper intent -->
+      <a id="scanLink" href="intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;S.browser_fallback_url=http%3A%2F%2Fzxing.org;end" style="text-decoration: none;">
+        <div class="scan-hard-button" id="scanButton">
+          <span>◰</span> SCAN <span>◰</span>
+        </div>
+      </a>
+      
       <div class="keypad-mode-bar">
         <div class="mode-btn active" data-mode="qwerty">QWERTY</div>
         <div class="mode-btn" data-mode="numeric">123</div>
@@ -646,7 +651,6 @@
     var historyEl = document.getElementById('scanHistoryContainer');
     var enterBtn = document.getElementById('enterBtn');
     var escBtn = document.getElementById('escBtn');
-    var scanBtn = document.getElementById('scanButton');
     var statusModal = document.getElementById('statusModal');
     var closeStatus = document.getElementById('closeStatusBtn');
     var connLed = document.getElementById('connectionLed');
@@ -664,30 +668,10 @@
     
     // ==================== CHECK FOR SCANNED CODE ON PAGE LOAD ====================
     (function() {
-      // Check if we have a hash with scanned data
-      if (window.location.hash) {
-        var hash = window.location.hash.substring(1); // Remove the #
-        if (hash) {
-          try {
-            // Handle ZXING return format (usually just the code)
-            var scannedCode = decodeURIComponent(hash);
-            if (scannedCode && scannedCode !== '') {
-              inputEl.innerHTML = scannedCode;
-              pendingBarcode = scannedCode;
-              // Clear the hash
-              window.location.hash = '';
-              // Show status modal after a short delay
-              setTimeout(function() {
-                statusModal.style.display = 'flex';
-              }, 500);
-            }
-          } catch(e) {}
-        }
-      }
-      
-      // Check URL parameters
+      // Check URL parameters for scanned code
       var urlParams = new URLSearchParams(window.location.search);
       var scannedParam = urlParams.get('scanned') || urlParams.get('text') || urlParams.get('code');
+      
       if (scannedParam) {
         inputEl.innerHTML = scannedParam;
         pendingBarcode = scannedParam;
@@ -696,6 +680,24 @@
         setTimeout(function() {
           statusModal.style.display = 'flex';
         }, 500);
+      }
+      
+      // Check hash (some scanners return in hash)
+      if (window.location.hash) {
+        var hash = window.location.hash.substring(1);
+        if (hash && hash !== '' && !scannedParam) {
+          try {
+            var scannedCode = decodeURIComponent(hash);
+            if (scannedCode && scannedCode !== '') {
+              inputEl.innerHTML = scannedCode;
+              pendingBarcode = scannedCode;
+              window.location.hash = '';
+              setTimeout(function() {
+                statusModal.style.display = 'flex';
+              }, 500);
+            }
+          } catch(e) {}
+        }
       }
     })();
     
@@ -867,69 +869,6 @@
       }
     }
     
-    // ==================== OPEN INSTALLED ZXING APP ====================
-    function openZXING() {
-      // Current page URL to return to
-      var returnUrl = window.location.href.split('#')[0] + '#{CODE}';
-      
-      // Different intent formats for ZXING
-      var intents = [
-        // Primary ZXING intent (most common)
-        'intent://scan?SCAN_FORMATS=CODE_39,CODE_128,QR_CODE&SCAN_MODE=QR_CODE_MODE&SAVE_HISTORY=false&RESULT=' + encodeURIComponent(returnUrl) + '#Intent;scheme=zxing;package=com.google.zxing.client.android;end',
-        
-        // Alternative format
-        'zxing://scan?result=' + encodeURIComponent(returnUrl),
-        
-        // Simple format
-        'intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;end',
-        
-        // Direct intent
-        'intent:#Intent;action=com.google.zxing.client.android.SCAN;package=com.google.zxing.client.android;end'
-      ];
-      
-      // Try each intent
-      function tryIntent(index) {
-        if (index >= intents.length) {
-          // If none work, check if app is installed by trying market
-          var iframe = document.createElement('iframe');
-          iframe.style.display = 'none';
-          iframe.src = 'market://details?id=com.google.zxing.client.android';
-          
-          var timer = setTimeout(function() {
-            document.body.removeChild(iframe);
-            // If market doesn't open either, show message
-            alert('Please make sure ZXING Barcode Scanner is installed');
-          }, 500);
-          
-          iframe.onload = function() {
-            clearTimeout(timer);
-            document.body.removeChild(iframe);
-          };
-          
-          document.body.appendChild(iframe);
-          return;
-        }
-        
-        var iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = intents[index];
-        
-        var timer = setTimeout(function() {
-          document.body.removeChild(iframe);
-          tryIntent(index + 1);
-        }, 300);
-        
-        iframe.onload = function() {
-          clearTimeout(timer);
-          document.body.removeChild(iframe);
-        };
-        
-        document.body.appendChild(iframe);
-      }
-      
-      tryIntent(0);
-    }
-    
     // ==================== EVENT HANDLERS ====================
     enterBtn.onclick = function() {
       var text = inputEl.innerHTML || '';
@@ -945,10 +884,6 @@
       historyEl.innerHTML = '<div style="color:#888; font-style:italic; padding:8px; text-align:center;">No scans yet</div>';
       scanCounter = 1;
       inputEl.innerHTML = '';
-    };
-    
-    scanBtn.onclick = function() {
-      openZXING();
     };
     
     // Status options
@@ -1039,23 +974,21 @@
     window.setTimeout(getGPS, 500);
     connText.innerHTML = 'READY';
     
-    // Listen for focus events (when returning from ZXING)
-    window.addEventListener('focus', function() {
-      // Check URL hash again when returning to page
-      if (window.location.hash) {
-        var hash = window.location.hash.substring(1);
-        if (hash && hash !== '') {
-          try {
-            var scannedCode = decodeURIComponent(hash);
-            if (scannedCode && scannedCode !== '' && scannedCode !== pendingBarcode) {
-              inputEl.innerHTML = scannedCode;
-              pendingBarcode = scannedCode;
-              window.location.hash = '';
-              setTimeout(function() {
-                statusModal.style.display = 'flex';
-              }, 500);
-            }
-          } catch(e) {}
+    // Listen for page visibility change (when returning from ZXING)
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) {
+        // Page is visible again (returned from ZXING)
+        // Check URL parameters again
+        var urlParams = new URLSearchParams(window.location.search);
+        var scannedParam = urlParams.get('scanned') || urlParams.get('text') || urlParams.get('code');
+        
+        if (scannedParam && scannedParam !== '' && scannedParam !== pendingBarcode) {
+          inputEl.innerHTML = scannedParam;
+          pendingBarcode = scannedParam;
+          window.history.replaceState({}, document.title, window.location.pathname);
+          setTimeout(function() {
+            statusModal.style.display = 'flex';
+          }, 500);
         }
       }
     });
