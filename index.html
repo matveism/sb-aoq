@@ -1,686 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Alcatel Rear Camera Force</title>
+  <meta charset="UTF-8">
+  <title>Simple Scanner for Alcatel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     body {
       margin: 0;
       padding: 0;
       background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: Roboto, Arial, sans-serif;
+      font-family: Arial, sans-serif;
     }
-
-    .device {
+    
+    .container {
       width: 100%;
       max-width: 480px;
-      height: 100vh;
-      max-height: 854px;
+      margin: 0 auto;
       background: #B0C8E2;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      min-height: 100vh;
     }
-
+    
     .header {
       background: #15569B;
-      color: #D0D7DC;
-      height: 40px;
+      color: white;
+      padding: 10px 15px;
+      font-size: 20px;
+      font-weight: bold;
       display: flex;
       justify-content: space-between;
-      padding: 0 16px;
-      align-items: center;
-      font-size: 18px;
-      font-weight: bold;
     }
-
-    .scan-row {
-      display: flex;
-      gap: 8px;
-      padding: 12px 8px;
+    
+    .controls {
+      padding: 10px;
       background: #B0C8E2;
-      align-items: center;
-      flex-wrap: wrap;
     }
-
-    .scan-btn {
+    
+    button {
       background: #FCC57A;
       border: none;
-      padding: 12px 20px;
+      padding: 15px 25px;
+      font-size: 22px;
       font-weight: bold;
-      border-radius: 8px;
-      height: 50px;
-      font-size: 20px;
-      cursor: pointer;
-      min-width: 100px;
-    }
-
-    .mini-grid {
-      display: flex;
-      gap: 4px;
-      flex: 1;
-      min-width: 280px;
-    }
-
-    .mini-cell {
-      flex: 1;
-      height: 50px;
-      background: #E2E8D3;
-      border: 2px solid #999;
-      border-radius: 6px;
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    .content {
-      flex: 1;
-      padding: 8px;
-      overflow-y: auto;
-    }
-
-    #camera-section {
-      width: 100%;
-      background: #000;
       border-radius: 10px;
-      overflow: hidden;
-      margin-bottom: 15px;
-    }
-
-    .camera-header {
-      background: #444;
-      color: white;
-      padding: 12px;
-      text-align: center;
-      font-size: 18px;
-      font-weight: bold;
-    }
-
-    #preview {
       width: 100%;
-      height: 350px;
-      object-fit: cover;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    
+    .manual-box {
+      display: flex;
+      gap: 5px;
+      margin: 10px 0;
+    }
+    
+    .manual-box input {
+      flex: 1;
+      height: 60px;
+      text-align: center;
+      font-size: 30px;
+      font-weight: bold;
+      background: white;
+      border: 2px solid #666;
+      border-radius: 5px;
+    }
+    
+    #camera {
+      width: 100%;
+      height: 400px;
+      background: black;
       display: none;
     }
-
-    #camera-status {
+    
+    #camera video {
       width: 100%;
-      height: 350px;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    #camera-message {
+      width: 100%;
+      height: 400px;
       background: #222;
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 20px;
-      box-sizing: border-box;
       font-size: 18px;
-      flex-direction: column;
-      overflow-y: auto;
     }
-
-    .camera-btn {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 15px;
-      font-size: 18px;
-      border-radius: 8px;
-      margin: 5px;
-      cursor: pointer;
-      width: 95%;
-      font-weight: bold;
+    
+    .results {
+      margin: 10px;
+      border: 2px solid #79A4D2;
     }
-
-    .camera-btn.small {
-      background: #FF9800;
-      padding: 10px;
-      font-size: 16px;
-    }
-
-    .device-list {
-      width: 100%;
-      margin-top: 10px;
-      text-align: left;
-      background: #333;
-      padding: 10px;
-      border-radius: 5px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    .device-item {
-      padding: 8px;
-      border-bottom: 1px solid #555;
-      color: #0F0;
-      font-size: 14px;
-      word-break: break-all;
-      cursor: pointer;
-    }
-
-    .device-item:hover {
-      background: #444;
-    }
-
-    .result-box {
-      margin-top: 15px;
-      border: 3px solid #79A4D2;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-
-    .result-header {
+    
+    .results-header {
       background: #79A4D2;
+      padding: 10px;
       font-weight: bold;
       display: flex;
-      padding: 12px 0;
-      font-size: 18px;
     }
-
-    .result-row {
-      background: #96BEEE;
-      display: flex;
-      padding: 12px 0;
-      border-bottom: 1px solid #79A4D2;
-      font-size: 18px;
-    }
-
-    .result-cell {
-      padding: 0 15px;
-      font-weight: bold;
-    }
-
-    .result-cell:first-child {
+    
+    .results-header div:first-child {
       width: 60px;
     }
-
-    .result-cell:last-child {
+    
+    .results-header div:last-child {
+      flex: 1;
+    }
+    
+    .result-item {
+      background: #96BEEE;
+      padding: 10px;
+      display: flex;
+      border-top: 1px solid #79A4D2;
+    }
+    
+    .result-item div:first-child {
+      width: 60px;
+    }
+    
+    .result-item div:last-child {
       flex: 1;
       word-break: break-all;
-    }
-
-    #debug-info {
-      background: #333;
-      color: #0F0;
-      padding: 10px;
-      font-size: 14px;
-      font-family: monospace;
-      margin-top: 10px;
-      max-height: 150px;
-      overflow-y: auto;
-      border-radius: 5px;
     }
   </style>
 </head>
 <body>
 
-<div class="device">
-
+<div class="container">
   <div class="header">
-    <div>📷 Alcatel Scanner</div>
-    <div id="pstTime">--:--</div>
+    <span>📷 SIMPLE SCANNER</span>
+    <span id="clock">--:--</span>
   </div>
-
-  <div class="scan-row">
-    <button class="scan-btn" id="scanButton">▶ START</button>
-
-    <div class="mini-grid">
-      <input class="mini-cell" maxlength="1" inputmode="numeric">
-      <input class="mini-cell" maxlength="1" inputmode="numeric">
-      <input class="mini-cell" maxlength="1" inputmode="numeric">
-      <input class="mini-cell" maxlength="1" inputmode="numeric">
-      <input class="mini-cell" maxlength="1" inputmode="numeric">
-      <input class="mini-cell" maxlength="1" inputmode="numeric">
+  
+  <div class="controls">
+    <button id="scanBtn">📷 START CAMERA</button>
+    
+    <div class="manual-box">
+      <input type="text" maxlength="1" class="manual-input">
+      <input type="text" maxlength="1" class="manual-input">
+      <input type="text" maxlength="1" class="manual-input">
+      <input type="text" maxlength="1" class="manual-input">
+      <input type="text" maxlength="1" class="manual-input">
+      <input type="text" maxlength="1" class="manual-input">
     </div>
+    
+    <button id="rearBtn" style="background: #4CAF50; color: white;">📷 TRY REAR CAMERA</button>
+    <button id="frontBtn" style="background: #FF9800;">🤳 TRY FRONT CAMERA</button>
   </div>
-
-  <div class="content">
-    <div id="camera-section">
-      <div class="camera-header">📸 REAR CAMERA FORCE</div>
-      <video id="preview" autoplay muted playsinline></video>
-      <div id="camera-status">
-        <button class="camera-btn" onclick="enumerateCameras()">🔍 LIST ALL CAMERAS</button>
-        <button class="camera-btn" onclick="forceRearCamera()">📷 FORCE REAR CAMERA</button>
-        <button class="camera-btn small" onclick="tryCameraById(0)">Try Camera #0 (First)</button>
-        <button class="camera-btn small" onclick="tryCameraById(1)">Try Camera #1 (Second)</button>
-        <button class="camera-btn small" onclick="tryCameraById(2)">Try Camera #2 (Third)</button>
-        <button class="camera-btn small" onclick="tryCameraByIndex()">Try All Cameras (Auto)</button>
-      </div>
-    </div>
-
-    <div class="result-box">
-      <div class="result-header">
-        <div class="result-cell">#</div>
-        <div class="result-cell">SCANNED CODE</div>
-      </div>
-
-      <div id="resultTable"></div>
-    </div>
-
-    <div id="debug-info"></div>
+  
+  <div id="camera">
+    <video id="video" autoplay></video>
   </div>
-
+  <div id="camera-message">
+    Click a camera button to start
+  </div>
+  
+  <div class="results">
+    <div class="results-header">
+      <div>#</div>
+      <div>CODE</div>
+    </div>
+    <div id="results-list"></div>
+  </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-
 <script>
-// Debug function
-function debug(msg) {
-  console.log(msg);
-  var debugEl = document.getElementById('debug-info');
-  debugEl.style.display = 'block';
-  debugEl.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + msg + '</div>';
-  debugEl.scrollTop = debugEl.scrollHeight;
+// Simple clock
+function updateClock() {
+  var d = new Date();
+  var h = d.getHours();
+  var m = d.getMinutes();
+  if (h < 10) h = '0' + h;
+  if (m < 10) m = '0' + m;
+  document.getElementById('clock').innerHTML = h + ':' + m;
 }
+updateClock();
+setInterval(updateClock, 1000);
 
-/* TIME */
-function updatePSTTime() {
-  var date = new Date();
-  var hours = date.getUTCHours() - 7;
-  if (hours < 0) hours += 24;
-  var minutes = date.getUTCMinutes();
-  var seconds = date.getUTCSeconds();
-  
-  var timeString = (hours < 10 ? '0' + hours : hours) + ':' + 
-                   (minutes < 10 ? '0' + minutes : minutes) + ':' +
-                   (seconds < 10 ? '0' + seconds : seconds);
-  
-  document.getElementById('pstTime').textContent = timeString;
-}
-updatePSTTime();
-setInterval(updatePSTTime, 1000);
-
-/* MANUAL INPUT */
-var cells = document.getElementsByClassName("mini-cell");
-for (var i = 0; i < cells.length; i++) {
-  cells[i].oninput = (function(index) {
+// Manual entry
+var inputs = document.getElementsByClassName('manual-input');
+for (var i = 0; i < inputs.length; i++) {
+  inputs[i].oninput = (function(i) {
     return function() {
+      // Only allow numbers
       this.value = this.value.replace(/[^0-9]/g, '');
-      if (this.value.length === 1 && index < cells.length - 1) {
-        cells[index + 1].focus();
+      
+      // Auto focus next
+      if (this.value.length == 1 && i < inputs.length - 1) {
+        inputs[i + 1].focus();
       }
-      checkManualEntry();
+      
+      // Check if all 6 digits entered
+      var code = '';
+      for (var j = 0; j < inputs.length; j++) {
+        code += inputs[j].value;
+      }
+      if (code.length == 6) {
+        addResult('MANUAL: ' + code);
+        // Clear all
+        for (var j = 0; j < inputs.length; j++) {
+          inputs[j].value = '';
+        }
+        inputs[0].focus();
+      }
     };
   })(i);
   
-  cells[i].onkeydown = (function(index) {
+  // Handle backspace
+  inputs[i].onkeydown = (function(i) {
     return function(e) {
-      if (e.keyCode === 8 && this.value.length === 0 && index > 0) {
-        cells[index - 1].focus();
+      if (e.keyCode == 8 && this.value.length == 0 && i > 0) {
+        inputs[i - 1].focus();
       }
     };
   })(i);
 }
 
-function checkManualEntry() {
-  var code = "";
-  for (var i = 0; i < cells.length; i++) {
-    code += cells[i].value;
-  }
-  if (code.length === 6) {
-    addRow("MANUAL: " + code);
-    for (var j = 0; j < cells.length; j++) {
-      cells[j].value = "";
-    }
-    cells[0].focus();
-  }
+// Results
+var resultCount = 0;
+
+function addResult(text) {
+  resultCount++;
+  var div = document.createElement('div');
+  div.className = 'result-item';
+  div.innerHTML = '<div>' + resultCount + '</div><div>' + text + '</div>';
+  document.getElementById('results-list').appendChild(div);
 }
 
-/* RESULT TABLE */
-var scanIndex = 0;
-
-function addRow(value) {
-  scanIndex++;
-  
-  var table = document.getElementById("resultTable");
-  
-  var row = document.createElement("div");
-  row.className = "result-row";
-  
-  var cell1 = document.createElement("div");
-  cell1.className = "result-cell";
-  cell1.textContent = scanIndex;
-  
-  var cell2 = document.createElement("div");
-  cell2.className = "result-cell";
-  cell2.textContent = value;
-  
-  row.appendChild(cell1);
-  row.appendChild(cell2);
-  
-  table.appendChild(row);
-  
-  var content = document.querySelector('.content');
-  content.scrollTop = content.scrollHeight;
-}
-
-/* ADVANCED CAMERA CONTROL */
-var preview = document.getElementById("preview");
-var cameraStatus = document.getElementById("camera-status");
-var scanButton = document.getElementById("scanButton");
+// Camera handling
+var video = document.getElementById('video');
+var cameraDiv = document.getElementById('camera');
+var messageDiv = document.getElementById('camera-message');
 var currentStream = null;
-var videoDevices = [];
 
 function stopCamera() {
   if (currentStream) {
+    if (currentStream.stop) currentStream.stop();
     if (currentStream.getTracks) {
-      currentStream.getTracks().forEach(function(track) { track.stop(); });
+      currentStream.getTracks().forEach(function(t) { t.stop(); });
     }
     currentStream = null;
   }
-  preview.style.display = "none";
-  cameraStatus.style.display = "flex";
+  cameraDiv.style.display = 'none';
+  messageDiv.style.display = 'flex';
 }
 
-function showVideo() {
-  preview.style.display = "block";
-  cameraStatus.style.display = "none";
-}
-
-// Enumerate all cameras
-function enumerateCameras() {
-  debug("Enumerating cameras...");
+function startCamera(useRear) {
   stopCamera();
   
-  var statusHtml = '🔍 DETECTED CAMERAS:<br><div class="device-list" id="camera-list">Loading...</div>';
-  cameraStatus.innerHTML = statusHtml;
+  messageDiv.innerHTML = 'Starting camera...';
   
-  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-    navigator.mediaDevices.enumerateDevices()
-      .then(function(devices) {
-        videoDevices = [];
-        var listHtml = '';
-        
-        for (var i = 0; i < devices.length; i++) {
-          if (devices[i].kind === 'videoinput') {
-            videoDevices.push(devices[i]);
-            var label = devices[i].label || 'Camera ' + (videoDevices.length);
-            var deviceId = devices[i].deviceId;
-            listHtml += '<div class="device-item" onclick="startCameraWithId(\'' + deviceId + '\')">' +
-                       '📷 ' + label + '<br><small>' + deviceId.substring(0, 30) + '...</small></div>';
-            debug("Found camera: " + label + " - " + deviceId);
-          }
-        }
-        
-        if (videoDevices.length === 0) {
-          listHtml = '<div class="device-item">No cameras found</div>';
-        } else {
-          listHtml += '<div class="device-item" onclick="tryAllCamerasSequentially()">🔄 Try ALL cameras sequentially</div>';
-        }
-        
-        document.getElementById('camera-list').innerHTML = listHtml;
-      })
-      .catch(function(err) {
-        debug("Enumerate error: " + err);
-        cameraStatus.innerHTML = '❌ Cannot enumerate cameras<br>' + err;
-      });
+  // Simple constraints
+  var constraints = { video: true };
+  
+  // Try to specify rear/front if possible
+  if (useRear) {
+    constraints = { video: { facingMode: 'environment' } };
   } else {
-    cameraStatus.innerHTML = '❌ enumerateDevices not supported<br>Try manual camera buttons';
-  }
-}
-
-// Force rear camera (by trying to find back/rear in label)
-function forceRearCamera() {
-  debug("Attempting to force rear camera...");
-  stopCamera();
-  
-  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-    navigator.mediaDevices.enumerateDevices()
-      .then(function(devices) {
-        var rearCamera = null;
-        var allCameras = [];
-        
-        for (var i = 0; i < devices.length; i++) {
-          if (devices[i].kind === 'videoinput') {
-            allCameras.push(devices[i]);
-            var label = (devices[i].label || '').toLowerCase();
-            // Look for back/rear indicators
-            if (label.indexOf('back') > -1 || label.indexOf('rear') > -1 || 
-                label.indexOf('environment') > -1 || label.indexOf('0') === 0) {
-              rearCamera = devices[i];
-            }
-          }
-        }
-        
-        if (rearCamera) {
-          debug("Found rear camera: " + rearCamera.label);
-          startCameraWithId(rearCamera.deviceId);
-        } else if (allCameras.length > 1) {
-          // If we have multiple cameras, try the second one (often back)
-          debug("No rear label found, trying second camera");
-          startCameraWithId(allCameras[1].deviceId);
-        } else if (allCameras.length === 1) {
-          // Only one camera
-          debug("Only one camera available");
-          startCameraWithId(allCameras[0].deviceId);
-        } else {
-          debug("No cameras found");
-          cameraStatus.innerHTML = '❌ No cameras found';
-        }
-      })
-      .catch(function(err) {
-        debug("Force rear error: " + err);
-        tryCameraByIndex(); // Fallback
-      });
-  } else {
-    tryCameraByIndex(); // Fallback
-  }
-}
-
-// Try camera by index
-function tryCameraById(index) {
-  debug("Trying camera #" + index);
-  stopCamera();
-  
-  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-    navigator.mediaDevices.enumerateDevices()
-      .then(function(devices) {
-        var count = 0;
-        for (var i = 0; i < devices.length; i++) {
-          if (devices[i].kind === 'videoinput') {
-            if (count === index) {
-              startCameraWithId(devices[i].deviceId);
-              return;
-            }
-            count++;
-          }
-        }
-        debug("Camera #" + index + " not found");
-        cameraStatus.innerHTML = '❌ Camera #' + index + ' not found';
-      });
-  } else {
-    // Fallback to basic constraints
-    startBasicCamera();
-  }
-}
-
-// Try all cameras sequentially
-function tryAllCamerasSequentially() {
-  debug("Trying all cameras sequentially...");
-  stopCamera();
-  
-  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-    navigator.mediaDevices.enumerateDevices()
-      .then(function(devices) {
-        var videoCams = [];
-        for (var i = 0; i < devices.length; i++) {
-          if (devices[i].kind === 'videoinput') {
-            videoCams.push(devices[i]);
-          }
-        }
-        
-        if (videoCams.length === 0) {
-          debug("No cameras found");
-          cameraStatus.innerHTML = '❌ No cameras found';
-          return;
-        }
-        
-        debug("Found " + videoCams.length + " cameras, trying each...");
-        tryNextCamera(0, videoCams);
-      });
-  } else {
-    startBasicCamera();
-  }
-}
-
-function tryNextCamera(index, cameras) {
-  if (index >= cameras.length) {
-    debug("All cameras failed");
-    cameraStatus.innerHTML = '❌ All cameras failed<br>Use manual entry';
-    return;
+    constraints = { video: { facingMode: 'user' } };
   }
   
-  debug("Trying camera " + (index + 1) + "/" + cameras.length + ": " + (cameras[index].label || 'Unknown'));
-  cameraStatus.innerHTML = 'Trying camera ' + (index + 1) + '/' + cameras.length + '...';
-  
-  var constraints = {
-    video: {
-      deviceId: { exact: cameras[index].deviceId }
-    }
-  };
-  
+  // Use older webkitGetUserMedia for Android 5
   if (navigator.webkitGetUserMedia) {
     navigator.webkitGetUserMedia(
       constraints,
       function(stream) {
-        debug("SUCCESS with camera " + (index + 1));
+        // Success!
         currentStream = stream;
-        preview.src = window.webkitURL.createObjectURL(stream);
-        showVideo();
-        startQRScanning();
+        video.src = window.webkitURL.createObjectURL(stream);
+        cameraDiv.style.display = 'block';
+        messageDiv.style.display = 'none';
+        
+        // Auto detect QR codes (simple version)
+        detectQRCode();
       },
       function(err) {
-        debug("Camera " + (index + 1) + " failed: " + err.name);
-        tryNextCamera(index + 1, cameras);
+        // Failed, try basic camera
+        messageDiv.innerHTML = 'Camera error: ' + err.name + '<br>Trying basic camera...';
+        
+        if (navigator.webkitGetUserMedia) {
+          navigator.webkitGetUserMedia(
+            { video: true },
+            function(stream) {
+              currentStream = stream;
+              video.src = window.webkitURL.createObjectURL(stream);
+              cameraDiv.style.display = 'block';
+              messageDiv.style.display = 'none';
+              detectQRCode();
+            },
+            function(err2) {
+              messageDiv.innerHTML = '❌ Camera failed: ' + err2.name + '<br>Use manual entry';
+            }
+          );
+        }
       }
     );
   } else {
-    tryNextCamera(index + 1, cameras);
+    messageDiv.innerHTML = '❌ Camera not supported on this browser';
   }
 }
 
-// Start camera with specific device ID
-function startCameraWithId(deviceId) {
-  debug("Starting camera with ID: " + deviceId.substring(0, 20) + "...");
-  
-  var constraints = {
-    video: {
-      deviceId: { exact: deviceId }
+// Simple QR detection (just for demo - you'll need jsQR library)
+// For now, manual entry only since camera works but we need QR library
+function detectQRCode() {
+  // This would use jsQR but we're keeping it simple
+  // You can add a QR library later if needed
+  console.log('Camera is working');
+}
+
+// Button handlers
+document.getElementById('scanBtn').onclick = function() {
+  stopCamera();
+  messageDiv.innerHTML = 'Click a camera button below';
+};
+
+document.getElementById('rearBtn').onclick = function() {
+  startCamera(true);
+};
+
+document.getElementById('frontBtn').onclick = function() {
+  startCamera(false);
+};
+
+// Cleanup on page unload
+window.onbeforeunload = function() {
+  if (currentStream) {
+    if (currentStream.stop) currentStream.stop();
+    if (currentStream.getTracks) {
+      currentStream.getTracks().forEach(function(t) { t.stop(); });
     }
-  };
-  
-  if (navigator.webkitGetUserMedia) {
-    navigator.webkitGetUserMedia(
-      constraints,
-      function(stream) {
-        debug("Camera started successfully");
-        currentStream = stream;
-        preview.src = window.webkitURL.createObjectURL(stream);
-        showVideo();
-        startQRScanning();
-      },
-      function(err) {
-        debug("Failed to start camera: " + err.name);
-        cameraStatus.innerHTML = '❌ Failed<br>' + err.name + '<br>Try another camera';
-      }
-    );
-  } else {
-    debug("webkitGetUserMedia not available");
-    cameraStatus.innerHTML = '❌ Camera API not available';
   }
-}
+};
+</script>
 
-// Basic camera fallback
-function startBasicCamera() {
-  debug("Trying basic camera...");
-  
-  if (navigator.webkitGetUserMedia) {
-    navigator.webkitGetUserMedia(
-      { video: true },
-      function(stream) {
-        debug("Basic camera works!");
-        currentStream = stream;
-        preview.src = window.webkitURL.createObjectURL(stream);
-        showVideo();
-        startQRScanning();
-      },
-      function(err) {
-        debug("Basic camera failed: " + err.name);
-        cameraStatus.innerHTML = '❌ No camera access<br>Use manual entry';
-      }
-    );
-  }
-}
-
-// QR Scanning
-var scanInterval = null;
-
-function startQRScanning() {
-  if (scanInterval) clearInterval(scanInterval);
-  
+<!-- Add simple QR scanner if needed -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script>
+// Override detectQRCode to actually scan
+function detectQRCode() {
   var canvas = document.createElement('canvas');
-  var context = canvas.getContext('2d');
+  var ctx = canvas.getContext('2d');
   
-  scanInterval = setInterval(function() {
-    if (!preview.videoWidth) return;
+  setInterval(function() {
+    if (!video.videoWidth) return;
     
-    canvas.width = preview.videoWidth;
-    canvas.height = preview.videoHeight;
-    context.drawImage(preview, 0, 0, canvas.width, canvas.height);
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     
     try {
-      var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-      var code = jsQR(imageData.data, canvas.width, canvas.height, {
-        inversionAttempts: "dontInvert"
-      });
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var code = jsQR(imageData.data, canvas.width, canvas.height);
       
       if (code) {
-        debug("QR Code detected: " + code.data);
-        addRow("QR: " + code.data);
-        // Beep or vibrate if possible
+        addResult('QR: ' + code.data);
+        // Vibrate if supported
         if (navigator.vibrate) navigator.vibrate(200);
-        stopCamera();
-        if (scanInterval) clearInterval(scanInterval);
       }
-    } catch(e) {
-      // Ignore errors
-    }
-  }, 300);
+    } catch(e) {}
+  }, 500);
 }
-
-// Initialize
-window.onload = function() {
-  debug("Alcatel OneTouch Conquest detected");
-  debug("Browser: " + navigator.userAgent);
-  
-  if (navigator.webkitGetUserMedia) {
-    debug("webkitGetUserMedia available");
-  }
-};
-
-// Cleanup
-window.onbeforeunload = function() {
-  if (scanInterval) clearInterval(scanInterval);
-  stopCamera();
-};
-
-// Scan button toggles camera
-scanButton.onclick = function() {
-  if (currentStream) {
-    stopCamera();
-    if (scanInterval) clearInterval(scanInterval);
-    scanButton.innerHTML = "▶ START";
-  } else {
-    enumerateCameras();
-    scanButton.innerHTML = "⏹ STOP";
-  }
-};
 </script>
 
 </body>
