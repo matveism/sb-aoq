@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Android 5 Scanner - Alcatel</title>
+  <title>Alcatel Camera Fix</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     body {
@@ -30,12 +30,12 @@
     .header {
       background: #15569B;
       color: #D0D7DC;
-      height: 30px;
+      height: 40px;
       display: flex;
       justify-content: space-between;
       padding: 0 16px;
       align-items: center;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
     }
 
@@ -45,104 +45,110 @@
       padding: 12px 8px;
       background: #B0C8E2;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .scan-btn {
       background: #FCC57A;
       border: none;
-      padding: 10px 16px;
+      padding: 12px 20px;
       font-weight: bold;
-      border-radius: 6px;
-      height: 45px;
-      font-size: 18px;
+      border-radius: 8px;
+      height: 50px;
+      font-size: 20px;
       cursor: pointer;
-      min-width: 80px;
+      min-width: 100px;
     }
 
     .mini-grid {
       display: flex;
       gap: 4px;
       flex: 1;
+      min-width: 280px;
     }
 
     .mini-cell {
-      width: 100%;
-      height: 45px;
+      flex: 1;
+      height: 50px;
       background: #E2E8D3;
       border: 2px solid #999;
-      border-radius: 4px;
+      border-radius: 6px;
       text-align: center;
-      font-size: 24px;
+      font-size: 28px;
       font-weight: bold;
-      box-sizing: border-box;
     }
 
     .content {
       flex: 1;
       padding: 8px;
       overflow-y: auto;
-      position: relative;
     }
 
-    #camera-container {
+    #camera-section {
       width: 100%;
-      height: 350px;
       background: #000;
-      position: relative;
-      margin-bottom: 10px;
-      border-radius: 8px;
+      border-radius: 10px;
       overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .camera-header {
+      background: #444;
+      color: white;
+      padding: 12px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
     }
 
     #preview {
       width: 100%;
-      height: 100%;
+      height: 300px;
       object-fit: cover;
       display: none;
     }
 
-    #cameraMessage {
+    #camera-status {
       width: 100%;
-      height: 100%;
-      background: #333;
+      height: 300px;
+      background: #222;
       color: white;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
       padding: 20px;
       box-sizing: border-box;
       font-size: 18px;
+      flex-direction: column;
     }
 
-    #scan-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: none;
-      pointer-events: none;
+    .test-button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 20px;
+      border-radius: 10px;
+      margin: 10px;
+      cursor: pointer;
+      width: 90%;
     }
 
-    #scan-overlay.active {
-      display: block;
-    }
-
-    .scan-frame {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 280px;
-      height: 140px;
-      border: 4px solid #00FF00;
-      border-radius: 20px;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+    .camera-option {
+      background: #FF9800;
+      color: white;
+      border: none;
+      padding: 15px;
+      font-size: 18px;
+      border-radius: 8px;
+      margin: 5px;
+      cursor: pointer;
+      width: 90%;
     }
 
     .result-box {
-      margin-top: 10px;
+      margin-top: 15px;
       border: 3px solid #79A4D2;
       border-radius: 6px;
       overflow: hidden;
@@ -152,35 +158,42 @@
       background: #79A4D2;
       font-weight: bold;
       display: flex;
-      padding: 8px 0;
-      font-size: 16px;
+      padding: 12px 0;
+      font-size: 18px;
     }
 
     .result-row {
       background: #96BEEE;
       display: flex;
-      padding: 8px 0;
+      padding: 12px 0;
       border-bottom: 1px solid #79A4D2;
-      font-size: 16px;
+      font-size: 18px;
     }
 
     .result-cell {
-      padding: 0 12px;
+      padding: 0 15px;
       font-weight: bold;
     }
 
     .result-cell:first-child {
-      width: 50px;
+      width: 60px;
     }
 
     .result-cell:last-child {
       flex: 1;
+      word-break: break-all;
     }
 
-    #resultTable {
-      width: 100%;
-      max-height: 200px;
+    #debug-info {
+      background: #333;
+      color: #0F0;
+      padding: 10px;
+      font-size: 14px;
+      font-family: monospace;
+      margin-top: 10px;
+      max-height: 150px;
       overflow-y: auto;
+      display: none;
     }
   </style>
 </head>
@@ -189,12 +202,12 @@
 <div class="device">
 
   <div class="header">
-    <div>📷 Scan Barcode</div>
+    <div>📷 Alcatel Scanner</div>
     <div id="pstTime">--:--</div>
   </div>
 
   <div class="scan-row">
-    <button class="scan-btn" id="scanButton">▶ Scan</button>
+    <button class="scan-btn" id="scanButton">▶ START</button>
 
     <div class="mini-grid">
       <input class="mini-cell" maxlength="1" inputmode="numeric">
@@ -207,11 +220,14 @@
   </div>
 
   <div class="content">
-    <div id="camera-container">
+    <div id="camera-section">
+      <div class="camera-header">📸 CAMERA TEST</div>
       <video id="preview" autoplay muted playsinline></video>
-      <div id="cameraMessage"></div>
-      <div id="scan-overlay">
-        <div class="scan-frame"></div>
+      <div id="camera-status">
+        ⚠ Camera not started<br><br>
+        <button class="test-button" id="testCamera1">Test Camera 1 (Back)</button>
+        <button class="test-button" id="testCamera2">Test Camera 2 (Front)</button>
+        <button class="test-button" id="testCamera3">Test Any Camera</button>
       </div>
     </div>
 
@@ -223,16 +239,21 @@
 
       <div id="resultTable"></div>
     </div>
+
+    <div id="debug-info"></div>
   </div>
 
 </div>
 
-<!-- Use jsQR which is more compatible with older browsers -->
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-
 <script>
-// Fix for older Android
-if (!window.console) window.console = { log: function(){} };
+// Debug function
+function debug(msg) {
+  console.log(msg);
+  var debugEl = document.getElementById('debug-info');
+  debugEl.style.display = 'block';
+  debugEl.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + msg + '</div>';
+  debugEl.scrollTop = debugEl.scrollHeight;
+}
 
 /* TIME */
 function updatePSTTime() {
@@ -315,207 +336,179 @@ function addRow(value) {
   content.scrollTop = content.scrollHeight;
 }
 
-/* CAMERA + QR SCANNER */
-var scanning = false;
+/* CAMERA TEST FUNCTIONS */
 var preview = document.getElementById("preview");
-var cameraMessage = document.getElementById("cameraMessage");
-var scanOverlay = document.getElementById("scan-overlay");
-var stream = null;
-var scanInterval = null;
+var cameraStatus = document.getElementById("camera-status");
+var scanButton = document.getElementById("scanButton");
+var currentStream = null;
 
-function startScan() {
-  if (scanning) {
-    stopScan();
-    document.getElementById("scanButton").innerHTML = "▶ Scan";
-    return;
+function stopAnyCamera() {
+  if (currentStream) {
+    if (currentStream.getTracks) {
+      currentStream.getTracks().forEach(function(track) { track.stop(); });
+    } else if (currentStream.stop) {
+      currentStream.stop();
+    }
+    currentStream = null;
   }
   
-  scanning = true;
-  document.getElementById("scanButton").innerHTML = "⏹ Stop";
-  scanOverlay.className = "active";
-  
-  preview.style.display = "block";
-  cameraMessage.style.display = "none";
-  
-  // Try to get camera
-  getCamera();
+  preview.style.display = "none";
+  cameraStatus.style.display = "flex";
+  scanButton.innerHTML = "▶ START";
 }
 
-function getCamera() {
-  var constraints = {
-    video: {
-      facingMode: { exact: "environment" } // Force rear camera
-    }
-  };
+function showVideo() {
+  preview.style.display = "block";
+  cameraStatus.style.display = "none";
+}
+
+// Test different camera methods
+function testCamera1() {
+  debug("Testing Camera Method 1: Basic back camera");
+  stopAnyCamera();
   
-  // Try rear camera first
-  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia(constraints)
-      .then(handleSuccess)
-      .catch(function(err) {
-        console.log("Rear camera failed, trying front:", err);
-        // If rear fails, try any camera
-        navigator.mediaDevices.getUserMedia({ video: true })
-          .then(handleSuccess)
-          .catch(handleError);
-      });
-  } 
-  // Older API for Android 5
-  else if (navigator.webkitGetUserMedia) {
+  // Method 1: Simplest approach
+  if (navigator.webkitGetUserMedia) {
+    debug("Using webkitGetUserMedia");
     navigator.webkitGetUserMedia(
       { video: { facingMode: "environment" } },
-      handleSuccess,
+      function(stream) {
+        debug("SUCCESS: Camera 1 works!");
+        currentStream = stream;
+        preview.src = window.webkitURL.createObjectURL(stream);
+        showVideo();
+      },
       function(err) {
-        console.log("Rear camera failed (webkit), trying front:", err);
-        navigator.webkitGetUserMedia(
-          { video: true },
-          handleSuccess,
-          handleError
-        );
+        debug("FAILED: Camera 1 error - " + err.name + ": " + err.message);
+        cameraStatus.innerHTML = "❌ Camera 1 failed<br>" + err.name + "<br>Try Camera 2";
       }
     );
-  } else if (navigator.mozGetUserMedia) {
-    navigator.mozGetUserMedia(
-      { video: { facingMode: "environment" } },
-      handleSuccess,
-      function(err) {
-        navigator.mozGetUserMedia(
-          { video: true },
-          handleSuccess,
-          handleError
-        );
-      }
-    );
-  } else {
-    showMessage("Camera not supported on this device");
-    stopScan();
-  }
-}
-
-function handleSuccess(mediaStream) {
-  stream = mediaStream;
-  
-  // For older browsers
-  if (preview.srcObject) {
-    preview.srcObject = stream;
-  } else if (window.URL && window.URL.createObjectURL) {
-    preview.src = window.URL.createObjectURL(stream);
-  } else if (window.webkitURL && window.webkitURL.createObjectURL) {
-    preview.src = window.webkitURL.createObjectURL(stream);
-  } else {
-    preview.src = stream;
-  }
-  
-  preview.play();
-  cameraMessage.style.display = "none";
-  
-  // Start scanning frames
-  startFrameScanning();
-}
-
-function handleError(err) {
-  console.log("Camera error:", err);
-  
-  if (err.name === 'PermissionDeniedError' || err.name === 'PermissionDismissedError' || err.message && err.message.indexOf('permission') > -1) {
-    showMessage("📵 Camera permission denied<br>Use manual entry");
-  } else if (err.name === 'NotFoundError' || err.message && err.message.indexOf('not found') > -1) {
-    showMessage("📵 No camera found<br>Use manual entry");
-  } else {
-    showMessage("📵 Camera error<br>Use manual entry");
-  }
-  
-  stopScan();
-}
-
-function showMessage(msg) {
-  preview.style.display = "none";
-  cameraMessage.style.display = "flex";
-  cameraMessage.innerHTML = msg;
-  scanOverlay.className = "";
-}
-
-function startFrameScanning() {
-  if (!scanning) return;
-  
-  // Create a canvas to capture frames
-  var canvas = document.createElement('canvas');
-  var context = canvas.getContext('2d');
-  
-  scanInterval = setInterval(function() {
-    if (!scanning || !preview.videoWidth) return;
-    
-    // Set canvas size to video size
-    canvas.width = preview.videoWidth;
-    canvas.height = preview.videoHeight;
-    
-    // Draw video frame to canvas
-    context.drawImage(preview, 0, 0, canvas.width, canvas.height);
-    
-    // Get image data
-    var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    
-    // Try to decode QR code
-    try {
-      var code = jsQR(imageData.data, canvas.width, canvas.height, {
-        inversionAttempts: "dontInvert"
+  } 
+  else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    debug("Using mediaDevices.getUserMedia");
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then(function(stream) {
+        debug("SUCCESS: Camera 1 works!");
+        currentStream = stream;
+        preview.srcObject = stream;
+        showVideo();
+      })
+      .catch(function(err) {
+        debug("FAILED: Camera 1 error - " + err.name);
+        cameraStatus.innerHTML = "❌ Camera 1 failed<br>" + err.name + "<br>Try Camera 2";
       });
-      
-      if (code) {
-        console.log("QR found:", code.data);
-        addRow("QR: " + code.data);
-        stopScan();
-      }
-    } catch(e) {
-      // jsQR might fail on some frames
-    }
-  }, 500); // Check every 500ms
+  }
+  else {
+    debug("No camera API found");
+    cameraStatus.innerHTML = "❌ No camera API available";
+  }
 }
 
-function stopScan() {
-  scanning = false;
-  scanOverlay.className = "";
-  document.getElementById("scanButton").innerHTML = "▶ Scan";
+function testCamera2() {
+  debug("Testing Camera Method 2: Front camera");
+  stopAnyCamera();
   
-  if (scanInterval) {
-    clearInterval(scanInterval);
-    scanInterval = null;
-  }
-  
-  if (stream) {
-    if (stream.getTracks) {
-      var tracks = stream.getTracks();
-      for (var i = 0; i < tracks.length; i++) {
-        tracks[i].stop();
+  if (navigator.webkitGetUserMedia) {
+    debug("Using webkitGetUserMedia with front camera");
+    navigator.webkitGetUserMedia(
+      { video: true },
+      function(stream) {
+        debug("SUCCESS: Camera 2 works!");
+        currentStream = stream;
+        preview.src = window.webkitURL.createObjectURL(stream);
+        showVideo();
+      },
+      function(err) {
+        debug("FAILED: Camera 2 error - " + err.name);
+        cameraStatus.innerHTML = "❌ Camera 2 failed<br>" + err.name + "<br>Try Camera 3";
       }
-    } else if (stream.stop) {
-      stream.stop();
-    }
-    stream = null;
+    );
   }
-  
-  if (preview.src) {
-    preview.src = "";
+  else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function(stream) {
+        debug("SUCCESS: Camera 2 works!");
+        currentStream = stream;
+        preview.srcObject = stream;
+        showVideo();
+      })
+      .catch(function(err) {
+        debug("FAILED: Camera 2 error - " + err.name);
+        cameraStatus.innerHTML = "❌ Camera 2 failed<br>" + err.name + "<br>Try Camera 3";
+      });
   }
-  
-  preview.style.display = "none";
 }
 
-document.getElementById("scanButton").onclick = startScan;
+function testCamera3() {
+  debug("Testing Camera Method 3: Any camera with minimal constraints");
+  stopAnyCamera();
+  
+  // Try with minimal constraints
+  var constraints = { video: true };
+  
+  if (navigator.webkitGetUserMedia) {
+    navigator.webkitGetUserMedia(
+      constraints,
+      function(stream) {
+        debug("SUCCESS: Camera 3 works!");
+        currentStream = stream;
+        preview.src = window.webkitURL.createObjectURL(stream);
+        showVideo();
+        
+        // Try to detect if it's front or back
+        var track = stream.getVideoTracks()[0];
+        if (track) {
+          debug("Camera used: " + track.label);
+          cameraStatus.innerHTML = "✅ Camera working!<br>" + (track.label || "Unknown camera");
+        }
+      },
+      function(err) {
+        debug("FAILED: Camera 3 error - " + err.name);
+        cameraStatus.innerHTML = "❌ All cameras failed<br>Use manual entry only<br><br>Error: " + err.name;
+      }
+    );
+  } else {
+    cameraStatus.innerHTML = "❌ Browser doesn't support camera";
+    debug("No camera support");
+  }
+}
 
-// Handle page unload
+// Try to auto-start with the best method
+window.onload = function() {
+  debug("Device: Alcatel OneTouch Conquest");
+  debug("Browser: " + navigator.userAgent);
+  
+  // Check what's available
+  if (navigator.webkitGetUserMedia) {
+    debug("webkitGetUserMedia is available");
+  }
+  if (navigator.mediaDevices) {
+    debug("mediaDevices is available");
+  }
+  
+  // Don't auto-start, let user choose
+  cameraStatus.innerHTML = '⚠ Click a camera button to test<br>' +
+                          '<button class="camera-option" onclick="testCamera1()">📷 Try Back Camera</button>' +
+                          '<button class="camera-option" onclick="testCamera2()">🤳 Try Front Camera</button>' +
+                          '<button class="camera-option" onclick="testCamera3()">🔄 Try Any Camera</button>';
+};
+
+// Stop camera when leaving
 window.onbeforeunload = function() {
-  if (stream) {
-    if (stream.getTracks) {
-      var tracks = stream.getTracks();
-      for (var i = 0; i < tracks.length; i++) {
-        tracks[i].stop();
-      }
-    }
+  stopAnyCamera();
+};
+
+// Scan button now just stops camera
+scanButton.onclick = function() {
+  if (currentStream) {
+    stopAnyCamera();
+    scanButton.innerHTML = "▶ START";
+  } else {
+    // If no camera, just show message
+    alert("Click one of the camera test buttons above first");
   }
 };
 </script>
 
-<!-- Add some instructions -->
-<div style="display:none;">Alcatel OneTouch Conquest optimized version</div>
 </body>
 </html>
