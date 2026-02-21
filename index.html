@@ -16,8 +16,8 @@
     }
 
     .device {
-      width: 360px;
-      height: 640px;
+      width: 400px;
+      height: 700px;
       background: #B0C8E2;
       color: black;
       display: flex;
@@ -29,32 +29,32 @@
     .header {
       background: #15569B;
       color: #D0D7DC;
-      height: 25px;
+      height: 30px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 16px;
-      font-size: 14px;
+      font-size: 16px;
     }
 
     .scan-row {
       display: flex;
       flex-direction: row;
       align-items: center;
-      padding: 10px 8px;
-      gap: 6px;
+      padding: 15px 8px;
+      gap: 10px;
       background: #B0C8E2;
     }
 
     .scan-btn {
       background: #FCC57A;
       border: none;
-      padding: 6px 12px;
+      padding: 10px 18px;
       font-weight: bold;
       color: black;
-      border-radius: 4px;
-      font-size: 14px;
-      height: 28px;
+      border-radius: 6px;
+      font-size: 18px;
+      height: 45px;
       display: flex;
       align-items: center;
       cursor: pointer;
@@ -63,19 +63,19 @@
     .mini-grid {
       display: flex;
       flex-direction: row;
-      gap: 3px;
-      height: 28px;
+      gap: 5px;
+      height: 40px;
       align-items: center;
     }
 
     .mini-cell {
-      width: 38px;
-      height: 25px;
+      width: 45px;
+      height: 40px;
       background: #E2E8D3;
-      border: 1px solid #999;
-      border-radius: 2px;
+      border: 2px solid #999;
+      border-radius: 4px;
       text-align: center;
-      font-size: 16px;
+      font-size: 24px;
       font-weight: bold;
       color: black;
       outline: none;
@@ -83,92 +83,131 @@
 
     .content {
       flex: 1;
-      padding: 8px;
+      padding: 12px;
       overflow-y: auto;
     }
 
     #preview {
       width: 100%;
-      height: 200px;
+      height: 250px;
       background: #000;
       display: none;
       object-fit: cover;
+      border-radius: 8px;
     }
 
     #scanner-area {
       width: 100%;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    .file-input-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 15px;
     }
 
     #file-input {
-      width: 100%;
-      padding: 8px;
+      padding: 15px;
       background: #FCC57A;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
-      margin-bottom: 8px;
       font-weight: bold;
+      font-size: 18px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     #uploaded-image {
       width: 100%;
-      max-height: 200px;
+      max-height: 250px;
       object-fit: contain;
       background: #333;
       display: none;
-      border-radius: 4px;
+      border-radius: 8px;
+      border: 3px solid #15569B;
     }
 
     #scan-status {
       text-align: center;
-      font-size: 14px;
-      color: #333;
-      margin: 5px 0;
-      min-height: 20px;
+      font-size: 18px;
+      margin: 15px 0;
+      min-height: 40px;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    .status-loading {
+      background: #FFF3CD;
+      color: #856404;
+    }
+
+    .status-success {
+      background: #D4EDDA;
+      color: #155724;
+    }
+
+    .status-error {
+      background: #F8D7DA;
+      color: #721C24;
     }
 
     /* RESULT BOX */
     .result-box {
-      margin-top: 10px;
-      border: 2px solid #79A4D2;
-      border-radius: 4px;
+      margin-top: 20px;
+      border: 3px solid #15569B;
+      border-radius: 8px;
       overflow: hidden;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
     }
 
     .result-header,
     .result-row {
       display: grid;
-      grid-template-columns: 40px 1fr;
+      grid-template-columns: 60px 1fr;
       align-items: center;
     }
 
     .result-header {
-      background: #79A4D2;
-      color: black;
+      background: #15569B;
+      color: white;
+      font-size: 20px;
     }
 
     .result-row {
       background: #96BEEE;
       color: black;
+      border-bottom: 1px solid #15569B;
     }
 
     .result-cell {
-      padding: 6px 10px;
+      padding: 12px 15px;
       word-break: break-all;
     }
 
     .result-cell-value {
       font-weight: bold;
+      font-size: 20px;
     }
 
     .manual-entry-note {
-      font-size: 12px;
+      font-size: 16px;
       color: #333;
-      margin: 5px 0;
+      margin: 15px 0 10px;
       text-align: center;
+      font-weight: bold;
+    }
+
+    .empty-message {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+      font-size: 18px;
+      background: #E2E8D3;
     }
   </style>
 </head>
@@ -176,12 +215,12 @@
   <div class="device">
 
     <div class="header">
-      <div class="header-title">Scan Barcode</div>
+      <div class="header-title">📱 SCAN BARCODE</div>
       <div class="header-time" id="pstTime">--:--</div>
     </div>
 
     <div class="scan-row">
-      <button class="scan-btn" id="scanButton">📷 Scan</button>
+      <button class="scan-btn" id="scanButton">📷 SCAN</button>
 
       <div class="mini-grid">
         <input class="mini-cell" maxlength="1">
@@ -195,36 +234,43 @@
 
     <div class="content">
       <div id="scanner-area">
-        <input type="file" id="file-input" accept="image/*" capture="environment">
+        <div class="file-input-wrapper">
+          <input type="file" id="file-input" accept="image/*" capture="environment">
+        </div>
+        
         <img id="uploaded-image" alt="Uploaded QR code">
-        <div id="scan-status"></div>
+        
+        <div id="scan-status" class="status-loading">
+          ⏳ Ready to scan... Select an image
+        </div>
       </div>
       
       <video id="preview" autoplay muted playsinline></video>
 
-      <div class="manual-entry-note">Or type 6 digits in the boxes above</div>
+      <div class="manual-entry-note">
+        ⬆️ Type 6 digits above or scan QR code ⬆️
+      </div>
 
-      <!-- ALWAYS VISIBLE RESULT BOX -->
+      <!-- RESULT BOX -->
       <div class="result-box">
         <div class="result-header">
           <div class="result-cell">#</div>
-          <div class="result-cell">LABEL ID</div>
+          <div class="result-cell">LABEL ID / QR CODE</div>
         </div>
 
-        <!-- EMPTY ROW ALWAYS SHOWN -->
-        <div id="emptyRow" class="result-row">
-          <div class="result-cell"></div>
-          <div class="result-cell"></div>
+        <!-- RESULTS TABLE -->
+        <div id="resultTable">
+          <div class="empty-message">
+            No scans yet. Scan a QR code or enter 6 digits.
+          </div>
         </div>
-
-        <!-- REAL DATA ROWS -->
-        <div id="resultTable"></div>
       </div>
     </div>
 
   </div>
 
-  <!-- Pure JavaScript QR Code Reader - No external dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
   <script>
     /* PST Time */
     function updatePSTTime() {
@@ -232,6 +278,7 @@
         var options = {
           hour: '2-digit',
           minute: '2-digit',
+          second: '2-digit',
           hour12: false,
           timeZone: 'America/Los_Angeles'
         };
@@ -270,46 +317,53 @@
         code += cells[i].value;
       }
       if (code.length === 6) {
-        addRow(code);
+        addRow(code, 'MANUAL');
+        // Clear boxes after successful entry
+        for (let i = 0; i < cells.length; i++) {
+          cells[i].value = "";
+          cells[i].style.background = "#E2E8D3";
+        }
+        cells[0].focus();
       }
     }
 
     /* RESULT TABLE LOGIC */
     let scanIndex = 0;
 
-    function addRow(value) {
+    function addRow(value, source = 'SCAN') {
       scanIndex++;
       
-      // Clear the manual entry boxes
-      for (let i = 0; i < cells.length; i++) {
-        cells[i].value = "";
-        cells[i].style.background = "#E2E8D3";
+      // Remove empty message if this is first row
+      const emptyMsg = document.querySelector('.empty-message');
+      if (emptyMsg) {
+        emptyMsg.remove();
       }
 
-      document.getElementById("emptyRow").style.display = "none";
+      // Truncate very long values
+      const displayValue = value.length > 30 ? value.substring(0, 27) + '...' : value;
 
       let row = `
         <div class="result-row">
-          <div class="result-cell">${scanIndex}</div>
-          <div class="result-cell result-cell-value">${value}</div>
+          <div class="result-cell">#${scanIndex}</div>
+          <div class="result-cell result-cell-value">${displayValue}</div>
         </div>
       `;
 
       document.getElementById("resultTable").insertAdjacentHTML("beforeend", row);
       
-      // Show success status
-      document.getElementById('scan-status').innerHTML = '✅ Scanned: ' + value;
-      setTimeout(() => {
-        document.getElementById('scan-status').innerHTML = '';
-      }, 3000);
+      // Scroll to show new row
+      const resultBox = document.querySelector('.result-box');
+      resultBox.scrollTop = resultBox.scrollHeight;
     }
 
-    /* QR CODE READER - Pure JavaScript Implementation */
+    /* QR CODE READER */
     function readQRCodeFromImage(file) {
       const status = document.getElementById('scan-status');
       const img = document.getElementById('uploaded-image');
       
-      status.innerHTML = '⏳ Reading QR code...';
+      // Show loading
+      status.className = 'status-loading';
+      status.innerHTML = '⏳ LOADING IMAGE...';
       
       const reader = new FileReader();
       
@@ -317,105 +371,131 @@
         img.src = e.target.result;
         img.style.display = 'block';
         
-        // Create a canvas to process the image
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        status.innerHTML = '⏳ PROCESSING QR CODE...';
         
         const image = new Image();
         image.src = e.target.result;
         
         image.onload = function() {
-          // Set canvas size to match image
-          canvas.width = image.width;
-          canvas.height = image.height;
-          ctx.drawImage(image, 0, 0, image.width, image.height);
+          // Create canvas
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
           
-          // Get image data for QR detection
+          // Set canvas size (scale down if too large)
+          let width = image.width;
+          let height = image.height;
+          const maxSize = 800;
+          
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = (height / width) * maxSize;
+              width = maxSize;
+            } else {
+              width = (width / height) * maxSize;
+              height = maxSize;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(image, 0, 0, width, height);
+          
+          // Get image data
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           
-          // Try to detect QR code using jsQR algorithm
+          status.innerHTML = '⏳ DECODING QR CODE...';
+          
           try {
-            // Use jsQR if available (loaded from CDN)
+            // Use jsQR
             if (window.jsQR) {
-              const code = jsQR(imageData.data, canvas.width, canvas.height);
+              const code = jsQR(imageData.data, canvas.width, canvas.height, {
+                inversionAttempts: "dontInvert"
+              });
               
               if (code) {
-                status.innerHTML = '✅ QR Code detected!';
-                addRow(code.data);
+                // Success!
+                status.className = 'status-success';
+                status.innerHTML = '✅✅ SUCCESS! QR CODE READ: ' + code.data;
+                addRow(code.data, 'QR');
+                
+                // Play success beep?
+                console.log('QR Code data:', code.data);
               } else {
-                status.innerHTML = '❌ No QR code found in image';
+                // Try inverted colors (some QR codes are inverted)
+                for (let i = 0; i < imageData.data.length; i += 4) {
+                  imageData.data[i] = 255 - imageData.data[i];
+                  imageData.data[i+1] = 255 - imageData.data[i+1];
+                  imageData.data[i+2] = 255 - imageData.data[i+2];
+                }
+                
+                const invertedCode = jsQR(imageData.data, canvas.width, canvas.height);
+                
+                if (invertedCode) {
+                  status.className = 'status-success';
+                  status.innerHTML = '✅✅ SUCCESS! QR CODE READ (INVERTED): ' + invertedCode.data;
+                  addRow(invertedCode.data, 'QR');
+                } else {
+                  status.className = 'status-error';
+                  status.innerHTML = '❌❌ ERROR: No QR code found in image! Try a different image.';
+                }
               }
             } else {
-              // Fallback - since jsQR might not load, show instructions
-              status.innerHTML = '⚠️ Downloading QR reader... Please try again';
-              
-              // For demo purposes, extract text from image name or simulate
-              // In a real app, you'd include jsQR library
-              const fileName = file.name.toLowerCase();
-              if (fileName.includes('qrcode') || fileName.includes('qr')) {
-                // Extract any numbers from filename
-                const numbers = file.name.match(/\d+/g);
-                if (numbers) {
-                  const code = numbers.join('').substring(0, 6);
-                  if (code.length === 6) {
-                    addRow(code);
-                    status.innerHTML = '✅ QR Code read from filename: ' + code;
-                  } else {
-                    addRow('QR' + Math.floor(100000 + Math.random() * 900000));
-                    status.innerHTML = '✅ Sample QR code added (library loading)';
-                  }
-                } else {
-                  addRow('QR' + Math.floor(100000 + Math.random() * 900000));
-                  status.innerHTML = '✅ Sample QR code added';
-                }
-              } else {
-                status.innerHTML = '❌ Please include jsQR library or use a real QR code';
-              }
+              status.className = 'status-error';
+              status.innerHTML = '❌❌ ERROR: QR library not loaded!';
             }
           } catch (error) {
-            status.innerHTML = '❌ Error reading QR: ' + error.message;
+            status.className = 'status-error';
+            status.innerHTML = '❌❌ ERROR: ' + error.message;
+            console.error('QR Error:', error);
           }
         };
+        
+        image.onerror = function() {
+          status.className = 'status-error';
+          status.innerHTML = '❌❌ ERROR: Failed to load image!';
+        };
+      };
+      
+      reader.onerror = function() {
+        status.className = 'status-error';
+        status.innerHTML = '❌❌ ERROR: Failed to read file!';
       };
       
       reader.readAsDataURL(file);
     }
 
-    /* Handle file upload for QR code scanning */
+    /* Handle file upload */
     document.getElementById('file-input').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (file) {
+        console.log('File selected:', file.name);
         readQRCodeFromImage(file);
       }
-      // Clear the input so the same file can be selected again
-      this.value = '';
+      // Don't clear input so user can select same file again if needed
     });
 
-    /* Scan button behavior */
+    /* Scan button click */
     document.getElementById('scanButton').onclick = function() {
-      // Trigger file input for QR code upload
       document.getElementById('file-input').click();
     };
 
-    /* Load jsQR library for actual QR code reading */
-    function loadJsQR() {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
-      script.onload = function() {
-        console.log('jsQR loaded successfully');
-        document.getElementById('scan-status').innerHTML = '✅ QR reader ready';
-      };
-      script.onerror = function() {
-        console.log('Failed to load jsQR');
-        document.getElementById('scan-status').innerHTML = '⚠️ Using fallback mode';
-      };
-      document.head.appendChild(script);
+    /* Test function to make sure everything works */
+    function testQRReader() {
+      console.log('jsQR loaded:', !!window.jsQR);
+      if (window.jsQR) {
+        document.getElementById('scan-status').className = 'status-success';
+        document.getElementById('scan-status').innerHTML = '✅ QR reader ready! Click "SCAN" and select a QR code image.';
+      } else {
+        document.getElementById('scan-status').className = 'status-error';
+        document.getElementById('scan-status').innerHTML = '❌ QR library not loaded. Refreshing...';
+        setTimeout(() => location.reload(), 2000);
+      }
     }
 
-    // Load the QR code reader library
-    loadJsQR();
+    // Test on load
+    setTimeout(testQRReader, 1000);
 
-    // Make sure cells are focused properly
+    // Make sure cells are focused
     setTimeout(() => {
       if (cells.length > 0) cells[0].focus();
     }, 500);
