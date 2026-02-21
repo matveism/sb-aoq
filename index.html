@@ -454,37 +454,32 @@
       cursor: pointer;
     }
     
-    .flash-btn {
-      background: #ffaa00;
-      color: #000;
-      padding: 6px 16px;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-right: 10px;
-    }
-    
-    .flash-btn.active {
-      background: #ffff00;
-      box-shadow: 0 0 15px yellow;
-    }
-    
     #qr-reader {
       width: 100%;
       height: 100%;
       position: relative;
       background: #111;
       overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
     
-    #cameraCanvas {
+    #interactive.viewport {
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      background: #000;
+      position: relative;
+    }
+    
+    #interactive.viewport > video, 
+    #interactive.viewport > canvas {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    
+    #interactive.viewport > canvas.drawingBuffer {
+      width: 100%;
+      height: 100%;
     }
     
     .scan-overlay {
@@ -624,6 +619,9 @@
       .scan-entry { padding: 5px 8px; }
     }
   </style>
+  
+  <!-- ZXING library via CDN -->
+  <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 </head>
 <body>
   <div class="device">
@@ -707,23 +705,20 @@
     </div>
   </div>
 
-  <!-- CAMERA MODAL -->
+  <!-- CAMERA MODAL with ZXING container -->
   <div id="cameraModal" class="camera-modal">
     <div class="camera-header">
       <span style="font-weight:bold;">◰ SCAN BARCODE</span>
       <div style="display: flex;">
-        <div class="flash-btn" id="flashlightBtn">🔦 OFF</div>
         <div class="close-cam" id="closeCameraBtn">✕ CLOSE</div>
       </div>
     </div>
     <div id="qr-reader">
-      <video id="cameraVideo" style="display: none;"></video>
-      <canvas id="cameraCanvas" width="640" height="480"></canvas>
+      <div id="interactive" class="viewport"></div>
       <div class="scan-overlay"></div>
     </div>
     <div class="camera-footer">
-      <span>⬤ POSITION QR CODE IN GREEN BOX</span>
-      <span id="flashStatus" style="font-size: 11px;">FLASH: OFF</span>
+      <span>⬤ POSITION BARCODE IN GREEN BOX</span>
     </div>
   </div>
   
@@ -744,11 +739,10 @@
     </div>
   </div>
 
-  <!-- REPLACED jsQR with simpler approach and fixed XANO connection -->
   <script>
     // ==================== GLOBAL VARIABLES ====================
-    // Use a test API endpoint that supports CORS
-    var XANO_URL = 'https://jsonplaceholder.typicode.com/posts'; // Test endpoint
+    // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+    var GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySQeowFjLRievcowUZoVXT4COzsNKDIOP-SLnnQ0nl0IJLSlvbda3UERNbydNz0U1Mhw/exec';
     
     // DOM elements
     var inputEl = document.getElementById('barcodeInput');
@@ -760,16 +754,15 @@
     var closeCam = document.getElementById('closeCameraBtn');
     var statusModal = document.getElementById('statusModal');
     var closeStatus = document.getElementById('closeStatusBtn');
-    var flashBtn = document.getElementById('flashlightBtn');
-    var flashStatus = document.getElementById('flashStatus');
     var connLed = document.getElementById('connectionLed');
     var connText = document.getElementById('connectionText');
     var gpsLed = document.getElementById('gpsLed');
     var gpsText = document.getElementById('gpsText');
     var gpsLoc = document.getElementById('gpsLocation');
-    var video = document.getElementById('cameraVideo');
-    var canvas = document.getElementById('cameraCanvas');
-    var ctx = canvas.getContext('2d');
+    
+    // ZXING variables
+    var codeReader = null;
+    var videoInputDevice = null;
     
     // State variables
     var scanCounter = 1;
@@ -777,12 +770,8 @@
     var pendingBarcode = '';
     var currentLat = '';
     var currentLng = '';
-    var localStream = null;
-    var scanning = false;
-    var scanInterval = null;
-    var flashOn = false;
     
-    // ==================== GPS FUNCTION (FIXED) ====================
+    // ==================== GPS FUNCTION ====================
     function getGPS() {
       if (!navigator.geolocation) {
         gpsLed.className = 'gps-led gps-red';
@@ -837,8 +826,8 @@
       return (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
     }
     
-    // ==================== SEND TO SERVER (FIXED FOR OPERA MINI) ====================
-    function sendToServer(barcode, status, indicator) {
+    // ==================== SEND TO GOOGLE SHEETS ====================
+    function sendToGoogleSheets(barcode, status, indicator) {
       indicator.innerHTML = '⏳';
       indicator.className = 'sync-indicator sync-pending';
       connLed.className = 'connection-led led-yellow';
@@ -846,77 +835,58 @@
       
       var d = new Date();
       var dateStr = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
-      var timeStr = d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+      var timeStr = d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes() + ':' + (d.getSeconds() < 10 ? '0' : '') + d.getSeconds();
       
-      var data = {
-        label_id: barcode,
-        status: status,
-        date: dateStr,
-        time: timeStr,
-        location: (currentLat ? currentLat + ', ' + currentLng : 'Unknown'),
-        eta: getETA(status)
-      };
+      var location = (currentLat && currentLng) ? currentLat + ', ' + currentLng : 'Unknown';
+      var eta = getETA(status);
       
-      // Opera Mini friendly approach - use Image beacon for GET fallback
-      // First try fetch with timeout
-      if (window.fetch) {
-        fetch(XANO_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-          mode: 'cors',
-          cache: 'no-cache'
-        })
-        .then(function(response) {
-          if (response.ok) {
+      // Create URL parameters
+      var params = '?action=add' +
+                   '&label=' + encodeURIComponent(barcode) +
+                   '&status=' + encodeURIComponent(status) +
+                   '&date=' + encodeURIComponent(dateStr) +
+                   '&time=' + encodeURIComponent(timeStr) +
+                   '&location=' + encodeURIComponent(location) +
+                   '&eta=' + encodeURIComponent(eta);
+      
+      var url = GOOGLE_SCRIPT_URL + params;
+      
+      // Use JSONP approach for cross-domain
+      var callbackName = 'callback_' + new Date().getTime();
+      window[callbackName] = function(response) {
+        try {
+          if (response && response.result === 'success') {
             indicator.innerHTML = '✅';
             indicator.className = 'sync-indicator sync-success';
             connLed.className = 'connection-led led-green';
             connText.innerHTML = 'SENT ✅';
           } else {
-            throw new Error('Server error');
+            indicator.innerHTML = '❌';
+            indicator.className = 'sync-indicator sync-failed';
+            connLed.className = 'connection-led led-red';
+            connText.innerHTML = 'ERROR';
           }
-        })
-        .catch(function(error) {
-          // Fallback to localStorage for offline mode
-          saveToLocalStorage(barcode, status, data);
-          indicator.innerHTML = '💾';
-          indicator.className = 'sync-indicator sync-pending';
-          connLed.className = 'connection-led led-yellow';
-          connText.innerHTML = 'SAVED OFFLINE';
-        });
-      } else {
-        // Opera Mini fallback - save locally
-        saveToLocalStorage(barcode, status, data);
-        indicator.innerHTML = '💾';
-        indicator.className = 'sync-indicator sync-pending';
-        connLed.className = 'connection-led led-yellow';
-        connText.innerHTML = 'SAVED OFFLINE';
-      }
-    }
-    
-    // ==================== LOCAL STORAGE FALLBACK ====================
-    function saveToLocalStorage(barcode, status, data) {
-      var scans = [];
-      try {
-        var saved = localStorage.getItem('pending_scans');
-        if (saved) {
-          scans = JSON.parse(saved);
+        } catch(e) {
+          indicator.innerHTML = '❌';
+          indicator.className = 'sync-indicator sync-failed';
+          connLed.className = 'connection-led led-red';
+          connText.innerHTML = 'ERROR';
         }
-      } catch(e) {}
+        delete window[callbackName];
+        document.body.removeChild(script);
+      };
       
-      scans.push({
-        barcode: barcode,
-        status: status,
-        data: data,
-        timestamp: new Date().getTime()
-      });
-      
-      try {
-        localStorage.setItem('pending_scans', JSON.stringify(scans));
-      } catch(e) {}
+      var script = document.createElement('script');
+      script.src = url + '&callback=' + callbackName;
+      script.onerror = function() {
+        indicator.innerHTML = '❌';
+        indicator.className = 'sync-indicator sync-failed';
+        connLed.className = 'connection-led led-red';
+        connText.innerHTML = 'NETWORK ERROR';
+        delete window[callbackName];
+        document.body.removeChild(script);
+      };
+      document.body.appendChild(script);
     }
     
     // ==================== ADD SCAN ENTRY ====================
@@ -961,7 +931,7 @@
       div.appendChild(sync);
       
       historyEl.insertBefore(div, historyEl.firstChild);
-      sendToServer(barcode, status, sync);
+      sendToGoogleSheets(barcode, status, sync);
       
       scanCounter = scanCounter + 1;
       if (historyEl.children.length > maxEntries) {
@@ -969,102 +939,98 @@
       }
     }
     
-    // ==================== CAMERA (SIMPLIFIED FOR OPERA MINI) ====================
-    function checkCameraSupport() {
-      // Opera Mini doesn't support getUserMedia well
-      var isOperaMini = navigator.userAgent.indexOf('Opera Mini') > -1;
-      if (isOperaMini) {
-        alert('Camera scanning is not supported in Opera Mini. Please use manual entry.');
-        return false;
-      }
-      
-      if (!navigator.mediaDevices && !navigator.webkitGetUserMedia && !navigator.getUserMedia) {
-        alert('Camera not supported on this browser');
-        return false;
-      }
-      
-      return true;
-    }
-    
-    function startCamera() {
-      if (!checkCameraSupport()) {
-        cameraModal.style.display = 'none';
-        return false;
-      }
-      
-      // Show manual entry option
-      alert('For best results, use manual entry. Camera may not work in Opera Mini.');
-      
-      // Use modern API with fallback
-      var constraints = {
-        video: { facingMode: 'environment' },
-        audio: false
-      };
-      
-      var getUserMedia = navigator.mediaDevices ? 
-        navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices) : 
-        (navigator.webkitGetUserMedia || navigator.getUserMedia);
-      
-      if (getUserMedia) {
-        try {
-          getUserMedia(constraints)
-            .then(function(stream) {
-              localStream = stream;
-              
-              // Handle different browser APIs
-              if (video.srcObject !== undefined) {
-                video.srcObject = stream;
-              } else {
-                video.src = window.URL.createObjectURL(stream);
+    // ==================== ZXING CAMERA FUNCTIONS ====================
+    function startZXINGCamera() {
+      try {
+        codeReader = new ZXing.BrowserMultiFormatReader();
+        
+        // Get video input devices
+        codeReader.listVideoInputDevices()
+          .then(function(videoInputDevices) {
+            // Find back camera
+            var selectedDeviceId = null;
+            
+            if (videoInputDevices && videoInputDevices.length > 0) {
+              // Try to find back camera first
+              for (var i = 0; i < videoInputDevices.length; i++) {
+                var device = videoInputDevices[i];
+                if (device.label && device.label.toLowerCase().includes('back') || 
+                    device.label.toLowerCase().includes('environment') ||
+                    device.label.toLowerCase().includes('rear')) {
+                  selectedDeviceId = device.deviceId;
+                  break;
+                }
               }
               
-              video.play();
-              video.style.display = 'block';
-              canvas.style.display = 'none';
-              
-              scanning = true;
-              
-              // Simple scanner simulation (since jsQR might not work)
-              alert('Camera started. Press CLOSE to return to manual entry.');
-            })
-            .catch(function(err) {
-              alert('Camera error: ' + err.message + '\nPlease use manual entry.');
+              // If no back camera found, use first device
+              if (!selectedDeviceId && videoInputDevices.length > 0) {
+                selectedDeviceId = videoInputDevices[0].deviceId;
+              }
+            }
+            
+            if (!selectedDeviceId) {
+              alert('No camera found');
               cameraModal.style.display = 'none';
+              return;
+            }
+            
+            // Start decoding
+            var videoElement = document.createElement('video');
+            videoElement.setAttribute('id', 'zxing-video');
+            videoElement.setAttribute('style', 'width: 100%; height: 100%; object-fit: cover;');
+            
+            var container = document.getElementById('interactive');
+            container.innerHTML = '';
+            container.appendChild(videoElement);
+            
+            codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, function(result, error) {
+              if (result) {
+                // Found a barcode
+                if (navigator.vibrate) navigator.vibrate(200);
+                
+                // Stop scanning
+                codeReader.reset();
+                
+                // Close camera and set barcode
+                closeCameraFunc();
+                
+                // Set the barcode
+                inputEl.innerHTML = result.getText();
+                pendingBarcode = result.getText();
+                
+                // Show status modal
+                setTimeout(function() {
+                  statusModal.style.display = 'flex';
+                }, 300);
+              }
             });
-        } catch(e) {
-          alert('Camera error. Please use manual entry.');
-          cameraModal.style.display = 'none';
-        }
-      } else {
-        alert('Camera not supported');
+          })
+          .catch(function(err) {
+            alert('Camera error: ' + err.message);
+            cameraModal.style.display = 'none';
+          });
+      } catch(e) {
+        alert('Error starting camera: ' + e.message);
         cameraModal.style.display = 'none';
       }
-      
-      return true;
     }
     
-    function stopCamera() {
-      scanning = false;
-      if (scanInterval) {
-        window.clearInterval(scanInterval);
-        scanInterval = null;
+    function stopZXINGCamera() {
+      if (codeReader) {
+        try {
+          codeReader.reset();
+        } catch(e) {}
+        codeReader = null;
       }
       
-      if (localStream) {
-        var tracks = localStream.getTracks();
-        for (var i = 0; i < tracks.length; i++) {
-          tracks[i].stop();
-        }
-        localStream = null;
+      var container = document.getElementById('interactive');
+      if (container) {
+        container.innerHTML = '';
       }
-      
-      video.src = '';
-      video.style.display = 'none';
-      canvas.style.display = 'block';
     }
     
     function closeCameraFunc() {
-      stopCamera();
+      stopZXINGCamera();
       cameraModal.style.display = 'none';
     }
     
@@ -1089,15 +1055,9 @@
     
     scanBtn.onclick = function() {
       cameraModal.style.display = 'flex';
-      window.setTimeout(function() {
-        if (!startCamera()) {
-          cameraModal.style.display = 'none';
-        }
+      setTimeout(function() {
+        startZXINGCamera();
       }, 200);
-    };
-    
-    flashBtn.onclick = function() {
-      alert('Flash not supported in Opera Mini');
     };
     
     // Status options
@@ -1190,18 +1150,6 @@
     // ==================== INIT ====================
     window.setTimeout(getGPS, 500);
     connText.innerHTML = 'READY';
-    
-    // Try to load any pending scans
-    try {
-      var pending = localStorage.getItem('pending_scans');
-      if (pending) {
-        var scans = JSON.parse(pending);
-        if (scans.length > 0) {
-          connText.innerHTML = scans.length + ' PENDING';
-          connLed.className = 'connection-led led-yellow';
-        }
-      }
-    } catch(e) {}
   </script>
 </body>
 </html>
