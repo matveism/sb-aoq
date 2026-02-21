@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
   <style>
-    /* YOUR EXACT CSS - UNCHANGED - keep all your existing CSS */
+    /* YOUR EXACT CSS - UNCHANGED */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -454,59 +454,6 @@
       cursor: pointer;
     }
     
-    #qr-reader {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      background: #111;
-      overflow: hidden;
-    }
-    
-    #interactive.viewport {
-      width: 100%;
-      height: 100%;
-      position: relative;
-    }
-    
-    #interactive.viewport > video, 
-    #interactive.viewport > canvas {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-    
-    #interactive.viewport > canvas.drawingBuffer {
-      width: 100%;
-      height: 100%;
-    }
-    
-    .scan-overlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 250px;
-      height: 250px;
-      border: 3px solid #00ff00;
-      border-radius: 20px;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
-      pointer-events: none;
-      z-index: 10;
-    }
-    
-    .camera-footer {
-      background: #003366;
-      color: white;
-      padding: 12px;
-      text-align: center;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
     .status-modal {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -619,9 +566,6 @@
       .scan-entry { padding: 5px 8px; }
     }
   </style>
-  
-  <!-- ZXING library via CDN -->
-  <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 </head>
 <body>
   <div class="device">
@@ -704,23 +648,6 @@
       </div>
     </div>
   </div>
-
-  <!-- CAMERA MODAL with ZXING container -->
-  <div id="cameraModal" class="camera-modal">
-    <div class="camera-header">
-      <span style="font-weight:bold;">◰ SCAN BARCODE</span>
-      <div style="display: flex;">
-        <div class="close-cam" id="closeCameraBtn">✕ CLOSE</div>
-      </div>
-    </div>
-    <div id="qr-reader">
-      <div id="interactive" class="viewport"></div>
-      <div class="scan-overlay"></div>
-    </div>
-    <div class="camera-footer">
-      <span>⬤ POSITION BARCODE IN GREEN BOX</span>
-    </div>
-  </div>
   
   <div id="statusModal" class="status-modal">
     <div class="status-box">
@@ -742,7 +669,7 @@
   <script>
     // ==================== GLOBAL VARIABLES ====================
     // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-    var GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySQeowFjLRievcowUZoVXT4COzsNKDIOP-SLnnQ0nl0IJLSlvbda3UERNbydNz0U1Mhw/exec';
+    var GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
     
     // DOM elements
     var inputEl = document.getElementById('barcodeInput');
@@ -750,8 +677,6 @@
     var enterBtn = document.getElementById('enterBtn');
     var escBtn = document.getElementById('escBtn');
     var scanBtn = document.getElementById('scanButton');
-    var cameraModal = document.getElementById('cameraModal');
-    var closeCam = document.getElementById('closeCameraBtn');
     var statusModal = document.getElementById('statusModal');
     var closeStatus = document.getElementById('closeStatusBtn');
     var connLed = document.getElementById('connectionLed');
@@ -760,16 +685,33 @@
     var gpsText = document.getElementById('gpsText');
     var gpsLoc = document.getElementById('gpsLocation');
     
-    // ZXING variables
-    var codeReader = null;
-    var videoInputDevice = null;
-    
     // State variables
     var scanCounter = 1;
     var maxEntries = 8;
     var pendingBarcode = '';
     var currentLat = '';
     var currentLng = '';
+    
+    // Check if we're returning from ZXING scan
+    function getUrlParameter(name) {
+      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      var results = regex.exec(location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+    
+    // Check for scanned barcode in URL
+    var scannedCode = getUrlParameter('scanned');
+    if (scannedCode) {
+      inputEl.innerHTML = scannedCode;
+      pendingBarcode = scannedCode;
+      // Clear the URL parameter
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // Show status modal
+      setTimeout(function() {
+        statusModal.style.display = 'flex';
+      }, 500);
+    }
     
     // ==================== GPS FUNCTION ====================
     function getGPS() {
@@ -939,99 +881,52 @@
       }
     }
     
-    // ==================== ZXING CAMERA FUNCTIONS ====================
-    function startZXINGCamera() {
-      try {
-        codeReader = new ZXing.BrowserMultiFormatReader();
+    // ==================== ZXING APP REDIRECT ====================
+    function openZXINGScanner() {
+      // First try to open ZXING app via intent
+      var currentUrl = window.location.href.split('?')[0]; // Remove any existing params
+      var returnUrl = encodeURIComponent(currentUrl + '?scanned={CODE}');
+      
+      // Try different intent schemes for ZXING
+      var intents = [
+        // ZXING app intent
+        'intent://scan?result=' + returnUrl + '#Intent;scheme=zxing;package=com.google.zxing.client.android;end',
+        // Barcode Scanner app
+        'intent://scan?SCAN_FORMATS=QR_CODE%2CODE_39%2CODE_128&RESULT_FORMAT=URI&RESULT=' + returnUrl + '#Intent;scheme=com.google.zxing.client.android;package=com.google.zxing.client.android;end',
+        // Generic barcode scanner
+        'intent://scan?SCAN=#Intent;scheme=zxing;package=com.google.zxing.client.android;end',
+        // Fallback to market
+        'market://details?id=com.google.zxing.client.android'
+      ];
+      
+      function tryIntent(index) {
+        if (index >= intents.length) {
+          // If all intents fail, show download prompt
+          if (confirm('ZXING Barcode Scanner not found. Would you like to install it from Play Store?')) {
+            window.location.href = 'https://play.google.com/store/apps/details?id=com.google.zxing.client.android';
+          }
+          return;
+        }
         
-        // Get video input devices
-        codeReader.listVideoInputDevices()
-          .then(function(videoInputDevices) {
-            // Find back camera
-            var selectedDeviceId = null;
-            
-            if (videoInputDevices && videoInputDevices.length > 0) {
-              // Try to find back camera first
-              for (var i = 0; i < videoInputDevices.length; i++) {
-                var device = videoInputDevices[i];
-                if (device.label && device.label.toLowerCase().includes('back') || 
-                    device.label.toLowerCase().includes('environment') ||
-                    device.label.toLowerCase().includes('rear')) {
-                  selectedDeviceId = device.deviceId;
-                  break;
-                }
-              }
-              
-              // If no back camera found, use first device
-              if (!selectedDeviceId && videoInputDevices.length > 0) {
-                selectedDeviceId = videoInputDevices[0].deviceId;
-              }
-            }
-            
-            if (!selectedDeviceId) {
-              alert('No camera found');
-              cameraModal.style.display = 'none';
-              return;
-            }
-            
-            // Start decoding
-            var videoElement = document.createElement('video');
-            videoElement.setAttribute('id', 'zxing-video');
-            videoElement.setAttribute('style', 'width: 100%; height: 100%; object-fit: cover;');
-            
-            var container = document.getElementById('interactive');
-            container.innerHTML = '';
-            container.appendChild(videoElement);
-            
-            codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, function(result, error) {
-              if (result) {
-                // Found a barcode
-                if (navigator.vibrate) navigator.vibrate(200);
-                
-                // Stop scanning
-                codeReader.reset();
-                
-                // Close camera and set barcode
-                closeCameraFunc();
-                
-                // Set the barcode
-                inputEl.innerHTML = result.getText();
-                pendingBarcode = result.getText();
-                
-                // Show status modal
-                setTimeout(function() {
-                  statusModal.style.display = 'flex';
-                }, 300);
-              }
-            });
-          })
-          .catch(function(err) {
-            alert('Camera error: ' + err.message);
-            cameraModal.style.display = 'none';
-          });
-      } catch(e) {
-        alert('Error starting camera: ' + e.message);
-        cameraModal.style.display = 'none';
-      }
-    }
-    
-    function stopZXINGCamera() {
-      if (codeReader) {
-        try {
-          codeReader.reset();
-        } catch(e) {}
-        codeReader = null;
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = intents[index];
+        
+        var timer = setTimeout(function() {
+          document.body.removeChild(iframe);
+          tryIntent(index + 1);
+        }, 500);
+        
+        iframe.onload = function() {
+          clearTimeout(timer);
+          document.body.removeChild(iframe);
+        };
+        
+        document.body.appendChild(iframe);
       }
       
-      var container = document.getElementById('interactive');
-      if (container) {
-        container.innerHTML = '';
-      }
-    }
-    
-    function closeCameraFunc() {
-      stopZXINGCamera();
-      cameraModal.style.display = 'none';
+      // Try first intent
+      tryIntent(0);
     }
     
     // ==================== EVENT HANDLERS ====================
@@ -1051,13 +946,8 @@
       inputEl.innerHTML = '';
     };
     
-    closeCam.onclick = closeCameraFunc;
-    
     scanBtn.onclick = function() {
-      cameraModal.style.display = 'flex';
-      setTimeout(function() {
-        startZXINGCamera();
-      }, 200);
+      openZXINGScanner();
     };
     
     // Status options
@@ -1081,11 +971,8 @@
       pendingBarcode = '';
     };
     
-    // Close modals on background click
+    // Close modal on background click
     window.onclick = function(event) {
-      if (event.target == cameraModal) {
-        closeCameraFunc();
-      }
       if (event.target == statusModal) {
         statusModal.style.display = 'none';
         pendingBarcode = '';
@@ -1150,6 +1037,20 @@
     // ==================== INIT ====================
     window.setTimeout(getGPS, 500);
     connText.innerHTML = 'READY';
+    
+    // Handle when page gains focus (return from ZXING)
+    window.addEventListener('focus', function() {
+      // Check if we have a scanned code in sessionStorage (alternative method)
+      var tempCode = sessionStorage.getItem('pending_scan');
+      if (tempCode) {
+        sessionStorage.removeItem('pending_scan');
+        inputEl.innerHTML = tempCode;
+        pendingBarcode = tempCode;
+        setTimeout(function() {
+          statusModal.style.display = 'flex';
+        }, 500);
+      }
+    });
   </script>
 </body>
 </html>
