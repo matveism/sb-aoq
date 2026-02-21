@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Simple Scanner for Alcatel</title>
+  <title>Alcatel Camera Fix</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     body {
@@ -23,106 +23,122 @@
     .header {
       background: #15569B;
       color: white;
-      padding: 10px 15px;
-      font-size: 20px;
+      padding: 15px;
+      font-size: 22px;
       font-weight: bold;
-      display: flex;
-      justify-content: space-between;
+      text-align: center;
     }
     
     .controls {
-      padding: 10px;
-      background: #B0C8E2;
+      padding: 15px;
     }
     
-    button {
+    .big-button {
       background: #FCC57A;
       border: none;
-      padding: 15px 25px;
-      font-size: 22px;
+      padding: 25px;
+      font-size: 28px;
       font-weight: bold;
-      border-radius: 10px;
+      border-radius: 15px;
       width: 100%;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
       cursor: pointer;
+      box-shadow: 0 5px 0 #B86F1F;
+    }
+    
+    .big-button:active {
+      transform: translateY(5px);
+      box-shadow: none;
     }
     
     .manual-box {
       display: flex;
       gap: 5px;
-      margin: 10px 0;
+      margin: 20px 0;
     }
     
     .manual-box input {
       flex: 1;
-      height: 60px;
+      height: 70px;
       text-align: center;
-      font-size: 30px;
+      font-size: 36px;
       font-weight: bold;
       background: white;
-      border: 2px solid #666;
-      border-radius: 5px;
+      border: 3px solid #666;
+      border-radius: 8px;
     }
     
-    #camera {
+    #camera-container {
       width: 100%;
       height: 400px;
       background: black;
-      display: none;
+      margin-bottom: 15px;
+      position: relative;
     }
     
-    #camera video {
+    #video {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: none;
     }
     
-    #camera-message {
+    #camera-status {
       width: 100%;
-      height: 400px;
+      height: 100%;
       background: #222;
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-size: 18px;
+      font-size: 20px;
+      padding: 20px;
+      box-sizing: border-box;
     }
     
     .results {
-      margin: 10px;
-      border: 2px solid #79A4D2;
+      margin: 15px;
+      border: 3px solid #79A4D2;
+      background: white;
     }
     
     .results-header {
       background: #79A4D2;
-      padding: 10px;
+      padding: 15px;
       font-weight: bold;
+      font-size: 20px;
       display: flex;
     }
     
     .results-header div:first-child {
-      width: 60px;
-    }
-    
-    .results-header div:last-child {
-      flex: 1;
+      width: 70px;
     }
     
     .result-item {
       background: #96BEEE;
-      padding: 10px;
+      padding: 15px;
       display: flex;
-      border-top: 1px solid #79A4D2;
+      border-top: 2px solid #79A4D2;
+      font-size: 20px;
+      word-break: break-all;
     }
     
     .result-item div:first-child {
-      width: 60px;
+      width: 70px;
     }
     
-    .result-item div:last-child {
-      flex: 1;
-      word-break: break-all;
+    #debug {
+      background: #333;
+      color: #0f0;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 14px;
+      max-height: 150px;
+      overflow-y: auto;
+      margin: 15px;
+      border-radius: 5px;
+      display: none;
     }
   </style>
 </head>
@@ -130,89 +146,71 @@
 
 <div class="container">
   <div class="header">
-    <span>📷 SIMPLE SCANNER</span>
-    <span id="clock">--:--</span>
+    📷 ALCATEL CAMERA FIX
   </div>
   
   <div class="controls">
-    <button id="scanBtn">📷 START CAMERA</button>
+    <button class="big-button" id="tryAllBtn">📷 TRY ALL CAMERAS</button>
     
     <div class="manual-box">
-      <input type="text" maxlength="1" class="manual-input">
-      <input type="text" maxlength="1" class="manual-input">
-      <input type="text" maxlength="1" class="manual-input">
-      <input type="text" maxlength="1" class="manual-input">
-      <input type="text" maxlength="1" class="manual-input">
-      <input type="text" maxlength="1" class="manual-input">
+      <input type="text" maxlength="1" class="digit" inputmode="numeric">
+      <input type="text" maxlength="1" class="digit" inputmode="numeric">
+      <input type="text" maxlength="1" class="digit" inputmode="numeric">
+      <input type="text" maxlength="1" class="digit" inputmode="numeric">
+      <input type="text" maxlength="1" class="digit" inputmode="numeric">
+      <input type="text" maxlength="1" class="digit" inputmode="numeric">
     </div>
-    
-    <button id="rearBtn" style="background: #4CAF50; color: white;">📷 TRY REAR CAMERA</button>
-    <button id="frontBtn" style="background: #FF9800;">🤳 TRY FRONT CAMERA</button>
   </div>
   
-  <div id="camera">
+  <div id="camera-container">
     <video id="video" autoplay></video>
-  </div>
-  <div id="camera-message">
-    Click a camera button to start
+    <div id="camera-status">
+      👆 Click "TRY ALL CAMERAS"<br>
+      The app will try every camera method
+    </div>
   </div>
   
   <div class="results">
     <div class="results-header">
       <div>#</div>
-      <div>CODE</div>
+      <div>SCANNED CODE</div>
     </div>
-    <div id="results-list"></div>
+    <div id="results"></div>
   </div>
+  
+  <div id="debug"></div>
 </div>
 
 <script>
-// Simple clock
-function updateClock() {
-  var d = new Date();
-  var h = d.getHours();
-  var m = d.getMinutes();
-  if (h < 10) h = '0' + h;
-  if (m < 10) m = '0' + m;
-  document.getElementById('clock').innerHTML = h + ':' + m;
+// Simple debug
+function log(msg) {
+  console.log(msg);
+  var debug = document.getElementById('debug');
+  debug.style.display = 'block';
+  debug.innerHTML += '> ' + msg + '<br>';
+  debug.scrollTop = debug.scrollHeight;
 }
-updateClock();
-setInterval(updateClock, 1000);
 
 // Manual entry
-var inputs = document.getElementsByClassName('manual-input');
-for (var i = 0; i < inputs.length; i++) {
-  inputs[i].oninput = (function(i) {
+var digits = document.getElementsByClassName('digit');
+for (var i = 0; i < digits.length; i++) {
+  digits[i].oninput = (function(i) {
     return function() {
-      // Only allow numbers
       this.value = this.value.replace(/[^0-9]/g, '');
-      
-      // Auto focus next
-      if (this.value.length == 1 && i < inputs.length - 1) {
-        inputs[i + 1].focus();
+      if (this.value.length === 1 && i < digits.length - 1) {
+        digits[i + 1].focus();
       }
       
-      // Check if all 6 digits entered
       var code = '';
-      for (var j = 0; j < inputs.length; j++) {
-        code += inputs[j].value;
+      for (var j = 0; j < digits.length; j++) {
+        code += digits[j].value;
       }
-      if (code.length == 6) {
+      if (code.length === 6) {
         addResult('MANUAL: ' + code);
-        // Clear all
-        for (var j = 0; j < inputs.length; j++) {
-          inputs[j].value = '';
+        for (var j = 0; j < digits.length; j++) {
+          digits[j].value = '';
         }
-        inputs[0].focus();
-      }
-    };
-  })(i);
-  
-  // Handle backspace
-  inputs[i].onkeydown = (function(i) {
-    return function(e) {
-      if (e.keyCode == 8 && this.value.length == 0 && i > 0) {
-        inputs[i - 1].focus();
+        digits[0].focus();
       }
     };
   })(i);
@@ -223,128 +221,108 @@ var resultCount = 0;
 
 function addResult(text) {
   resultCount++;
+  var results = document.getElementById('results');
   var div = document.createElement('div');
   div.className = 'result-item';
   div.innerHTML = '<div>' + resultCount + '</div><div>' + text + '</div>';
-  document.getElementById('results-list').appendChild(div);
+  results.appendChild(div);
 }
 
 // Camera handling
 var video = document.getElementById('video');
-var cameraDiv = document.getElementById('camera');
-var messageDiv = document.getElementById('camera-message');
+var cameraStatus = document.getElementById('camera-status');
 var currentStream = null;
 
 function stopCamera() {
   if (currentStream) {
-    if (currentStream.stop) currentStream.stop();
     if (currentStream.getTracks) {
       currentStream.getTracks().forEach(function(t) { t.stop(); });
+    } else if (currentStream.stop) {
+      currentStream.stop();
     }
     currentStream = null;
   }
-  cameraDiv.style.display = 'none';
-  messageDiv.style.display = 'flex';
+  video.style.display = 'none';
+  cameraStatus.style.display = 'flex';
 }
 
-function startCamera(useRear) {
+function showCamera() {
+  video.style.display = 'block';
+  cameraStatus.style.display = 'none';
+}
+
+// Try ALL camera methods one by one
+function tryAllCameras() {
   stopCamera();
+  log('🔍 STARTING CAMERA TESTS');
+  cameraStatus.innerHTML = '📷 Testing camera methods...\n0/6';
   
-  messageDiv.innerHTML = 'Starting camera...';
+  var methods = [
+    { name: 'Method 1: Rear camera (environment)', constraints: { video: { facingMode: 'environment' } } },
+    { name: 'Method 2: Front camera (user)', constraints: { video: { facingMode: 'user' } } },
+    { name: 'Method 3: Any camera', constraints: { video: true } },
+    { name: 'Method 4: Rear with exact', constraints: { video: { facingMode: { exact: 'environment' } } } },
+    { name: 'Method 5: Front with exact', constraints: { video: { facingMode: { exact: 'user' } } } },
+    { name: 'Method 6: Minimal', constraints: { video: { optional: [{ facingMode: 'environment' }] } } }
+  ];
   
-  // Simple constraints
-  var constraints = { video: true };
-  
-  // Try to specify rear/front if possible
-  if (useRear) {
-    constraints = { video: { facingMode: 'environment' } };
-  } else {
-    constraints = { video: { facingMode: 'user' } };
+  tryMethod(0, methods);
+}
+
+function tryMethod(index, methods) {
+  if (index >= methods.length) {
+    log('❌ ALL METHODS FAILED');
+    cameraStatus.innerHTML = '❌ No camera method worked<br>Use manual entry only';
+    return;
   }
   
-  // Use older webkitGetUserMedia for Android 5
+  log('Trying ' + methods[index].name);
+  cameraStatus.innerHTML = '📷 Testing: ' + methods[index].name + '\n(' + (index+1) + '/' + methods.length + ')';
+  
+  // Try with webkitGetUserMedia (old Android)
   if (navigator.webkitGetUserMedia) {
     navigator.webkitGetUserMedia(
-      constraints,
+      methods[index].constraints,
       function(stream) {
-        // Success!
+        // SUCCESS!
+        log('✅ SUCCESS with ' + methods[index].name);
         currentStream = stream;
         video.src = window.webkitURL.createObjectURL(stream);
-        cameraDiv.style.display = 'block';
-        messageDiv.style.display = 'none';
+        showCamera();
         
-        // Auto detect QR codes (simple version)
-        detectQRCode();
+        // Try to identify which camera
+        if (stream.getVideoTracks) {
+          var track = stream.getVideoTracks()[0];
+          if (track) {
+            log('Camera used: ' + (track.label || 'Unknown'));
+            cameraStatus.innerHTML = '✅ Camera working!\n' + (track.label || 'Camera is on');
+          }
+        }
+        
+        // Start QR scanning
+        startQRScan();
       },
       function(err) {
-        // Failed, try basic camera
-        messageDiv.innerHTML = 'Camera error: ' + err.name + '<br>Trying basic camera...';
-        
-        if (navigator.webkitGetUserMedia) {
-          navigator.webkitGetUserMedia(
-            { video: true },
-            function(stream) {
-              currentStream = stream;
-              video.src = window.webkitURL.createObjectURL(stream);
-              cameraDiv.style.display = 'block';
-              messageDiv.style.display = 'none';
-              detectQRCode();
-            },
-            function(err2) {
-              messageDiv.innerHTML = '❌ Camera failed: ' + err2.name + '<br>Use manual entry';
-            }
-          );
-        }
+        // Failed, try next method
+        log('❌ Failed: ' + err.name + ' - ' + (err.message || ''));
+        tryMethod(index + 1, methods);
       }
     );
   } else {
-    messageDiv.innerHTML = '❌ Camera not supported on this browser';
+    log('❌ webkitGetUserMedia not available');
+    cameraStatus.innerHTML = '❌ Camera not supported';
   }
 }
 
-// Simple QR detection (just for demo - you'll need jsQR library)
-// For now, manual entry only since camera works but we need QR library
-function detectQRCode() {
-  // This would use jsQR but we're keeping it simple
-  // You can add a QR library later if needed
-  console.log('Camera is working');
-}
-
-// Button handlers
-document.getElementById('scanBtn').onclick = function() {
-  stopCamera();
-  messageDiv.innerHTML = 'Click a camera button below';
-};
-
-document.getElementById('rearBtn').onclick = function() {
-  startCamera(true);
-};
-
-document.getElementById('frontBtn').onclick = function() {
-  startCamera(false);
-};
-
-// Cleanup on page unload
-window.onbeforeunload = function() {
-  if (currentStream) {
-    if (currentStream.stop) currentStream.stop();
-    if (currentStream.getTracks) {
-      currentStream.getTracks().forEach(function(t) { t.stop(); });
-    }
-  }
-};
-</script>
-
-<!-- Add simple QR scanner if needed -->
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-<script>
-// Override detectQRCode to actually scan
-function detectQRCode() {
+// Simple QR scanning with jsQR
+function startQRScan() {
+  log('Starting QR scanner...');
+  
   var canvas = document.createElement('canvas');
   var ctx = canvas.getContext('2d');
   
   setInterval(function() {
-    if (!video.videoWidth) return;
+    if (!video.videoWidth || !currentStream) return;
     
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -355,14 +333,25 @@ function detectQRCode() {
       var code = jsQR(imageData.data, canvas.width, canvas.height);
       
       if (code) {
+        log('QR FOUND: ' + code.data);
         addResult('QR: ' + code.data);
-        // Vibrate if supported
         if (navigator.vibrate) navigator.vibrate(200);
       }
     } catch(e) {}
   }, 500);
 }
+
+// Try all cameras button
+document.getElementById('tryAllBtn').onclick = tryAllCameras;
+
+// Cleanup
+window.onbeforeunload = function() {
+  stopCamera();
+};
 </script>
+
+<!-- Add jsQR for scanning -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
 </body>
 </html>
