@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Alcatel Camera Fix</title>
+  <title>Alcatel Rear Camera Force</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     body {
@@ -103,14 +103,14 @@
 
     #preview {
       width: 100%;
-      height: 300px;
+      height: 350px;
       object-fit: cover;
       display: none;
     }
 
     #camera-status {
       width: 100%;
-      height: 300px;
+      height: 350px;
       background: #222;
       color: white;
       display: flex;
@@ -121,22 +121,11 @@
       box-sizing: border-box;
       font-size: 18px;
       flex-direction: column;
+      overflow-y: auto;
     }
 
-    .test-button {
+    .camera-btn {
       background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 15px 30px;
-      font-size: 20px;
-      border-radius: 10px;
-      margin: 10px;
-      cursor: pointer;
-      width: 90%;
-    }
-
-    .camera-option {
-      background: #FF9800;
       color: white;
       border: none;
       padding: 15px;
@@ -144,7 +133,38 @@
       border-radius: 8px;
       margin: 5px;
       cursor: pointer;
-      width: 90%;
+      width: 95%;
+      font-weight: bold;
+    }
+
+    .camera-btn.small {
+      background: #FF9800;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    .device-list {
+      width: 100%;
+      margin-top: 10px;
+      text-align: left;
+      background: #333;
+      padding: 10px;
+      border-radius: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .device-item {
+      padding: 8px;
+      border-bottom: 1px solid #555;
+      color: #0F0;
+      font-size: 14px;
+      word-break: break-all;
+      cursor: pointer;
+    }
+
+    .device-item:hover {
+      background: #444;
     }
 
     .result-box {
@@ -193,7 +213,7 @@
       margin-top: 10px;
       max-height: 150px;
       overflow-y: auto;
-      display: none;
+      border-radius: 5px;
     }
   </style>
 </head>
@@ -221,13 +241,15 @@
 
   <div class="content">
     <div id="camera-section">
-      <div class="camera-header">📸 CAMERA TEST</div>
+      <div class="camera-header">📸 REAR CAMERA FORCE</div>
       <video id="preview" autoplay muted playsinline></video>
       <div id="camera-status">
-        ⚠ Camera not started<br><br>
-        <button class="test-button" id="testCamera1">Test Camera 1 (Back)</button>
-        <button class="test-button" id="testCamera2">Test Camera 2 (Front)</button>
-        <button class="test-button" id="testCamera3">Test Any Camera</button>
+        <button class="camera-btn" onclick="enumerateCameras()">🔍 LIST ALL CAMERAS</button>
+        <button class="camera-btn" onclick="forceRearCamera()">📷 FORCE REAR CAMERA</button>
+        <button class="camera-btn small" onclick="tryCameraById(0)">Try Camera #0 (First)</button>
+        <button class="camera-btn small" onclick="tryCameraById(1)">Try Camera #1 (Second)</button>
+        <button class="camera-btn small" onclick="tryCameraById(2)">Try Camera #2 (Third)</button>
+        <button class="camera-btn small" onclick="tryCameraByIndex()">Try All Cameras (Auto)</button>
       </div>
     </div>
 
@@ -244,6 +266,8 @@
   </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
 <script>
 // Debug function
@@ -336,25 +360,22 @@ function addRow(value) {
   content.scrollTop = content.scrollHeight;
 }
 
-/* CAMERA TEST FUNCTIONS */
+/* ADVANCED CAMERA CONTROL */
 var preview = document.getElementById("preview");
 var cameraStatus = document.getElementById("camera-status");
 var scanButton = document.getElementById("scanButton");
 var currentStream = null;
+var videoDevices = [];
 
-function stopAnyCamera() {
+function stopCamera() {
   if (currentStream) {
     if (currentStream.getTracks) {
       currentStream.getTracks().forEach(function(track) { track.stop(); });
-    } else if (currentStream.stop) {
-      currentStream.stop();
     }
     currentStream = null;
   }
-  
   preview.style.display = "none";
   cameraStatus.style.display = "flex";
-  scanButton.innerHTML = "▶ START";
 }
 
 function showVideo() {
@@ -362,150 +383,302 @@ function showVideo() {
   cameraStatus.style.display = "none";
 }
 
-// Test different camera methods
-function testCamera1() {
-  debug("Testing Camera Method 1: Basic back camera");
-  stopAnyCamera();
+// Enumerate all cameras
+function enumerateCameras() {
+  debug("Enumerating cameras...");
+  stopCamera();
   
-  // Method 1: Simplest approach
-  if (navigator.webkitGetUserMedia) {
-    debug("Using webkitGetUserMedia");
-    navigator.webkitGetUserMedia(
-      { video: { facingMode: "environment" } },
-      function(stream) {
-        debug("SUCCESS: Camera 1 works!");
-        currentStream = stream;
-        preview.src = window.webkitURL.createObjectURL(stream);
-        showVideo();
-      },
-      function(err) {
-        debug("FAILED: Camera 1 error - " + err.name + ": " + err.message);
-        cameraStatus.innerHTML = "❌ Camera 1 failed<br>" + err.name + "<br>Try Camera 2";
-      }
-    );
-  } 
-  else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    debug("Using mediaDevices.getUserMedia");
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-      .then(function(stream) {
-        debug("SUCCESS: Camera 1 works!");
-        currentStream = stream;
-        preview.srcObject = stream;
-        showVideo();
+  var statusHtml = '🔍 DETECTED CAMERAS:<br><div class="device-list" id="camera-list">Loading...</div>';
+  cameraStatus.innerHTML = statusHtml;
+  
+  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function(devices) {
+        videoDevices = [];
+        var listHtml = '';
+        
+        for (var i = 0; i < devices.length; i++) {
+          if (devices[i].kind === 'videoinput') {
+            videoDevices.push(devices[i]);
+            var label = devices[i].label || 'Camera ' + (videoDevices.length);
+            var deviceId = devices[i].deviceId;
+            listHtml += '<div class="device-item" onclick="startCameraWithId(\'' + deviceId + '\')">' +
+                       '📷 ' + label + '<br><small>' + deviceId.substring(0, 30) + '...</small></div>';
+            debug("Found camera: " + label + " - " + deviceId);
+          }
+        }
+        
+        if (videoDevices.length === 0) {
+          listHtml = '<div class="device-item">No cameras found</div>';
+        } else {
+          listHtml += '<div class="device-item" onclick="tryAllCamerasSequentially()">🔄 Try ALL cameras sequentially</div>';
+        }
+        
+        document.getElementById('camera-list').innerHTML = listHtml;
       })
       .catch(function(err) {
-        debug("FAILED: Camera 1 error - " + err.name);
-        cameraStatus.innerHTML = "❌ Camera 1 failed<br>" + err.name + "<br>Try Camera 2";
+        debug("Enumerate error: " + err);
+        cameraStatus.innerHTML = '❌ Cannot enumerate cameras<br>' + err;
       });
-  }
-  else {
-    debug("No camera API found");
-    cameraStatus.innerHTML = "❌ No camera API available";
+  } else {
+    cameraStatus.innerHTML = '❌ enumerateDevices not supported<br>Try manual camera buttons';
   }
 }
 
-function testCamera2() {
-  debug("Testing Camera Method 2: Front camera");
-  stopAnyCamera();
+// Force rear camera (by trying to find back/rear in label)
+function forceRearCamera() {
+  debug("Attempting to force rear camera...");
+  stopCamera();
   
-  if (navigator.webkitGetUserMedia) {
-    debug("Using webkitGetUserMedia with front camera");
-    navigator.webkitGetUserMedia(
-      { video: true },
-      function(stream) {
-        debug("SUCCESS: Camera 2 works!");
-        currentStream = stream;
-        preview.src = window.webkitURL.createObjectURL(stream);
-        showVideo();
-      },
-      function(err) {
-        debug("FAILED: Camera 2 error - " + err.name);
-        cameraStatus.innerHTML = "❌ Camera 2 failed<br>" + err.name + "<br>Try Camera 3";
-      }
-    );
-  }
-  else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(function(stream) {
-        debug("SUCCESS: Camera 2 works!");
-        currentStream = stream;
-        preview.srcObject = stream;
-        showVideo();
+  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function(devices) {
+        var rearCamera = null;
+        var allCameras = [];
+        
+        for (var i = 0; i < devices.length; i++) {
+          if (devices[i].kind === 'videoinput') {
+            allCameras.push(devices[i]);
+            var label = (devices[i].label || '').toLowerCase();
+            // Look for back/rear indicators
+            if (label.indexOf('back') > -1 || label.indexOf('rear') > -1 || 
+                label.indexOf('environment') > -1 || label.indexOf('0') === 0) {
+              rearCamera = devices[i];
+            }
+          }
+        }
+        
+        if (rearCamera) {
+          debug("Found rear camera: " + rearCamera.label);
+          startCameraWithId(rearCamera.deviceId);
+        } else if (allCameras.length > 1) {
+          // If we have multiple cameras, try the second one (often back)
+          debug("No rear label found, trying second camera");
+          startCameraWithId(allCameras[1].deviceId);
+        } else if (allCameras.length === 1) {
+          // Only one camera
+          debug("Only one camera available");
+          startCameraWithId(allCameras[0].deviceId);
+        } else {
+          debug("No cameras found");
+          cameraStatus.innerHTML = '❌ No cameras found';
+        }
       })
       .catch(function(err) {
-        debug("FAILED: Camera 2 error - " + err.name);
-        cameraStatus.innerHTML = "❌ Camera 2 failed<br>" + err.name + "<br>Try Camera 3";
+        debug("Force rear error: " + err);
+        tryCameraByIndex(); // Fallback
       });
+  } else {
+    tryCameraByIndex(); // Fallback
   }
 }
 
-function testCamera3() {
-  debug("Testing Camera Method 3: Any camera with minimal constraints");
-  stopAnyCamera();
+// Try camera by index
+function tryCameraById(index) {
+  debug("Trying camera #" + index);
+  stopCamera();
   
-  // Try with minimal constraints
-  var constraints = { video: true };
+  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function(devices) {
+        var count = 0;
+        for (var i = 0; i < devices.length; i++) {
+          if (devices[i].kind === 'videoinput') {
+            if (count === index) {
+              startCameraWithId(devices[i].deviceId);
+              return;
+            }
+            count++;
+          }
+        }
+        debug("Camera #" + index + " not found");
+        cameraStatus.innerHTML = '❌ Camera #' + index + ' not found';
+      });
+  } else {
+    // Fallback to basic constraints
+    startBasicCamera();
+  }
+}
+
+// Try all cameras sequentially
+function tryAllCamerasSequentially() {
+  debug("Trying all cameras sequentially...");
+  stopCamera();
+  
+  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+    navigator.mediaDevices.enumerateDevices()
+      .then(function(devices) {
+        var videoCams = [];
+        for (var i = 0; i < devices.length; i++) {
+          if (devices[i].kind === 'videoinput') {
+            videoCams.push(devices[i]);
+          }
+        }
+        
+        if (videoCams.length === 0) {
+          debug("No cameras found");
+          cameraStatus.innerHTML = '❌ No cameras found';
+          return;
+        }
+        
+        debug("Found " + videoCams.length + " cameras, trying each...");
+        tryNextCamera(0, videoCams);
+      });
+  } else {
+    startBasicCamera();
+  }
+}
+
+function tryNextCamera(index, cameras) {
+  if (index >= cameras.length) {
+    debug("All cameras failed");
+    cameraStatus.innerHTML = '❌ All cameras failed<br>Use manual entry';
+    return;
+  }
+  
+  debug("Trying camera " + (index + 1) + "/" + cameras.length + ": " + (cameras[index].label || 'Unknown'));
+  cameraStatus.innerHTML = 'Trying camera ' + (index + 1) + '/' + cameras.length + '...';
+  
+  var constraints = {
+    video: {
+      deviceId: { exact: cameras[index].deviceId }
+    }
+  };
   
   if (navigator.webkitGetUserMedia) {
     navigator.webkitGetUserMedia(
       constraints,
       function(stream) {
-        debug("SUCCESS: Camera 3 works!");
+        debug("SUCCESS with camera " + (index + 1));
         currentStream = stream;
         preview.src = window.webkitURL.createObjectURL(stream);
         showVideo();
-        
-        // Try to detect if it's front or back
-        var track = stream.getVideoTracks()[0];
-        if (track) {
-          debug("Camera used: " + track.label);
-          cameraStatus.innerHTML = "✅ Camera working!<br>" + (track.label || "Unknown camera");
-        }
+        startQRScanning();
       },
       function(err) {
-        debug("FAILED: Camera 3 error - " + err.name);
-        cameraStatus.innerHTML = "❌ All cameras failed<br>Use manual entry only<br><br>Error: " + err.name;
+        debug("Camera " + (index + 1) + " failed: " + err.name);
+        tryNextCamera(index + 1, cameras);
       }
     );
   } else {
-    cameraStatus.innerHTML = "❌ Browser doesn't support camera";
-    debug("No camera support");
+    tryNextCamera(index + 1, cameras);
   }
 }
 
-// Try to auto-start with the best method
+// Start camera with specific device ID
+function startCameraWithId(deviceId) {
+  debug("Starting camera with ID: " + deviceId.substring(0, 20) + "...");
+  
+  var constraints = {
+    video: {
+      deviceId: { exact: deviceId }
+    }
+  };
+  
+  if (navigator.webkitGetUserMedia) {
+    navigator.webkitGetUserMedia(
+      constraints,
+      function(stream) {
+        debug("Camera started successfully");
+        currentStream = stream;
+        preview.src = window.webkitURL.createObjectURL(stream);
+        showVideo();
+        startQRScanning();
+      },
+      function(err) {
+        debug("Failed to start camera: " + err.name);
+        cameraStatus.innerHTML = '❌ Failed<br>' + err.name + '<br>Try another camera';
+      }
+    );
+  } else {
+    debug("webkitGetUserMedia not available");
+    cameraStatus.innerHTML = '❌ Camera API not available';
+  }
+}
+
+// Basic camera fallback
+function startBasicCamera() {
+  debug("Trying basic camera...");
+  
+  if (navigator.webkitGetUserMedia) {
+    navigator.webkitGetUserMedia(
+      { video: true },
+      function(stream) {
+        debug("Basic camera works!");
+        currentStream = stream;
+        preview.src = window.webkitURL.createObjectURL(stream);
+        showVideo();
+        startQRScanning();
+      },
+      function(err) {
+        debug("Basic camera failed: " + err.name);
+        cameraStatus.innerHTML = '❌ No camera access<br>Use manual entry';
+      }
+    );
+  }
+}
+
+// QR Scanning
+var scanInterval = null;
+
+function startQRScanning() {
+  if (scanInterval) clearInterval(scanInterval);
+  
+  var canvas = document.createElement('canvas');
+  var context = canvas.getContext('2d');
+  
+  scanInterval = setInterval(function() {
+    if (!preview.videoWidth) return;
+    
+    canvas.width = preview.videoWidth;
+    canvas.height = preview.videoHeight;
+    context.drawImage(preview, 0, 0, canvas.width, canvas.height);
+    
+    try {
+      var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      var code = jsQR(imageData.data, canvas.width, canvas.height, {
+        inversionAttempts: "dontInvert"
+      });
+      
+      if (code) {
+        debug("QR Code detected: " + code.data);
+        addRow("QR: " + code.data);
+        // Beep or vibrate if possible
+        if (navigator.vibrate) navigator.vibrate(200);
+        stopCamera();
+        if (scanInterval) clearInterval(scanInterval);
+      }
+    } catch(e) {
+      // Ignore errors
+    }
+  }, 300);
+}
+
+// Initialize
 window.onload = function() {
-  debug("Device: Alcatel OneTouch Conquest");
+  debug("Alcatel OneTouch Conquest detected");
   debug("Browser: " + navigator.userAgent);
   
-  // Check what's available
   if (navigator.webkitGetUserMedia) {
-    debug("webkitGetUserMedia is available");
+    debug("webkitGetUserMedia available");
   }
-  if (navigator.mediaDevices) {
-    debug("mediaDevices is available");
-  }
-  
-  // Don't auto-start, let user choose
-  cameraStatus.innerHTML = '⚠ Click a camera button to test<br>' +
-                          '<button class="camera-option" onclick="testCamera1()">📷 Try Back Camera</button>' +
-                          '<button class="camera-option" onclick="testCamera2()">🤳 Try Front Camera</button>' +
-                          '<button class="camera-option" onclick="testCamera3()">🔄 Try Any Camera</button>';
 };
 
-// Stop camera when leaving
+// Cleanup
 window.onbeforeunload = function() {
-  stopAnyCamera();
+  if (scanInterval) clearInterval(scanInterval);
+  stopCamera();
 };
 
-// Scan button now just stops camera
+// Scan button toggles camera
 scanButton.onclick = function() {
   if (currentStream) {
-    stopAnyCamera();
+    stopCamera();
+    if (scanInterval) clearInterval(scanInterval);
     scanButton.innerHTML = "▶ START";
   } else {
-    // If no camera, just show message
-    alert("Click one of the camera test buttons above first");
+    enumerateCameras();
+    scanButton.innerHTML = "⏹ STOP";
   }
 };
 </script>
