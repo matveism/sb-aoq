@@ -94,7 +94,12 @@ body{background:#000;display:flex;justify-content:center;align-items:center;min-
 <div id="scanHistoryContainer" class="lightblue-stretch"><div style="color:#888;font-style:italic;padding:8px;text-align:center">No scans yet</div></div>
 <div class="spacer"></div>
 <div class="action-bar"><div class="action-btn" id="escBtn">ESC</div><div class="action-btn" id="enterBtn">ENTER</div></div>
-<a id="scanLink" style="text-decoration:none"><div class="scan-hard-button"><span>◰</span> SCAN <span>◰</span></div></a>
+
+<!-- FIXED: SCAN button with multiple scanner options -->
+<div class="scan-hard-button" id="scanButton">
+    <span>◰</span> SCAN <span>◰</span>
+</div>
+
 <div class="keypad-mode-bar"><div class="mode-btn active" data-mode="qwerty">QWERTY</div><div class="mode-btn" data-mode="numeric">123</div><div class="mode-btn" data-mode="sym">SYM</div></div>
 <div id="keypad-qwerty" class="keypad active"><div class="key-row"><div class="key">Q</div><div class="key">W</div><div class="key">E</div><div class="key">R</div><div class="key">T</div><div class="key">Y</div><div class="key">U</div><div class="key">I</div><div class="key">O</div><div class="key">P</div></div><div class="key-row"><div class="key">A</div><div class="key">S</div><div class="key">D</div><div class="key">F</div><div class="key">G</div><div class="key">H</div><div class="key">J</div><div class="key">K</div><div class="key">L</div></div><div class="key-row"><div class="key small">⇧</div><div class="key">Z</div><div class="key">X</div><div class="key">C</div><div class="key">V</div><div class="key">B</div><div class="key">N</div><div class="key">M</div><div class="key small" data-action="backspace">⌫</div></div><div class="key-row"><div class="key wide" data-action="space">SPACE</div><div class="key small" data-action="dash">-</div><div class="key small" data-action="clear">CLR</div></div></div>
 <div id="keypad-numeric" class="keypad"><div class="key-row"><div class="key">1</div><div class="key">2</div><div class="key">3</div></div><div class="key-row"><div class="key">4</div><div class="key">5</div><div class="key">6</div></div><div class="key-row"><div class="key">7</div><div class="key">8</div><div class="key">9</div></div><div class="key-row"><div class="key">0</div><div class="key" data-action="dash">-</div><div class="key" data-action="backspace">⌫</div></div></div>
@@ -107,11 +112,46 @@ body{background:#000;display:flex;justify-content:center;align-items:center;min-
 var GS_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
 // ================================
 
-var inp=document.getElementById('barcodeInput'),hist=document.getElementById('scanHistoryContainer'),enter=document.getElementById('enterBtn'),esc=document.getElementById('escBtn'),scanLink=document.getElementById('scanLink'),statusModal=document.getElementById('statusModal'),closeStatus=document.getElementById('closeStatusBtn'),connLed=document.getElementById('connectionLed'),connText=document.getElementById('connectionText'),gpsLed=document.getElementById('gpsLed'),gpsText=document.getElementById('gpsText'),gpsLoc=document.getElementById('gpsLocation'),counter=1,pend='',lat='',lng='';
+var inp=document.getElementById('barcodeInput'),hist=document.getElementById('scanHistoryContainer'),enter=document.getElementById('enterBtn'),esc=document.getElementById('escBtn'),scanBtn=document.getElementById('scanButton'),statusModal=document.getElementById('statusModal'),closeStatus=document.getElementById('closeStatusBtn'),connLed=document.getElementById('connectionLed'),connText=document.getElementById('connectionText'),gpsLed=document.getElementById('gpsLed'),gpsText=document.getElementById('gpsText'),gpsLoc=document.getElementById('gpsLocation'),counter=1,pend='',lat='',lng='';
 var siteUrl=window.location.href.split('?')[0].split('#')[0];
-scanLink.href='intent://scan?SCAN_FORMATS=CODE_39,CODE_128,QR_CODE&SCAN_MODE=QR_CODE_MODE&SAVE_HISTORY=false&RESULT_FORMAT=URI&RESULT='+encodeURIComponent(siteUrl+'?scanned={CODE}')+'#Intent;scheme=zxing;package=com.google.zxing.client.android;S.browser_fallback_url=http://zxing.org;end';
 
-(function(){var p=new URLSearchParams(window.location.search),s=p.get('scanned')||p.get('text')||p.get('code');if(s){inp.innerHTML=s;pend=s;window.history.replaceState({},document.title,window.location.pathname);setTimeout(function(){statusModal.style.display='flex'},500)}})();
+// FIXED: Multiple scanner methods
+function openScanner() {
+    // Method 1: ZXing intent (most reliable for installed app)
+    var intentUrl = 'intent://scan?SCAN_FORMATS=CODE_39,CODE_128,QR_CODE&SCAN_MODE=QR_CODE_MODE&SAVE_HISTORY=false&RESULT_FORMAT=URI&RESULT=' + 
+                    encodeURIComponent(siteUrl + '?scanned={CODE}') + 
+                    '#Intent;scheme=zxing;package=com.google.zxing.client.android;end';
+    
+    // Method 2: ZXing custom scheme
+    var customUrl = 'zxing://scan/?ret=' + encodeURIComponent(siteUrl + '?scanned={CODE}') + 
+                    '&SCAN_FORMATS=CODE_39,CODE_128,QR_CODE';
+    
+    // Method 3: Barcode Scanner (alternative app)
+    var alternativeIntent = 'intent://scan/#Intent;scheme=com.google.zxing.client.android.SCAN;package=com.google.zxing.client.android;end';
+    
+    // Try intent first (most reliable)
+    window.location.href = intentUrl;
+    
+    // Fallback to custom scheme if intent fails
+    setTimeout(function() {
+        if (document.hasFocus()) {
+            window.location.href = customUrl;
+        }
+    }, 300);
+}
+
+// Handle result from scanner
+(function(){
+    var p=new URLSearchParams(window.location.search);
+    var s = p.get('scanned') || p.get('text') || p.get('code') || p.get('SCAN_RESULT');
+    
+    if(s){
+        inp.innerHTML = s;
+        pend = s;
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setTimeout(function(){statusModal.style.display='flex'}, 500);
+    }
+})();
 
 function getGPS(){if(!navigator.geolocation){gpsLed.className='gps-led gps-red';gpsText.innerHTML='GPS not supported';return}
 gpsText.innerHTML='Getting GPS...';navigator.geolocation.getCurrentPosition(function(p){lat=p.coords.latitude.toFixed(4);lng=p.coords.longitude.toFixed(4);gpsLed.className='gps-led gps-green';gpsText.innerHTML='GPS: Active';gpsLoc.innerHTML=lat+', '+lng;var d=new Date(),t=(d.getMonth()+1)+'/'+d.getDate()+' '+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();document.getElementById('modalGpsTime').innerHTML=t;document.getElementById('modalGpsInfo').innerHTML='📍 '+lat+', '+lng},function(){gpsLed.className='gps-led gps-red';gpsText.innerHTML='GPS: Error';lat='0.0000';lng='0.0000'},{timeout:1e4,enableHighAccuracy:!0})}
@@ -120,6 +160,13 @@ updateTime();setInterval(updateTime,6e4);
 function getETA(s){var d=new Date();s=='Data Received'?d.setDate(d.getDate()+7):s=='Picked Up'?d.setDate(d.getDate()-1):s=='Depart Post Office'?d.setDate(d.getDate()-2):s=='Arrival Scan'?d.setTime(d.getTime()-12*60*60*1e3):s=='Local Scan'?d.setTime(d.getTime()-36*60*60*1e3):s=='Out For Delivery'?d.setDate(d.getDate()-2):0;return(d.getMonth()+1)+'/'+d.getDate()+' '+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes()}
 function send(b,s,i){i.innerHTML='⏳';i.className='sync-indicator sync-pending';connLed.className='connection-led led-yellow';connText.innerHTML='SENDING...';var d=new Date(),ds=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),ts=d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes()+':'+(d.getSeconds()<10?'0':'')+d.getSeconds(),loc=(lat&&lng)?lat+', '+lng:'Unknown',eta=getETA(s),cb='cb'+Date.now();window[cb]=function(r){try{i.innerHTML=r&&r.result=='success'?'✅':'❌';i.className=r&&r.result=='success'?'sync-indicator sync-success':'sync-indicator sync-failed';connLed.className=r&&r.result=='success'?'connection-led led-green':'connection-led led-red';connText.innerHTML=r&&r.result=='success'?'SENT ✅':'ERROR'}catch(e){i.innerHTML='❌';i.className='sync-indicator sync-failed';connLed.className='connection-led led-red';connText.innerHTML='ERROR'}delete window[cb];document.body.removeChild(s)};var scr=document.createElement('script');scr.src=GS_URL+'?action=add&label='+encodeURIComponent(b)+'&status='+encodeURIComponent(s)+'&date='+encodeURIComponent(ds)+'&time='+encodeURIComponent(ts)+'&location='+encodeURIComponent(loc)+'&eta='+encodeURIComponent(eta)+'&callback='+cb;scr.onerror=function(){i.innerHTML='❌';i.className='sync-indicator sync-failed';connLed.className='connection-led led-red';connText.innerHTML='ERROR';delete window[cb];document.body.removeChild(scr)};document.body.appendChild(scr)}
 function addScan(b,s){if(!b)return;if(hist.children.length==1&&hist.children[0].innerHTML.indexOf('No scans yet')!=-1)hist.innerHTML='';var d=document.createElement('div');d.className='scan-entry';var idx=document.createElement('span');idx.className='entry-index';idx.innerHTML=counter+' |';var val=document.createElement('span');val.className='entry-value';val.innerHTML=b;var st=document.createElement('span');st.className='status-badge status-'+s.replace(/ /g,'-');st.innerHTML=s.toUpperCase();var eta=document.createElement('span');eta.className='eta-badge';eta.innerHTML='ETA: '+getETA(s);var gps=document.createElement('span');gps.innerHTML='📍';var sync=document.createElement('span');sync.className='sync-indicator sync-pending';sync.innerHTML='⏳';d.appendChild(idx);d.appendChild(val);d.appendChild(st);d.appendChild(gps);d.appendChild(eta);d.appendChild(sync);hist.insertBefore(d,hist.firstChild);send(b,s,sync);counter++;if(hist.children.length>8)hist.removeChild(hist.lastChild)}
+
+// Event listeners
+scanBtn.onclick = function() {
+    openScanner();
+    return false;
+};
+
 enter.onclick=function(){var t=inp.innerHTML||'';if(t.trim()!=''){pend=t;statusModal.style.display='flex'}else alert('Please enter a barcode')};
 esc.onclick=function(){hist.innerHTML='<div style="color:#888;font-style:italic;padding:8px;text-align:center;">No scans yet</div>';counter=1;inp.innerHTML=''};
 var opts=document.querySelectorAll('.status-option');for(var i=0;i<opts.length;i++)opts[i].onclick=function(o){return function(){var s=o.getAttribute('data-status');if(pend!=''){addScan(pend,s);inp.innerHTML='';pend='';statusModal.style.display='none'}}}(opts[i]);
