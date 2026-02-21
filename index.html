@@ -576,8 +576,8 @@
         <div class="action-btn" id="enterBtn">ENTER</div>
       </div>
       
-      <!-- FIXED: SCAN button as an A tag with proper intent -->
-      <a id="scanLink" href="intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;S.browser_fallback_url=http%3A%2F%2Fzxing.org;end" style="text-decoration: none;">
+      <!-- SCAN BUTTON - Fixed with proper return URL -->
+      <a id="scanLink" href="intent://scan?SCAN_FORMATS=CODE_39,CODE_128,QR_CODE&SCAN_MODE=QR_CODE_MODE&SAVE_HISTORY=false&RESULT_FORMAT=URI&RESULT={CODE}#Intent;scheme=zxing;package=com.google.zxing.client.android;S.browser_fallback_url=http://zxing.org;S.return_url_prefix=YOUR_RETURN_URL_HERE;end" style="text-decoration: none;">
         <div class="scan-hard-button" id="scanButton">
           <span>◰</span> SCAN <span>◰</span>
         </div>
@@ -646,11 +646,15 @@
     // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
     var GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
     
+    // IMPORTANT: REPLACE THIS WITH YOUR ACTUAL WEBSITE URL
+    var YOUR_SITE_URL = window.location.href.split('?')[0].split('#')[0];
+    
     // DOM elements
     var inputEl = document.getElementById('barcodeInput');
     var historyEl = document.getElementById('scanHistoryContainer');
     var enterBtn = document.getElementById('enterBtn');
     var escBtn = document.getElementById('escBtn');
+    var scanLink = document.getElementById('scanLink');
     var statusModal = document.getElementById('statusModal');
     var closeStatus = document.getElementById('closeStatusBtn');
     var connLed = document.getElementById('connectionLed');
@@ -666,6 +670,20 @@
     var currentLat = '';
     var currentLng = '';
     
+    // ==================== FIX SCAN BUTTON URL WITH RETURN URL ====================
+    function fixScanButton() {
+      // Encode the return URL
+      var encodedReturnUrl = encodeURIComponent(YOUR_SITE_URL + '?scanned={CODE}');
+      
+      // Create the full intent URL with proper return
+      var intentUrl = 'intent://scan?SCAN_FORMATS=CODE_39,CODE_128,QR_CODE&SCAN_MODE=QR_CODE_MODE&SAVE_HISTORY=false&RESULT_FORMAT=URI&RESULT=' + encodedReturnUrl + '#Intent;scheme=zxing;package=com.google.zxing.client.android;S.browser_fallback_url=http://zxing.org;end';
+      
+      // Set the href
+      if (scanLink) {
+        scanLink.href = intentUrl;
+      }
+    }
+    
     // ==================== CHECK FOR SCANNED CODE ON PAGE LOAD ====================
     (function() {
       // Check URL parameters for scanned code
@@ -675,29 +693,12 @@
       if (scannedParam) {
         inputEl.innerHTML = scannedParam;
         pendingBarcode = scannedParam;
-        // Clean URL
-        window.history.replaceState({}, document.title, window.location.pathname);
+        // Clean URL but keep the path
+        var cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
         setTimeout(function() {
           statusModal.style.display = 'flex';
         }, 500);
-      }
-      
-      // Check hash (some scanners return in hash)
-      if (window.location.hash) {
-        var hash = window.location.hash.substring(1);
-        if (hash && hash !== '' && !scannedParam) {
-          try {
-            var scannedCode = decodeURIComponent(hash);
-            if (scannedCode && scannedCode !== '') {
-              inputEl.innerHTML = scannedCode;
-              pendingBarcode = scannedCode;
-              window.location.hash = '';
-              setTimeout(function() {
-                statusModal.style.display = 'flex';
-              }, 500);
-            }
-          } catch(e) {}
-        }
       }
     })();
     
@@ -971,27 +972,11 @@
     symPad.onclick = handleKey;
     
     // ==================== INIT ====================
+    // Fix the scan button with proper return URL
+    fixScanButton();
+    
     window.setTimeout(getGPS, 500);
     connText.innerHTML = 'READY';
-    
-    // Listen for page visibility change (when returning from ZXING)
-    document.addEventListener('visibilitychange', function() {
-      if (!document.hidden) {
-        // Page is visible again (returned from ZXING)
-        // Check URL parameters again
-        var urlParams = new URLSearchParams(window.location.search);
-        var scannedParam = urlParams.get('scanned') || urlParams.get('text') || urlParams.get('code');
-        
-        if (scannedParam && scannedParam !== '' && scannedParam !== pendingBarcode) {
-          inputEl.innerHTML = scannedParam;
-          pendingBarcode = scannedParam;
-          window.history.replaceState({}, document.title, window.location.pathname);
-          setTimeout(function() {
-            statusModal.style.display = 'flex';
-          }, 500);
-        }
-      }
-    });
   </script>
 </body>
 </html>
