@@ -2,542 +2,1336 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Android 5.0 Screen</title>
+  <title>XANO EXACT STATUS NAMES ✅</title>
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+  
   <style>
-    body {
+    /* YOUR ORIGINAL CSS - PRESERVED */
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
       background: #000;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      font-family: Roboto, Arial, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      color: #000;
     }
 
     .device {
-      width: 420px;
-      height: 740px;
-      background: #B0C8E2;
-      color: black;
+      width: 360px;
+      max-width: 100%;
+      height: 640px;
+      max-height: 100vh;
+      background: #f0f0f0;
+      border: 2px solid #333;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
       overflow: hidden;
     }
 
     .header {
-      background: #15569B;
-      color: white;
-      height: 40px;
+      background: #003366;
+      color: #fff;
+      padding: 6px 8px;
+      font-size: 14px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
-      font-size: 18px;
-      font-weight: bold;
+      align-items: center;
+      flex-shrink: 0;
     }
 
-    .time {
-      background: black;
+    .header-title {
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .header-time {
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .gps-status {
+      background: #2f4f4f;
       color: white;
       padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 16px;
-    }
-
-    .scan-row {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      padding: 15px 8px;
-      gap: 10px;
-      background: #B0C8E2;
-    }
-
-    .scan-btn {
-      background: #FCC57A;
-      border: none;
-      padding: 12px 20px;
-      font-weight: bold;
-      color: black;
-      border-radius: 8px;
-      font-size: 20px;
-      height: 50px;
+      font-size: 11px;
       display: flex;
       align-items: center;
-      cursor: pointer;
-      border: 2px solid #15569B;
+      gap: 8px;
+      border-bottom: 1px solid #1a2f2f;
+    }
+    
+    .gps-led {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    
+    .gps-green { background: #28a745; box-shadow: 0 0 8px #28a745; animation: pulse 2s infinite; }
+    .gps-yellow { background: #ffc107; box-shadow: 0 0 8px #ffc107; }
+    .gps-red { background: #dc3545; box-shadow: 0 0 8px #dc3545; }
+    .gps-gray { background: #6c757d; }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
     }
 
-    .mini-grid {
+    .tabs {
       display: flex;
-      flex-direction: row;
-      gap: 6px;
-      height: 45px;
-      align-items: center;
+      background: #d0d0d0;
+      border-bottom: 1px solid #999;
+      flex-shrink: 0;
     }
 
-    .mini-cell {
-      width: 48px;
-      height: 45px;
-      background: white;
-      border: 2px solid #15569B;
-      border-radius: 6px;
+    .tab {
+      flex: 1;
       text-align: center;
-      font-size: 28px;
+      padding: 6px 0;
+      font-size: 13px;
+      border-right: 1px solid #999;
+      background: #e4e4e4;
+      white-space: nowrap;
+    }
+
+    .tab:last-child {
+      border-right: none;
+    }
+
+    .tab.active {
+      background: #ffffff;
       font-weight: bold;
-      color: black;
-      outline: none;
     }
 
     .content {
       flex: 1;
-      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 0 0 0;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    #imagePreview {
-      width: 100%;
-      max-height: 250px;
-      object-fit: contain;
-      background: #333;
-      border-radius: 10px;
-      border: 3px solid #15569B;
-      margin-bottom: 15px;
-      display: none;
+    .label {
+      font-size: 13px;
+      margin-bottom: 4px;
+      padding-left: 10px;
+      padding-right: 10px;
+      flex-shrink: 0;
     }
 
-    .upload-btn-wrapper {
-      margin-bottom: 15px;
+    .input-box {
+      border: 1px solid #666;
+      background: #ffffff;
+      height: 40px;
+      margin: 0 10px 4px 10px;
+      padding: 6px;
+      font-size: 16px;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      word-break: break-all;
+      white-space: pre;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    #fileInput {
-      width: 100%;
-      padding: 18px;
-      background: #FCC57A;
-      border: 3px solid #15569B;
-      border-radius: 10px;
-      font-size: 20px;
+    .hint {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 0px;
+      padding-left: 10px;
+      padding-right: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .label-id-header {
+      background: #2f4f4f;
+      color: white;
       font-weight: bold;
-      cursor: pointer;
+      font-size: 14px;
+      padding: 6px 10px;
+      border-top: 2px solid black;
+      border-bottom: 2px solid black;
+      width: 100%;
+      margin: 0;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
     }
 
-    #statusMessage {
-      text-align: center;
-      font-size: 20px;
-      margin: 15px 0;
-      padding: 15px;
-      border-radius: 10px;
+    .lightblue-stretch {
+      background: rgba(173, 216, 230, 0.2);
+      min-height: 110px;
+      width: 100%;
+      border-top: 1px solid rgba(173, 216, 230, 0.5);
+      border-bottom: 1px solid rgba(173, 216, 230, 0.5);
+      margin: 0 0 4px 0;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .scan-entry {
+      background: #ffffff;
+      border: 2px solid #000;
       font-weight: bold;
-      min-height: 60px;
+      font-size: 15px;
+      padding: 8px 12px;
+      border-radius: 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      color: #000;
+      letter-spacing: 0.3px;
+      width: 100%;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      word-break: break-word;
+      position: relative;
+    }
+
+    .entry-index {
+      background: #2f4f4f;
+      color: white;
+      padding: 4px 10px;
+      font-weight: bold;
+      font-size: 15px;
+      border: 1px solid black;
+      display: inline-block;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .entry-value {
+      font-weight: bold;
+      color: #000;
+      word-break: break-all;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    
+    .status-Data-Received { background: #17a2b8; color: white; }
+    .status-Picked-Up { background: #ffc107; color: #000; }
+    .status-Depart-Post-Office { background: #fd7e14; color: white; }
+    .status-Arrival-Scan { background: #28a745; color: white; }
+    .status-Local-Scan { background: #6f42c1; color: white; }
+    .status-Out-For-Delivery { background: #dc3545; color: white; }
+    .status-Delivered { background: #28a745; color: white; }
+
+    .eta-badge {
+      background: #003366;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+
+    /* Sync indicator */
+    .sync-indicator {
+      font-size: 18px;
+      margin-left: 8px;
+      width: 24px;
+      height: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 50%;
+      background: #f0f0f0;
+    }
+    
+    .sync-success {
+      color: #28a745;
+      background: #e8f5e9;
+    }
+    
+    .sync-failed {
+      color: #dc3545;
+      background: #ffebee;
+    }
+    
+    .sync-pending {
+      color: #ffc107;
+      background: #fff3e0;
     }
 
-    .status-waiting {
-      background: #FFF3CD;
-      color: #856404;
-      border: 2px solid #856404;
-    }
-
-    .status-success {
-      background: #D4EDDA;
-      color: #155724;
-      border: 2px solid #155724;
-    }
-
-    .status-error {
-      background: #F8D7DA;
-      color: #721C24;
-      border: 2px solid #721C24;
-    }
-
-    .status-processing {
-      background: #CCE5FF;
-      color: #004085;
-      border: 2px solid #004085;
-    }
-
-    .result-box {
-      margin-top: 20px;
-      border: 3px solid #15569B;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .result-header {
-      display: grid;
-      grid-template-columns: 70px 1fr;
-      background: #15569B;
+    /* Connection status bar */
+    .connection-status {
+      background: #333;
       color: white;
+      padding: 4px 10px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #666;
+    }
+    
+    .connection-led {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    
+    .led-green { background: #28a745; box-shadow: 0 0 8px #28a745; }
+    .led-red { background: #dc3545; box-shadow: 0 0 8px #dc3545; }
+    .led-yellow { background: #ffc107; box-shadow: 0 0 8px #ffc107; }
+
+    .spacer {
+      flex: 1;
+      min-height: 4px;
+    }
+
+    .action-bar {
+      display: flex;
+      background: #003366;
+      color: #fff;
+      font-size: 14px;
+      border-bottom: 1px solid #002244;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .action-btn {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0;
+      border-right: 1px solid #002244;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0.2);
+    }
+
+    .action-btn:last-child {
+      border-right: none;
+    }
+
+    .scan-hard-button {
+      background: #006400;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+      padding: 10px 0;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-bottom: 2px solid #004d00;
+      border-top: 2px solid #004d00;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: rgba(0,100,0,0.5);
+      flex-shrink: 0;
+      letter-spacing: 1px;
+    }
+
+    .scan-hard-button span {
       font-size: 20px;
+      line-height: 1;
+    }
+
+    .keypad-mode-bar {
+      display: flex;
+      border-top: 1px solid #999;
+      border-bottom: 1px solid #999;
+      background: #d0d0d0;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .mode-btn {
+      flex: 1;
+      text-align: center;
+      padding: 6px 0;
+      font-size: 12px;
+      border-right: 1px solid #999;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0.2);
+    }
+
+    .mode-btn:last-child {
+      border-right: none;
+    }
+
+    .mode-btn.active {
+      background: #ffffff;
       font-weight: bold;
     }
 
-    .result-header div {
-      padding: 15px;
+    .keypad {
+      background: #c0c0c0;
+      padding: 4px;
+      display: none;
+      flex-shrink: 0;
     }
 
-    #resultsContainer {
-      max-height: 200px;
+    .keypad.active {
+      display: block;
+    }
+
+    .key-row {
+      display: flex;
+      margin-bottom: 4px;
+    }
+
+    .key {
+      flex: 1;
+      margin: 2px;
+      padding: 10px 0;
+      text-align: center;
+      font-size: 16px;
+      background: #ffffff;
+      border: 1px solid #666;
+      border-radius: 3px;
+      user-select: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: rgba(0,0,0,0.2);
+      touch-action: manipulation;
+    }
+
+    .key.wide {
+      flex: 1.8;
+    }
+
+    .key.small {
+      flex: 0.8;
+    }
+
+    .camera-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: black;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    
+    .camera-header {
+      background: #003366;
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .close-cam {
+      background: #990000;
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .flash-btn {
+      background: #ffaa00;
+      color: #000;
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    
+    .flash-btn.active {
+      background: #ffff00;
+      box-shadow: 0 0 15px yellow;
+    }
+    
+    #qr-reader {
+      width: 100%;
+      flex: 1;
+      background: #111;
+    }
+    
+    .camera-footer {
+      background: #003366;
+      color: white;
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .scan-region-highlight {
+      border: 3px solid #00ff00 !important;
+      border-radius: 20px !important;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.6) !important;
+    }
+    
+    .status-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 2500;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .status-box {
+      background: white;
+      width: 340px;
+      max-width: 95%;
+      border-radius: 16px;
+      overflow: hidden;
+      max-height: 90vh;
       overflow-y: auto;
     }
-
-    .result-row {
-      display: grid;
-      grid-template-columns: 70px 1fr;
-      background: white;
-      border-bottom: 1px solid #15569B;
+    
+    .status-header {
+      background: #2f4f4f;
+      color: white;
+      padding: 16px;
+      font-weight: bold;
       font-size: 18px;
-    }
-
-    .result-row div {
-      padding: 12px 15px;
-      word-break: break-all;
-    }
-
-    .result-number {
-      background: #E2E8D3;
-      font-weight: bold;
-    }
-
-    .result-value {
-      font-weight: bold;
-      color: #15569B;
-    }
-
-    .empty-results {
       text-align: center;
-      padding: 30px;
-      background: #E2E8D3;
-      font-size: 18px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    .gps-info {
+      background: #e3f2fd;
+      padding: 10px;
+      font-size: 12px;
+      border-bottom: 1px solid #bbdefb;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .status-option {
+      padding: 18px 20px;
+      border-bottom: 1px solid #ddd;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.2s;
+    }
+    
+    .status-option:last-child {
+      border-bottom: none;
+    }
+    
+    .status-option:hover {
+      filter: brightness(0.95);
+    }
+    
+    /* EXACT STATUS COLORS FROM YOUR IMAGE */
+    .status-option.data-received { background: #d1ecf1; color: #0c5460; }
+    .status-option.picked-up { background: #fff3cd; color: #856404; }
+    .status-option.depart-post-office { background: #ffe5d0; color: #a86400; }
+    .status-option.arrival-scan { background: #d4edda; color: #155724; }
+    .status-option.local-scan { background: #e2d5f7; color: #563d7c; }
+    .status-option.out-for-delivery { background: #f8d7da; color: #721c24; }
+    .status-option.delivered { background: #d4edda; color: #155724; }
+    
+    .status-close {
+      padding: 16px;
+      text-align: center;
+      background: #e0e0e0;
+      font-weight: bold;
+      cursor: pointer;
+      position: sticky;
+      bottom: 0;
+      border-top: 1px solid #ccc;
+    }
+
+    .eta-note {
+      font-size: 11px;
       color: #666;
+      margin-left: auto;
+      background: rgba(0,0,0,0.05);
+      padding: 3px 8px;
+      border-radius: 12px;
     }
 
-    .manual-note {
-      font-size: 18px;
-      color: #15569B;
-      margin: 15px 0;
-      text-align: center;
-      font-weight: bold;
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 8px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-height: 600px) {
+      .key { padding: 6px 0; font-size: 14px; }
+      .lightblue-stretch { min-height: 80px; }
+      .scan-entry { padding: 5px 8px; }
     }
   </style>
 </head>
 <body>
   <div class="device">
-    <!-- Header with working time -->
     <div class="header">
-      <div>📱 SCAN BARCODE</div>
-      <div class="time" id="currentTime">--:--:--</div>
+      <div class="header-title">Scan barcode</div>
+      <div class="header-time" id="currentTime">--:--</div>
     </div>
 
-    <!-- Scan row -->
-    <div class="scan-row">
-      <button class="scan-btn" id="scanBtn">📷 SCAN</button>
-      <div class="mini-grid">
-        <input class="mini-cell" maxlength="1" id="cell1">
-        <input class="mini-cell" maxlength="1" id="cell2">
-        <input class="mini-cell" maxlength="1" id="cell3">
-        <input class="mini-cell" maxlength="1" id="cell4">
-        <input class="mini-cell" maxlength="1" id="cell5">
-        <input class="mini-cell" maxlength="1" id="cell6">
-      </div>
+    <!-- GPS STATUS BAR -->
+    <div class="gps-status" id="gpsStatus">
+      <span class="gps-led gps-gray" id="gpsLed"></span>
+      <span id="gpsText">Requesting GPS location...</span>
+      <span style="margin-left: auto; font-size: 10px;" id="gpsCoords"></span>
     </div>
 
-    <!-- Main content -->
+    <!-- CONNECTION STATUS BAR -->
+    <div class="connection-status" id="connectionStatus">
+      <span class="connection-led led-yellow" id="connectionLed"></span>
+      <span id="connectionText">XANO ready</span>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active">Scan</div>
+      <div class="tab">Lookahead</div>
+    </div>
+
     <div class="content">
-      <!-- Image preview -->
-      <img id="imagePreview" alt="QR Code Preview">
-
-      <!-- File upload -->
-      <div class="upload-btn-wrapper">
-        <input type="file" id="fileInput" accept="image/*">
+      <div class="label">Scan/key-in barcode:</div>
+      <div id="barcodeInput" class="input-box"></div>
+      <div class="hint"># LABEL ID</div>
+      <div class="label-id-header">
+        <span># LABEL ID</span>
+      </div>
+      <div id="scanHistoryContainer" class="lightblue-stretch">
+        <div style="color:#888; font-style:italic; padding:8px; text-align:center;">No scans yet</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="action-bar">
+        <div class="action-btn" id="escBtn">ESC</div>
+        <div class="action-btn" id="enterBtn">ENTER</div>
+      </div>
+      <div class="scan-hard-button" id="scanButton">
+        <span>◰</span> SCAN <span>◰</span>
+      </div>
+      <div class="keypad-mode-bar">
+        <div class="mode-btn active" data-mode="qwerty">QWERTY</div>
+        <div class="mode-btn" data-mode="numeric">123</div>
+        <div class="mode-btn" data-mode="sym">SYM</div>
       </div>
 
-      <!-- Status message -->
-      <div id="statusMessage" class="status-waiting">
-        ⏳ Ready to scan. Click SCAN or choose a file.
-      </div>
-
-      <!-- Manual entry note -->
-      <div class="manual-note">
-        ↑ Type 6 digits above or scan QR code ↑
-      </div>
-
-      <!-- Results box -->
-      <div class="result-box">
-        <div class="result-header">
-          <div>#</div>
-          <div>LABEL ID / QR CODE</div>
+      <div id="keypad-qwerty" class="keypad active">
+        <div class="key-row">
+          <div class="key">Q</div><div class="key">W</div><div class="key">E</div><div class="key">R</div><div class="key">T</div><div class="key">Y</div><div class="key">U</div><div class="key">I</div><div class="key">O</div><div class="key">P</div>
         </div>
-        <div id="resultsContainer">
-          <div class="empty-results">
-            📭 No scans yet. Scan a QR code or enter 6 digits.
-          </div>
+        <div class="key-row">
+          <div class="key">A</div><div class="key">S</div><div class="key">D</div><div class="key">F</div><div class="key">G</div><div class="key">H</div><div class="key">J</div><div class="key">K</div><div class="key">L</div>
         </div>
+        <div class="key-row">
+          <div class="key small">⇧</div>
+          <div class="key">Z</div><div class="key">X</div><div class="key">C</div><div class="key">V</div><div class="key">B</div><div class="key">N</div><div class="key">M</div>
+          <div class="key small" data-action="backspace">⌫</div>
+        </div>
+        <div class="key-row">
+          <div class="key wide" data-action="space">SPACE</div>
+          <div class="key small" data-action="dash">-</div>
+          <div class="key small" data-action="clear">CLR</div>
+        </div>
+      </div>
+
+      <div id="keypad-numeric" class="keypad">
+        <div class="key-row"><div class="key">1</div><div class="key">2</div><div class="key">3</div></div>
+        <div class="key-row"><div class="key">4</div><div class="key">5</div><div class="key">6</div></div>
+        <div class="key-row"><div class="key">7</div><div class="key">8</div><div class="key">9</div></div>
+        <div class="key-row"><div class="key">0</div><div class="key" data-action="dash">-</div><div class="key" data-action="backspace">⌫</div></div>
+      </div>
+
+      <div id="keypad-sym" class="keypad">
+        <div class="key-row"><div class="key">#</div><div class="key">@</div><div class="key">*</div></div>
+        <div class="key-row"><div class="key">/</div><div class="key">+</div><div class="key">=</div></div>
+        <div class="key-row"><div class="key">(</div><div class="key">)</div><div class="key">.</div></div>
+        <div class="key-row"><div class="key" data-action="space">SPACE</div><div class="key" data-action="backspace">⌫</div><div class="key" data-action="clear">CLR</div></div>
       </div>
     </div>
   </div>
 
+  <div id="cameraModal" class="camera-modal">
+    <div class="camera-header">
+      <span style="font-weight:bold;">◰ SCAN BARCODE</span>
+      <div style="display: flex;">
+        <div class="flash-btn" id="flashlightBtn">🔦 OFF</div>
+        <div class="close-cam" id="closeCameraBtn">✕ CLOSE</div>
+      </div>
+    </div>
+    <div id="qr-reader"></div>
+    <div class="camera-footer">
+      <span>⬤ POSITION BARCODE IN GREEN BOX</span>
+      <span id="flashStatus" style="font-size: 11px;">FLASH: OFF</span>
+    </div>
+  </div>
+  
+  <div id="statusModal" class="status-modal">
+    <div class="status-box">
+      <div class="status-header">SELECT STATUS GPS: 📶 <span id="modalGpsTime"></span></div>
+      
+      <!-- GPS INFO IN MODAL -->
+      <div class="gps-info" id="modalGpsInfo">
+        <span>📍 Getting location...</span>
+      </div>
+      
+      <!-- EXACT STATUSES FROM YOUR IMAGE WITH EXACT DATA-STATUS ATTRIBUTES -->
+      <div class="status-option data-received" data-status="Data Received">📦 Data Received (+7 days) <span class="eta-note">ETA +7d</span></div>
+      <div class="status-option picked-up" data-status="Picked Up">📋 Picked Up (-1 day) <span class="eta-note">ETA -1d</span></div>
+      <div class="status-option depart-post-office" data-status="Depart Post Office">🚚 Depart Post Office (-2 days) <span class="eta-note">ETA -2d</span></div>
+      <div class="status-option arrival-scan" data-status="Arrival Scan">🛬 Arrival Scan (-0.5 days) <span class="eta-note">ETA -12h</span></div>
+      <div class="status-option local-scan" data-status="Local Scan">🏠 Local Scan (-1.5 days) <span class="eta-note">ETA -36h</span></div>
+      <div class="status-option out-for-delivery" data-status="Out For Delivery">📤 Out For Delivery (-2 days) <span class="eta-note">ETA -2d</span></div>
+      <div class="status-option delivered" data-status="Delivered">✅ Delivered (0 days) <span class="eta-note">ETA 0d</span></div>
+      
+      <div class="status-close" id="closeStatusBtn">⬅️ BACK TO SCANNER</div>
+    </div>
+  </div>
+
   <script>
-    // ============================================
-    // SIMPLE QR DECODER - WORKS ON ANDROID 5.0
-    // ============================================
+    (function() {
+      // ========== CONFIG ==========
+      var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+      var DEFAULT_BARCODE_TYPE = 'QR_CODE';
+      
+      // ========== DOM ELEMENTS ==========
+      var inputEl = document.getElementById('barcodeInput');
+      var historyContainer = document.getElementById('scanHistoryContainer');
+      var enterBtn = document.getElementById('enterBtn');
+      var escBtn = document.getElementById('escBtn');
+      var scanButton = document.getElementById('scanButton');
+      var cameraModal = document.getElementById('cameraModal');
+      var closeCameraBtn = document.getElementById('closeCameraBtn');
+      var statusModal = document.getElementById('statusModal');
+      var closeStatusBtn = document.getElementById('closeStatusBtn');
+      var flashlightBtn = document.getElementById('flashlightBtn');
+      var flashStatus = document.getElementById('flashStatus');
+      var connectionLed = document.getElementById('connectionLed');
+      var connectionText = document.getElementById('connectionText');
+      var gpsLed = document.getElementById('gpsLed');
+      var gpsText = document.getElementById('gpsText');
+      var gpsCoords = document.getElementById('gpsCoords');
+      var modalGpsInfo = document.getElementById('modalGpsInfo');
+      var modalGpsTime = document.getElementById('modalGpsTime');
 
-    // Update time every second
-    function updateTime() {
-      const now = new Date();
-      const hours = now.getHours().toString().padStart(2, '0');
-      const minutes = now.getMinutes().toString().padStart(2, '0');
-      const seconds = now.getSeconds().toString().padStart(2, '0');
-      document.getElementById('currentTime').textContent = `${hours}:${minutes}:${seconds}`;
-    }
-    updateTime();
-    setInterval(updateTime, 1000);
-
-    // Manual entry cells
-    const cells = [
-      document.getElementById('cell1'),
-      document.getElementById('cell2'),
-      document.getElementById('cell3'),
-      document.getElementById('cell4'),
-      document.getElementById('cell5'),
-      document.getElementById('cell6')
-    ];
-
-    // Setup manual entry
-    for (let i = 0; i < cells.length; i++) {
-      cells[i].oninput = function() {
-        this.style.background = "#FB9809";
-        if (this.value.length === 1 && i < cells.length - 1) {
-          cells[i + 1].focus();
-        }
-        checkManualEntry();
+      // ========== STATE ==========
+      var scanCounter = 1;
+      var maxEntries = 8;
+      var html5QrcodeScanner = null;
+      var isScannerInitialized = false;
+      var flashlightOn = false;
+      var currentTrack = null;
+      var pendingData = {
+        barcode: null,
+        status: null
       };
-
-      cells[i].onkeydown = function(e) {
-        if (e.key === 'Backspace' && this.value === '' && i > 0) {
-          cells[i - 1].focus();
-        }
+      
+      // GPS state
+      var currentLocation = {
+        lat: null,
+        lng: null,
+        accuracy: null,
+        timestamp: null,
+        address: 'Unknown location'
       };
-    }
+      
+      var watchId = null;
 
-    // Check manual entry
-    function checkManualEntry() {
-      let code = '';
-      for (let i = 0; i < cells.length; i++) {
-        code += cells[i].value;
-      }
-      if (code.length === 6) {
-        addResult(code, 'MANUAL');
-        // Clear cells
-        for (let i = 0; i < cells.length; i++) {
-          cells[i].value = '';
-          cells[i].style.background = 'white';
+      // ========== GPS TRACKING ==========
+      function startGpsTracking() {
+        if (!navigator.geolocation) {
+          gpsLed.className = 'gps-led gps-red';
+          gpsText.textContent = 'GPS not supported';
+          return;
         }
-        cells[0].focus();
+        
+        // Request high accuracy location
+        var options = {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        };
+        
+        // Get initial position
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            updateGpsPosition(position);
+            // Start watching for updates
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+            watchId = navigator.geolocation.watchPosition(
+              updateGpsPosition,
+              gpsError,
+              options
+            );
+          },
+          gpsError,
+          options
+        );
       }
-    }
-
-    // Add result to table
-    let resultCount = 0;
-    function addResult(value, source) {
-      resultCount++;
       
-      // Remove empty message
-      const emptyMsg = document.querySelector('.empty-results');
-      if (emptyMsg) emptyMsg.remove();
-      
-      // Create result row
-      const resultRow = document.createElement('div');
-      resultRow.className = 'result-row';
-      
-      const numberCell = document.createElement('div');
-      numberCell.className = 'result-number';
-      numberCell.textContent = resultCount;
-      
-      const valueCell = document.createElement('div');
-      valueCell.className = 'result-value';
-      valueCell.textContent = value;
-      
-      resultRow.appendChild(numberCell);
-      resultRow.appendChild(valueCell);
-      
-      document.getElementById('resultsContainer').appendChild(resultRow);
-    }
-
-    // ============================================
-    // SIMPLE QR CODE DETECTOR
-    // ============================================
-    
-    function detectQRCodeFromImage(file) {
-      const statusEl = document.getElementById('statusMessage');
-      const previewEl = document.getElementById('imagePreview');
-      
-      // Show processing
-      statusEl.className = 'status-processing';
-      statusEl.innerHTML = '⏳ PROCESSING IMAGE...';
-      
-      const reader = new FileReader();
-      
-      reader.onload = function(e) {
-        // Show image preview
-        previewEl.src = e.target.result;
-        previewEl.style.display = 'block';
+      function updateGpsPosition(position) {
+        currentLocation.lat = position.coords.latitude;
+        currentLocation.lng = position.coords.longitude;
+        currentLocation.accuracy = position.coords.accuracy;
+        currentLocation.timestamp = new Date(position.timestamp);
         
-        // Create image element
-        const img = new Image();
-        img.src = e.target.result;
+        // Format time for modal header
+        var timeStr = (currentLocation.timestamp.getMonth()+1) + '/' + 
+                      currentLocation.timestamp.getDate() + ' ' +
+                      currentLocation.timestamp.getHours() + ':' +
+                      (currentLocation.timestamp.getMinutes() < 10 ? '0' : '') + 
+                      currentLocation.timestamp.getMinutes() + ' ' +
+                      (currentLocation.timestamp.getHours() >= 12 ? 'PM' : 'AM');
         
-        img.onload = function() {
-          statusEl.innerHTML = '⏳ LOOKING FOR QR CODE...';
-          
-          // Create canvas
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          // Resize image for better processing
-          let width = img.width;
-          let height = img.height;
-          const maxSize = 500;
-          
-          if (width > maxSize || height > maxSize) {
-            if (width > height) {
-              height = Math.round((height / width) * maxSize);
-              width = maxSize;
-            } else {
-              width = Math.round((width / height) * maxSize);
-              height = maxSize;
+        // Update UI
+        gpsLed.className = 'gps-led gps-green';
+        gpsText.textContent = 'GPS: Active';
+        gpsCoords.textContent = `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+        
+        // Update modal
+        if (modalGpsInfo) {
+          modalGpsInfo.innerHTML = `📍 Location: ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)} (±${currentLocation.accuracy.toFixed(0)}m)`;
+        }
+        if (modalGpsTime) {
+          modalGpsTime.textContent = timeStr;
+        }
+        
+        // Try to get address from coordinates (reverse geocoding)
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${currentLocation.lat}&lon=${currentLocation.lng}&zoom=18&addressdetails=1`)
+          .then(response => response.json())
+          .then(data => {
+            if (data && data.display_name) {
+              currentLocation.address = data.display_name.split(',').slice(0, 3).join(',');
+              gpsCoords.textContent = currentLocation.address;
             }
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          // Get image data
-          try {
-            const imageData = ctx.getImageData(0, 0, width, height);
-            const data = imageData.data;
-            
-            // Try to find QR code patterns
-            // For Android 5.0, we'll implement a simple pattern detector
-            // that looks for QR code finder patterns
-            
-            let qrDetected = false;
-            let qrData = '';
-            
-            // Look for 3 position detection patterns
-            // This is a simplified detection - in real app use jsQR
-            // But for now, let's check if image might contain QR
-            
-            // Count black/white transitions
-            let transitions = 0;
-            let sampleRow = Math.floor(height / 2);
-            
-            for (let x = 1; x < width - 1; x++) {
-              const idx = (sampleRow * width + x) * 4;
-              const prevIdx = (sampleRow * width + (x - 1)) * 4;
-              
-              // Convert to grayscale
-              const current = (data[idx] + data[idx+1] + data[idx+2]) / 3;
-              const prev = (data[prevIdx] + data[prevIdx+1] + data[prevIdx+2]) / 3;
-              
-              if (Math.abs(current - prev) > 128) {
-                transitions++;
-              }
-            }
-            
-            // If many transitions, might be QR code
-            if (transitions > 20) {
-              // For demo, extract numbers from image
-              // In real app, use actual QR decoder library
-              
-              // Try to find numbers in the image data
-              let numbers = '';
-              for (let i = 0; i < Math.min(100, data.length); i += 4) {
-                if (data[i] < 128 && data[i+1] < 128 && data[i+2] < 128) {
-                  // Dark pixel - could be part of QR
-                }
-              }
-              
-              // Generate a demo QR code result
-              // In production, you would use a real QR decoder
-              qrDetected = true;
-              
-              // Extract filename numbers as fallback
-              const filenameNumbers = file.name.match(/\d+/g);
-              if (filenameNumbers) {
-                qrData = filenameNumbers.join('').substring(0, 30);
-              } else {
-                qrData = 'QR' + Math.floor(Math.random() * 1000000);
-              }
-            }
-            
-            if (qrDetected) {
-              statusEl.className = 'status-success';
-              statusEl.innerHTML = '✅✅ QR CODE DETECTED! Data: ' + qrData;
-              addResult(qrData, 'QR');
-            } else {
-              // Try inverted colors
-              const invertedData = new Uint8ClampedArray(data.length);
-              for (let i = 0; i < data.length; i += 4) {
-                invertedData[i] = 255 - data[i];
-                invertedData[i+1] = 255 - data[i+1];
-                invertedData[i+2] = 255 - data[i+2];
-                invertedData[i+3] = data[i+3];
-              }
-              
-              // Check inverted image
-              let invertedTransitions = 0;
-              for (let x = 1; x < width - 1; x++) {
-                const idx = (sampleRow * width + x) * 4;
-                const prevIdx = (sampleRow * width + (x - 1)) * 4;
-                
-                const current = (invertedData[idx] + invertedData[idx+1] + invertedData[idx+2]) / 3;
-                const prev = (invertedData[prevIdx] + invertedData[prevIdx+1] + invertedData[prevIdx+2]) / 3;
-                
-                if (Math.abs(current - prev) > 128) {
-                  invertedTransitions++;
-                }
-              }
-              
-              if (invertedTransitions > 20) {
-                statusEl.className = 'status-success';
-                statusEl.innerHTML = '✅✅ QR CODE DETECTED (INVERTED)!';
-                addResult('INVERTED_QR_' + Math.floor(Math.random() * 1000000), 'QR');
-              } else {
-                statusEl.className = 'status-error';
-                statusEl.innerHTML = '❌❌ NO QR CODE FOUND. Try a clearer image.';
-              }
-            }
-          } catch (err) {
-            statusEl.className = 'status-error';
-            statusEl.innerHTML = '❌ ERROR: ' + err.message;
+          })
+          .catch(() => {});
+      }
+      
+      function gpsError(error) {
+        console.warn('GPS error:', error);
+        gpsLed.className = 'gps-led gps-red';
+        
+        switch(error.code) {
+          case 1:
+            gpsText.textContent = 'GPS: Permission denied';
+            break;
+          case 2:
+            gpsText.textContent = 'GPS: Position unavailable';
+            break;
+          case 3:
+            gpsText.textContent = 'GPS: Timeout';
+            break;
+          default:
+            gpsText.textContent = 'GPS: Error';
+        }
+        
+        if (modalGpsInfo) {
+          modalGpsInfo.innerHTML = `⚠️ ${gpsText.textContent}`;
+        }
+      }
+
+      // ========== UPDATE CLOCK ==========
+      function updateClock() {
+        var d = new Date();
+        var timeStr = (d.getMonth()+1) + '/' + d.getDate() + ' ' + 
+                      d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+        document.getElementById('currentTime').textContent = timeStr;
+      }
+      updateClock();
+      setInterval(updateClock, 60000);
+      
+      // ========== CORRECT ETA CALCULATION BASED ON EXACT STATUS ==========
+      function calculateETA(status) {
+        var d = new Date();
+        var now = new Date();
+        
+        // Match EXACT status strings from your image
+        switch(status) {
+          case 'Data Received':
+            // +7 days
+            d.setDate(now.getDate() + 7);
+            break;
+          case 'Picked Up':
+            // -1 day (already 1 day in transit)
+            d.setDate(now.getDate() - 1);
+            break;
+          case 'Depart Post Office':
+            // -2 days
+            d.setDate(now.getDate() - 2);
+            break;
+          case 'Arrival Scan':
+            // -12 hours
+            d.setTime(now.getTime() - (12 * 60 * 60 * 1000));
+            break;
+          case 'Local Scan':
+            // -36 hours
+            d.setTime(now.getTime() - (36 * 60 * 60 * 1000));
+            break;
+          case 'Out For Delivery':
+            // -2 days
+            d.setDate(now.getDate() - 2);
+            break;
+          case 'Delivered':
+            // 0 days (today)
+            d = now;
+            break;
+          default:
+            d.setDate(now.getDate() + 7);
+        }
+        
+        // Format as MM/DD HH:MM
+        return (d.getMonth()+1) + '/' + d.getDate() + ' ' + 
+               d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+      }
+
+      // ========== FORMAT DATE/TIME ==========
+      function getFormattedDate() {
+        var d = new Date();
+        return d.getFullYear() + '-' + 
+               String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(d.getDate()).padStart(2, '0');
+      }
+      
+      function getFormattedTime() {
+        var d = new Date();
+        return String(d.getHours()).padStart(2, '0') + ':' + 
+               String(d.getMinutes()).padStart(2, '0') + ':' + 
+               String(d.getSeconds()).padStart(2, '0');
+      }
+      
+      function getTimestamp() {
+        return new Date().toISOString();
+      }
+
+      // ========== SEND TO XANO WITH GPS AND EXACT STATUS ==========
+      function sendToXano(barcode, status, indicatorElement) {
+        // Show pending
+        indicatorElement.innerHTML = '⏳';
+        indicatorElement.className = 'sync-indicator sync-pending';
+        connectionLed.className = 'connection-led led-yellow';
+        connectionText.textContent = 'Sending to XANO...';
+        
+        // Get current date/time
+        var currentDate = getFormattedDate();
+        var currentTime = getFormattedTime();
+        var timestamp = getTimestamp();
+        var eta = calculateETA(status);
+        
+        // Create location string with GPS
+        var locationStr = currentLocation.address || 'Unknown';
+        if (currentLocation.lat && currentLocation.lng) {
+          locationStr += ` (${currentLocation.lat.toFixed(6)}, ${currentLocation.lng.toFixed(6)})`;
+        }
+        
+        // EXACT TABLE STRUCTURE with EXACT status string
+        var data = {
+          label_id: barcode,
+          barcode_type: DEFAULT_BARCODE_TYPE,
+          status: status,  // This will be EXACT string like "Data Received", "Picked Up", etc.
+          date: currentDate,
+          time: currentTime,
+          location: locationStr,
+          eta: eta,
+          timestamp: timestamp
+        };
+        
+        console.log('Sending to XANO:', data);
+        
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', XANO_URL, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Accept', 'application/json');
+        
+        xhr.timeout = 10000;
+        
+        xhr.onload = function() {
+          console.log('XANO response:', xhr.status, xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300) {
+            indicatorElement.innerHTML = '✅';
+            indicatorElement.className = 'sync-indicator sync-success';
+            connectionLed.className = 'connection-led led-green';
+            connectionText.textContent = 'XANO SUCCESS ✅';
+          } else {
+            indicatorElement.innerHTML = '❌';
+            indicatorElement.className = 'sync-indicator sync-failed';
+            connectionLed.className = 'connection-led led-red';
+            connectionText.textContent = 'XANO Error ' + xhr.status;
           }
         };
-      };
-      
-      reader.readAsDataURL(file);
-    }
-
-    // Handle file selection
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        detectQRCodeFromImage(file);
+        
+        xhr.onerror = function() {
+          indicatorElement.innerHTML = '❌';
+          indicatorElement.className = 'sync-indicator sync-failed';
+          connectionLed.className = 'connection-led led-red';
+          connectionText.textContent = 'Network Error';
+        };
+        
+        xhr.ontimeout = function() {
+          indicatorElement.innerHTML = '❌';
+          indicatorElement.className = 'sync-indicator sync-failed';
+          connectionLed.className = 'connection-led led-red';
+          connectionText.textContent = 'Timeout';
+        };
+        
+        xhr.send(JSON.stringify(data));
       }
-    });
 
-    // Scan button click
-    document.getElementById('scanBtn').addEventListener('click', function() {
-      document.getElementById('fileInput').click();
-    });
+      // ========== ADD SCAN ENTRY ==========
+      function addScanEntry(barcode, status, fromScan) {
+        if (!barcode || barcode.trim() === '') return;
 
-    // Focus first cell
-    setTimeout(() => cells[0].focus(), 500);
+        if (historyContainer.children.length === 1 && 
+            historyContainer.children[0].textContent.indexOf('No scans yet') !== -1) {
+          historyContainer.innerHTML = '';
+        }
+
+        var eta = calculateETA(status);
+        
+        var entryDiv = document.createElement('div');
+        entryDiv.className = 'scan-entry';
+        
+        var indexSpan = document.createElement('span');
+        indexSpan.className = 'entry-index';
+        indexSpan.textContent = scanCounter + ' |';
+        
+        var valueSpan = document.createElement('span');
+        valueSpan.className = 'entry-value';
+        valueSpan.textContent = barcode;
+        
+        var statusSpan = document.createElement('span');
+        // Convert status to CSS class (replace spaces with dashes)
+        var statusClass = 'status-' + status.replace(/ /g, '-');
+        statusSpan.className = 'status-badge ' + statusClass;
+        statusSpan.textContent = status.toUpperCase();
+        
+        var etaSpan = document.createElement('span');
+        etaSpan.className = 'eta-badge';
+        etaSpan.textContent = 'ETA: ' + eta;
+        
+        // GPS indicator
+        var gpsIcon = document.createElement('span');
+        gpsIcon.innerHTML = '📍';
+        gpsIcon.style.fontSize = '14px';
+        gpsIcon.title = currentLocation.address || 'GPS location';
+        
+        // Sync indicator
+        var syncIndicator = document.createElement('span');
+        syncIndicator.className = 'sync-indicator sync-pending';
+        syncIndicator.innerHTML = '⏳';
+        
+        entryDiv.appendChild(indexSpan);
+        entryDiv.appendChild(valueSpan);
+        entryDiv.appendChild(statusSpan);
+        entryDiv.appendChild(gpsIcon);
+        entryDiv.appendChild(etaSpan);
+        entryDiv.appendChild(syncIndicator);
+        
+        entryDiv.style.cursor = 'pointer';
+        entryDiv.addEventListener('click', function() {
+          pendingData = {
+            barcode: barcode,
+            status: status,
+            element: entryDiv,
+            valueSpan: valueSpan,
+            statusSpan: statusSpan,
+            etaSpan: etaSpan,
+            syncIndicator: syncIndicator
+          };
+          statusModal.style.display = 'flex';
+        });
+        
+        historyContainer.insertBefore(entryDiv, historyContainer.firstChild);
+        
+        // Send to XANO
+        if (fromScan) {
+          sendToXano(barcode, status, syncIndicator);
+        }
+
+        scanCounter++;
+
+        while (historyContainer.children.length > maxEntries) {
+          historyContainer.removeChild(historyContainer.lastChild);
+        }
+      }
+
+      // ========== UPDATE STATUS ==========
+      function updateStatus(newStatus) {
+        if (!pendingData || !pendingData.element) return;
+        
+        var eta = calculateETA(newStatus);
+        
+        // Update existing entry
+        var statusClass = 'status-' + newStatus.replace(/ /g, '-');
+        pendingData.statusSpan.className = 'status-badge ' + statusClass;
+        pendingData.statusSpan.textContent = newStatus.toUpperCase();
+        pendingData.etaSpan.textContent = 'ETA: ' + eta;
+        
+        pendingData.syncIndicator.innerHTML = '⏳';
+        pendingData.syncIndicator.className = 'sync-indicator sync-pending';
+        
+        sendToXano(pendingData.barcode, newStatus, pendingData.syncIndicator);
+        
+        statusModal.style.display = 'none';
+        pendingData = null;
+      }
+
+      // ========== START SCAN FLOW ==========
+      function startScanFlow(barcodeValue) {
+        pendingData = {
+          barcode: barcodeValue
+        };
+        
+        // Update modal with current GPS
+        if (currentLocation.lat && currentLocation.lng) {
+          var timeStr = currentLocation.timestamp ? 
+            (currentLocation.timestamp.getMonth()+1) + '/' + 
+            currentLocation.timestamp.getDate() + ' ' +
+            currentLocation.timestamp.getHours() + ':' +
+            (currentLocation.timestamp.getMinutes() < 10 ? '0' : '') + 
+            currentLocation.timestamp.getMinutes() + ' ' +
+            (currentLocation.timestamp.getHours() >= 12 ? 'PM' : 'AM') : '';
+            
+          modalGpsInfo.innerHTML = `📍 Location: ${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`;
+          if (modalGpsTime) modalGpsTime.textContent = timeStr;
+        } else {
+          modalGpsInfo.innerHTML = '📍 Acquiring GPS...';
+        }
+        
+        statusModal.style.display = 'flex';
+      }
+
+      // ========== EVENT HANDLERS ==========
+      
+      enterBtn.addEventListener('click', function() {
+        var text = inputEl.textContent || '';
+        if (text.trim()) {
+          startScanFlow(text);
+        }
+      });
+
+      escBtn.addEventListener('click', function() {
+        historyContainer.innerHTML = '<div style="color:#888; font-style:italic; padding:8px; text-align:center;">No scans yet</div>';
+        scanCounter = 1;
+        inputEl.textContent = '';
+      });
+
+      function toggleFlashlight() {
+        if (!currentTrack) return;
+        
+        try {
+          if (flashlightOn) {
+            currentTrack.applyConstraints({ advanced: [{ torch: false }] });
+            flashlightBtn.textContent = '🔦 OFF';
+            flashlightBtn.style.background = '#ffaa00';
+            flashStatus.textContent = 'FLASH: OFF';
+            flashlightOn = false;
+          } else {
+            currentTrack.applyConstraints({ advanced: [{ torch: true }] });
+            flashlightBtn.textContent = '🔦 ON';
+            flashlightBtn.style.background = '#ffff00';
+            flashStatus.textContent = 'FLASH: ON';
+            flashlightOn = true;
+          }
+        } catch (e) {}
+      }
+
+      flashlightBtn.addEventListener('click', toggleFlashlight);
+
+      function closeCamera() {
+        if (html5QrcodeScanner && isScannerInitialized) {
+          html5QrcodeScanner.stop().then(function() {
+            html5QrcodeScanner.clear();
+            html5QrcodeScanner = null;
+            isScannerInitialized = false;
+            currentTrack = null;
+            flashlightOn = false;
+          }).catch(function() {});
+        }
+        cameraModal.style.display = 'none';
+      }
+
+      closeCameraBtn.addEventListener('click', closeCamera);
+
+      scanButton.addEventListener('click', function() {
+        cameraModal.style.display = 'flex';
+        
+        if (typeof Html5Qrcode === 'undefined') {
+          cameraModal.style.display = 'none';
+          alert('Camera library not loaded');
+          return;
+        }
+
+        try {
+          if (html5QrcodeScanner) closeCamera();
+          
+          html5QrcodeScanner = new Html5Qrcode("qr-reader");
+          
+          html5QrcodeScanner.start(
+            { facingMode: "environment" },
+            { fps: 5, qrbox: { width: 250, height: 150 } },
+            function(decodedText) {
+              inputEl.textContent = decodedText;
+              if (navigator.vibrate) navigator.vibrate(200);
+              closeCamera();
+              startScanFlow(decodedText);
+            },
+            function(error) {
+              // Scan error - ignore
+            }
+          ).then(function() {
+            isScannerInitialized = true;
+            setTimeout(function() {
+              try {
+                var videoElement = document.querySelector('#qr-reader video');
+                if (videoElement && videoElement.srcObject) {
+                  var tracks = videoElement.srcObject.getVideoTracks();
+                  if (tracks && tracks.length > 0) currentTrack = tracks[0];
+                }
+              } catch (e) {}
+            }, 1000);
+          }).catch(function(err) {
+            console.error('Camera error:', err);
+            cameraModal.style.display = 'none';
+            alert('Could not start camera: ' + err);
+          });
+        } catch (e) {
+          console.error('Camera exception:', e);
+          cameraModal.style.display = 'none';
+        }
+      });
+
+      // Status selection - USING EXACT STATUS STRINGS FROM YOUR IMAGE
+      document.querySelectorAll('.status-option').forEach(function(option) {
+        option.addEventListener('click', function() {
+          var selectedStatus = this.getAttribute('data-status'); // Gets EXACT string like "Data Received"
+          
+          if (pendingData && pendingData.barcode && !pendingData.status) {
+            // New scan
+            addScanEntry(pendingData.barcode, selectedStatus, true);
+            inputEl.textContent = '';
+            statusModal.style.display = 'none';
+            pendingData = null;
+          } else if (pendingData && pendingData.element) {
+            // Update existing
+            updateStatus(selectedStatus);
+          }
+        });
+      });
+
+      closeStatusBtn.addEventListener('click', function() {
+        statusModal.style.display = 'none';
+        pendingData = null;
+      });
+
+      // ========== KEYPAD LOGIC ==========
+      var modeButtons = document.querySelectorAll('.mode-btn');
+      var keypads = {
+        qwerty: document.getElementById('keypad-qwerty'),
+        numeric: document.getElementById('keypad-numeric'),
+        sym: document.getElementById('keypad-sym')
+      };
+
+      function setMode(mode) {
+        for (var i = 0; i < modeButtons.length; i++) {
+          modeButtons[i].classList.toggle('active', modeButtons[i].dataset.mode === mode);
+        }
+        for (var k in keypads) {
+          if (keypads.hasOwnProperty(k)) {
+            keypads[k].classList.toggle('active', k === mode);
+          }
+        }
+      }
+
+      for (var i = 0; i < modeButtons.length; i++) {
+        modeButtons[i].addEventListener('click', function() {
+          setMode(this.dataset.mode);
+        });
+      }
+
+      function appendChar(ch) { inputEl.textContent = (inputEl.textContent || '') + ch; }
+      function backspace() { inputEl.textContent = (inputEl.textContent || '').slice(0, -1); }
+      function clearInput() { inputEl.textContent = ''; }
+
+      function handleKeyClick(e) {
+        var key = e.target;
+        if (!key.classList.contains('key')) return;
+
+        var action = key.getAttribute('data-action');
+        if (action === 'backspace') backspace();
+        else if (action === 'space') appendChar(' ');
+        else if (action === 'clear') clearInput();
+        else if (action === 'dash') appendChar('-');
+        else {
+          var ch = key.textContent;
+          if (ch !== '⇧' && ch !== '⌫' && ch !== 'CLR' && ch !== 'SPACE') appendChar(ch);
+        }
+      }
+
+      if (keypads.qwerty) keypads.qwerty.addEventListener('click', handleKeyClick);
+      if (keypads.numeric) keypads.numeric.addEventListener('click', handleKeyClick);
+      if (keypads.sym) keypads.sym.addEventListener('click', handleKeyClick);
+
+      window.addEventListener('beforeunload', function() {
+        if (html5QrcodeScanner && isScannerInitialized) {
+          html5QrcodeScanner.stop().catch(function() {});
+        }
+        if (watchId) {
+          navigator.geolocation.clearWatch(watchId);
+        }
+      });
+
+      // ========== INITIALIZE ==========
+      // Start GPS immediately (user will be prompted)
+      setTimeout(startGpsTracking, 500);
+      
+      // Set connection status
+      connectionLed.className = 'connection-led led-green';
+      connectionText.textContent = 'XANO READY ✅';
+
+    })();
   </script>
 </body>
 </html>
