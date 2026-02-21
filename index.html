@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Android 5.0 Screen</title>
+  <title>Android 5 Scanner</title>
   <style>
     body {
       margin: 0;
@@ -19,10 +19,8 @@
       width: 360px;
       height: 640px;
       background: #B0C8E2;
-      color: black;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
       overflow: hidden;
     }
 
@@ -31,18 +29,16 @@
       color: #D0D7DC;
       height: 25px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
       padding: 0 16px;
+      align-items: center;
       font-size: 14px;
     }
 
     .scan-row {
       display: flex;
-      flex-direction: row;
-      align-items: center;
-      padding: 10px 8px;
       gap: 6px;
+      padding: 10px 8px;
       background: #B0C8E2;
     }
 
@@ -51,20 +47,13 @@
       border: none;
       padding: 6px 12px;
       font-weight: bold;
-      color: black;
       border-radius: 4px;
-      font-size: 14px;
       height: 28px;
-      display: flex;
-      align-items: center;
     }
 
     .mini-grid {
       display: flex;
-      flex-direction: row;
       gap: 3px;
-      height: 28px;
-      align-items: center;
     }
 
     .mini-cell {
@@ -76,8 +65,6 @@
       text-align: center;
       font-size: 16px;
       font-weight: bold;
-      color: black;
-      outline: none;
     }
 
     .content {
@@ -88,228 +75,169 @@
 
     #preview {
       width: 100%;
-      height: 200px;
+      height: 220px;
       background: #000;
       display: none;
       object-fit: cover;
     }
 
-    /* RESULT BOX */
     .result-box {
       margin-top: 10px;
       border: 2px solid #79A4D2;
       border-radius: 4px;
       overflow: hidden;
-      font-size: 16px;
-      font-weight: bold;
     }
 
     .result-header,
     .result-row {
       display: grid;
       grid-template-columns: 40px 1fr;
-      align-items: center;
     }
 
     .result-header {
       background: #79A4D2;
-      color: black;
+      font-weight: bold;
     }
 
     .result-row {
       background: #96BEEE;
-      color: black;
     }
 
     .result-cell {
       padding: 6px 10px;
-    }
-
-    .result-cell-value {
       font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="device">
 
-    <div class="header">
-      <div class="header-title">Scan Barcode</div>
-      <div class="header-time" id="pstTime">--:--</div>
-    </div>
+<div class="device">
 
-    <div class="scan-row">
-      <button class="scan-btn" id="scanButton">Scan</button>
-
-      <div class="mini-grid">
-        <input class="mini-cell" maxlength="1">
-        <input class="mini-cell" maxlength="1">
-        <input class="mini-cell" maxlength="1">
-        <input class="mini-cell" maxlength="1">
-        <input class="mini-cell" maxlength="1">
-        <input class="mini-cell" maxlength="1">
-      </div>
-    </div>
-
-    <div class="content">
-      <video id="preview" autoplay muted playsinline></video>
-
-      <!-- ALWAYS VISIBLE RESULT BOX -->
-      <div class="result-box">
-        <div class="result-header">
-          <div class="result-cell">#</div>
-          <div class="result-cell">LABEL ID</div>
-        </div>
-
-        <!-- EMPTY ROW ALWAYS SHOWN -->
-        <div id="emptyRow" class="result-row">
-          <div class="result-cell"></div>
-          <div class="result-cell"></div>
-        </div>
-
-        <!-- REAL DATA ROWS -->
-        <div id="resultTable"></div>
-      </div>
-    </div>
-
+  <div class="header">
+    <div>Scan Barcode</div>
+    <div id="pstTime">--:--</div>
   </div>
 
-  <script src="https://unpkg.com/@zxing/library@0.18.6"></script>
+  <div class="scan-row">
+    <button class="scan-btn" id="scanButton">Scan</button>
 
-  <script>
-    /* PST Time */
-    function updatePSTTime() {
-      var options = {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: 'America/Los_Angeles'
-      };
-      document.getElementById('pstTime').textContent =
-        new Date().toLocaleTimeString('en-US', options);
-    }
-    updatePSTTime();
-    setInterval(updatePSTTime, 1000);
+    <div class="mini-grid">
+      <input class="mini-cell" maxlength="1">
+      <input class="mini-cell" maxlength="1">
+      <input class="mini-cell" maxlength="1">
+      <input class="mini-cell" maxlength="1">
+      <input class="mini-cell" maxlength="1">
+      <input class="mini-cell" maxlength="1">
+    </div>
+  </div>
 
-    /* AUTO‑ADVANCE + COLOR LOGIC */
-    var cells = document.getElementsByClassName("mini-cell");
+  <div class="content">
+    <video id="preview" autoplay muted playsinline></video>
 
-    for (let i = 0; i < cells.length; i++) {
-      cells[i].oninput = function() {
-        this.style.background = "#FB9809";
+    <div class="result-box">
+      <div class="result-header">
+        <div class="result-cell">#</div>
+        <div class="result-cell">LABEL ID</div>
+      </div>
 
-        if (this.value.length === 1 && i < cells.length - 1) {
-          cells[i + 1].focus();
-        }
-        checkManualEntry();
-      };
+      <div id="emptyRow" class="result-row">
+        <div class="result-cell"></div>
+        <div class="result-cell"></div>
+      </div>
 
-      cells[i].onkeydown = function(e) {
-        if (e.keyCode === 8 && this.value === "" && i > 0) {
-          cells[i - 1].focus();
-        }
-      };
-    }
+      <div id="resultTable"></div>
+    </div>
+  </div>
 
-    function checkManualEntry() {
-      let code = "";
-      for (let i = 0; i < cells.length; i++) {
-        code += cells[i].value;
-      }
-      if (code.length === 6) {
-        addRow(code);
-      }
-    }
+</div>
 
-    /* RESULT TABLE LOGIC */
-    let scanIndex = 0;
+<script src="https://unpkg.com/@zxing/library@0.18.6"></script>
 
-    function addRow(value) {
-      scanIndex++;
+<script>
+/* TIME */
+function updatePSTTime() {
+  var options = { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Los_Angeles' };
+  document.getElementById('pstTime').textContent = new Date().toLocaleTimeString('en-US', options);
+}
+updatePSTTime();
+setInterval(updatePSTTime, 1000);
 
-      document.getElementById("emptyRow").style.display = "none";
+/* MANUAL INPUT */
+var cells = document.getElementsByClassName("mini-cell");
+for (let i = 0; i < cells.length; i++) {
+  cells[i].oninput = function() {
+    if (this.value.length === 1 && i < cells.length - 1) cells[i + 1].focus();
+    checkManualEntry();
+  };
+}
 
-      let row = `
-        <div class="result-row">
-          <div class="result-cell">${scanIndex}</div>
-          <div class="result-cell result-cell-value">${value}</div>
-        </div>
-      `;
+function checkManualEntry() {
+  let code = "";
+  for (let i = 0; i < cells.length; i++) code += cells[i].value;
+  if (code.length === 6) addRow(code);
+}
 
-      document.getElementById("resultTable").insertAdjacentHTML("beforeend", row);
-    }
+/* RESULT TABLE */
+let scanIndex = 0;
 
-    /* CAMERA + SCANNER FIX */
-    var codeReader = null;
-    var scanning = false;
+function addRow(value) {
+  scanIndex++;
+  document.getElementById("emptyRow").style.display = "none";
 
-    async function startScan() {
-      if (scanning) {
+  let row = `
+    <div class="result-row">
+      <div class="result-cell">${scanIndex}</div>
+      <div class="result-cell">${value}</div>
+    </div>
+  `;
+  document.getElementById("resultTable").insertAdjacentHTML("beforeend", row);
+}
+
+/* CAMERA + SCANNER (CHROME WORKING VERSION) */
+var scanning = false;
+var codeReader = new ZXing.BrowserMultiFormatReader();
+
+async function startScan() {
+  if (scanning) { stopScan(); return; }
+  scanning = true;
+
+  const video = document.getElementById("preview");
+  video.style.display = "block";
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" }
+    });
+
+    video.srcObject = stream;
+
+    codeReader.decodeFromVideoDevice(null, "preview", (result, err) => {
+      if (result) {
         stopScan();
-        return;
+        addRow(result.text);
       }
+    });
 
-      scanning = true;
-      document.getElementById('scanButton').textContent = 'Stop';
-      const video = document.getElementById('preview');
-      video.style.display = 'block';
+  } catch (err) {
+    alert("Camera error: " + err);
+    stopScan();
+  }
+}
 
-      try {
-        // Request camera permission FIRST
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" }
-        });
+function stopScan() {
+  scanning = false;
+  const video = document.getElementById("preview");
 
-        video.srcObject = stream;
+  if (video.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop());
+  }
 
-        if (!codeReader) {
-          codeReader = new ZXing.BrowserMultiFormatReader();
-        }
+  video.style.display = "none";
+  codeReader.reset();
+}
 
-        const devices = await codeReader.listVideoInputDevices();
-        if (devices.length === 0) {
-          alert("No camera found");
-          stopScan();
-          return;
-        }
+document.getElementById("scanButton").onclick = startScan;
+</script>
 
-        const backCam = devices[devices.length - 1].deviceId;
-
-        codeReader.decodeFromVideoDevice(
-          backCam,
-          'preview',
-          function(result, err) {
-            if (result) {
-              stopScan();
-              addRow(result.text);
-            }
-          }
-        );
-
-      } catch (err) {
-        alert("Camera permission denied or error: " + err);
-        stopScan();
-      }
-    }
-
-    function stopScan() {
-      if (codeReader) {
-        codeReader.reset();
-      }
-
-      const video = document.getElementById('preview');
-      if (video.srcObject) {
-        video.srcObject.getTracks().forEach(t => t.stop());
-      }
-
-      scanning = false;
-      document.getElementById('scanButton').textContent = 'Scan';
-      video.style.display = 'none';
-    }
-
-    document.getElementById('scanButton').onclick = function() {
-      startScan();
-    };
-  </script>
 </body>
 </html>
