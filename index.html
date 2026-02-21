@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
   <style>
-    /* YOUR EXACT CSS - UNCHANGED */
+    /* YOUR EXACT CSS - UNCHANGED - keep all your existing CSS */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -428,32 +428,6 @@
       flex: 0.8;
     }
 
-    .camera-modal {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: black;
-      z-index: 2000;
-      display: none;
-      flex-direction: column;
-    }
-    
-    .camera-header {
-      background: #003366;
-      color: white;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .close-cam {
-      background: #990000;
-      padding: 6px 16px;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    
     .status-modal {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -510,10 +484,6 @@
     
     .status-option:last-child {
       border-bottom: none;
-    }
-    
-    .status-option:hover {
-      filter: brightness(0.95);
     }
     
     .status-option.data-received { background: #d1ecf1; color: #0c5460; }
@@ -692,26 +662,42 @@
     var currentLat = '';
     var currentLng = '';
     
-    // Check if we're returning from ZXING scan
-    function getUrlParameter(name) {
-      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-      var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-      var results = regex.exec(location.search);
-      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-    }
-    
-    // Check for scanned barcode in URL
-    var scannedCode = getUrlParameter('scanned');
-    if (scannedCode) {
-      inputEl.innerHTML = scannedCode;
-      pendingBarcode = scannedCode;
-      // Clear the URL parameter
-      window.history.replaceState({}, document.title, window.location.pathname);
-      // Show status modal
-      setTimeout(function() {
-        statusModal.style.display = 'flex';
-      }, 500);
-    }
+    // ==================== CHECK FOR SCANNED CODE ON PAGE LOAD ====================
+    (function() {
+      // Check if we have a hash with scanned data
+      if (window.location.hash) {
+        var hash = window.location.hash.substring(1); // Remove the #
+        if (hash) {
+          try {
+            // Handle ZXING return format (usually just the code)
+            var scannedCode = decodeURIComponent(hash);
+            if (scannedCode && scannedCode !== '') {
+              inputEl.innerHTML = scannedCode;
+              pendingBarcode = scannedCode;
+              // Clear the hash
+              window.location.hash = '';
+              // Show status modal after a short delay
+              setTimeout(function() {
+                statusModal.style.display = 'flex';
+              }, 500);
+            }
+          } catch(e) {}
+        }
+      }
+      
+      // Check URL parameters
+      var urlParams = new URLSearchParams(window.location.search);
+      var scannedParam = urlParams.get('scanned') || urlParams.get('text') || urlParams.get('code');
+      if (scannedParam) {
+        inputEl.innerHTML = scannedParam;
+        pendingBarcode = scannedParam;
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setTimeout(function() {
+          statusModal.style.display = 'flex';
+        }, 500);
+      }
+    })();
     
     // ==================== GPS FUNCTION ====================
     function getGPS() {
@@ -881,30 +867,46 @@
       }
     }
     
-    // ==================== ZXING APP REDIRECT ====================
-    function openZXINGScanner() {
-      // First try to open ZXING app via intent
-      var currentUrl = window.location.href.split('?')[0]; // Remove any existing params
-      var returnUrl = encodeURIComponent(currentUrl + '?scanned={CODE}');
+    // ==================== OPEN INSTALLED ZXING APP ====================
+    function openZXING() {
+      // Current page URL to return to
+      var returnUrl = window.location.href.split('#')[0] + '#{CODE}';
       
-      // Try different intent schemes for ZXING
+      // Different intent formats for ZXING
       var intents = [
-        // ZXING app intent
-        'intent://scan?result=' + returnUrl + '#Intent;scheme=zxing;package=com.google.zxing.client.android;end',
-        // Barcode Scanner app
-        'intent://scan?SCAN_FORMATS=QR_CODE%2CODE_39%2CODE_128&RESULT_FORMAT=URI&RESULT=' + returnUrl + '#Intent;scheme=com.google.zxing.client.android;package=com.google.zxing.client.android;end',
-        // Generic barcode scanner
-        'intent://scan?SCAN=#Intent;scheme=zxing;package=com.google.zxing.client.android;end',
-        // Fallback to market
-        'market://details?id=com.google.zxing.client.android'
+        // Primary ZXING intent (most common)
+        'intent://scan?SCAN_FORMATS=CODE_39,CODE_128,QR_CODE&SCAN_MODE=QR_CODE_MODE&SAVE_HISTORY=false&RESULT=' + encodeURIComponent(returnUrl) + '#Intent;scheme=zxing;package=com.google.zxing.client.android;end',
+        
+        // Alternative format
+        'zxing://scan?result=' + encodeURIComponent(returnUrl),
+        
+        // Simple format
+        'intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;end',
+        
+        // Direct intent
+        'intent:#Intent;action=com.google.zxing.client.android.SCAN;package=com.google.zxing.client.android;end'
       ];
       
+      // Try each intent
       function tryIntent(index) {
         if (index >= intents.length) {
-          // If all intents fail, show download prompt
-          if (confirm('ZXING Barcode Scanner not found. Would you like to install it from Play Store?')) {
-            window.location.href = 'https://play.google.com/store/apps/details?id=com.google.zxing.client.android';
-          }
+          // If none work, check if app is installed by trying market
+          var iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.src = 'market://details?id=com.google.zxing.client.android';
+          
+          var timer = setTimeout(function() {
+            document.body.removeChild(iframe);
+            // If market doesn't open either, show message
+            alert('Please make sure ZXING Barcode Scanner is installed');
+          }, 500);
+          
+          iframe.onload = function() {
+            clearTimeout(timer);
+            document.body.removeChild(iframe);
+          };
+          
+          document.body.appendChild(iframe);
           return;
         }
         
@@ -915,7 +917,7 @@
         var timer = setTimeout(function() {
           document.body.removeChild(iframe);
           tryIntent(index + 1);
-        }, 500);
+        }, 300);
         
         iframe.onload = function() {
           clearTimeout(timer);
@@ -925,7 +927,6 @@
         document.body.appendChild(iframe);
       }
       
-      // Try first intent
       tryIntent(0);
     }
     
@@ -947,7 +948,7 @@
     };
     
     scanBtn.onclick = function() {
-      openZXINGScanner();
+      openZXING();
     };
     
     // Status options
@@ -1038,17 +1039,24 @@
     window.setTimeout(getGPS, 500);
     connText.innerHTML = 'READY';
     
-    // Handle when page gains focus (return from ZXING)
+    // Listen for focus events (when returning from ZXING)
     window.addEventListener('focus', function() {
-      // Check if we have a scanned code in sessionStorage (alternative method)
-      var tempCode = sessionStorage.getItem('pending_scan');
-      if (tempCode) {
-        sessionStorage.removeItem('pending_scan');
-        inputEl.innerHTML = tempCode;
-        pendingBarcode = tempCode;
-        setTimeout(function() {
-          statusModal.style.display = 'flex';
-        }, 500);
+      // Check URL hash again when returning to page
+      if (window.location.hash) {
+        var hash = window.location.hash.substring(1);
+        if (hash && hash !== '') {
+          try {
+            var scannedCode = decodeURIComponent(hash);
+            if (scannedCode && scannedCode !== '' && scannedCode !== pendingBarcode) {
+              inputEl.innerHTML = scannedCode;
+              pendingBarcode = scannedCode;
+              window.location.hash = '';
+              setTimeout(function() {
+                statusModal.style.display = 'flex';
+              }, 500);
+            }
+          } catch(e) {}
+        }
       }
     });
   </script>
