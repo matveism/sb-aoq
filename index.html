@@ -1,558 +1,438 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>5-INCH PERFECT FIT</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Courier Scanner</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    /* EXTREMELY BASIC STYLES - NO FANCY STUFF */
     body {
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: 'Roboto', Arial, sans-serif;
-      padding: 0;
+      background: #000000;
+      margin: 0;
+      padding: 5px;
+      font-family: Arial, Helvetica, sans-serif;
     }
-
-    /* EXACT 5-INCH SCREEN DIMENSIONS (approx 480x854) */
-    .device {
-      width: 100%;
-      max-width: 480px;
-      height: 100vh;
-      max-height: 854px;
+    
+    .phone {
+      max-width: 360px;
+      margin: 0 auto;
       background: #B0C8E2;
-      color: black;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
-      overflow: hidden;
-      position: relative;
-      border-radius: 0;
+      border: 2px solid #333;
+      padding: 8px;
     }
-
+    
     .header {
       background: #15569B;
       color: white;
-      height: 45px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      font-size: 18px;
-      font-weight: bold;
-    }
-
-    .header-time {
-      background: #000;
-      padding: 6px 16px;
-      border-radius: 30px;
-      color: #FFD700;
-      font-size: 18px;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-
-    .scan-row {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      padding: 15px 12px;
-      gap: 10px;
-      background: #B0C8E2;
-    }
-
-    .submit-btn {
-      background: #28a745;
-      border: none;
-      padding: 12px 20px;
-      font-weight: bold;
-      color: white;
-      border-radius: 8px;
-      font-size: 20px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      box-shadow: 0 4px 0 #1e7e34;
-      border: 1px solid #1e7e34;
-      min-width: 120px;
-      justify-content: center;
-    }
-
-    .submit-btn:active {
-      background: #218838;
-      transform: translateY(4px);
-      box-shadow: 0 0 0 #1e7e34;
-    }
-
-    .mini-grid {
-      display: flex;
-      flex-direction: row;
-      gap: 6px;
-      height: 50px;
-      align-items: center;
-      flex: 1;
-    }
-
-    .mini-cell {
-      width: 45px;
-      height: 45px;
-      background: #E2E8D3;
-      border: 2px solid #666;
-      border-radius: 6px;
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      color: black;
-      outline: none;
-    }
-
-    .content {
-      flex: 1;
-      padding: 12px;
-      overflow-y: auto;
-    }
-
-    #preview {
-      width: 100%;
-      height: 200px;
-      background: #000;
-      display: none;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
-
-    /* STATUS FIELDS - BIGGER */
-    .status-fields {
-      margin: 15px 0;
-      padding: 15px;
-      background: #96BEEE;
-      border-radius: 12px;
-      border: 3px solid #79A4D2;
-    }
-
-    .field-row {
-      margin-bottom: 15px;
-    }
-
-    .field-row label {
-      display: block;
+      padding: 6px 10px;
+      margin-bottom: 8px;
       font-size: 16px;
       font-weight: bold;
-      color: #15569B;
-      margin-bottom: 5px;
     }
-
-    .field-row select,
-    .field-row input {
+    
+    .header span {
+      float: right;
+    }
+    
+    .row {
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    
+    .submit-btn {
+      background: #28a745;
+      color: white;
+      border: 2px solid #1e7e34;
+      padding: 12px 15px;
+      font-size: 20px;
+      font-weight: bold;
       width: 100%;
-      padding: 14px 12px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    
+    .cells {
+      background: #96BEEE;
+      padding: 10px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    
+    .cell-box {
+      display: inline-block;
+      width: 45px;
+      margin: 2px;
+    }
+    
+    .cell-box input {
+      width: 100%;
+      height: 40px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      background: #E2E8D3;
+      border: 2px solid #666;
+    }
+    
+    .field {
+      background: #96BEEE;
+      padding: 10px;
+      margin-bottom: 8px;
       border: 2px solid #79A4D2;
-      border-radius: 8px;
-      font-size: 18px;
+    }
+    
+    .field label {
+      display: block;
+      font-weight: bold;
+      font-size: 14px;
+      color: #15569B;
+      margin-bottom: 4px;
+    }
+    
+    .field input, .field select {
+      width: 100%;
+      padding: 8px;
+      font-size: 16px;
+      border: 2px solid #79A4D2;
       background: white;
       box-sizing: border-box;
     }
-
-    .field-row input:focus,
-    .field-row select:focus {
-      outline: 3px solid #FCC57A;
-      border-color: #FCC57A;
-    }
-
-    .field-row input[readonly] {
-      background: #e2e8d3;
+    
+    .field input[readonly] {
+      background: #E2E8D3;
       font-weight: bold;
-      font-size: 20px;
     }
-
-    /* RESULT BOX */
+    
     .result-box {
-      margin-top: 15px;
-      border: 3px solid #79A4D2;
-      border-radius: 10px;
-      overflow: hidden;
-      font-size: 18px;
-      font-weight: bold;
+      border: 2px solid #79A4D2;
+      background: #96BEEE;
+      margin-top: 10px;
     }
-
-    .result-header,
-    .result-row {
-      display: grid;
-      grid-template-columns: 60px 1fr;
-      align-items: center;
-    }
-
+    
     .result-header {
       background: #79A4D2;
-      color: black;
-      font-size: 18px;
-    }
-
-    .result-row {
-      background: #96BEEE;
-      color: black;
-      font-size: 20px;
-      border-top: 1px solid #79A4D2;
-    }
-
-    .result-cell {
-      padding: 12px 15px;
-    }
-
-    .result-cell-value {
+      padding: 8px;
       font-weight: bold;
-      font-size: 22px;
+      border-bottom: 2px solid #333;
     }
-
-    /* POPUP */
-    #popup {
-      position: absolute;
+    
+    .result-row {
+      padding: 8px;
+      border-bottom: 1px solid #666;
+      overflow: hidden;
+    }
+    
+    .result-row div {
+      float: left;
+    }
+    
+    .result-num {
+      width: 40px;
+      font-weight: bold;
+    }
+    
+    .result-val {
+      font-weight: bold;
+    }
+    
+    .popup {
+      position: fixed;
       top: 50%;
       left: 50%;
-      width: 220px;
-      margin-left: -110px;
-      margin-top: -100px;
-      background: #ffffff;
-      border: 6px solid #28a745;
-      border-radius: 40px;
+      width: 200px;
+      margin-left: -100px;
+      margin-top: -70px;
+      background: white;
+      border: 5px solid #28a745;
+      padding: 20px;
       text-align: center;
-      padding: 25px 10px 20px 10px;
       display: none;
       z-index: 9999;
-      box-shadow: 0 20px 30px black;
-    }
-
-    #popup .circle {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: #28a745;
-      margin: 0 auto 15px auto;
-      color: #fff;
-      font-size: 50px;
+      font-size: 18px;
       font-weight: bold;
-      line-height: 85px;
     }
-
-    #popup p {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 600;
+    
+    .error {
+      color: #b52e2e;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    
+    .success {
       color: #1e7e34;
     }
-
-    #popup-time {
-      font-size: 14px;
-      margin-top: 10px;
-      color: #666;
-    }
-
-    #statusBox {
-      margin-top: 15px;
-      font-size: 18px;
-      text-align: center;
-      min-height: 25px;
-      font-weight: 600;
-    }
-
-    .error-detail {
-      font-size: 14px;
-      color: #b52e2e;
-      margin-top: 5px;
-      word-break: break-word;
+    
+    .clearfix {
+      clear: both;
     }
   </style>
 </head>
 <body>
-  <div class="device">
 
-    <div class="header">
-      <div class="header-title">📦 SCAN BARCODE</div>
-      <div class="header-time" id="deviceTime">--:--:--</div>
-    </div>
+<div class="phone">
 
-    <div class="scan-row">
-      <button class="submit-btn" id="submitBtn">📤 SUBMIT</button>
-
-      <div class="mini-grid">
-        <input class="mini-cell" maxlength="1" id="cell1">
-        <input class="mini-cell" maxlength="1" id="cell2">
-        <input class="mini-cell" maxlength="1" id="cell3">
-        <input class="mini-cell" maxlength="1" id="cell4">
-        <input class="mini-cell" maxlength="1" id="cell5">
-        <input class="mini-cell" maxlength="1" id="cell6">
-      </div>
-    </div>
-
-    <div class="content">
-      <video id="preview" autoplay muted playsinline></video>
-
-      <!-- STATUS FIELDS -->
-      <div class="status-fields">
-        <div class="field-row">
-          <label>🔢 DECODED LABEL ID</label>
-          <input type="text" id="decoded" readonly placeholder="AUTO-FILLS">
-        </div>
-        
-        <div class="field-row">
-          <label>📋 ENTRY TYPE</label>
-          <input type="text" id="barcode_type" value="manual" readonly>
-        </div>
-
-        <div class="field-row">
-          <label>📌 STATUS</label>
-          <select id="status">
-            <option value="Data Received">📥 Data Received</option>
-            <option value="Picked Up">📬 Picked Up</option>
-            <option value="Depart Post Office">🚚 Depart Post Office</option>
-            <option value="Arrival Scan">📍 Arrival Scan</option>
-            <option value="Local Scan">🏙️ Local Scan</option>
-            <option value="Out For Delivery">🛵 Out For Delivery</option>
-            <option value="Delivered">✅ Delivered</option>
-          </select>
-        </div>
-
-        <div class="field-row">
-          <label>📍 LOCATION</label>
-          <input type="text" id="location" placeholder="City, State">
-        </div>
-
-        <div class="field-row">
-          <label>📅 ETA</label>
-          <input type="text" id="eta" placeholder="YYYY-MM-DD">
-        </div>
-      </div>
-
-      <!-- RESULT BOX -->
-      <div class="result-box">
-        <div class="result-header">
-          <div class="result-cell">#</div>
-          <div class="result-cell">LABEL ID</div>
-        </div>
-
-        <div id="emptyRow" class="result-row">
-          <div class="result-cell"></div>
-          <div class="result-cell"></div>
-        </div>
-
-        <div id="resultTable"></div>
-      </div>
-
-      <!-- STATUS MESSAGE -->
-      <div id="statusBox"></div>
-      <div id="errorDetail" class="error-detail"></div>
-    </div>
-
-    <!-- SUCCESS POPUP -->
-    <div id="popup">
-      <div class="circle">✓</div>
-      <p>SAVED OK</p>
-      <p id="popup-time"></p>
-    </div>
-
+  <div class="header">
+    COURIER SCANNER 
+    <span id="timeDisplay">--:--</span>
   </div>
 
-  <script src="https://unpkg.com/@zxing/library@0.18.6"></script>
+  <button class="submit-btn" id="submitBtn" onclick="sendToDatabase()">📤 SUBMIT</button>
 
-  <script>
-    /* ========== DEVICE TIME - BIG AND VISIBLE ========== */
-    function updateDeviceTime() {
-      var now = new Date();
-      var hours = String(now.getHours()).padStart(2, '0');
-      var minutes = String(now.getMinutes()).padStart(2, '0');
-      var seconds = String(now.getSeconds()).padStart(2, '0');
-      document.getElementById('deviceTime').textContent = hours + ':' + minutes + ':' + seconds;
+  <div class="cells">
+    <div class="cell-box"><input type="text" maxlength="1" id="cell1" onkeyup="cellChanged(1)" onkeydown="handleBackspace(event, 1)"></div>
+    <div class="cell-box"><input type="text" maxlength="1" id="cell2" onkeyup="cellChanged(2)" onkeydown="handleBackspace(event, 2)"></div>
+    <div class="cell-box"><input type="text" maxlength="1" id="cell3" onkeyup="cellChanged(3)" onkeydown="handleBackspace(event, 3)"></div>
+    <div class="cell-box"><input type="text" maxlength="1" id="cell4" onkeyup="cellChanged(4)" onkeydown="handleBackspace(event, 4)"></div>
+    <div class="cell-box"><input type="text" maxlength="1" id="cell5" onkeyup="cellChanged(5)" onkeydown="handleBackspace(event, 5)"></div>
+    <div class="cell-box"><input type="text" maxlength="1" id="cell6" onkeyup="cellChanged(6)" onkeydown="handleBackspace(event, 6)"></div>
+    <div class="clearfix"></div>
+  </div>
+
+  <div class="field">
+    <label>Decoded Label ID</label>
+    <input type="text" id="decoded" readonly>
+  </div>
+
+  <div class="field">
+    <label>Entry Type</label>
+    <input type="text" id="barcode_type" value="manual" readonly>
+  </div>
+
+  <div class="field">
+    <label>Status</label>
+    <select id="status">
+      <option value="Data Received">Data Received</option>
+      <option value="Picked Up">Picked Up</option>
+      <option value="Depart Post Office">Depart Post Office</option>
+      <option value="Arrival Scan">Arrival Scan</option>
+      <option value="Local Scan">Local Scan</option>
+      <option value="Out For Delivery">Out For Delivery</option>
+      <option value="Delivered">Delivered</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Location</label>
+    <input type="text" id="location" placeholder="City, State">
+  </div>
+
+  <div class="field">
+    <label>ETA</label>
+    <input type="text" id="eta" placeholder="e.g., 2026-02-21">
+  </div>
+
+  <div class="result-box">
+    <div class="result-header">LABEL ID HISTORY</div>
+    <div id="historyContainer">
+      <div class="result-row" id="emptyHistoryRow">
+        <div class="result-num"></div>
+        <div class="result-val"></div>
+        <div class="clearfix"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="statusMessage" class="error"></div>
+
+</div>
+
+<div class="popup" id="successPopup">
+  <div style="font-size:40px; color:#28a745;">✓</div>
+  SAVED OK<br>
+  <span id="popupTime"></span>
+</div>
+
+<script>
+  // SUPER BASIC - WORKS ON OLD ANDROID
+  
+  // ===== TIME UPDATE =====
+  function updateTime() {
+    var d = new Date();
+    var hours = d.getHours();
+    var mins = d.getMinutes();
+    var secs = d.getSeconds();
+    if (hours < 10) hours = "0" + hours;
+    if (mins < 10) mins = "0" + mins;
+    if (secs < 10) secs = "0" + secs;
+    document.getElementById('timeDisplay').innerHTML = hours + ":" + mins + ":" + secs;
+  }
+  updateTime();
+  setInterval(updateTime, 1000);
+
+  // ===== CELL HANDLING =====
+  var cells = [
+    document.getElementById('cell1'),
+    document.getElementById('cell2'),
+    document.getElementById('cell3'),
+    document.getElementById('cell4'),
+    document.getElementById('cell5'),
+    document.getElementById('cell6')
+  ];
+  
+  function cellChanged(num) {
+    var index = num - 1;
+    var cell = cells[index];
+    
+    // Convert to uppercase
+    cell.value = cell.value.toUpperCase();
+    
+    // Auto advance
+    if (cell.value.length == 1 && index < 5) {
+      cells[index + 1].focus();
     }
     
-    updateDeviceTime();
-    setInterval(updateDeviceTime, 1000);
-
-    /* ========== CELLS ========== */
-    var cells = [
-      document.getElementById('cell1'),
-      document.getElementById('cell2'),
-      document.getElementById('cell3'),
-      document.getElementById('cell4'),
-      document.getElementById('cell5'),
-      document.getElementById('cell6')
-    ];
-
-    for (let i = 0; i < cells.length; i++) {
-      cells[i].oninput = function() {
-        this.style.background = "#FB9809";
-        if (this.value.length === 1 && i < cells.length - 1) {
-          cells[i + 1].focus();
-        }
-        checkManualEntry();
-      };
-
-      cells[i].onkeydown = function(e) {
-        if (e.keyCode === 8 && this.value === "" && i > 0) {
-          cells[i - 1].focus();
-        }
-      };
-    }
-
-    function checkManualEntry() {
-      let code = "";
-      for (let i = 0; i < cells.length; i++) {
-        code += cells[i].value;
-      }
-      if (code.length === 6) {
-        var decoded = decodeLetters(code);
-        if (decoded) {
-          document.getElementById('decoded').value = decoded;
-          addRow(code);
-        } else {
-          alert('Invalid letters. Use A-J only');
-        }
+    checkAllCells();
+  }
+  
+  function handleBackspace(e, num) {
+    var index = num - 1;
+    if (e.keyCode == 8) { // Backspace
+      var cell = cells[index];
+      if (cell.value == "" && index > 0) {
+        cells[index - 1].focus();
       }
     }
-
-    function decodeLetters(encoded) {
-      var map = {
-        'A': '1','B': '2','C': '3','D': '4','E': '5',
-        'F': '6','G': '7','H': '8','I': '9','J': '0'
-      };
-      var result = '';
-      var upper = encoded.toUpperCase();
-      for (var i = 0; i < upper.length; i++) {
-        var ch = upper.charAt(i);
-        if (!map[ch]) return null;
-        result += map[ch];
+  }
+  
+  function checkAllCells() {
+    var code = "";
+    for (var i = 0; i < 6; i++) {
+      code += cells[i].value;
+    }
+    
+    if (code.length == 6) {
+      var decoded = decodeLetters(code);
+      if (decoded) {
+        document.getElementById('decoded').value = decoded;
+        addToHistory(code);
+      } else {
+        alert("Use only letters A-J");
       }
-      return result;
     }
-
-    /* ========== RESULT TABLE ========== */
-    let scanIndex = 0;
-
-    function addRow(value) {
-      scanIndex++;
-      document.getElementById("emptyRow").style.display = "none";
-      let row = `
-        <div class="result-row">
-          <div class="result-cell">${scanIndex}</div>
-          <div class="result-cell result-cell-value">${value}</div>
-        </div>
-      `;
-      document.getElementById("resultTable").insertAdjacentHTML("beforeend", row);
+  }
+  
+  // ===== DECODE LETTERS =====
+  function decodeLetters(encoded) {
+    var result = "";
+    for (var i = 0; i < encoded.length; i++) {
+      var ch = encoded.charAt(i);
+      if (ch == 'A') result += "1";
+      else if (ch == 'B') result += "2";
+      else if (ch == 'C') result += "3";
+      else if (ch == 'D') result += "4";
+      else if (ch == 'E') result += "5";
+      else if (ch == 'F') result += "6";
+      else if (ch == 'G') result += "7";
+      else if (ch == 'H') result += "8";
+      else if (ch == 'I') result += "9";
+      else if (ch == 'J') result += "0";
+      else return null;
     }
-
-    function showPopup() {
-      var p = document.getElementById('popup');
-      var now = new Date();
-      var dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-      document.getElementById('popup-time').innerHTML = dateStr;
-      p.style.display = 'block';
-      setTimeout(function() {
-        p.style.display = 'none';
-      }, 2000);
+    return result;
+  }
+  
+  // ===== HISTORY =====
+  var historyCount = 0;
+  
+  function addToHistory(value) {
+    historyCount++;
+    document.getElementById('emptyHistoryRow').style.display = "none";
+    
+    var container = document.getElementById('historyContainer');
+    var newRow = document.createElement('div');
+    newRow.className = 'result-row';
+    newRow.innerHTML = '<div class="result-num">' + historyCount + '</div>' +
+                       '<div class="result-val">' + value + '</div>' +
+                       '<div class="clearfix"></div>';
+    container.appendChild(newRow);
+  }
+  
+  // ===== POPUP =====
+  function showPopup() {
+    var d = new Date();
+    document.getElementById('popupTime').innerHTML = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+    document.getElementById('successPopup').style.display = 'block';
+    setTimeout(function() {
+      document.getElementById('successPopup').style.display = 'none';
+    }, 2000);
+  }
+  
+  function setStatus(msg, isError) {
+    var box = document.getElementById('statusMessage');
+    box.innerHTML = msg;
+    box.className = isError ? 'error' : 'success';
+  }
+  
+  // ===== SEND TO DATABASE =====
+  function sendToDatabase() {
+    var labelId = document.getElementById('decoded').value;
+    
+    if (!labelId) {
+      setStatus("❗ Enter a barcode first", true);
+      return;
     }
-
-    function setStatus(msg, isError) {
-      var box = document.getElementById('statusBox');
-      box.style.color = isError ? '#b52e2e' : '#1e6f3f';
-      box.innerHTML = msg || ' ';
-    }
-
-    function showErrorDetail(detail) {
-      document.getElementById('errorDetail').innerHTML = detail;
-    }
-
-    /* ========== SEND TO XANO ========== */
-    function sendToXano() {
-      var labelId = document.getElementById('decoded').value;
-      
-      if (!labelId) {
-        setStatus('❗ Enter a valid barcode first', true);
-        return;
-      }
-
-      var now = new Date();
-      
-      var payload = {
-        label_id: labelId,
-        barcode_type: "manual",
-        status: document.getElementById('status').value,
-        timestamp: Math.floor(now.getTime() / 1000),
-        time: now.getTime(),
-        date: now.toISOString().split('T')[0],
-        location: document.getElementById('location').value || '',
-        eta: document.getElementById('eta').value || ''
-      };
-
-      console.log('📤 SENDING:', JSON.stringify(payload, null, 2));
-      
-      showErrorDetail('');
-
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-
-      xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-          console.log('📥 RESPONSE:', xhr.status, xhr.responseText);
+    
+    var now = new Date();
+    var timestampSec = Math.floor(now.getTime() / 1000);
+    var timestampMs = now.getTime();
+    var dateStr = now.getFullYear() + '-' + 
+                  ('0' + (now.getMonth()+1)).slice(-2) + '-' + 
+                  ('0' + now.getDate()).slice(-2);
+    
+    var data = {
+      label_id: labelId,
+      barcode_type: "manual",
+      status: document.getElementById('status').value,
+      timestamp: timestampSec,
+      time: timestampMs,
+      date: dateStr,
+      location: document.getElementById('location').value || "",
+      eta: document.getElementById('eta').value || ""
+    };
+    
+    setStatus("Sending...", false);
+    
+    // USE OLD SCHOOL XMLHttpRequest
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == 4) {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          showPopup();
+          setStatus("✓ Saved", false);
           
-          if (xhr.status >= 200 && xhr.status < 300) {
-            showPopup();
-            setStatus('✓ Saved successfully', false);
-            
-            for (var i = 0; i < cells.length; i++) {
-              cells[i].value = '';
-              cells[i].style.background = '#E2E8D3';
-            }
-            document.getElementById('decoded').value = '';
-            cells[0].focus();
-          } else {
-            setStatus('Error ' + xhr.status, true);
-            try {
-              var err = JSON.parse(xhr.responseText);
-              showErrorDetail(JSON.stringify(err));
-            } catch(e) {
-              showErrorDetail(xhr.responseText);
-            }
+          // Clear cells
+          for (var i = 0; i < 6; i++) {
+            cells[i].value = "";
           }
+          document.getElementById('decoded').value = "";
+          cells[0].focus();
+        } else {
+          setStatus("Error " + xhr.status, true);
         }
-      };
+      }
+    };
+    
+    xhr.send(JSON.stringify(data));
+  }
+  
+  // ===== ENTER KEY =====
+  for (var i = 0; i < cells.length; i++) {
+    cells[i].onkeypress = function(e) {
+      if (e.keyCode == 13) { // Enter key
+        sendToDatabase();
+        return false;
+      }
+    };
+  }
+  
+  // ===== START =====
+  window.onload = function() {
+    cells[0].focus();
+  };
+</script>
 
-      xhr.onerror = function() {
-        setStatus('Network error', true);
-        showErrorDetail('Check internet connection');
-      };
-
-      xhr.send(JSON.stringify(payload));
-    }
-
-    /* ========== EVENT LISTENERS ========== */
-    document.getElementById('submitBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      sendToXano();
-    });
-
-    cells.forEach(cell => {
-      cell.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          sendToXano();
-        }
-      });
-    });
-
-    window.addEventListener('load', function() {
-      cells[0].focus();
-      console.log('✅ 5-INCH PERFECT FIT');
-    });
-
-  </script>
 </body>
 </html>
