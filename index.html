@@ -127,7 +127,7 @@ body { background:#000; display:flex; justify-content:center; align-items:center
 </div>
 
 <script>
-// ===== ANDROID 5.0 COMPATIBLE - NO ES6, NO LET, NO CONST =====
+// ===== ANDROID 5.0 COMPATIBLE =====
 // Use only var, function, and older syntax
 
 // ===== VARIABLES =====
@@ -151,7 +151,6 @@ function updateTime() {
   var m = d.getMinutes();
   var s = d.getSeconds();
   
-  // Add leading zeros
   if (h < 10) h = '0' + h;
   if (m < 10) m = '0' + m;
   if (s < 10) s = '0' + s;
@@ -168,14 +167,12 @@ function initGPS() {
       function(pos) {
         currentLocation = { 
           lat: pos.coords.latitude, 
-          lng: pos.coords.longitude,
-          accuracy: pos.coords.accuracy
+          lng: pos.coords.longitude
         };
         document.getElementById('gpsIndicator').innerHTML = '📍';
       },
       function(err) { 
         document.getElementById('gpsIndicator').innerHTML = '🌐';
-        console.log('GPS error');
       }
     );
   } else {
@@ -212,7 +209,7 @@ function clearCells() {
   }
 }
 
-// ===== CLEAR ALL (history + cells) =====
+// ===== CLEAR ALL =====
 function clearAll() {
   scans = [];
   scanCount = 0;
@@ -228,13 +225,11 @@ function checkAllFilled() {
   }
   
   if (filled) {
-    // Get the letters
     var letters = '';
     for (var i = 0; i < cells.length; i++) {
       letters += cells[i].value;
     }
     
-    // Convert to numbers (A=1, B=2, etc)
     var numbers = '';
     for (var i = 0; i < letters.length; i++) {
       var ch = letters.charAt(i);
@@ -250,7 +245,6 @@ function checkAllFilled() {
       else if (ch === 'J') numbers += '0';
     }
     
-    // Add to history
     scanCount++;
     scans.push({ letters: letters, numbers: numbers });
     
@@ -258,7 +252,6 @@ function checkAllFilled() {
     var div = document.createElement('div');
     div.className = 'scan-entry';
     
-    // Add location if available
     var locText = '';
     if (currentLocation) {
       locText = ' 📍 ' + currentLocation.lat.toFixed(4) + ', ' + currentLocation.lng.toFixed(4);
@@ -268,7 +261,6 @@ function checkAllFilled() {
     box.appendChild(div);
     box.scrollTop = box.scrollHeight;
     
-    // Clear cells for next entry
     setTimeout(clearCells, 100);
   }
 }
@@ -286,14 +278,13 @@ function hideStatus() {
   document.getElementById('statusScreen').style.display = 'none';
 }
 
-// ===== SUBMIT TO XANO - USING XMLHttpRequest FOR ANDROID 5 =====
+// ===== SUBMIT TO XANO - FIXED FOR API =====
 function submitStatus(status) {
   if (scans.length === 0) {
     hideStatus();
     return;
   }
   
-  // Show popup
   var popup = document.getElementById('successPopup');
   document.getElementById('popupInfo').innerHTML = 'Sending ' + scans.length + ' code(s)...';
   popup.style.display = 'block';
@@ -303,91 +294,52 @@ function submitStatus(status) {
   var totalScans = scans.length;
   var sentCount = 0;
   
-  // Process each scan
   for (var i = 0; i < scans.length; i++) {
     var scan = scans[i];
     
     var now = new Date();
-    var month = (now.getMonth() + 1);
-    var day = now.getDate();
-    var year = now.getFullYear();
     
-    // Format date as MM/DD/YYYY
-    if (month < 10) month = '0' + month;
-    if (day < 10) day = '0' + day;
-    var dateStr = month + '/' + day + '/' + year;
-    
-    // Format time
-    var hours = now.getHours();
-    var minutes = now.getMinutes();
-    var seconds = now.getSeconds();
-    if (hours < 10) hours = '0' + hours;
-    if (minutes < 10) minutes = '0' + minutes;
-    if (seconds < 10) seconds = '0' + seconds;
-    var timeStr = hours + ':' + minutes + ':' + seconds;
-    
-    // Format location
-    var locationStr = 'Unknown';
-    if (currentLocation) {
-      locationStr = currentLocation.lat.toFixed(6) + ', ' + currentLocation.lng.toFixed(6);
-    }
-    
-    // Calculate ETA (3 days from now)
-    var eta = new Date();
-    eta.setDate(eta.getDate() + 3);
-    var etaMonth = (eta.getMonth() + 1);
-    var etaDay = eta.getDate();
-    var etaYear = eta.getFullYear();
-    if (etaMonth < 10) etaMonth = '0' + etaMonth;
-    if (etaDay < 10) etaDay = '0' + etaDay;
-    var etaStr = etaMonth + '/' + etaDay + '/' + etaYear;
-    
-    // ISO timestamp
-    var isoStr = now.toISOString();
-    
-    // Create data object
+    // API expects these exact field names based on your schema
     var data = {
-      label_id: scan.numbers,
-      barcode_type: 'MANUAL A-J',
-      status: status,
-      date: dateStr,
-      time: timeStr,
-      location: locationStr,
-      eta: etaStr,
-      timestamp: isoStr
+      label_id: scan.numbers,                    // The decoded number
+      barcode_type: 'manual',                     // They expect 'manual' not 'MANUAL A-J'
+      status: status,                             // The status selected
+      timestamp: Math.floor(now.getTime() / 1000), // Unix timestamp in seconds
+      time: now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds(), // HH:MM:SS
+      date: (now.getMonth()+1) + '/' + now.getDate() + '/' + now.getFullYear(), // MM/DD/YYYY
+      location: currentLocation ? currentLocation.lat.toFixed(6) + ',' + currentLocation.lng.toFixed(6) : 'Unknown',
+      eta: (new Date(now.getTime() + 3*24*60*60*1000)).toLocaleDateString() // 3 days from now
     };
     
-    console.log('Sending:', data);
+    console.log('Sending:', JSON.stringify(data));
     
-    // Use XMLHttpRequest for Android 5 compatibility
+    // Use XMLHttpRequest
     (function(index, scanData) {
       var xhr = new XMLHttpRequest();
       xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
       xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.setRequestHeader('Accept', 'application/json');
       
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
+          console.log('Response status:', xhr.status);
+          console.log('Response text:', xhr.responseText);
+          
           if (xhr.status >= 200 && xhr.status < 300) {
             successCount++;
-            console.log('✅ Code ' + scanData.numbers + ' sent');
           } else {
             failCount++;
-            console.log('❌ Failed: ' + xhr.status);
           }
           
           sentCount++;
           
-          // When all requests complete
           if (sentCount === totalScans) {
-            document.getElementById('popupInfo').innerHTML = 
-              '✅ ' + successCount + ' sent<br>' + 
-              (failCount > 0 ? '❌ ' + failCount + ' failed' : '');
+            var info = '✅ ' + successCount + ' sent';
+            if (failCount > 0) info += ' ❌ ' + failCount + ' failed';
+            document.getElementById('popupInfo').innerHTML = info;
             
             setTimeout(function() {
               popup.style.display = 'none';
               if (successCount > 0) {
-                // Clear history
                 scans = [];
                 scanCount = 0;
                 document.getElementById('labelBox').innerHTML = '';
@@ -403,7 +355,7 @@ function submitStatus(status) {
   }
 }
 
-// Make functions global for onclick handlers
+// Make functions global
 window.addLetter = addLetter;
 window.doBackspace = doBackspace;
 window.clearCells = clearCells;
