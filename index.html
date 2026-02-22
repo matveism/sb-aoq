@@ -2,33 +2,48 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>A-J Scanner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>A-J XANO SENDER</title>
 <style>
-body { background:#000; margin:0; padding:10px; font-family:Arial; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; font-family:Arial, sans-serif; padding:5px; }
 .phone { max-width:360px; margin:0 auto; background:#2b4b70; padding:10px; border-radius:10px; }
-.header { background:#2e5a88; color:white; padding:10px; text-align:center; font-size:18px; margin-bottom:10px; border-radius:5px; }
-.hint { background:#0A3A6B; color:white; padding:8px; text-align:center; font-size:14px; margin-bottom:10px; border-radius:5px; }
-.hint span { color:#ffcc00; font-weight:bold; margin:0 3px; }
+.header { background:#2e5a88; color:white; padding:10px; text-align:center; font-size:18px; border-radius:5px; margin-bottom:10px; }
+.hint { background:#0A3A6B; color:white; padding:8px; text-align:center; font-size:14px; border-radius:5px; margin-bottom:10px; }
+.hint span { color:#ffcc00; font-weight:bold; display:inline-block; margin:0 5px; }
+
+/* CELLS ROW */
 .cells { display:flex; gap:3px; justify-content:center; margin-bottom:10px; }
-.cell { width:50px; height:50px; background:#E2E8D3; border:2px solid #1f3f5c; text-align:center; font-size:28px; font-weight:bold; line-height:50px; border-radius:5px; }
-.history { background:#A6BEEF; min-height:80px; max-height:120px; margin-bottom:10px; padding:5px; border:2px solid #1f3f5c; overflow-y:auto; border-radius:5px; }
-.entry { background:#c0d4f5; padding:5px; margin:3px 0; border-radius:3px; font-weight:bold; }
-.keypad { display:grid; grid-template-columns:repeat(3, 1fr); gap:5px; margin-bottom:10px; }
-.key { background:#3a5f8a; color:white; padding:15px 0; text-align:center; font-size:24px; font-weight:bold; border-radius:5px; border:1px solid #1f3f5c; cursor:pointer; }
-.key:active { background:#4CAF50; }
+.cell { width:48px; height:48px; background:#E2E8D3; border:2px solid #1f3f5c; text-align:center; font-size:28px; font-weight:bold; line-height:48px; border-radius:5px; color:#000; }
+
+/* HISTORY */
+.history { background:#A6BEEF; min-height:80px; max-height:120px; margin-bottom:10px; padding:5px; border:2px solid #1f3f5c; overflow-y:auto; border-radius:5px; color:#000; }
+.entry { background:#c0d4f5; padding:6px; margin:3px 0; border-radius:3px; font-weight:bold; font-size:14px; }
+
+/* KEYPAD GRID - FIXED FOR ANDROID 5.0 */
+.keypad { display:table; width:100%; margin-bottom:10px; border-collapse:collapse; }
+.keypad-row { display:table-row; }
+.key { display:table-cell; background:#3a5f8a; color:white; text-align:center; font-size:24px; font-weight:bold; padding:12px 0; border:1px solid #1f3f5c; border-radius:5px; width:33.33%; cursor:pointer; }
 .key.enter { background:#4CAF50; }
 .key.esc { background:#dc3545; }
 .key.back { background:#ffc107; color:#000; }
+
+/* BUTTONS */
 .buttons { display:flex; gap:5px; margin-top:5px; }
 .btn { flex:1; background:#7496C4; color:white; padding:12px; text-align:center; font-size:16px; font-weight:bold; border-radius:5px; border:1px solid #1f3f5c; cursor:pointer; }
-.btn:active { background:#4CAF50; }
-.popup { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#2b4b70; border:3px solid #4CAF50; padding:20px; border-radius:10px; text-align:center; color:white; z-index:100; width:250px; }
+
+/* STATUS SCREEN */
+#statusScreen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); padding:15px; overflow-y:auto; z-index:100; }
+.status-btn { background:#3f6b9c; border:2px solid #ffcc00; padding:15px; margin:8px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:16px; font-weight:bold; }
+.back-btn { background:#dc3545; border-color:#fff; }
+
+/* POPUP */
+#popup { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#2b4b70; border:3px solid #4CAF50; padding:20px; border-radius:10px; text-align:center; color:white; z-index:200; width:260px; }
 </style>
 </head>
 <body>
 <div class="phone">
-  <div class="header">📦 A-J SCANNER (A=1 B=2 C=3 D=4 E=5 F=6 G=7 H=8 I=9 J=0)</div>
+  <div class="header">📦 A-J XANO SENDER</div>
   
   <div class="hint">
     <span>A=1</span> <span>B=2</span> <span>C=3</span> <span>D=4</span> <span>E=5</span>
@@ -46,60 +61,74 @@ body { background:#000; margin:0; padding:10px; font-family:Arial; }
   
   <div class="history" id="history"></div>
   
+  <!-- KEYPAD USING DISPLAY:TABLE FOR ANDROID 5.0 COMPATIBILITY -->
   <div class="keypad">
-    <div class="key" onclick="add('A')">A</div>
-    <div class="key" onclick="add('B')">B</div>
-    <div class="key" onclick="add('C')">C</div>
-    <div class="key" onclick="add('D')">D</div>
-    <div class="key" onclick="add('E')">E</div>
-    <div class="key" onclick="add('F')">F</div>
-    <div class="key" onclick="add('G')">G</div>
-    <div class="key" onclick="add('H')">H</div>
-    <div class="key" onclick="add('I')">I</div>
-    <div class="key" onclick="add('J')">J</div>
-    <div class="key back" onclick="back()">⌫</div>
-    <div class="key enter" onclick="showStatus()">ENT</div>
+    <div class="keypad-row">
+      <div class="key" onclick="addLetter('A')">A</div>
+      <div class="key" onclick="addLetter('B')">B</div>
+      <div class="key" onclick="addLetter('C')">C</div>
+    </div>
+    <div class="keypad-row">
+      <div class="key" onclick="addLetter('D')">D</div>
+      <div class="key" onclick="addLetter('E')">E</div>
+      <div class="key" onclick="addLetter('F')">F</div>
+    </div>
+    <div class="keypad-row">
+      <div class="key" onclick="addLetter('G')">G</div>
+      <div class="key" onclick="addLetter('H')">H</div>
+      <div class="key" onclick="addLetter('I')">I</div>
+    </div>
+    <div class="keypad-row">
+      <div class="key" onclick="addLetter('J')">J</div>
+      <div class="key back" onclick="backspace()">⌫</div>
+      <div class="key enter" onclick="showStatus()">ENT</div>
+    </div>
   </div>
   
   <div class="buttons">
+    <div class="btn" onclick="clearCells()">CLEAR</div>
     <div class="btn" onclick="clearAll()">CLEAR ALL</div>
-    <div class="btn" onclick="clearCells()">CLEAR CELLS</div>
   </div>
   
-  <!-- Status Screen (hidden by default) -->
-  <div id="statusScreen" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); padding:20px; overflow-y:auto; z-index:90;">
-    <div style="background:#3f6b9c; border:2px solid #ffcc00; padding:15px; margin:5px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:18px; font-weight:bold;" onclick="send('Data Received')">📥 DATA RECEIVED</div>
-    <div style="background:#3f6b9c; border:2px solid #ffcc00; padding:15px; margin:5px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:18px; font-weight:bold;" onclick="send('Picked Up')">📬 PICKED UP</div>
-    <div style="background:#3f6b9c; border:2px solid #ffcc00; padding:15px; margin:5px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:18px; font-weight:bold;" onclick="send('Depart Post Office')">🚚 DEPART</div>
-    <div style="background:#3f6b9c; border:2px solid #ffcc00; padding:15px; margin:5px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:18px; font-weight:bold;" onclick="send('Arrival Scan')">📍 ARRIVAL</div>
-    <div style="background:#3f6b9c; border:2px solid #ffcc00; padding:15px; margin:5px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:18px; font-weight:bold;" onclick="send('Local Scan')">🏙️ LOCAL</div>
-    <div style="background:#3f6b9c; border:2px solid #ffcc00; padding:15px; margin:5px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:18px; font-weight:bold;" onclick="send('Out For Delivery')">🛵 OUT</div>
-    <div style="background:#3f6b9c; border:2px solid #ffcc00; padding:15px; margin:5px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:18px; font-weight:bold;" onclick="send('Delivered')">✅ DELIVERED</div>
-    <div style="background:#dc3545; border:2px solid #fff; padding:15px; margin:5px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:18px; font-weight:bold;" onclick="hideStatus()">⬅️ BACK</div>
+  <!-- STATUS SCREEN -->
+  <div id="statusScreen">
+    <div class="status-btn" onclick="sendToXano('Data Received')">📥 DATA RECEIVED</div>
+    <div class="status-btn" onclick="sendToXano('Picked Up')">📬 PICKED UP</div>
+    <div class="status-btn" onclick="sendToXano('Depart Post Office')">🚚 DEPART</div>
+    <div class="status-btn" onclick="sendToXano('Arrival Scan')">📍 ARRIVAL</div>
+    <div class="status-btn" onclick="sendToXano('Local Scan')">🏙️ LOCAL</div>
+    <div class="status-btn" onclick="sendToXano('Out For Delivery')">🛵 OUT</div>
+    <div class="status-btn" onclick="sendToXano('Delivered')">✅ DELIVERED</div>
+    <div class="status-btn back-btn" onclick="hideStatus()">⬅️ BACK</div>
   </div>
   
-  <div class="popup" id="popup">
-    <div style="font-size:48px; color:#4CAF50;">✓</div>
-    <p id="popupMsg">SENDING...</p>
+  <!-- POPUP -->
+  <div id="popup">
+    <div style="font-size:48px; color:#4CAF50; margin-bottom:10px;">✓</div>
+    <p id="popupMessage">SENDING...</p>
   </div>
 </div>
 
 <script>
-// SIMPLE VARIABLES
-var cells = [
-  document.getElementById('cell1'),
-  document.getElementById('cell2'),
-  document.getElementById('cell3'),
-  document.getElementById('cell4'),
-  document.getElementById('cell5'),
-  document.getElementById('cell6')
-];
-var codes = [];
-var count = 0;
+// ===== ANDROID 5.0 COMPATIBLE =====
+// NO let, NO const, NO arrow functions, NO modern JS
 
-// ADD LETTER
-function add(letter) {
-  for (var i = 0; i < 6; i++) {
+// Cell elements
+var cell1 = document.getElementById('cell1');
+var cell2 = document.getElementById('cell2');
+var cell3 = document.getElementById('cell3');
+var cell4 = document.getElementById('cell4');
+var cell5 = document.getElementById('cell5');
+var cell6 = document.getElementById('cell6');
+var cells = [cell1, cell2, cell3, cell4, cell5, cell6];
+
+// Data storage
+var savedCodes = [];
+var codeCount = 0;
+
+// Add letter to first empty cell
+function addLetter(letter) {
+  for (var i = 0; i < cells.length; i++) {
     if (cells[i].innerHTML === '') {
       cells[i].innerHTML = letter;
       break;
@@ -108,9 +137,9 @@ function add(letter) {
   checkComplete();
 }
 
-// BACKSPACE
-function back() {
-  for (var i = 5; i >= 0; i--) {
+// Backspace
+function backspace() {
+  for (var i = cells.length - 1; i >= 0; i--) {
     if (cells[i].innerHTML !== '') {
       cells[i].innerHTML = '';
       break;
@@ -118,27 +147,27 @@ function back() {
   }
 }
 
-// CLEAR CELLS
+// Clear cells only
 function clearCells() {
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i < cells.length; i++) {
     cells[i].innerHTML = '';
   }
 }
 
-// CLEAR ALL
+// Clear everything
 function clearAll() {
-  codes = [];
-  count = 0;
+  savedCodes = [];
+  codeCount = 0;
   document.getElementById('history').innerHTML = '';
   clearCells();
 }
 
-// CHECK IF ALL CELLS FILLED
+// Check if all cells are filled
 function checkComplete() {
   var filled = true;
   var letters = '';
   
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i < cells.length; i++) {
     if (cells[i].innerHTML === '') {
       filled = false;
     } else {
@@ -147,7 +176,7 @@ function checkComplete() {
   }
   
   if (filled && letters.length === 6) {
-    // Convert to numbers
+    // Convert letters to numbers (A=1, B=2, etc.)
     var numbers = '';
     for (var i = 0; i < letters.length; i++) {
       var ch = letters.charAt(i);
@@ -163,54 +192,64 @@ function checkComplete() {
       else if (ch === 'J') numbers += '0';
     }
     
-    count++;
-    codes.push({ letters: letters, numbers: numbers });
+    codeCount++;
+    savedCodes.push({
+      letters: letters,
+      numbers: numbers
+    });
     
-    var history = document.getElementById('history');
-    var div = document.createElement('div');
-    div.className = 'entry';
-    div.innerHTML = '📦 #' + count + ': ' + letters + ' → ' + numbers;
-    history.appendChild(div);
+    // Add to history
+    var historyDiv = document.getElementById('history');
+    var entry = document.createElement('div');
+    entry.className = 'entry';
+    entry.innerHTML = '#' + codeCount + ': ' + letters + ' → ' + numbers;
+    historyDiv.appendChild(entry);
     
+    // Auto scroll to bottom
+    historyDiv.scrollTop = historyDiv.scrollHeight;
+    
+    // Clear cells for next entry
     clearCells();
   }
 }
 
-// SHOW STATUS SCREEN
+// Show status screen
 function showStatus() {
-  if (codes.length === 0) {
-    alert('Enter a code first');
+  if (savedCodes.length === 0) {
+    alert('Please enter a code first');
     return;
   }
   document.getElementById('statusScreen').style.display = 'block';
 }
 
-// HIDE STATUS SCREEN
+// Hide status screen
 function hideStatus() {
   document.getElementById('statusScreen').style.display = 'none';
 }
 
-// SEND TO XANO - SIMPLE AND RELIABLE
-function send(status) {
-  if (codes.length === 0) {
+// Send to XANO - SIMPLE AND RELIABLE
+function sendToXano(status) {
+  if (savedCodes.length === 0) {
     hideStatus();
     return;
   }
   
+  // Show popup
   var popup = document.getElementById('popup');
-  var popupMsg = document.getElementById('popupMsg');
+  var popupMsg = document.getElementById('popupMessage');
   popup.style.display = 'block';
-  popupMsg.innerHTML = 'SENDING ' + codes.length + ' CODE(S)...';
+  popupMsg.innerHTML = 'SENDING ' + savedCodes.length + ' CODE...';
   
-  var sent = 0;
-  var total = codes.length;
+  var sentCount = 0;
+  var totalCodes = savedCodes.length;
   
-  for (var i = 0; i < codes.length; i++) {
-    var code = codes[i];
+  // Send each code
+  for (var i = 0; i < savedCodes.length; i++) {
+    var code = savedCodes[i];
     
     var now = new Date();
     
-    // Simple date format: YYYY-MM-DD
+    // Format date: YYYY-MM-DD
     var year = now.getFullYear();
     var month = now.getMonth() + 1;
     if (month < 10) month = '0' + month;
@@ -218,7 +257,7 @@ function send(status) {
     if (day < 10) day = '0' + day;
     var dateStr = year + '-' + month + '-' + day;
     
-    // Simple time format: HH:MM:SS
+    // Format time: HH:MM:SS
     var hours = now.getHours();
     if (hours < 10) hours = '0' + hours;
     var minutes = now.getMinutes();
@@ -227,16 +266,16 @@ function send(status) {
     if (seconds < 10) seconds = '0' + seconds;
     var timeStr = hours + ':' + minutes + ':' + seconds;
     
-    // Simple timestamp (seconds since 1970)
+    // Timestamp (seconds since 1970)
     var timestamp = Math.floor(now.getTime() / 1000);
     
-    // Simple ETA (tomorrow)
-    var eta = new Date(now);
-    eta.setDate(eta.getDate() + 1);
-    var etaYear = eta.getFullYear();
-    var etaMonth = eta.getMonth() + 1;
+    // ETA (tomorrow)
+    var etaDate = new Date(now);
+    etaDate.setDate(etaDate.getDate() + 1);
+    var etaYear = etaDate.getFullYear();
+    var etaMonth = etaDate.getMonth() + 1;
     if (etaMonth < 10) etaMonth = '0' + etaMonth;
-    var etaDay = eta.getDate();
+    var etaDay = etaDate.getDate();
     if (etaDay < 10) etaDay = '0' + etaDay;
     var etaStr = etaYear + '-' + etaMonth + '-' + etaDay;
     
@@ -252,9 +291,9 @@ function send(status) {
       eta: etaStr
     };
     
-    console.log('Sending:', JSON.stringify(data));
+    console.log('SENDING:', JSON.stringify(data));
     
-    // Create request
+    // Create XHR request
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
     xhr.setRequestHeader('Content-Type', 'application/json');
@@ -262,21 +301,24 @@ function send(status) {
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
         if (xhr.status === 200 || xhr.status === 201 || xhr.status === 204) {
-          sent++;
-          console.log('✓ Sent:', code.numbers);
+          sentCount++;
+          console.log('✓ SENT SUCCESSFULLY');
         } else {
-          console.log('✗ Failed:', xhr.status, xhr.responseText);
+          console.log('✗ FAILED:', xhr.status, xhr.responseText);
         }
         
-        if (sent === total) {
-          popupMsg.innerHTML = '✅ ALL ' + total + ' CODES SENT!';
-          codes = [];
+        if (sentCount === totalCodes) {
+          popupMsg.innerHTML = '✅ ALL CODES SENT!';
+          
+          // Clear history
+          savedCodes = [];
+          codeCount = 0;
           document.getElementById('history').innerHTML = '';
           
           setTimeout(function() {
             popup.style.display = 'none';
             hideStatus();
-          }, 1500);
+          }, 2000);
         }
       }
     };
@@ -284,6 +326,18 @@ function send(status) {
     xhr.send(JSON.stringify(data));
   }
 }
+
+// Make functions global for onclick
+window.addLetter = addLetter;
+window.backspace = backspace;
+window.clearCells = clearCells;
+window.clearAll = clearAll;
+window.showStatus = showStatus;
+window.hideStatus = hideStatus;
+window.sendToXano = sendToXano;
+
+// Log that app is ready
+console.log('App ready for Android 5.0');
 </script>
 </body>
 </html>
