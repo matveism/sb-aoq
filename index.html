@@ -12,32 +12,26 @@ body { background:#000; font-family:Arial, sans-serif; padding:5px; }
 .hint { background:#0A3A6B; color:white; padding:8px; text-align:center; font-size:14px; border-radius:5px; margin-bottom:10px; }
 .hint span { color:#ffcc00; font-weight:bold; display:inline-block; margin:0 5px; }
 
-/* CELLS ROW */
 .cells { display:flex; gap:3px; justify-content:center; margin-bottom:10px; }
 .cell { width:48px; height:48px; background:#E2E8D3; border:2px solid #1f3f5c; text-align:center; font-size:28px; font-weight:bold; line-height:48px; border-radius:5px; color:#000; }
 
-/* HISTORY */
 .history { background:#A6BEEF; min-height:80px; max-height:120px; margin-bottom:10px; padding:5px; border:2px solid #1f3f5c; overflow-y:auto; border-radius:5px; color:#000; }
 .entry { background:#c0d4f5; padding:6px; margin:3px 0; border-radius:3px; font-weight:bold; font-size:14px; }
 
-/* KEYPAD GRID - FIXED FOR ANDROID 5.0 */
 .keypad { display:table; width:100%; margin-bottom:10px; border-collapse:collapse; }
 .keypad-row { display:table-row; }
-.key { display:table-cell; background:#3a5f8a; color:white; text-align:center; font-size:24px; font-weight:bold; padding:12px 0; border:1px solid #1f3f5c; border-radius:5px; width:33.33%; cursor:pointer; }
+.key { display:table-cell; background:#3a5f8a; color:white; text-align:center; font-size:24px; font-weight:bold; padding:12px 0; border:1px solid #1f3f5c; width:33.33%; cursor:pointer; }
 .key.enter { background:#4CAF50; }
 .key.esc { background:#dc3545; }
 .key.back { background:#ffc107; color:#000; }
 
-/* BUTTONS */
 .buttons { display:flex; gap:5px; margin-top:5px; }
 .btn { flex:1; background:#7496C4; color:white; padding:12px; text-align:center; font-size:16px; font-weight:bold; border-radius:5px; border:1px solid #1f3f5c; cursor:pointer; }
 
-/* STATUS SCREEN */
 #statusScreen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); padding:15px; overflow-y:auto; z-index:100; }
 .status-btn { background:#3f6b9c; border:2px solid #ffcc00; padding:15px; margin:8px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:16px; font-weight:bold; }
 .back-btn { background:#dc3545; border-color:#fff; }
 
-/* POPUP */
 #popup { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#2b4b70; border:3px solid #4CAF50; padding:20px; border-radius:10px; text-align:center; color:white; z-index:200; width:260px; }
 </style>
 </head>
@@ -61,7 +55,6 @@ body { background:#000; font-family:Arial, sans-serif; padding:5px; }
   
   <div class="history" id="history"></div>
   
-  <!-- KEYPAD USING DISPLAY:TABLE FOR ANDROID 5.0 COMPATIBILITY -->
   <div class="keypad">
     <div class="keypad-row">
       <div class="key" onclick="addLetter('A')">A</div>
@@ -90,7 +83,6 @@ body { background:#000; font-family:Arial, sans-serif; padding:5px; }
     <div class="btn" onclick="clearAll()">CLEAR ALL</div>
   </div>
   
-  <!-- STATUS SCREEN -->
   <div id="statusScreen">
     <div class="status-btn" onclick="sendToXano('Data Received')">📥 DATA RECEIVED</div>
     <div class="status-btn" onclick="sendToXano('Picked Up')">📬 PICKED UP</div>
@@ -102,17 +94,13 @@ body { background:#000; font-family:Arial, sans-serif; padding:5px; }
     <div class="status-btn back-btn" onclick="hideStatus()">⬅️ BACK</div>
   </div>
   
-  <!-- POPUP -->
   <div id="popup">
-    <div style="font-size:48px; color:#4CAF50; margin-bottom:10px;">✓</div>
+    <div style="font-size:48px; color:#4CAF50; margin-bottom:10px;" id="popupIcon">✓</div>
     <p id="popupMessage">SENDING...</p>
   </div>
 </div>
 
 <script>
-// ===== ANDROID 5.0 COMPATIBLE =====
-// NO let, NO const, NO arrow functions, NO modern JS
-
 // Cell elements
 var cell1 = document.getElementById('cell1');
 var cell2 = document.getElementById('cell2');
@@ -122,11 +110,9 @@ var cell5 = document.getElementById('cell5');
 var cell6 = document.getElementById('cell6');
 var cells = [cell1, cell2, cell3, cell4, cell5, cell6];
 
-// Data storage
 var savedCodes = [];
 var codeCount = 0;
 
-// Add letter to first empty cell
 function addLetter(letter) {
   for (var i = 0; i < cells.length; i++) {
     if (cells[i].innerHTML === '') {
@@ -137,7 +123,6 @@ function addLetter(letter) {
   checkComplete();
 }
 
-// Backspace
 function backspace() {
   for (var i = cells.length - 1; i >= 0; i--) {
     if (cells[i].innerHTML !== '') {
@@ -147,14 +132,12 @@ function backspace() {
   }
 }
 
-// Clear cells only
 function clearCells() {
   for (var i = 0; i < cells.length; i++) {
     cells[i].innerHTML = '';
   }
 }
 
-// Clear everything
 function clearAll() {
   savedCodes = [];
   codeCount = 0;
@@ -162,7 +145,6 @@ function clearAll() {
   clearCells();
 }
 
-// Check if all cells are filled
 function checkComplete() {
   var filled = true;
   var letters = '';
@@ -176,7 +158,6 @@ function checkComplete() {
   }
   
   if (filled && letters.length === 6) {
-    // Convert letters to numbers (A=1, B=2, etc.)
     var numbers = '';
     for (var i = 0; i < letters.length; i++) {
       var ch = letters.charAt(i);
@@ -198,22 +179,16 @@ function checkComplete() {
       numbers: numbers
     });
     
-    // Add to history
     var historyDiv = document.getElementById('history');
     var entry = document.createElement('div');
     entry.className = 'entry';
     entry.innerHTML = '#' + codeCount + ': ' + letters + ' → ' + numbers;
     historyDiv.appendChild(entry);
-    
-    // Auto scroll to bottom
     historyDiv.scrollTop = historyDiv.scrollHeight;
-    
-    // Clear cells for next entry
     clearCells();
   }
 }
 
-// Show status screen
 function showStatus() {
   if (savedCodes.length === 0) {
     alert('Please enter a code first');
@@ -222,34 +197,56 @@ function showStatus() {
   document.getElementById('statusScreen').style.display = 'block';
 }
 
-// Hide status screen
 function hideStatus() {
   document.getElementById('statusScreen').style.display = 'none';
 }
 
-// Send to XANO - SIMPLE AND RELIABLE
 function sendToXano(status) {
   if (savedCodes.length === 0) {
     hideStatus();
     return;
   }
   
-  // Show popup
   var popup = document.getElementById('popup');
   var popupMsg = document.getElementById('popupMessage');
+  var popupIcon = document.getElementById('popupIcon');
+  
+  popupIcon.innerHTML = '⏳';
+  popupIcon.style.color = '#ffcc00';
+  popupMsg.innerHTML = 'CONNECTING...';
   popup.style.display = 'block';
-  popupMsg.innerHTML = 'SENDING ' + savedCodes.length + ' CODE...';
   
   var sentCount = 0;
+  var failedCount = 0;
   var totalCodes = savedCodes.length;
+  var timeoutId = null;
   
-  // Send each code
+  function checkComplete() {
+    if (sentCount + failedCount === totalCodes) {
+      if (failedCount === 0) {
+        popupIcon.innerHTML = '✓';
+        popupIcon.style.color = '#4CAF50';
+        popupMsg.innerHTML = '✅ ALL ' + totalCodes + ' CODES SENT!';
+        savedCodes = [];
+        codeCount = 0;
+        document.getElementById('history').innerHTML = '';
+      } else {
+        popupIcon.innerHTML = '⚠️';
+        popupIcon.style.color = '#ffcc00';
+        popupMsg.innerHTML = '⚠️ ' + sentCount + ' SENT, ' + failedCount + ' FAILED';
+      }
+      
+      setTimeout(function() {
+        popup.style.display = 'none';
+        hideStatus();
+      }, 3000);
+    }
+  }
+  
   for (var i = 0; i < savedCodes.length; i++) {
     var code = savedCodes[i];
     
     var now = new Date();
-    
-    // Format date: YYYY-MM-DD
     var year = now.getFullYear();
     var month = now.getMonth() + 1;
     if (month < 10) month = '0' + month;
@@ -257,7 +254,6 @@ function sendToXano(status) {
     if (day < 10) day = '0' + day;
     var dateStr = year + '-' + month + '-' + day;
     
-    // Format time: HH:MM:SS
     var hours = now.getHours();
     if (hours < 10) hours = '0' + hours;
     var minutes = now.getMinutes();
@@ -266,10 +262,8 @@ function sendToXano(status) {
     if (seconds < 10) seconds = '0' + seconds;
     var timeStr = hours + ':' + minutes + ':' + seconds;
     
-    // Timestamp (seconds since 1970)
     var timestamp = Math.floor(now.getTime() / 1000);
     
-    // ETA (tomorrow)
     var etaDate = new Date(now);
     etaDate.setDate(etaDate.getDate() + 1);
     var etaYear = etaDate.getFullYear();
@@ -279,7 +273,6 @@ function sendToXano(status) {
     if (etaDay < 10) etaDay = '0' + etaDay;
     var etaStr = etaYear + '-' + etaMonth + '-' + etaDay;
     
-    // Data to send
     var data = {
       label_id: code.numbers,
       barcode_type: 'manual',
@@ -293,10 +286,16 @@ function sendToXano(status) {
     
     console.log('SENDING:', JSON.stringify(data));
     
-    // Create XHR request
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
+    
+    // Set timeout to prevent hanging
+    xhr.timeout = 10000; // 10 seconds
+    
+    xhr.ontimeout = function() {
+      console.log('Request timeout');
+      failedCount++;
+      checkComplete();
+    };
     
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
@@ -304,30 +303,26 @@ function sendToXano(status) {
           sentCount++;
           console.log('✓ SENT SUCCESSFULLY');
         } else {
+          failedCount++;
           console.log('✗ FAILED:', xhr.status, xhr.responseText);
         }
-        
-        if (sentCount === totalCodes) {
-          popupMsg.innerHTML = '✅ ALL CODES SENT!';
-          
-          // Clear history
-          savedCodes = [];
-          codeCount = 0;
-          document.getElementById('history').innerHTML = '';
-          
-          setTimeout(function() {
-            popup.style.display = 'none';
-            hideStatus();
-          }, 2000);
-        }
+        checkComplete();
       }
     };
     
+    xhr.onerror = function() {
+      console.log('Network error');
+      failedCount++;
+      checkComplete();
+    };
+    
+    xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify(data));
   }
 }
 
-// Make functions global for onclick
+// Make functions global
 window.addLetter = addLetter;
 window.backspace = backspace;
 window.clearCells = clearCells;
@@ -336,8 +331,7 @@ window.showStatus = showStatus;
 window.hideStatus = hideStatus;
 window.sendToXano = sendToXano;
 
-// Log that app is ready
-console.log('App ready for Android 5.0');
+console.log('App ready with timeout handling');
 </script>
 </body>
 </html>
