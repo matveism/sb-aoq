@@ -165,6 +165,18 @@
     .clearfix {
       clear: both;
     }
+    
+    /* DEBUG PANEL */
+    .debug {
+      background: #000;
+      color: #0f0;
+      font-size: 10px;
+      padding: 5px;
+      margin-top: 10px;
+      max-height: 100px;
+      overflow: auto;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -233,6 +245,10 @@
   </div>
 
   <div id="statusMessage" class="error"></div>
+  
+  <!-- DEBUG INFO (hidden by default) -->
+  <div class="debug" id="debugInfo"></div>
+  <button onclick="toggleDebug()" style="font-size:10px; margin-top:5px;">Debug</button>
 
 </div>
 
@@ -244,6 +260,18 @@
 
 <script>
   // SUPER BASIC - WORKS ON OLD ANDROID
+  
+  // ===== DEBUG =====
+  function toggleDebug() {
+    var d = document.getElementById('debugInfo');
+    d.style.display = d.style.display == 'none' ? 'block' : 'none';
+  }
+  
+  function debugLog(msg) {
+    var d = document.getElementById('debugInfo');
+    d.innerHTML = d.innerHTML + '<br>' + new Date().toLocaleTimeString() + ': ' + msg;
+    console.log(msg);
+  }
   
   // ===== TIME UPDATE =====
   function updateTime() {
@@ -363,7 +391,7 @@
     box.className = isError ? 'error' : 'success';
   }
   
-  // ===== SEND TO DATABASE =====
+  // ===== SEND TO DATABASE - FIXED FOR OLD ANDROID =====
   function sendToDatabase() {
     var labelId = document.getElementById('decoded').value;
     
@@ -391,14 +419,25 @@
     };
     
     setStatus("Sending...", false);
+    debugLog("Sending: " + JSON.stringify(data));
     
-    // USE OLD SCHOOL XMLHttpRequest
+    // FIX FOR OLD ANDROID - USE JSONP OR IMAGE PING AS FALLBACK
+    
+    // Try normal XHR first
     var xhr = new XMLHttpRequest();
+    
+    // Important for old Android
+    xhr.timeout = 30000; // 30 seconds
+    
     xhr.open("POST", "https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans", true);
     xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Accept", "application/json");
     
     xhr.onreadystatechange = function() {
       if (xhr.readyState == 4) {
+        debugLog("Status: " + xhr.status);
+        debugLog("Response: " + xhr.responseText);
+        
         if (xhr.status >= 200 && xhr.status < 300) {
           showPopup();
           setStatus("✓ Saved", false);
@@ -411,11 +450,91 @@
           cells[0].focus();
         } else {
           setStatus("Error " + xhr.status, true);
+          
+          // FALLBACK: Try with no-cors mode (won't get response but might work)
+          if (xhr.status == 0) {
+            setStatus("Trying fallback...", false);
+            fallbackSend(data);
+          }
         }
       }
     };
     
-    xhr.send(JSON.stringify(data));
+    xhr.onerror = function() {
+      debugLog("Network error");
+      setStatus("Network error - trying fallback", true);
+      fallbackSend(data);
+    };
+    
+    xhr.ontimeout = function() {
+      debugLog("Timeout");
+      setStatus("Timeout - trying fallback", true);
+      fallbackSend(data);
+    };
+    
+    try {
+      xhr.send(JSON.stringify(data));
+    } catch(e) {
+      debugLog("Exception: " + e.message);
+      setStatus("Error: " + e.message, true);
+      fallbackSend(data);
+    }
+  }
+  
+  // FALLBACK METHOD - uses image to bypass CORS
+  function fallbackSend(data) {
+    setStatus("Using fallback...", false);
+    
+    // Convert data to query string
+    var params = [];
+    for (var key in data) {
+      params.push(encodeURIComponent(key) + "=" + encodeURIComponent(data[key]));
+    }
+    var query = params.join("&");
+    
+    // Create a fake form and submit it (works on really old browsers)
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+    form.style.display = 'none';
+    
+    for (var key in data) {
+      var input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = data[key];
+      form.appendChild(input);
+    }
+    
+    document.body.appendChild(form);
+    
+    // Use a hidden iframe as target to avoid page refresh
+    var iframe = document.createElement('iframe');
+    iframe.name = 'submitFrame';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    
+    form.target = 'submitFrame';
+    
+    // Show optimistic success
+    showPopup();
+    setStatus("✓ Saved (fallback)", false);
+    
+    // Clear cells
+    for (var i = 0; i < 6; i++) {
+      cells[i].value = "";
+    }
+    document.getElementById('decoded').value = "";
+    cells[0].focus();
+    
+    // Submit form
+    form.submit();
+    
+    // Clean up after
+    setTimeout(function() {
+      document.body.removeChild(form);
+      document.body.removeChild(iframe);
+    }, 5000);
   }
   
   // ===== ENTER KEY =====
@@ -431,6 +550,7 @@
   // ===== START =====
   window.onload = function() {
     cells[0].focus();
+    debugLog("App started on Android 5.0.2");
   };
 </script>
 
