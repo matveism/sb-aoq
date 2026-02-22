@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- CRITICAL FIX FOR ZOOM - REDUCED SCALES -->
-  <meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=no, viewport-fit=cover">
+  <!-- CRITICAL FIX FOR ZOOM - LOCK SCALE TO 1.0 FOR BETTER USABILITY ON 5" 720X1280 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
@@ -273,7 +273,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 280px;
+      width: 300px;
       background: white;
       border: 6px solid #28a745;
       border-radius: 50px;
@@ -306,18 +306,52 @@
     .popup small {
       display: block;
       margin-top: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #15569B;
+    }
+    
+    /* GPS Status Indicator */
+    .gps-status {
+      background: #15569B;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 20px;
       font-size: 14px;
-      color: #666;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
-    /* HIDDEN IFRAME */
-    #submitFrame {
-      display: none;
+    .gps-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ffaa00;
+      animation: pulse 1.5s infinite;
     }
     
-    /* HIDDEN FORM */
-    #xanoForm {
-      display: none;
+    .gps-dot.active {
+      background: #00ff00;
+      animation: none;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+    
+    /* Auto-detected fields */
+    .auto-badge {
+      background: #00aa00;
+      color: white;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      margin-left: 8px;
+      text-transform: uppercase;
     }
   </style>
 </head>
@@ -326,13 +360,16 @@
 <div class="app">
 
   <div class="status-bar">
-    <span class="title">📦 COURIER SCAN</span>
+    <span class="title">📦 Courier Scanner</span>
     <span class="time" id="timeDisplay">--:--</span>
   </div>
 
   <div class="content">
-
-    <button class="submit-btn" id="submitBtn" onclick="submitForm()">📤 SUBMIT</button>
+    <!-- GPS Status Indicator -->
+    <div class="gps-status" id="gpsStatus">
+      <span class="gps-dot" id="gpsDot"></span>
+      <span id="gpsText">Acquiring GPS location...</span>
+    </div>
 
     <div class="cell-grid">
       <div class="cell-container">
@@ -352,38 +389,38 @@
       </div>
 
       <div class="field-row">
-        <label>Entry Type</label>
-        <input type="text" id="barcode_type" value="manual" readonly>
-      </div>
-
-      <div class="field-row">
         <label>Status</label>
         <select id="status">
-          <option value="Data Received">📥 Data Received</option>
-          <option value="Picked Up">📬 Picked Up</option>
-          <option value="Depart Post Office">🚚 Depart Post Office</option>
-          <option value="Arrival Scan">📍 Arrival Scan</option>
-          <option value="Local Scan">🏙️ Local Scan</option>
-          <option value="Out For Delivery">🛵 Out For Delivery</option>
-          <option value="Delivered">✅ Delivered</option>
+          <option value="Data Received">Data Received</option>
+          <option value="Picked Up">Picked Up</option>
+          <option value="Depart Post Office">Depart Post Office</option>
+          <option value="Arrival Scan">Arrival Scan</option>
+          <option value="Local Scan">Local Scan</option>
+          <option value="Out For Delivery">Out For Delivery</option>
+          <option value="Delivered">Delivered</option>
         </select>
       </div>
 
       <div class="field-row">
-        <label>Location</label>
-        <input type="text" id="location" placeholder="City, State">
+        <label>Location <span class="auto-badge">AUTO-GPS</span></label>
+        <input type="text" id="location" placeholder="Auto-detecting..." readonly>
       </div>
 
       <div class="field-row">
-        <label>ETA</label>
-        <input type="text" id="eta" placeholder="e.g., 2026-02-21">
+        <label>ETA <span class="auto-badge">AUTO</span></label>
+        <input type="text" id="eta" placeholder="Auto-set to tomorrow" readonly>
+      </div>
+      
+      <div class="field-row">
+        <label>Current Date/Time <span class="auto-badge">LIVE</span></label>
+        <input type="text" id="currentDateTime" readonly value="Loading...">
       </div>
     </div>
 
     <div class="history-box">
-      <div class="history-header">📋 HISTORY</div>
+      <div class="history-header"># LABEL ID</div>
       <div id="historyContainer">
-        <div class="history-row" id="emptyHistoryRow">
+        <div class="history-row" id="emptyHistoryRow" style="display: none;">
           <div class="history-num"></div>
           <div class="history-val"></div>
         </div>
@@ -393,7 +430,7 @@
     <div id="statusMessage"></div>
 
   </div>
-
+  <button class="submit-btn" id="submitBtn" onclick="submitForm()">SUBMIT SCAN</button>
   <div class="popup" id="successPopup">
     <div class="circle">✓</div>
     <p>SAVED TO XANO</p>
@@ -402,34 +439,116 @@
 
 </div>
 
-<!-- HIDDEN IFRAME AND FORM -->
-<iframe id="submitFrame" name="submitFrame"></iframe>
-
-<form id="xanoForm" method="POST" action="https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans" target="submitFrame" style="display:none">
-  <input type="text" name="label_id" id="form_label_id">
-  <input type="text" name="barcode_type" id="form_barcode_type">
-  <input type="text" name="status" id="form_status">
-  <input type="text" name="timestamp" id="form_timestamp">
-  <input type="text" name="time" id="form_time">
-  <input type="text" name="date" id="form_date">
-  <input type="text" name="location" id="form_location">
-  <input type="text" name="eta" id="form_eta">
-</form>
-
 <script>
-  // ===== TIME UPDATE =====
-  function updateTime() {
-    var d = new Date();
-    var hours = d.getHours();
-    var mins = d.getMinutes();
-    var secs = d.getSeconds();
+  // ===== LIVE TIME UPDATE =====
+  function updateAllTimes() {
+    var now = new Date();
+    
+    // Update status bar time
+    var hours = now.getHours();
+    var mins = now.getMinutes();
+    var secs = now.getSeconds();
     if (hours < 10) hours = "0" + hours;
     if (mins < 10) mins = "0" + mins;
     if (secs < 10) secs = "0" + secs;
     document.getElementById('timeDisplay').innerHTML = hours + ":" + mins + ":" + secs;
+    
+    // Update current date/time field
+    var dateStr = now.getFullYear() + '-' + 
+                  ('0' + (now.getMonth()+1)).slice(-2) + '-' + 
+                  ('0' + now.getDate()).slice(-2);
+    var timeStr = ('0' + now.getHours()).slice(-2) + ':' + 
+                  ('0' + now.getMinutes()).slice(-2) + ':' + 
+                  ('0' + now.getSeconds()).slice(-2);
+    document.getElementById('currentDateTime').value = dateStr + ' ' + timeStr;
   }
-  updateTime();
-  setInterval(updateTime, 1000);
+  
+  updateAllTimes();
+  setInterval(updateAllTimes, 1000);
+
+  // ===== AUTO ETA (TOMORROW) =====
+  function updateETA() {
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    var etaStr = tomorrow.getFullYear() + '-' + 
+                 ('0' + (tomorrow.getMonth()+1)).slice(-2) + '-' + 
+                 ('0' + tomorrow.getDate()).slice(-2);
+    document.getElementById('eta').value = etaStr;
+  }
+  
+  // Call initially
+  updateETA();
+  
+  // Update ETA at midnight
+  setInterval(updateETA, 60000); // Check every minute
+
+  // ===== GPS LOCATION =====
+  var currentLocation = "";
+  
+  function getLocation() {
+    if (navigator.geolocation) {
+      var gpsDot = document.getElementById('gpsDot');
+      var gpsText = document.getElementById('gpsText');
+      var locationField = document.getElementById('location');
+      
+      navigator.geolocation.getCurrentPosition(
+        // Success
+        function(position) {
+          // Use reverse geocoding to get city/state
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&zoom=18&addressdetails=1`)
+            .then(response => response.json())
+            .then(data => {
+              var city = data.address.city || data.address.town || data.address.village || data.address.suburb || "";
+              var state = data.address.state || "";
+              var country = data.address.country || "";
+              
+              if (city && state) {
+                currentLocation = city + ", " + state;
+              } else if (city) {
+                currentLocation = city + ", " + country;
+              } else {
+                currentLocation = "Area " + position.coords.latitude.toFixed(2) + ", " + position.coords.longitude.toFixed(2);
+              }
+              
+              locationField.value = currentLocation;
+              gpsDot.className = "gps-dot active";
+              gpsText.innerHTML = "GPS: " + currentLocation;
+            })
+            .catch(error => {
+              // Fallback to coordinates
+              currentLocation = "Lat: " + position.coords.latitude.toFixed(4) + ", Lon: " + position.coords.longitude.toFixed(4);
+              locationField.value = currentLocation;
+              gpsDot.className = "gps-dot active";
+              gpsText.innerHTML = "GPS: Coordinates only";
+            });
+        },
+        // Error
+        function(error) {
+          var gpsDot = document.getElementById('gpsDot');
+          var gpsText = document.getElementById('gpsText');
+          
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              gpsText.innerHTML = "❌ GPS denied - using default";
+              document.getElementById('location').value = "Location Unknown";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              gpsText.innerHTML = "❌ GPS unavailable";
+              document.getElementById('location').value = "Location Unknown";
+              break;
+            case error.TIMEOUT:
+              gpsText.innerHTML = "❌ GPS timeout";
+              document.getElementById('location').value = "Location Unknown";
+              break;
+          }
+          gpsDot.style.background = "#ff0000";
+        }
+      );
+    } else {
+      document.getElementById('gpsText').innerHTML = "❌ GPS not supported";
+      document.getElementById('location').value = "GPS Not Available";
+    }
+  }
 
   // ===== CELL HANDLING =====
   var cells = [
@@ -505,7 +624,8 @@
   
   function addToHistory(value) {
     historyCount++;
-    document.getElementById('emptyHistoryRow').style.display = "none";
+    var emptyRow = document.getElementById('emptyHistoryRow');
+    if (emptyRow) emptyRow.style.display = "none";
     
     var container = document.getElementById('historyContainer');
     var newRow = document.createElement('div');
@@ -513,12 +633,30 @@
     newRow.innerHTML = '<div class="history-num">' + historyCount + '</div>' +
                        '<div class="history-val">' + value + '</div>';
     container.appendChild(newRow);
+    
+    // Keep only last 10 items
+    if (container.children.length > 10) {
+      container.removeChild(container.children[1]);
+    }
   }
   
   function showPopup() {
-    var d = new Date();
-    document.getElementById('popupTime').innerHTML = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+    var now = new Date();
+    // FORMAT: Month Day, Year Hour:Min:Sec AM/PM
+    var options = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit',
+      hour12: true 
+    };
+    
+    // This will show like "February 21, 2026, 10:35:22 PM" - NO 1970!
+    document.getElementById('popupTime').innerHTML = now.toLocaleDateString('en-US', options);
     document.getElementById('successPopup').style.display = 'block';
+    
     setTimeout(function() {
       document.getElementById('successPopup').style.display = 'none';
     }, 2000);
@@ -540,36 +678,74 @@
     }
     
     var now = new Date();
-    var timestampSec = Math.floor(now.getTime() / 1000);
-    var timestampMs = now.getTime();
+    
+    // AUTO-GENERATED VALUES (ALL FROM DEVICE)
     var dateStr = now.getFullYear() + '-' + 
                   ('0' + (now.getMonth()+1)).slice(-2) + '-' + 
                   ('0' + now.getDate()).slice(-2);
     
-    // Set form values
-    document.getElementById('form_label_id').value = labelId;
-    document.getElementById('form_barcode_type').value = "manual";
-    document.getElementById('form_status').value = document.getElementById('status').value;
-    document.getElementById('form_timestamp').value = timestampSec;
-    document.getElementById('form_time').value = timestampMs;
-    document.getElementById('form_date').value = dateStr;
-    document.getElementById('form_location').value = document.getElementById('location').value || "";
-    document.getElementById('form_eta').value = document.getElementById('eta').value || "";
+    var timeStr = ('0' + now.getHours()).slice(-2) + ':' + 
+                  ('0' + now.getMinutes()).slice(-2) + ':' + 
+                  ('0' + now.getSeconds()).slice(-2);
     
-    setStatus("Sending...", false);
-    showPopup();
+    var timestamp = Math.floor(now.getTime() / 1000);
     
-    // Submit form
-    document.getElementById('xanoForm').submit();
+    // Get location (auto from GPS)
+    var locationValue = document.getElementById('location').value || "Unknown";
     
-    // Clear cells
-    for (var i = 0; i < 6; i++) {
-      cells[i].value = "";
-    }
-    document.getElementById('decoded').value = "";
-    cells[0].focus();
+    // Get ETA (auto from field)
+    var etaValue = document.getElementById('eta').value;
     
-    setStatus("✓ Sent to XANO", false);
+    // Prepare the data
+    var postData = {
+      label_id: labelId,
+      barcode_type: "manual",
+      status: document.getElementById('status').value,
+      timestamp: timestamp,
+      date: dateStr,
+      time: timeStr,
+      location: locationValue,
+      eta: etaValue
+    };
+    
+    console.log('SENDING:', postData);
+    
+    setStatus("Sending to database...", false);
+    
+    // Use FETCH API
+    fetch('https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(postData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Response:', data);
+      
+      if (data.id) {
+        // Show success with CURRENT date/time (NO 1970!)
+        setStatus('✅ Saved! Record ID: ' + data.id, false);
+        showPopup();
+        
+        // Clear cells
+        for (var i = 0; i < 6; i++) {
+          cells[i].value = "";
+        }
+        document.getElementById('decoded').value = "";
+        cells[0].focus();
+        
+        // Refresh GPS for next scan
+        setTimeout(getLocation, 500);
+      } else {
+        setStatus('❌ Error: ' + (data.message || 'Unknown'), true);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      setStatus('❌ Failed to connect', true);
+    });
   }
   
   // ===== ENTER KEY =====
@@ -582,18 +758,16 @@
     };
   }
   
-  // ===== PREVENT ZOOM ON INPUT (OLD ANDROID) =====
-  document.querySelectorAll('input, select').forEach(function(el) {
-    el.addEventListener('focus', function() {
-      // No zoom fix for old Android
-    });
-  });
-  
   window.onload = function() {
     cells[0].focus();
     
-    // Add to home screen instructions (optional)
-    console.log('Add to home screen for app mode');
+    // Start GPS
+    getLocation();
+    
+    // Refresh GPS every 60 seconds
+    setInterval(getLocation, 60000);
+    
+    console.log('APP READY - ALL DATES FROM DEVICE, NO 1970!');
   };
 </script>
 
