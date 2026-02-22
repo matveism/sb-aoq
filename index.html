@@ -12,7 +12,6 @@ body { background:#000; display:flex; justify-content:center; align-items:center
 #gpsIndicator { color:#4CAF50; }
 #timeDisplay { color:#ffcc00; }
 
-/* Disable keyboard on mobile */
 .cell-grid { display:flex; gap:5px; padding:15px; justify-content:center; }
 .cell-box { width:45px; height:45px; }
 .cell-box input { width:100%; height:100%; text-align:center; font-size:24px; font-weight:bold; background:#E2E8D3; border:3px solid #1f3f5c; border-radius:5px; text-transform:uppercase; color:#000; }
@@ -43,6 +42,7 @@ body { background:#000; display:flex; justify-content:center; align-items:center
 #successPopup { display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:#2b4b70; border:4px solid #4CAF50; padding:25px; border-radius:15px; text-align:center; z-index:200; width:80%; }
 #successPopup .check { font-size:60px; color:#4CAF50; }
 #successPopup p { font-size:18px; margin:10px 0; color:#fff; }
+#errorDetails { font-size:12px; color:#ff9999; margin-top:10px; word-break:break-all; }
 </style>
 </head>
 <body>
@@ -52,13 +52,11 @@ body { background:#000; display:flex; justify-content:center; align-items:center
     <span><span id="gpsIndicator">📍</span> <span id="timeDisplay"></span></span>
   </div>
 
-  <!-- Letter hint -->
   <div class="letter-hint">
     <span>A=1</span> <span>B=2</span> <span>C=3</span> <span>D=4</span> <span>E=5</span>
     <span>F=6</span> <span>G=7</span> <span>H=8</span> <span>I=9</span> <span>J=0</span>
   </div>
 
-  <!-- 6 cells for display -->
   <div class="cell-grid">
     <div class="cell-box"><input type="text" id="cell1" readonly></div>
     <div class="cell-box"><input type="text" id="cell2" readonly></div>
@@ -68,16 +66,13 @@ body { background:#000; display:flex; justify-content:center; align-items:center
     <div class="cell-box"><input type="text" id="cell6" readonly></div>
   </div>
 
-  <!-- History box -->
   <div id="labelBox"></div>
 
-  <!-- Control buttons -->
   <div id="labelButtons">
     <span id="clearBtn" onclick="clearAll()">CLEAR</span>
     <span id="statusBtn" onclick="showStatus()">ENTER</span>
   </div>
 
-  <!-- A-J Keypad -->
   <div class="keypad">
     <div class="keypad-row">
       <div class="key" onclick="addLetter('A')">A</div>
@@ -106,7 +101,6 @@ body { background:#000; display:flex; justify-content:center; align-items:center
     </div>
   </div>
 
-  <!-- Status screen -->
   <div id="statusScreen">
     <div class="statusBtn" onclick="submitStatus('Data Received')">📥 DATA RECEIVED</div>
     <div class="statusBtn" onclick="submitStatus('Picked Up')">📬 PICKED UP</div>
@@ -118,24 +112,20 @@ body { background:#000; display:flex; justify-content:center; align-items:center
     <div class="statusBtn back" onclick="hideStatus()">⬅️ BACK</div>
   </div>
 
-  <!-- Success popup -->
   <div id="successPopup">
     <div class="check">✓</div>
-    <p>SAVED!</p>
+    <p id="popupMessage">SAVED!</p>
     <p id="popupInfo"></p>
+    <div id="errorDetails"></div>
   </div>
 </div>
 
 <script>
 // ===== ANDROID 5.0 COMPATIBLE =====
-// Use only var, function, and older syntax
-
-// ===== VARIABLES =====
 var scanCount = 0;
 var scans = [];
 var currentLocation = null;
 
-// ===== CELL REFERENCES =====
 var c1 = document.getElementById('cell1');
 var c2 = document.getElementById('cell2');
 var c3 = document.getElementById('cell3');
@@ -144,7 +134,6 @@ var c5 = document.getElementById('cell5');
 var c6 = document.getElementById('cell6');
 var cells = [c1, c2, c3, c4, c5, c6];
 
-// ===== TIME UPDATE =====
 function updateTime() {
   var d = new Date();
   var h = d.getHours();
@@ -160,7 +149,6 @@ function updateTime() {
 setInterval(updateTime, 1000);
 updateTime();
 
-// ===== GPS =====
 function initGPS() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -181,7 +169,6 @@ function initGPS() {
 }
 initGPS();
 
-// ===== ADD LETTER =====
 function addLetter(letter) {
   for (var i = 0; i < cells.length; i++) {
     if (cells[i].value === '') {
@@ -192,7 +179,6 @@ function addLetter(letter) {
   checkAllFilled();
 }
 
-// ===== BACKSPACE =====
 function doBackspace() {
   for (var i = cells.length - 1; i >= 0; i--) {
     if (cells[i].value !== '') {
@@ -202,14 +188,12 @@ function doBackspace() {
   }
 }
 
-// ===== CLEAR CELLS ONLY =====
 function clearCells() {
   for (var i = 0; i < cells.length; i++) {
     cells[i].value = '';
   }
 }
 
-// ===== CLEAR ALL =====
 function clearAll() {
   scans = [];
   scanCount = 0;
@@ -217,7 +201,6 @@ function clearAll() {
   clearCells();
 }
 
-// ===== CHECK IF ALL CELLS FILLED =====
 function checkAllFilled() {
   var filled = true;
   for (var i = 0; i < cells.length; i++) {
@@ -265,7 +248,6 @@ function checkAllFilled() {
   }
 }
 
-// ===== SHOW STATUS SCREEN =====
 function showStatus() {
   if (scans.length === 0) {
     alert('Enter a code first');
@@ -278,7 +260,7 @@ function hideStatus() {
   document.getElementById('statusScreen').style.display = 'none';
 }
 
-// ===== SUBMIT TO XANO - FIXED FOR API =====
+// ===== DEBUG SUBMIT FUNCTION =====
 function submitStatus(status) {
   if (scans.length === 0) {
     hideStatus();
@@ -286,7 +268,13 @@ function submitStatus(status) {
   }
   
   var popup = document.getElementById('successPopup');
-  document.getElementById('popupInfo').innerHTML = 'Sending ' + scans.length + ' code(s)...';
+  var popupMessage = document.getElementById('popupMessage');
+  var popupInfo = document.getElementById('popupInfo');
+  var errorDetails = document.getElementById('errorDetails');
+  
+  popupMessage.innerHTML = 'SENDING...';
+  popupInfo.innerHTML = 'Sending ' + scans.length + ' code(s)';
+  errorDetails.innerHTML = '';
   popup.style.display = 'block';
   
   var successCount = 0;
@@ -299,58 +287,137 @@ function submitStatus(status) {
     
     var now = new Date();
     
-    // API expects these exact field names based on your schema
+    // Format time components
+    var hours = now.getHours();
+    var minutes = now.getMinutes();
+    var seconds = now.getSeconds();
+    if (hours < 10) hours = '0' + hours;
+    if (minutes < 10) minutes = '0' + minutes;
+    if (seconds < 10) seconds = '0' + seconds;
+    var timeStr = hours + ':' + minutes + ':' + seconds;
+    
+    // Format date as YYYY-MM-DD (ISO format)
+    var year = now.getFullYear();
+    var month = (now.getMonth() + 1);
+    var day = now.getDate();
+    if (month < 10) month = '0' + month;
+    if (day < 10) day = '0' + day;
+    var dateStr = year + '-' + month + '-' + day;
+    
+    // Unix timestamp in seconds
+    var timestamp = Math.floor(now.getTime() / 1000);
+    
+    // Format ETA as YYYY-MM-DD (3 days from now)
+    var eta = new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000));
+    var etaYear = eta.getFullYear();
+    var etaMonth = (eta.getMonth() + 1);
+    var etaDay = eta.getDate();
+    if (etaMonth < 10) etaMonth = '0' + etaMonth;
+    if (etaDay < 10) etaDay = '0' + etaDay;
+    var etaStr = etaYear + '-' + etaMonth + '-' + etaDay;
+    
+    // Location string
+    var locationStr = 'Unknown';
+    if (currentLocation) {
+      locationStr = currentLocation.lat.toFixed(6) + ',' + currentLocation.lng.toFixed(6);
+    }
+    
+    // Create data object with EXACT field names from your API
     var data = {
-      label_id: scan.numbers,                    // The decoded number
-      barcode_type: 'manual',                     // They expect 'manual' not 'MANUAL A-J'
-      status: status,                             // The status selected
-      timestamp: Math.floor(now.getTime() / 1000), // Unix timestamp in seconds
-      time: now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds(), // HH:MM:SS
-      date: (now.getMonth()+1) + '/' + now.getDate() + '/' + now.getFullYear(), // MM/DD/YYYY
-      location: currentLocation ? currentLocation.lat.toFixed(6) + ',' + currentLocation.lng.toFixed(6) : 'Unknown',
-      eta: (new Date(now.getTime() + 3*24*60*60*1000)).toLocaleDateString() // 3 days from now
+      label_id: scan.numbers,
+      barcode_type: 'manual',
+      status: status,
+      timestamp: timestamp,
+      time: timeStr,
+      date: dateStr,
+      location: locationStr,
+      eta: etaStr
     };
     
-    console.log('Sending:', JSON.stringify(data));
+    console.log('SENDING TO XANO:');
+    console.log(JSON.stringify(data, null, 2));
     
-    // Use XMLHttpRequest
+    // Use XMLHttpRequest with better error handling
     (function(index, scanData) {
       var xhr = new XMLHttpRequest();
       xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
       xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Accept', 'application/json');
       
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
-          console.log('Response status:', xhr.status);
-          console.log('Response text:', xhr.responseText);
+          console.log('Response Status:', xhr.status);
+          console.log('Response Text:', xhr.responseText);
+          
+          // Try to parse response
+          var responseData = null;
+          try {
+            if (xhr.responseText) {
+              responseData = JSON.parse(xhr.responseText);
+            }
+          } catch (e) {
+            console.log('Could not parse response');
+          }
           
           if (xhr.status >= 200 && xhr.status < 300) {
             successCount++;
+            console.log('✅ SUCCESS:', responseData);
           } else {
             failCount++;
+            var errorMsg = '❌ Failed (Status: ' + xhr.status + ')';
+            if (responseData && responseData.message) {
+              errorMsg += ' - ' + responseData.message;
+            }
+            console.log(errorMsg);
+            
+            // Show detailed error
+            errorDetails.innerHTML = 'Error: ' + (responseData ? JSON.stringify(responseData) : xhr.responseText);
           }
           
           sentCount++;
           
           if (sentCount === totalScans) {
-            var info = '✅ ' + successCount + ' sent';
-            if (failCount > 0) info += ' ❌ ' + failCount + ' failed';
-            document.getElementById('popupInfo').innerHTML = info;
-            
-            setTimeout(function() {
-              popup.style.display = 'none';
-              if (successCount > 0) {
+            if (successCount === totalScans) {
+              popupMessage.innerHTML = '✅ ALL SAVED!';
+              popupInfo.innerHTML = successCount + ' of ' + totalScans + ' sent successfully';
+              
+              setTimeout(function() {
+                popup.style.display = 'none';
                 scans = [];
                 scanCount = 0;
                 document.getElementById('labelBox').innerHTML = '';
-              }
-              hideStatus();
-            }, 2000);
+                hideStatus();
+              }, 2000);
+            } else {
+              popupMessage.innerHTML = '⚠️ PARTIAL SUCCESS';
+              popupInfo.innerHTML = '✅ ' + successCount + ' sent, ❌ ' + failCount + ' failed';
+              
+              // Keep popup open to show error
+              setTimeout(function() {
+                popup.style.display = 'none';
+                if (successCount > 0) {
+                  scans = [];
+                  scanCount = 0;
+                  document.getElementById('labelBox').innerHTML = '';
+                }
+                hideStatus();
+              }, 5000);
+            }
           }
         }
       };
       
-      xhr.send(JSON.stringify(scanData));
+      xhr.onerror = function() {
+        console.log('Network error occurred');
+        failCount++;
+        errorDetails.innerHTML = 'Network error - check connection';
+        sentCount++;
+      };
+      
+      var jsonData = JSON.stringify(scanData);
+      console.log('Sending JSON:', jsonData);
+      xhr.send(jsonData);
+      
     })(i, data);
   }
 }
@@ -364,7 +431,7 @@ window.showStatus = showStatus;
 window.hideStatus = hideStatus;
 window.submitStatus = submitStatus;
 
-console.log('App loaded - Android 5 compatible');
+console.log('App loaded - Debug mode enabled');
 </script>
 </body>
 </html>
