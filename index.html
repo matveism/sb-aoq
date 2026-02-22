@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Courier Scanner - XANO FIX</title>
+  <title>Courier Scanner - FORM FIX</title>
   <style>
     body {
       background: #000000;
@@ -160,14 +160,9 @@
       clear: both;
     }
     
-    .debug {
-      background: #000;
-      color: #0f0;
-      font-size: 10px;
-      padding: 5px;
-      margin-top: 10px;
-      max-height: 100px;
-      overflow: auto;
+    /* Hidden form for submission */
+    #hiddenSubmitForm {
+      display: none;
     }
   </style>
 </head>
@@ -180,7 +175,7 @@
     <span id="timeDisplay">--:--</span>
   </div>
 
-  <button class="submit-btn" id="submitBtn" onclick="sendToDatabase()">📤 SUBMIT</button>
+  <button class="submit-btn" id="submitBtn" onclick="prepareSubmit()">📤 SUBMIT</button>
 
   <div class="cells">
     <div class="cell-box"><input type="text" maxlength="1" id="cell1" onkeyup="cellChanged(1)" onkeydown="handleBackspace(event, 1)"></div>
@@ -237,9 +232,6 @@
   </div>
 
   <div id="statusMessage" class="error"></div>
-  
-  <!-- DEBUG PANEL -->
-  <div class="debug" id="debugInfo"></div>
 
 </div>
 
@@ -249,16 +241,22 @@
   <span id="popupTime"></span>
 </div>
 
+<!-- HIDDEN FORM FOR SUBMISSION -->
+<form id="hiddenSubmitForm" method="POST" action="https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans" enctype="text/plain">
+  <input type="hidden" name='{"label_id":"' id="form_label_id">
+  <input type="hidden" name='","barcode_type":"' id="form_barcode_type">
+  <input type="hidden" name='","status":"' id="form_status">
+  <input type="hidden" name='","timestamp":' id="form_timestamp">
+  <input type="hidden" name=',"time":' id="form_time">
+  <input type="hidden" name=',"date":"' id="form_date">
+  <input type="hidden" name=',"location":"' id="form_location">
+  <input type="hidden" name='","eta":"' id="form_eta">
+  <input type="hidden" name='"}' value="" id="form_end">
+</form>
+
 <script>
-  // SUPER BASIC - WORKS ON OLD ANDROID
+  // BASIC FUNCTIONS
   
-  function debugLog(msg) {
-    var d = document.getElementById('debugInfo');
-    d.innerHTML = d.innerHTML + '<br>' + new Date().toLocaleTimeString() + ': ' + msg;
-    console.log(msg);
-  }
-  
-  // ===== TIME UPDATE =====
   function updateTime() {
     var d = new Date();
     var hours = d.getHours();
@@ -286,10 +284,8 @@
     var index = num - 1;
     var cell = cells[index];
     
-    // Convert to uppercase
     cell.value = cell.value.toUpperCase();
     
-    // Auto advance
     if (cell.value.length == 1 && index < 5) {
       cells[index + 1].focus();
     }
@@ -299,7 +295,7 @@
   
   function handleBackspace(e, num) {
     var index = num - 1;
-    if (e.keyCode == 8) { // Backspace
+    if (e.keyCode == 8) {
       var cell = cells[index];
       if (cell.value == "" && index > 0) {
         cells[index - 1].focus();
@@ -324,7 +320,6 @@
     }
   }
   
-  // ===== DECODE LETTERS =====
   function decodeLetters(encoded) {
     var result = "";
     for (var i = 0; i < encoded.length; i++) {
@@ -360,7 +355,6 @@
     container.appendChild(newRow);
   }
   
-  // ===== POPUP =====
   function showPopup() {
     var d = new Date();
     document.getElementById('popupTime').innerHTML = d.toLocaleDateString() + " " + d.toLocaleTimeString();
@@ -376,8 +370,8 @@
     box.className = isError ? 'error' : 'success';
   }
   
-  // ===== SEND TO XANO USING IMAGE PING (ACTUALLY WORKS) =====
-  function sendToDatabase() {
+  // ===== PREPARE FORM SUBMISSION =====
+  function prepareSubmit() {
     var labelId = document.getElementById('decoded').value;
     
     if (!labelId) {
@@ -392,161 +386,46 @@
                   ('0' + (now.getMonth()+1)).slice(-2) + '-' + 
                   ('0' + now.getDate()).slice(-2);
     
-    // Build the data
-    var data = {
-      label_id: labelId,
-      barcode_type: "manual",
-      status: document.getElementById('status').value,
-      timestamp: timestampSec,
-      time: timestampMs,
-      date: dateStr,
-      location: document.getElementById('location').value || "",
-      eta: document.getElementById('eta').value || ""
-    };
+    // Set form values - this creates a valid JSON string
+    document.getElementById('form_label_id').value = labelId;
+    document.getElementById('form_barcode_type').value = "manual";
+    document.getElementById('form_status').value = document.getElementById('status').value;
+    document.getElementById('form_timestamp').value = timestampSec;
+    document.getElementById('form_time').value = timestampMs;
+    document.getElementById('form_date').value = dateStr;
+    document.getElementById('form_location').value = document.getElementById('location').value || "";
+    document.getElementById('form_eta').value = document.getElementById('eta').value || "";
     
-    setStatus("Sending...", false);
-    debugLog("Data: " + JSON.stringify(data));
+    setStatus("Submitting...", false);
     
-    // METHOD 1: Try normal XHR first
-    tryXHR(data);
-  }
-  
-  function tryXHR(data) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans", true);
-    xhr.setRequestHeader("Content-Type", "application/json");
+    // Submit the form
+    document.getElementById('hiddenSubmitForm').submit();
     
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState == 4) {
-        debugLog("XHR Status: " + xhr.status);
-        if (xhr.status >= 200 && xhr.status < 300) {
-          // Success!
-          successComplete();
-        } else {
-          debugLog("XHR failed, trying JSONP");
-          tryJSONP(data);
-        }
-      }
-    };
-    
-    xhr.onerror = function() {
-      debugLog("XHR error, trying JSONP");
-      tryJSONP(data);
-    };
-    
-    xhr.send(JSON.stringify(data));
-  }
-  
-  function tryJSONP(data) {
-    // Create a unique callback name
-    var callbackName = "callback_" + Math.floor(Math.random() * 1000000);
-    
-    // Convert data to query string
-    var params = [];
-    for (var key in data) {
-      params.push(encodeURIComponent(key) + "=" + encodeURIComponent(data[key]));
-    }
-    params.push("callback=" + callbackName);
-    
-    var url = "https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans?" + params.join("&");
-    
-    debugLog("JSONP URL: " + url);
-    
-    // Create script element
-    var script = document.createElement('script');
-    script.src = url;
-    
-    // Define callback function globally
-    window[callbackName] = function(response) {
-      debugLog("JSONP success: " + JSON.stringify(response));
-      successComplete();
-      document.body.removeChild(script);
-      delete window[callbackName];
-    };
-    
-    // Handle errors
-    script.onerror = function() {
-      debugLog("JSONP failed, trying final method");
-      document.body.removeChild(script);
-      delete window[callbackName];
-      tryBeacon(data);
-    };
-    
-    document.body.appendChild(script);
-    
-    // Timeout
-    setTimeout(function() {
-      if (window[callbackName]) {
-        debugLog("JSONP timeout");
-        delete window[callbackName];
-        tryBeacon(data);
-      }
-    }, 5000);
-  }
-  
-  function tryBeacon(data) {
-    // Convert to query string
-    var params = [];
-    for (var key in data) {
-      params.push(encodeURIComponent(key) + "=" + encodeURIComponent(data[key]));
-    }
-    var url = "https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans?" + params.join("&");
-    
-    debugLog("Trying beacon/iframe with: " + url);
-    
-    // Use image ping (most reliable)
-    var img = new Image();
-    img.onload = function() {
-      debugLog("Image ping loaded");
-      successComplete();
-    };
-    img.onerror = function() {
-      debugLog("Image ping completed (error ignored)");
-      // Assume success - most old browsers can't read response
-      successComplete();
-    };
-    img.src = url + "&t=" + Math.random();
-    
-    // Also try iframe as backup
-    var iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = url;
-    document.body.appendChild(iframe);
-    
-    setTimeout(function() {
-      if (iframe.parentNode) document.body.removeChild(iframe);
-    }, 5000);
-  }
-  
-  function successComplete() {
+    // Show optimistic success (form submission will reload/leave page)
     showPopup();
-    setStatus("✓ Saved to XANO", false);
+    setStatus("✓ Check XANO database", false);
     
     // Clear cells
     for (var i = 0; i < 6; i++) {
       cells[i].value = "";
     }
     document.getElementById('decoded').value = "";
-    cells[0].focus();
     
-    debugLog("SUCCESS! Data should be in XANO");
+    // Don't redirect - let the form do its thing
   }
   
   // ===== ENTER KEY =====
   for (var i = 0; i < cells.length; i++) {
     cells[i].onkeypress = function(e) {
-      if (e.keyCode == 13) { // Enter key
-        sendToDatabase();
+      if (e.keyCode == 13) {
+        prepareSubmit();
         return false;
       }
     };
   }
   
-  // ===== START =====
   window.onload = function() {
     cells[0].focus();
-    debugLog("App started - XANO fix");
-    debugLog("Android 5.0.2 mode");
   };
 </script>
 
