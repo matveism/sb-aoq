@@ -1,251 +1,410 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Courier Scanner - FINAL FIX</title>
+  <!-- CRITICAL FOR HOME SCREEN APP MODE -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#15569B">
+  
+  <!-- HOME SCREEN ICONS (optional but good) -->
+  <link rel="icon" sizes="192x192" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2315569B'/%3E%3Ctext x='50' y='70' font-size='70' text-anchor='middle' fill='white' font-family='Arial'%3E📦%3C/text%3E%3C/svg%3E">
+  
+  <title>Courier Scanner</title>
   <style>
-    body {
-      background: #000000;
+    /* RESET FOR FULLSCREEN APP */
+    * {
       margin: 0;
-      padding: 5px;
-      font-family: Arial, Helvetica, sans-serif;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
     
-    .phone {
-      max-width: 360px;
-      margin: 0 auto;
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000000;
+      font-family: 'Roboto', Arial, Helvetica, sans-serif;
+      
+      /* PREVENT ZOOM ON INPUT FOCUS (OLD ANDROID) */
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    
+    /* MAIN CONTAINER - EXACT 5" 720x1280 FRIENDLY */
+    .app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
       background: #B0C8E2;
-      border: 2px solid #333;
-      padding: 8px;
+      position: relative;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     
-    .header {
+    /* STATUS BAR AREA */
+    .status-bar {
       background: #15569B;
       color: white;
-      padding: 6px 10px;
-      margin-bottom: 8px;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       font-size: 16px;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      /* SAFE AREA FOR NOTCH (though conquest doesn't have one) */
+      padding-top: max(8px, env(safe-area-inset-top));
+    }
+    
+    .status-bar .title {
       font-weight: bold;
+      letter-spacing: 0.5px;
     }
     
-    .header span {
-      float: right;
+    .status-bar .time {
+      background: rgba(0,0,0,0.2);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
     }
     
+    /* CONTENT AREA - PERFECT SCROLLING */
+    .content {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* SUBMIT BUTTON - BIG AND TAPPABLE */
     .submit-btn {
       background: #28a745;
+      border: none;
+      border-bottom: 4px solid #1e7e34;
       color: white;
-      border: 2px solid #1e7e34;
-      padding: 12px 15px;
-      font-size: 20px;
-      font-weight: bold;
+      font-size: 28px;
+      font-weight: 800;
+      padding: 20px;
       width: 100%;
-      margin-bottom: 10px;
-      border-radius: 5px;
+      border-radius: 60px;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      box-shadow: 0 6px 0 #145c23;
       cursor: pointer;
+      transition: all 0.05s ease;
+      -webkit-appearance: none;
+      appearance: none;
+      touch-action: manipulation;
     }
     
-    .mini-grid {
+    .submit-btn:active {
+      transform: translateY(4px);
+      border-bottom-width: 2px;
+      box-shadow: 0 2px 0 #145c23;
+    }
+    
+    /* CELL GRID - PERFECT FOR 5" */
+    .cell-grid {
       background: #96BEEE;
-      padding: 10px;
-      margin-bottom: 10px;
+      padding: 20px 10px;
+      border-radius: 30px;
+      margin-bottom: 20px;
+      border: 3px solid #79A4D2;
       text-align: center;
     }
     
+    .cell-container {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
     .cell-box {
-      display: inline-block;
-      width: 45px;
-      margin: 2px;
+      width: 70px;
+      height: 70px;
     }
     
     .cell-box input {
       width: 100%;
-      height: 40px;
+      height: 100%;
       text-align: center;
-      font-size: 24px;
-      font-weight: bold;
+      font-size: 42px;
+      font-weight: 800;
       background: #E2E8D3;
-      border: 2px solid #666;
+      border: 3px solid #4a6c8f;
+      border-radius: 15px;
+      color: #1a2f44;
+      outline: none;
+      text-transform: uppercase;
+      -webkit-appearance: none;
+      appearance: none;
     }
     
-    .field {
+    .cell-box input:focus {
+      border-color: #ff6600;
+      background: #fff3e0;
+      box-shadow: 0 0 0 4px rgba(255,102,0,0.3);
+    }
+    
+    /* FORM FIELDS - PERFECT SIZE */
+    .field-group {
       background: #96BEEE;
-      padding: 10px;
-      margin-bottom: 8px;
-      border: 2px solid #79A4D2;
+      padding: 16px;
+      border-radius: 20px;
+      border: 3px solid #79A4D2;
+      margin-bottom: 16px;
     }
     
-    .field label {
+    .field-row {
+      margin-bottom: 16px;
+    }
+    
+    .field-row:last-child {
+      margin-bottom: 0;
+    }
+    
+    .field-row label {
       display: block;
-      font-weight: bold;
-      font-size: 14px;
-      color: #15569B;
-      margin-bottom: 4px;
-    }
-    
-    .field input, .field select {
-      width: 100%;
-      padding: 8px;
       font-size: 16px;
-      border: 2px solid #79A4D2;
+      font-weight: 700;
+      color: #15569B;
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+    
+    .field-row input,
+    .field-row select {
+      width: 100%;
+      padding: 16px 18px;
+      font-size: 20px;
+      border: 3px solid #79A4D2;
+      border-radius: 20px;
       background: white;
-      box-sizing: border-box;
+      -webkit-appearance: none;
+      appearance: none;
+      outline: none;
     }
     
-    .field input[readonly] {
+    .field-row input:focus,
+    .field-row select:focus {
+      border-color: #ff6600;
+      box-shadow: 0 0 0 4px rgba(255,102,0,0.2);
+    }
+    
+    .field-row input[readonly] {
       background: #E2E8D3;
-      font-weight: bold;
+      font-weight: 700;
+      color: #003366;
+      border-color: #4a6c8f;
     }
     
-    .result-box {
-      border: 2px solid #79A4D2;
-      background: #96BEEE;
-      margin-top: 10px;
+    /* DROPDOWN ARROW */
+    .field-row select {
+      background: white url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23333" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg>') no-repeat right 16px center;
+      background-size: 24px;
+      padding-right: 50px;
     }
     
-    .result-header {
-      background: #79A4D2;
-      padding: 8px;
-      font-weight: bold;
-      border-bottom: 2px solid #333;
-    }
-    
-    .result-row {
-      padding: 8px;
-      border-bottom: 1px solid #666;
+    /* HISTORY BOX */
+    .history-box {
+      border: 3px solid #79A4D2;
+      border-radius: 20px;
       overflow: hidden;
+      background: #96BEEE;
+      margin-top: 20px;
     }
     
-    .result-row div {
-      float: left;
+    .history-header {
+      background: #79A4D2;
+      padding: 16px;
+      font-weight: 800;
+      font-size: 18px;
+      color: #003366;
+      border-bottom: 2px solid #4a6c8f;
     }
     
-    .result-num {
-      width: 40px;
-      font-weight: bold;
+    .history-row {
+      padding: 14px 16px;
+      border-bottom: 1px solid #79A4D2;
+      display: flex;
+      align-items: center;
+      font-size: 18px;
     }
     
-    .result-val {
-      font-weight: bold;
+    .history-row:last-child {
+      border-bottom: none;
     }
     
+    .history-num {
+      width: 50px;
+      font-weight: 800;
+      color: #15569B;
+    }
+    
+    .history-val {
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      font-size: 20px;
+    }
+    
+    /* STATUS MESSAGE */
+    #statusMessage {
+      margin-top: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      min-height: 30px;
+    }
+    
+    .error { color: #b52e2e; }
+    .success { color: #1e7e34; }
+    
+    /* POPUP - CENTERED PERFECTLY */
     .popup {
       position: fixed;
       top: 50%;
       left: 50%;
-      width: 200px;
-      margin-left: -100px;
-      margin-top: -70px;
+      transform: translate(-50%, -50%);
+      width: 280px;
       background: white;
-      border: 5px solid #28a745;
-      padding: 20px;
+      border: 6px solid #28a745;
+      border-radius: 50px;
+      padding: 30px 20px;
       text-align: center;
       display: none;
-      z-index: 9999;
-      font-size: 18px;
+      z-index: 99999;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    
+    .popup .circle {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: #28a745;
+      margin: 0 auto 20px auto;
+      color: white;
+      font-size: 60px;
+      line-height: 96px;
       font-weight: bold;
     }
     
-    .error {
-      color: #b52e2e;
-      font-weight: bold;
-      margin-top: 5px;
-    }
-    
-    .success {
+    .popup p {
+      font-size: 24px;
+      font-weight: 800;
+      margin: 0;
       color: #1e7e34;
     }
     
-    .clearfix {
-      clear: both;
+    .popup small {
+      display: block;
+      margin-top: 12px;
+      font-size: 14px;
+      color: #666;
     }
     
-    /* Hidden iframe for form submission */
+    /* HIDDEN IFRAME */
     #submitFrame {
+      display: none;
+    }
+    
+    /* HIDDEN FORM */
+    #xanoForm {
       display: none;
     }
   </style>
 </head>
 <body>
 
-<div class="phone">
+<div class="app">
 
-  <div class="header">
-    COURIER SCANNER 
-    <span id="timeDisplay">--:--</span>
+  <div class="status-bar">
+    <span class="title">📦 COURIER SCAN</span>
+    <span class="time" id="timeDisplay">--:--</span>
   </div>
 
-  <button class="submit-btn" id="submitBtn" onclick="submitForm()">📤 SUBMIT TO XANO</button>
+  <div class="content">
 
-  <div class="mini-grid">
-    <div class="cell-box"><input type="text" maxlength="1" id="cell1" onkeyup="cellChanged(1)" onkeydown="handleBackspace(event, 1)"></div>
-    <div class="cell-box"><input type="text" maxlength="1" id="cell2" onkeyup="cellChanged(2)" onkeydown="handleBackspace(event, 2)"></div>
-    <div class="cell-box"><input type="text" maxlength="1" id="cell3" onkeyup="cellChanged(3)" onkeydown="handleBackspace(event, 3)"></div>
-    <div class="cell-box"><input type="text" maxlength="1" id="cell4" onkeyup="cellChanged(4)" onkeydown="handleBackspace(event, 4)"></div>
-    <div class="cell-box"><input type="text" maxlength="1" id="cell5" onkeyup="cellChanged(5)" onkeydown="handleBackspace(event, 5)"></div>
-    <div class="cell-box"><input type="text" maxlength="1" id="cell6" onkeyup="cellChanged(6)" onkeydown="handleBackspace(event, 6)"></div>
-    <div class="clearfix"></div>
-  </div>
+    <button class="submit-btn" id="submitBtn" onclick="submitForm()">📤 SUBMIT</button>
 
-  <div class="field">
-    <label>Decoded Label ID</label>
-    <input type="text" id="decoded" readonly>
-  </div>
-
-  <div class="field">
-    <label>Entry Type</label>
-    <input type="text" id="barcode_type" value="manual" readonly>
-  </div>
-
-  <div class="field">
-    <label>Status</label>
-    <select id="status">
-      <option value="Data Received">Data Received</option>
-      <option value="Picked Up">Picked Up</option>
-      <option value="Depart Post Office">Depart Post Office</option>
-      <option value="Arrival Scan">Arrival Scan</option>
-      <option value="Local Scan">Local Scan</option>
-      <option value="Out For Delivery">Out For Delivery</option>
-      <option value="Delivered">Delivered</option>
-    </select>
-  </div>
-
-  <div class="field">
-    <label>Location</label>
-    <input type="text" id="location" placeholder="City, State">
-  </div>
-
-  <div class="field">
-    <label>ETA</label>
-    <input type="text" id="eta" placeholder="e.g., 2026-02-21">
-  </div>
-
-  <div class="result-box">
-    <div class="result-header">LABEL ID HISTORY</div>
-    <div id="historyContainer">
-      <div class="result-row" id="emptyHistoryRow">
-        <div class="result-num"></div>
-        <div class="result-val"></div>
-        <div class="clearfix"></div>
+    <div class="cell-grid">
+      <div class="cell-container">
+        <div class="cell-box"><input type="text" maxlength="1" id="cell1" onkeyup="cellChanged(1)" onkeydown="handleBackspace(event, 1)"></div>
+        <div class="cell-box"><input type="text" maxlength="1" id="cell2" onkeyup="cellChanged(2)" onkeydown="handleBackspace(event, 2)"></div>
+        <div class="cell-box"><input type="text" maxlength="1" id="cell3" onkeyup="cellChanged(3)" onkeydown="handleBackspace(event, 3)"></div>
+        <div class="cell-box"><input type="text" maxlength="1" id="cell4" onkeyup="cellChanged(4)" onkeydown="handleBackspace(event, 4)"></div>
+        <div class="cell-box"><input type="text" maxlength="1" id="cell5" onkeyup="cellChanged(5)" onkeydown="handleBackspace(event, 5)"></div>
+        <div class="cell-box"><input type="text" maxlength="1" id="cell6" onkeyup="cellChanged(6)" onkeydown="handleBackspace(event, 6)"></div>
       </div>
     </div>
+
+    <div class="field-group">
+      <div class="field-row">
+        <label>Decoded Label ID</label>
+        <input type="text" id="decoded" readonly>
+      </div>
+
+      <div class="field-row">
+        <label>Entry Type</label>
+        <input type="text" id="barcode_type" value="manual" readonly>
+      </div>
+
+      <div class="field-row">
+        <label>Status</label>
+        <select id="status">
+          <option value="Data Received">📥 Data Received</option>
+          <option value="Picked Up">📬 Picked Up</option>
+          <option value="Depart Post Office">🚚 Depart Post Office</option>
+          <option value="Arrival Scan">📍 Arrival Scan</option>
+          <option value="Local Scan">🏙️ Local Scan</option>
+          <option value="Out For Delivery">🛵 Out For Delivery</option>
+          <option value="Delivered">✅ Delivered</option>
+        </select>
+      </div>
+
+      <div class="field-row">
+        <label>Location</label>
+        <input type="text" id="location" placeholder="City, State">
+      </div>
+
+      <div class="field-row">
+        <label>ETA</label>
+        <input type="text" id="eta" placeholder="e.g., 2026-02-21">
+      </div>
+    </div>
+
+    <div class="history-box">
+      <div class="history-header">📋 HISTORY</div>
+      <div id="historyContainer">
+        <div class="history-row" id="emptyHistoryRow">
+          <div class="history-num"></div>
+          <div class="history-val"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="statusMessage"></div>
+
   </div>
 
-  <div id="statusMessage" class="error"></div>
+  <div class="popup" id="successPopup">
+    <div class="circle">✓</div>
+    <p>SAVED TO XANO</p>
+    <small id="popupTime"></small>
+  </div>
 
 </div>
 
-<div class="popup" id="successPopup">
-  <div style="font-size:40px; color:#28a745;">✓</div>
-  SENT TO XANO<br>
-  <span id="popupTime"></span>
-</div>
-
-<!-- HIDDEN IFRAME FOR FORM SUBMISSION -->
+<!-- HIDDEN IFRAME AND FORM -->
 <iframe id="submitFrame" name="submitFrame"></iframe>
 
-<!-- REAL FORM - URL ENCODED (WHAT XANO EXPECTS) -->
 <form id="xanoForm" method="POST" action="https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans" target="submitFrame" style="display:none">
   <input type="text" name="label_id" id="form_label_id">
   <input type="text" name="barcode_type" id="form_barcode_type">
@@ -350,10 +509,9 @@
     
     var container = document.getElementById('historyContainer');
     var newRow = document.createElement('div');
-    newRow.className = 'result-row';
-    newRow.innerHTML = '<div class="result-num">' + historyCount + '</div>' +
-                       '<div class="result-val">' + value + '</div>' +
-                       '<div class="clearfix"></div>';
+    newRow.className = 'history-row';
+    newRow.innerHTML = '<div class="history-num">' + historyCount + '</div>' +
+                       '<div class="history-val">' + value + '</div>';
     container.appendChild(newRow);
   }
   
@@ -372,7 +530,7 @@
     box.className = isError ? 'error' : 'success';
   }
   
-  // ===== FINAL SUBMIT FUNCTION =====
+  // ===== SUBMIT FUNCTION =====
   function submitForm() {
     var labelId = document.getElementById('decoded').value;
     
@@ -388,7 +546,7 @@
                   ('0' + (now.getMonth()+1)).slice(-2) + '-' + 
                   ('0' + now.getDate()).slice(-2);
     
-    // Set ALL form values
+    // Set form values
     document.getElementById('form_label_id').value = labelId;
     document.getElementById('form_barcode_type').value = "manual";
     document.getElementById('form_status').value = document.getElementById('status').value;
@@ -398,18 +556,10 @@
     document.getElementById('form_location').value = document.getElementById('location').value || "";
     document.getElementById('form_eta').value = document.getElementById('eta').value || "";
     
-    // Log what we're sending
-    console.log("Submitting to XANO:");
-    console.log("label_id: " + labelId);
-    console.log("timestamp: " + timestampSec);
-    console.log("time: " + timestampMs);
-    
-    setStatus("Sending to XANO...", false);
-    
-    // Show popup optimistically
+    setStatus("Sending...", false);
     showPopup();
     
-    // Submit the form to the hidden iframe
+    // Submit form
     document.getElementById('xanoForm').submit();
     
     // Clear cells
@@ -417,8 +567,9 @@
       cells[i].value = "";
     }
     document.getElementById('decoded').value = "";
+    cells[0].focus();
     
-    setStatus("✓ Form submitted - check XANO", false);
+    setStatus("✓ Sent to XANO", false);
   }
   
   // ===== ENTER KEY =====
@@ -431,8 +582,18 @@
     };
   }
   
+  // ===== PREVENT ZOOM ON INPUT (OLD ANDROID) =====
+  document.querySelectorAll('input, select').forEach(function(el) {
+    el.addEventListener('focus', function() {
+      // No zoom fix for old Android
+    });
+  });
+  
   window.onload = function() {
     cells[0].focus();
+    
+    // Add to home screen instructions (optional)
+    console.log('Add to home screen for app mode');
   };
 </script>
 
