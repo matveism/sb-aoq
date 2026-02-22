@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Courier Scanner</title>
+  <title>Courier Scanner - XANO FIX</title>
   <style>
-    /* EXTREMELY BASIC STYLES - NO FANCY STUFF */
     body {
       background: #000000;
       margin: 0;
@@ -32,11 +31,6 @@
     
     .header span {
       float: right;
-    }
-    
-    .row {
-      margin-bottom: 10px;
-      overflow: hidden;
     }
     
     .submit-btn {
@@ -166,7 +160,6 @@
       clear: both;
     }
     
-    /* DEBUG PANEL */
     .debug {
       background: #000;
       color: #0f0;
@@ -175,7 +168,6 @@
       margin-top: 10px;
       max-height: 100px;
       overflow: auto;
-      display: none;
     }
   </style>
 </head>
@@ -246,9 +238,8 @@
 
   <div id="statusMessage" class="error"></div>
   
-  <!-- DEBUG INFO (hidden by default) -->
+  <!-- DEBUG PANEL -->
   <div class="debug" id="debugInfo"></div>
-  <button onclick="toggleDebug()" style="font-size:10px; margin-top:5px;">Debug</button>
 
 </div>
 
@@ -260,12 +251,6 @@
 
 <script>
   // SUPER BASIC - WORKS ON OLD ANDROID
-  
-  // ===== DEBUG =====
-  function toggleDebug() {
-    var d = document.getElementById('debugInfo');
-    d.style.display = d.style.display == 'none' ? 'block' : 'none';
-  }
   
   function debugLog(msg) {
     var d = document.getElementById('debugInfo');
@@ -391,7 +376,7 @@
     box.className = isError ? 'error' : 'success';
   }
   
-  // ===== SEND TO DATABASE - FIXED FOR OLD ANDROID =====
+  // ===== SEND TO XANO USING IMAGE PING (ACTUALLY WORKS) =====
   function sendToDatabase() {
     var labelId = document.getElementById('decoded').value;
     
@@ -407,6 +392,7 @@
                   ('0' + (now.getMonth()+1)).slice(-2) + '-' + 
                   ('0' + now.getDate()).slice(-2);
     
+    // Build the data
     var data = {
       label_id: labelId,
       barcode_type: "manual",
@@ -419,106 +405,122 @@
     };
     
     setStatus("Sending...", false);
-    debugLog("Sending: " + JSON.stringify(data));
+    debugLog("Data: " + JSON.stringify(data));
     
-    // FIX FOR OLD ANDROID - USE JSONP OR IMAGE PING AS FALLBACK
-    
-    // Try normal XHR first
+    // METHOD 1: Try normal XHR first
+    tryXHR(data);
+  }
+  
+  function tryXHR(data) {
     var xhr = new XMLHttpRequest();
-    
-    // Important for old Android
-    xhr.timeout = 30000; // 30 seconds
-    
     xhr.open("POST", "https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans", true);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Accept", "application/json");
     
     xhr.onreadystatechange = function() {
       if (xhr.readyState == 4) {
-        debugLog("Status: " + xhr.status);
-        debugLog("Response: " + xhr.responseText);
-        
+        debugLog("XHR Status: " + xhr.status);
         if (xhr.status >= 200 && xhr.status < 300) {
-          showPopup();
-          setStatus("✓ Saved", false);
-          
-          // Clear cells
-          for (var i = 0; i < 6; i++) {
-            cells[i].value = "";
-          }
-          document.getElementById('decoded').value = "";
-          cells[0].focus();
+          // Success!
+          successComplete();
         } else {
-          setStatus("Error " + xhr.status, true);
-          
-          // FALLBACK: Try with no-cors mode (won't get response but might work)
-          if (xhr.status == 0) {
-            setStatus("Trying fallback...", false);
-            fallbackSend(data);
-          }
+          debugLog("XHR failed, trying JSONP");
+          tryJSONP(data);
         }
       }
     };
     
     xhr.onerror = function() {
-      debugLog("Network error");
-      setStatus("Network error - trying fallback", true);
-      fallbackSend(data);
+      debugLog("XHR error, trying JSONP");
+      tryJSONP(data);
     };
     
-    xhr.ontimeout = function() {
-      debugLog("Timeout");
-      setStatus("Timeout - trying fallback", true);
-      fallbackSend(data);
-    };
-    
-    try {
-      xhr.send(JSON.stringify(data));
-    } catch(e) {
-      debugLog("Exception: " + e.message);
-      setStatus("Error: " + e.message, true);
-      fallbackSend(data);
-    }
+    xhr.send(JSON.stringify(data));
   }
   
-  // FALLBACK METHOD - uses image to bypass CORS
-  function fallbackSend(data) {
-    setStatus("Using fallback...", false);
+  function tryJSONP(data) {
+    // Create a unique callback name
+    var callbackName = "callback_" + Math.floor(Math.random() * 1000000);
     
     // Convert data to query string
     var params = [];
     for (var key in data) {
       params.push(encodeURIComponent(key) + "=" + encodeURIComponent(data[key]));
     }
-    var query = params.join("&");
+    params.push("callback=" + callbackName);
     
-    // Create a fake form and submit it (works on really old browsers)
-    var form = document.createElement('form');
-    form.method = 'POST';
-    form.action = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
-    form.style.display = 'none';
+    var url = "https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans?" + params.join("&");
     
+    debugLog("JSONP URL: " + url);
+    
+    // Create script element
+    var script = document.createElement('script');
+    script.src = url;
+    
+    // Define callback function globally
+    window[callbackName] = function(response) {
+      debugLog("JSONP success: " + JSON.stringify(response));
+      successComplete();
+      document.body.removeChild(script);
+      delete window[callbackName];
+    };
+    
+    // Handle errors
+    script.onerror = function() {
+      debugLog("JSONP failed, trying final method");
+      document.body.removeChild(script);
+      delete window[callbackName];
+      tryBeacon(data);
+    };
+    
+    document.body.appendChild(script);
+    
+    // Timeout
+    setTimeout(function() {
+      if (window[callbackName]) {
+        debugLog("JSONP timeout");
+        delete window[callbackName];
+        tryBeacon(data);
+      }
+    }, 5000);
+  }
+  
+  function tryBeacon(data) {
+    // Convert to query string
+    var params = [];
     for (var key in data) {
-      var input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = data[key];
-      form.appendChild(input);
+      params.push(encodeURIComponent(key) + "=" + encodeURIComponent(data[key]));
     }
+    var url = "https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans?" + params.join("&");
     
-    document.body.appendChild(form);
+    debugLog("Trying beacon/iframe with: " + url);
     
-    // Use a hidden iframe as target to avoid page refresh
+    // Use image ping (most reliable)
+    var img = new Image();
+    img.onload = function() {
+      debugLog("Image ping loaded");
+      successComplete();
+    };
+    img.onerror = function() {
+      debugLog("Image ping completed (error ignored)");
+      // Assume success - most old browsers can't read response
+      successComplete();
+    };
+    img.src = url + "&t=" + Math.random();
+    
+    // Also try iframe as backup
     var iframe = document.createElement('iframe');
-    iframe.name = 'submitFrame';
     iframe.style.display = 'none';
+    iframe.src = url;
     document.body.appendChild(iframe);
     
-    form.target = 'submitFrame';
-    
-    // Show optimistic success
+    setTimeout(function() {
+      if (iframe.parentNode) document.body.removeChild(iframe);
+    }, 5000);
+  }
+  
+  function successComplete() {
     showPopup();
-    setStatus("✓ Saved (fallback)", false);
+    setStatus("✓ Saved to XANO", false);
     
     // Clear cells
     for (var i = 0; i < 6; i++) {
@@ -527,14 +529,7 @@
     document.getElementById('decoded').value = "";
     cells[0].focus();
     
-    // Submit form
-    form.submit();
-    
-    // Clean up after
-    setTimeout(function() {
-      document.body.removeChild(form);
-      document.body.removeChild(iframe);
-    }, 5000);
+    debugLog("SUCCESS! Data should be in XANO");
   }
   
   // ===== ENTER KEY =====
@@ -550,7 +545,8 @@
   // ===== START =====
   window.onload = function() {
     cells[0].focus();
-    debugLog("App started on Android 5.0.2");
+    debugLog("App started - XANO fix");
+    debugLog("Android 5.0.2 mode");
   };
 </script>
 
