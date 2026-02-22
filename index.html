@@ -2,22 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Android 5.0 Screen</title>
+  <title>5-INCH PERFECT FIT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
   <style>
-    body {
+    * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
       background: #000;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      font-family: Roboto, Arial, sans-serif;
+      min-height: 100vh;
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 0;
     }
 
+    /* EXACT 5-INCH SCREEN DIMENSIONS (approx 480x854) */
     .device {
-      width: 360px;
-      height: 640px;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      max-height: 854px;
       background: #B0C8E2;
       color: black;
       display: flex;
@@ -25,66 +34,81 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.7);
       overflow: hidden;
       position: relative;
+      border-radius: 0;
     }
 
     .header {
       background: #15569B;
-      color: #D0D7DC;
-      height: 25px;
+      color: white;
+      height: 45px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 16px;
-      font-size: 14px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .header-time {
+      background: #000;
+      padding: 6px 16px;
+      border-radius: 30px;
+      color: #FFD700;
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 1px;
     }
 
     .scan-row {
       display: flex;
       flex-direction: row;
       align-items: center;
-      padding: 10px 8px;
-      gap: 6px;
+      padding: 15px 12px;
+      gap: 10px;
       background: #B0C8E2;
     }
 
     .submit-btn {
       background: #28a745;
       border: none;
-      padding: 8px 16px;
+      padding: 12px 20px;
       font-weight: bold;
       color: white;
-      border-radius: 4px;
-      font-size: 16px;
-      height: 36px;
+      border-radius: 8px;
+      font-size: 20px;
+      height: 50px;
       display: flex;
       align-items: center;
       cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 0 #1e7e34;
       border: 1px solid #1e7e34;
+      min-width: 120px;
+      justify-content: center;
     }
 
     .submit-btn:active {
       background: #218838;
-      transform: translateY(1px);
+      transform: translateY(4px);
+      box-shadow: 0 0 0 #1e7e34;
     }
 
     .mini-grid {
       display: flex;
       flex-direction: row;
-      gap: 2px;
-      height: 28px;
+      gap: 6px;
+      height: 50px;
       align-items: center;
       flex: 1;
     }
 
     .mini-cell {
-      width: 33px;
-      height: 25px;
+      width: 45px;
+      height: 45px;
       background: #E2E8D3;
-      border: 1px solid #999;
-      border-radius: 2px;
+      border: 2px solid #666;
+      border-radius: 6px;
       text-align: center;
-      font-size: 16px;
+      font-size: 28px;
       font-weight: bold;
       color: black;
       outline: none;
@@ -92,7 +116,7 @@
 
     .content {
       flex: 1;
-      padding: 8px;
+      padding: 12px;
       overflow-y: auto;
     }
 
@@ -102,84 +126,91 @@
       background: #000;
       display: none;
       object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 10px;
     }
 
-    /* STATUS FIELDS */
+    /* STATUS FIELDS - BIGGER */
     .status-fields {
-      margin: 10px 0;
-      padding: 8px;
+      margin: 15px 0;
+      padding: 15px;
       background: #96BEEE;
-      border-radius: 4px;
-      border: 2px solid #79A4D2;
+      border-radius: 12px;
+      border: 3px solid #79A4D2;
     }
 
     .field-row {
-      margin-bottom: 8px;
+      margin-bottom: 15px;
     }
 
     .field-row label {
       display: block;
-      font-size: 12px;
+      font-size: 16px;
       font-weight: bold;
       color: #15569B;
-      margin-bottom: 2px;
+      margin-bottom: 5px;
     }
 
     .field-row select,
     .field-row input {
       width: 100%;
-      padding: 6px;
-      border: 1px solid #79A4D2;
-      border-radius: 3px;
-      font-size: 14px;
+      padding: 14px 12px;
+      border: 2px solid #79A4D2;
+      border-radius: 8px;
+      font-size: 18px;
       background: white;
       box-sizing: border-box;
     }
 
     .field-row input:focus,
     .field-row select:focus {
-      outline: 2px solid #FCC57A;
+      outline: 3px solid #FCC57A;
       border-color: #FCC57A;
     }
 
     .field-row input[readonly] {
       background: #e2e8d3;
       font-weight: bold;
+      font-size: 20px;
     }
 
     /* RESULT BOX */
     .result-box {
-      margin-top: 10px;
-      border: 2px solid #79A4D2;
-      border-radius: 4px;
+      margin-top: 15px;
+      border: 3px solid #79A4D2;
+      border-radius: 10px;
       overflow: hidden;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
     }
 
     .result-header,
     .result-row {
       display: grid;
-      grid-template-columns: 40px 1fr;
+      grid-template-columns: 60px 1fr;
       align-items: center;
     }
 
     .result-header {
       background: #79A4D2;
       color: black;
+      font-size: 18px;
     }
 
     .result-row {
       background: #96BEEE;
       color: black;
+      font-size: 20px;
+      border-top: 1px solid #79A4D2;
     }
 
     .result-cell {
-      padding: 6px 10px;
+      padding: 12px 15px;
     }
 
     .result-cell-value {
       font-weight: bold;
+      font-size: 22px;
     }
 
     /* POPUP */
@@ -187,56 +218,56 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 180px;
-      margin-left: -90px;
-      margin-top: -80px;
+      width: 220px;
+      margin-left: -110px;
+      margin-top: -100px;
       background: #ffffff;
-      border: 4px solid #28a745;
-      border-radius: 30px;
+      border: 6px solid #28a745;
+      border-radius: 40px;
       text-align: center;
-      padding: 20px 10px 15px 10px;
+      padding: 25px 10px 20px 10px;
       display: none;
       z-index: 9999;
       box-shadow: 0 20px 30px black;
     }
 
     #popup .circle {
-      width: 60px;
-      height: 60px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
       background: #28a745;
-      margin: 0 auto 12px auto;
+      margin: 0 auto 15px auto;
       color: #fff;
-      font-size: 40px;
+      font-size: 50px;
       font-weight: bold;
-      line-height: 64px;
+      line-height: 85px;
     }
 
     #popup p {
       margin: 0;
-      font-size: 18px;
+      font-size: 24px;
       font-weight: 600;
       color: #1e7e34;
     }
 
     #popup-time {
-      font-size: 12px;
-      margin-top: 8px;
+      font-size: 14px;
+      margin-top: 10px;
       color: #666;
     }
 
     #statusBox {
-      margin-top: 8px;
-      font-size: 14px;
+      margin-top: 15px;
+      font-size: 18px;
       text-align: center;
-      min-height: 20px;
-      font-weight: 500;
+      min-height: 25px;
+      font-weight: 600;
     }
 
     .error-detail {
-      font-size: 11px;
+      font-size: 14px;
       color: #b52e2e;
-      margin-top: 2px;
+      margin-top: 5px;
       word-break: break-word;
     }
   </style>
@@ -245,12 +276,12 @@
   <div class="device">
 
     <div class="header">
-      <div class="header-title">Scan Barcode</div>
-      <div class="header-time" id="deviceTime">--:--</div>
+      <div class="header-title">📦 SCAN BARCODE</div>
+      <div class="header-time" id="deviceTime">--:--:--</div>
     </div>
 
     <div class="scan-row">
-      <button class="submit-btn" id="submitBtn">SUBMIT</button>
+      <button class="submit-btn" id="submitBtn">📤 SUBMIT</button>
 
       <div class="mini-grid">
         <input class="mini-cell" maxlength="1" id="cell1">
@@ -268,17 +299,17 @@
       <!-- STATUS FIELDS -->
       <div class="status-fields">
         <div class="field-row">
-          <label>Decoded Label ID</label>
-          <input type="text" id="decoded" readonly>
+          <label>🔢 DECODED LABEL ID</label>
+          <input type="text" id="decoded" readonly placeholder="AUTO-FILLS">
         </div>
         
         <div class="field-row">
-          <label>Entry Type</label>
+          <label>📋 ENTRY TYPE</label>
           <input type="text" id="barcode_type" value="manual" readonly>
         </div>
 
         <div class="field-row">
-          <label>Status</label>
+          <label>📌 STATUS</label>
           <select id="status">
             <option value="Data Received">📥 Data Received</option>
             <option value="Picked Up">📬 Picked Up</option>
@@ -291,13 +322,13 @@
         </div>
 
         <div class="field-row">
-          <label>Location</label>
+          <label>📍 LOCATION</label>
           <input type="text" id="location" placeholder="City, State">
         </div>
 
         <div class="field-row">
-          <label>ETA</label>
-          <input type="text" id="eta" placeholder="e.g., 2025-03-15">
+          <label>📅 ETA</label>
+          <input type="text" id="eta" placeholder="YYYY-MM-DD">
         </div>
       </div>
 
@@ -333,7 +364,7 @@
   <script src="https://unpkg.com/@zxing/library@0.18.6"></script>
 
   <script>
-    /* ========== SIMPLE DEVICE TIME - NO BULLSHIT ========== */
+    /* ========== DEVICE TIME - BIG AND VISIBLE ========== */
     function updateDeviceTime() {
       var now = new Date();
       var hours = String(now.getHours()).padStart(2, '0');
@@ -438,7 +469,7 @@
       document.getElementById('errorDetail').innerHTML = detail;
     }
 
-    /* ========== SEND TO XANO (DEVICE TIME) ========== */
+    /* ========== SEND TO XANO ========== */
     function sendToXano() {
       var labelId = document.getElementById('decoded').value;
       
@@ -449,13 +480,12 @@
 
       var now = new Date();
       
-      // Payload with ALL required fields
       var payload = {
         label_id: labelId,
         barcode_type: "manual",
         status: document.getElementById('status').value,
-        timestamp: Math.floor(now.getTime() / 1000),  // seconds
-        time: now.getTime(),                           // milliseconds
+        timestamp: Math.floor(now.getTime() / 1000),
+        time: now.getTime(),
         date: now.toISOString().split('T')[0],
         location: document.getElementById('location').value || '',
         eta: document.getElementById('eta').value || ''
@@ -477,7 +507,6 @@
             showPopup();
             setStatus('✓ Saved successfully', false);
             
-            // Clear cells
             for (var i = 0; i < cells.length; i++) {
               cells[i].value = '';
               cells[i].style.background = '#E2E8D3';
@@ -521,7 +550,7 @@
 
     window.addEventListener('load', function() {
       cells[0].focus();
-      console.log('✅ Using device time - no forced dates');
+      console.log('✅ 5-INCH PERFECT FIT');
     });
 
   </script>
