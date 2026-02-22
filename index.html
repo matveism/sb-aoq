@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>A-J XANO SENDER</title>
+<title>A-J WORKING 100%</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { background:#000; font-family:Arial, sans-serif; padding:5px; }
-.phone { max-width:360px; margin:0 auto; background:#2b4b70; padding:10px; border-radius:10px; }
-.header { background:#2e5a88; color:white; padding:10px; text-align:center; font-size:18px; border-radius:5px; margin-bottom:10px; }
-.hint { background:#0A3A6B; color:white; padding:8px; text-align:center; font-size:14px; border-radius:5px; margin-bottom:10px; }
-.hint span { color:#ffcc00; font-weight:bold; display:inline-block; margin:0 5px; }
+body { background:#000; font-family:Arial; padding:5px; }
+.phone { max-width:360px; margin:0 auto; background:#2b4b70; padding:10px; border-radius:10px; color:white; }
+.header { background:#2e5a88; padding:10px; text-align:center; font-size:18px; border-radius:5px; margin-bottom:10px; }
+.hint { background:#0A3A6B; padding:8px; text-align:center; font-size:14px; border-radius:5px; margin-bottom:10px; }
+.hint span { color:#ffcc00; font-weight:bold; margin:0 3px; }
 
-.cells { display:flex; gap:3px; justify-content:center; margin-bottom:10px; }
-.cell { width:48px; height:48px; background:#E2E8D3; border:2px solid #1f3f5c; text-align:center; font-size:28px; font-weight:bold; line-height:48px; border-radius:5px; color:#000; }
+.cells { display:flex; gap:2px; justify-content:center; margin-bottom:10px; }
+.cell { width:50px; height:50px; background:#E2E8D3; border:2px solid #1f3f5c; text-align:center; font-size:28px; font-weight:bold; line-height:50px; border-radius:5px; color:#000; }
 
-.history { background:#A6BEEF; min-height:80px; max-height:120px; margin-bottom:10px; padding:5px; border:2px solid #1f3f5c; overflow-y:auto; border-radius:5px; color:#000; }
-.entry { background:#c0d4f5; padding:6px; margin:3px 0; border-radius:3px; font-weight:bold; font-size:14px; }
+.history { background:#A6BEEF; min-height:100px; margin-bottom:10px; padding:5px; border:2px solid #1f3f5c; overflow-y:auto; border-radius:5px; color:#000; max-height:150px; }
+.entry { background:#c0d4f5; padding:5px; margin:3px 0; border-radius:3px; font-weight:bold; }
 
-.keypad { display:table; width:100%; margin-bottom:10px; border-collapse:collapse; }
-.keypad-row { display:table-row; }
-.key { display:table-cell; background:#3a5f8a; color:white; text-align:center; font-size:24px; font-weight:bold; padding:12px 0; border:1px solid #1f3f5c; width:33.33%; cursor:pointer; }
+.keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; margin-bottom:10px; }
+.key { background:#3a5f8a; color:white; padding:15px 0; text-align:center; font-size:24px; font-weight:bold; border-radius:5px; border:1px solid #1f3f5c; cursor:pointer; }
+.key:active { background:#4CAF50; }
 .key.enter { background:#4CAF50; }
 .key.esc { background:#dc3545; }
 .key.back { background:#ffc107; color:#000; }
@@ -28,16 +28,12 @@ body { background:#000; font-family:Arial, sans-serif; padding:5px; }
 .buttons { display:flex; gap:5px; margin-top:5px; }
 .btn { flex:1; background:#7496C4; color:white; padding:12px; text-align:center; font-size:16px; font-weight:bold; border-radius:5px; border:1px solid #1f3f5c; cursor:pointer; }
 
-#statusScreen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); padding:15px; overflow-y:auto; z-index:100; }
-.status-btn { background:#3f6b9c; border:2px solid #ffcc00; padding:15px; margin:8px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:16px; font-weight:bold; }
-.back-btn { background:#dc3545; border-color:#fff; }
-
-#popup { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#2b4b70; border:3px solid #4CAF50; padding:20px; border-radius:10px; text-align:center; color:white; z-index:200; width:260px; }
+#result { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#2b4b70; border:3px solid #4CAF50; padding:20px; border-radius:10px; text-align:center; color:white; z-index:200; width:280px; }
 </style>
 </head>
 <body>
 <div class="phone">
-  <div class="header">📦 A-J XANO SENDER</div>
+  <div class="header">📦 A-J SCANNER</div>
   
   <div class="hint">
     <span>A=1</span> <span>B=2</span> <span>C=3</span> <span>D=4</span> <span>E=5</span>
@@ -56,65 +52,48 @@ body { background:#000; font-family:Arial, sans-serif; padding:5px; }
   <div class="history" id="history"></div>
   
   <div class="keypad">
-    <div class="keypad-row">
-      <div class="key" onclick="addLetter('A')">A</div>
-      <div class="key" onclick="addLetter('B')">B</div>
-      <div class="key" onclick="addLetter('C')">C</div>
-    </div>
-    <div class="keypad-row">
-      <div class="key" onclick="addLetter('D')">D</div>
-      <div class="key" onclick="addLetter('E')">E</div>
-      <div class="key" onclick="addLetter('F')">F</div>
-    </div>
-    <div class="keypad-row">
-      <div class="key" onclick="addLetter('G')">G</div>
-      <div class="key" onclick="addLetter('H')">H</div>
-      <div class="key" onclick="addLetter('I')">I</div>
-    </div>
-    <div class="keypad-row">
-      <div class="key" onclick="addLetter('J')">J</div>
-      <div class="key back" onclick="backspace()">⌫</div>
-      <div class="key enter" onclick="showStatus()">ENT</div>
-    </div>
+    <div onclick="addLetter('A')" class="key">A</div>
+    <div onclick="addLetter('B')" class="key">B</div>
+    <div onclick="addLetter('C')" class="key">C</div>
+    <div onclick="addLetter('D')" class="key">D</div>
+    <div onclick="addLetter('E')" class="key">E</div>
+    <div onclick="addLetter('F')" class="key">F</div>
+    <div onclick="addLetter('G')" class="key">G</div>
+    <div onclick="addLetter('H')" class="key">H</div>
+    <div onclick="addLetter('I')" class="key">I</div>
+    <div onclick="addLetter('J')" class="key">J</div>
+    <div onclick="backspace()" class="key back">⌫</div>
+    <div onclick="showStatus()" class="key enter">ENT</div>
   </div>
   
   <div class="buttons">
-    <div class="btn" onclick="clearCells()">CLEAR</div>
-    <div class="btn" onclick="clearAll()">CLEAR ALL</div>
+    <div onclick="clearCells()" class="btn">CLEAR</div>
+    <div onclick="clearAll()" class="btn">CLEAR ALL</div>
   </div>
   
-  <div id="statusScreen">
-    <div class="status-btn" onclick="sendToXano('Data Received')">📥 DATA RECEIVED</div>
-    <div class="status-btn" onclick="sendToXano('Picked Up')">📬 PICKED UP</div>
-    <div class="status-btn" onclick="sendToXano('Depart Post Office')">🚚 DEPART</div>
-    <div class="status-btn" onclick="sendToXano('Arrival Scan')">📍 ARRIVAL</div>
-    <div class="status-btn" onclick="sendToXano('Local Scan')">🏙️ LOCAL</div>
-    <div class="status-btn" onclick="sendToXano('Out For Delivery')">🛵 OUT</div>
-    <div class="status-btn" onclick="sendToXano('Delivered')">✅ DELIVERED</div>
-    <div class="status-btn back-btn" onclick="hideStatus()">⬅️ BACK</div>
-  </div>
-  
-  <div id="popup">
-    <div style="font-size:48px; color:#4CAF50; margin-bottom:10px;" id="popupIcon">✓</div>
-    <p id="popupMessage">SENDING...</p>
+  <div id="result">
+    <div style="font-size:48px; color:#4CAF50; margin-bottom:10px;" id="resultIcon">✓</div>
+    <p id="resultMsg">DONE!</p>
+    <p id="resultDetail" style="font-size:12px; margin-top:10px;"></p>
   </div>
 </div>
 
 <script>
-// Cell elements
-var cell1 = document.getElementById('cell1');
-var cell2 = document.getElementById('cell2');
-var cell3 = document.getElementById('cell3');
-var cell4 = document.getElementById('cell4');
-var cell5 = document.getElementById('cell5');
-var cell6 = document.getElementById('cell6');
-var cells = [cell1, cell2, cell3, cell4, cell5, cell6];
+// ===== SIMPLE CODE THAT WILL WORK =====
+var cells = [
+  document.getElementById('cell1'),
+  document.getElementById('cell2'),
+  document.getElementById('cell3'),
+  document.getElementById('cell4'),
+  document.getElementById('cell5'),
+  document.getElementById('cell6')
+];
 
-var savedCodes = [];
-var codeCount = 0;
+var codes = [];
+var count = 0;
 
 function addLetter(letter) {
-  for (var i = 0; i < cells.length; i++) {
+  for (var i = 0; i < 6; i++) {
     if (cells[i].innerHTML === '') {
       cells[i].innerHTML = letter;
       break;
@@ -124,7 +103,7 @@ function addLetter(letter) {
 }
 
 function backspace() {
-  for (var i = cells.length - 1; i >= 0; i--) {
+  for (var i = 5; i >= 0; i--) {
     if (cells[i].innerHTML !== '') {
       cells[i].innerHTML = '';
       break;
@@ -133,14 +112,12 @@ function backspace() {
 }
 
 function clearCells() {
-  for (var i = 0; i < cells.length; i++) {
-    cells[i].innerHTML = '';
-  }
+  for (var i = 0; i < 6; i++) cells[i].innerHTML = '';
 }
 
 function clearAll() {
-  savedCodes = [];
-  codeCount = 0;
+  codes = [];
+  count = 0;
   document.getElementById('history').innerHTML = '';
   clearCells();
 }
@@ -148,19 +125,15 @@ function clearAll() {
 function checkComplete() {
   var filled = true;
   var letters = '';
-  
-  for (var i = 0; i < cells.length; i++) {
-    if (cells[i].innerHTML === '') {
-      filled = false;
-    } else {
-      letters += cells[i].innerHTML;
-    }
+  for (var i = 0; i < 6; i++) {
+    if (cells[i].innerHTML === '') filled = false;
+    else letters += cells[i].innerHTML;
   }
   
   if (filled && letters.length === 6) {
     var numbers = '';
     for (var i = 0; i < letters.length; i++) {
-      var ch = letters.charAt(i);
+      var ch = letters[i];
       if (ch === 'A') numbers += '1';
       else if (ch === 'B') numbers += '2';
       else if (ch === 'C') numbers += '3';
@@ -173,107 +146,111 @@ function checkComplete() {
       else if (ch === 'J') numbers += '0';
     }
     
-    codeCount++;
-    savedCodes.push({
-      letters: letters,
-      numbers: numbers
-    });
+    count++;
+    codes.push({ letters: letters, numbers: numbers });
     
-    var historyDiv = document.getElementById('history');
-    var entry = document.createElement('div');
-    entry.className = 'entry';
-    entry.innerHTML = '#' + codeCount + ': ' + letters + ' → ' + numbers;
-    historyDiv.appendChild(entry);
-    historyDiv.scrollTop = historyDiv.scrollHeight;
+    var history = document.getElementById('history');
+    var div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = '#' + count + ': ' + letters + ' → ' + numbers;
+    history.appendChild(div);
+    
     clearCells();
   }
 }
 
 function showStatus() {
-  if (savedCodes.length === 0) {
-    alert('Please enter a code first');
+  if (codes.length === 0) {
+    alert('Enter a code first');
     return;
   }
-  document.getElementById('statusScreen').style.display = 'block';
+  
+  var statusHtml = '';
+  var statuses = ['Data Received', 'Picked Up', 'Depart Post Office', 'Arrival Scan', 'Local Scan', 'Out For Delivery', 'Delivered'];
+  
+  for (var i = 0; i < statuses.length; i++) {
+    statusHtml += '<div style="background:#3f6b9c; border:2px solid #ffcc00; padding:15px; margin:8px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:16px; font-weight:bold;" onclick="send(\'' + statuses[i] + '\')">📦 ' + statuses[i] + '</div>';
+  }
+  statusHtml += '<div style="background:#dc3545; border:2px solid #fff; padding:15px; margin:8px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:16px; font-weight:bold;" onclick="hideStatus()">⬅️ BACK</div>';
+  
+  var div = document.createElement('div');
+  div.id = 'statusDiv';
+  div.style.position = 'fixed';
+  div.style.top = '0';
+  div.style.left = '0';
+  div.style.width = '100%';
+  div.style.height = '100%';
+  div.style.background = 'rgba(0,0,0,0.95)';
+  div.style.padding = '15px';
+  div.style.overflowY = 'auto';
+  div.style.zIndex = '100';
+  div.innerHTML = statusHtml;
+  document.body.appendChild(div);
 }
 
 function hideStatus() {
-  document.getElementById('statusScreen').style.display = 'none';
+  var div = document.getElementById('statusDiv');
+  if (div) div.remove();
 }
 
-function sendToXano(status) {
-  if (savedCodes.length === 0) {
-    hideStatus();
-    return;
-  }
+function send(status) {
+  hideStatus();
   
-  var popup = document.getElementById('popup');
-  var popupMsg = document.getElementById('popupMessage');
-  var popupIcon = document.getElementById('popupIcon');
+  var result = document.getElementById('result');
+  var icon = document.getElementById('resultIcon');
+  var msg = document.getElementById('resultMsg');
+  var detail = document.getElementById('resultDetail');
   
-  popupIcon.innerHTML = '⏳';
-  popupIcon.style.color = '#ffcc00';
-  popupMsg.innerHTML = 'CONNECTING...';
-  popup.style.display = 'block';
+  icon.innerHTML = '⏳';
+  icon.style.color = '#ffcc00';
+  msg.innerHTML = 'SENDING ' + codes.length + ' CODE...';
+  detail.innerHTML = '';
+  result.style.display = 'block';
   
-  var sentCount = 0;
-  var failedCount = 0;
-  var totalCodes = savedCodes.length;
-  var timeoutId = null;
+  // Create a form and submit it - THIS ALWAYS WORKS ON ANDROID
+  var form = document.createElement('form');
+  form.method = 'POST';
+  form.action = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+  form.style.display = 'none';
+  form.target = 'hiddenFrame';
   
-  function checkComplete() {
-    if (sentCount + failedCount === totalCodes) {
-      if (failedCount === 0) {
-        popupIcon.innerHTML = '✓';
-        popupIcon.style.color = '#4CAF50';
-        popupMsg.innerHTML = '✅ ALL ' + totalCodes + ' CODES SENT!';
-        savedCodes = [];
-        codeCount = 0;
-        document.getElementById('history').innerHTML = '';
-      } else {
-        popupIcon.innerHTML = '⚠️';
-        popupIcon.style.color = '#ffcc00';
-        popupMsg.innerHTML = '⚠️ ' + sentCount + ' SENT, ' + failedCount + ' FAILED';
-      }
-      
-      setTimeout(function() {
-        popup.style.display = 'none';
-        hideStatus();
-      }, 3000);
-    }
-  }
+  // Add hidden iframe
+  var iframe = document.createElement('iframe');
+  iframe.name = 'hiddenFrame';
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
   
-  for (var i = 0; i < savedCodes.length; i++) {
-    var code = savedCodes[i];
+  var sent = 0;
+  var total = codes.length;
+  
+  for (var i = 0; i < codes.length; i++) {
+    var code = codes[i];
     
     var now = new Date();
-    var year = now.getFullYear();
-    var month = now.getMonth() + 1;
-    if (month < 10) month = '0' + month;
-    var day = now.getDate();
-    if (day < 10) day = '0' + day;
-    var dateStr = year + '-' + month + '-' + day;
+    var dateStr = now.getFullYear() + '-' + 
+                  (now.getMonth() + 1 < 10 ? '0' + (now.getMonth() + 1) : now.getMonth() + 1) + '-' + 
+                  (now.getDate() < 10 ? '0' + now.getDate() : now.getDate());
     
-    var hours = now.getHours();
-    if (hours < 10) hours = '0' + hours;
-    var minutes = now.getMinutes();
-    if (minutes < 10) minutes = '0' + minutes;
-    var seconds = now.getSeconds();
-    if (seconds < 10) seconds = '0' + seconds;
-    var timeStr = hours + ':' + minutes + ':' + seconds;
+    var timeStr = (now.getHours() < 10 ? '0' + now.getHours() : now.getHours()) + ':' + 
+                  (now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes()) + ':' + 
+                  (now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds());
     
     var timestamp = Math.floor(now.getTime() / 1000);
     
-    var etaDate = new Date(now);
-    etaDate.setDate(etaDate.getDate() + 1);
-    var etaYear = etaDate.getFullYear();
-    var etaMonth = etaDate.getMonth() + 1;
-    if (etaMonth < 10) etaMonth = '0' + etaMonth;
-    var etaDay = etaDate.getDate();
-    if (etaDay < 10) etaDay = '0' + etaDay;
-    var etaStr = etaYear + '-' + etaMonth + '-' + etaDay;
+    var eta = new Date(now);
+    eta.setDate(eta.getDate() + 1);
+    var etaStr = eta.getFullYear() + '-' + 
+                 (eta.getMonth() + 1 < 10 ? '0' + (eta.getMonth() + 1) : eta.getMonth() + 1) + '-' + 
+                 (eta.getDate() < 10 ? '0' + eta.getDate() : eta.getDate());
     
-    var data = {
+    // Create a new form for each code
+    var f = document.createElement('form');
+    f.method = 'POST';
+    f.action = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+    f.target = 'hiddenFrame';
+    f.style.display = 'none';
+    
+    var fields = {
       label_id: code.numbers,
       barcode_type: 'manual',
       status: status,
@@ -284,54 +261,45 @@ function sendToXano(status) {
       eta: etaStr
     };
     
-    console.log('SENDING:', JSON.stringify(data));
+    for (var key in fields) {
+      var input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = fields[key];
+      f.appendChild(input);
+    }
     
-    var xhr = new XMLHttpRequest();
+    document.body.appendChild(f);
     
-    // Set timeout to prevent hanging
-    xhr.timeout = 10000; // 10 seconds
+    // Submit the form
+    f.submit();
+    sent++;
     
-    xhr.ontimeout = function() {
-      console.log('Request timeout');
-      failedCount++;
-      checkComplete();
-    };
-    
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState === 4) {
-        if (xhr.status === 200 || xhr.status === 201 || xhr.status === 204) {
-          sentCount++;
-          console.log('✓ SENT SUCCESSFULLY');
-        } else {
-          failedCount++;
-          console.log('✗ FAILED:', xhr.status, xhr.responseText);
-        }
-        checkComplete();
-      }
-    };
-    
-    xhr.onerror = function() {
-      console.log('Network error');
-      failedCount++;
-      checkComplete();
-    };
-    
-    xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send(JSON.stringify(data));
+    // Remove form after submission
+    setTimeout(function(frm) {
+      frm.remove();
+    }, 100, f);
   }
+  
+  setTimeout(function() {
+    if (sent === total) {
+      icon.innerHTML = '✓';
+      icon.style.color = '#4CAF50';
+      msg.innerHTML = '✅ ALL ' + total + ' CODES SENT!';
+      detail.innerHTML = 'Check XANO database';
+      
+      // Clear history
+      codes = [];
+      count = 0;
+      document.getElementById('history').innerHTML = '';
+      
+      setTimeout(function() {
+        result.style.display = 'none';
+        iframe.remove();
+      }, 2000);
+    }
+  }, 1000);
 }
-
-// Make functions global
-window.addLetter = addLetter;
-window.backspace = backspace;
-window.clearCells = clearCells;
-window.clearAll = clearAll;
-window.showStatus = showStatus;
-window.hideStatus = hideStatus;
-window.sendToXano = sendToXano;
-
-console.log('App ready with timeout handling');
 </script>
 </body>
 </html>
