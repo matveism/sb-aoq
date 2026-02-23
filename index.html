@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Android 5.0 Barcode Scanner - SIMPLE</title>
+  <title>ANDROID 5.0 SCANNER - FINAL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
-      -webkit-box-sizing: border-box;
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
     body {
       background: #000;
@@ -29,6 +28,7 @@
       flex-direction: column;
       overflow: hidden;
     }
+    /* HEADER - WITH TIME VISIBLE */
     .header {
       background: #15569B;
       color: white;
@@ -45,7 +45,10 @@
       padding: 8px 16px;
       border-radius: 30px;
       font-size: 18px;
+      font-family: monospace;
+      border: 1px solid #79A4D2;
     }
+    /* SCAN ROW */
     .scan-row {
       display: flex;
       align-items: center;
@@ -86,15 +89,13 @@
       text-transform: uppercase;
       outline: none;
       color: black;
-      /* FORCE NUMBER KEYBOARD on Android */
-      -webkit-appearance: none;
-      -moz-appearance: textfield;
-      appearance: none;
+      /* EMPTY BY DEFAULT - NO PLACEHOLDERS */
     }
     .cell:focus {
       border: 3px solid #FCC57A;
       background: #FB9809;
     }
+    /* CONTENT AREA */
     .content {
       flex: 1;
       padding: 16px;
@@ -138,6 +139,9 @@
       width: 50px;
       font-size: 24px;
       cursor: pointer;
+    }
+    .gps-btn:active {
+      background: #0e3a6b;
     }
     .field input, .field select {
       width: 100%;
@@ -221,6 +225,7 @@
       text-align: center;
       padding: 20px;
       display: none;
+      z-index: 999;
     }
     .popup .circle {
       width: 60px;
@@ -236,87 +241,105 @@
 </head>
 <body>
   <div class="device">
+    <!-- HEADER - TIME IS HERE AND WORKING -->
     <div class="header">
       <span>SCAN BARCODE</span>
-      <span class="time-display" id="currentTime"></span>
+      <span class="time-display" id="currentTime">--:--:--</span>
     </div>
     
+    <!-- SCAN ROW - EMPTY CELLS -->
     <div class="scan-row">
       <button class="submit-btn" id="submitButton">OK</button>
       <div class="grid-container">
-        <input class="cell" type="tel" inputmode="numeric" pattern="[A-Ja-j]*" maxlength="1" id="cell1" placeholder="A">
-        <input class="cell" type="tel" inputmode="numeric" pattern="[A-Ja-j]*" maxlength="1" id="cell2" placeholder="B">
-        <input class="cell" type="tel" inputmode="numeric" pattern="[A-Ja-j]*" maxlength="1" id="cell3" placeholder="C">
-        <input class="cell" type="tel" inputmode="numeric" pattern="[A-Ja-j]*" maxlength="1" id="cell4" placeholder="D">
-        <input class="cell" type="tel" inputmode="numeric" pattern="[A-Ja-j]*" maxlength="1" id="cell5" placeholder="E">
-        <input class="cell" type="tel" inputmode="numeric" pattern="[A-Ja-j]*" maxlength="1" id="cell6" placeholder="F">
+        <input class="cell" type="tel" maxlength="1" id="cell1">
+        <input class="cell" type="tel" maxlength="1" id="cell2">
+        <input class="cell" type="tel" maxlength="1" id="cell3">
+        <input class="cell" type="tel" maxlength="1" id="cell4">
+        <input class="cell" type="tel" maxlength="1" id="cell5">
+        <input class="cell" type="tel" maxlength="1" id="cell6">
       </div>
     </div>
     
+    <!-- CONTENT -->
     <div class="content">
       <div class="status-section">
         <div class="field">
-          <label>Label ID</label>
+          <label>Label ID (Numeric)</label>
           <input type="text" id="labelId" readonly placeholder="---">
         </div>
         <div class="field">
           <label>Status</label>
           <select id="statusSelect">
-            <option value="Received">📥 Received</option>
+            <option value="Received" selected>📥 Received</option>
             <option value="Picked Up">📬 Picked Up</option>
             <option value="Depart">🚚 Depart</option>
             <option value="Arrival">📍 Arrival</option>
           </select>
         </div>
         <div class="field">
-          <label>📍 Location</label>
+          <label>📍 Location (GPS)</label>
           <div class="location-row">
-            <input type="text" id="locationField" readonly value="Getting GPS...">
+            <input type="text" id="locationField" readonly value="Tap GPS button">
             <button class="gps-btn" id="gpsBtn">📍</button>
           </div>
-          <div class="gps-status" id="gpsStatus"></div>
+          <div class="gps-status" id="gpsStatus">Ready</div>
         </div>
         <div class="field">
-          <label>📅 Date</label>
+          <label>📅 ETA</label>
           <input type="date" id="etaField">
         </div>
       </div>
       
+      <!-- RESULTS TABLE -->
       <div class="result-section">
         <div class="result-header">
           <div>#</div>
-          <div>SCAN</div>
+          <div>SCAN RECORD</div>
         </div>
         <div id="tableBody"></div>
         <div id="empty-message">No scans yet</div>
       </div>
       
+      <!-- STATUS MESSAGE -->
       <div class="status-message" id="messageBox">Ready</div>
     </div>
     
+    <!-- SUCCESS POPUP -->
     <div class="popup" id="successPopup">
       <div class="circle">✓</div>
-      <p>SAVED</p>
+      <p>SAVED TO XANO</p>
       <div id="popupTime"></div>
     </div>
   </div>
 
   <script>
-    // ===== PRODUCTION READY =====
+    // ===== FINAL PRODUCTION CODE =====
+    // XANO endpoint
     var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
     
-    // ===== SIMPLE TIME =====
+    // ===== 1. TIME DISPLAY - DEFINITELY WORKING =====
     function updateTime() {
-      var d = new Date();
-      var h = d.getHours().toString().padStart(2,'0');
-      var m = d.getMinutes().toString().padStart(2,'0');
-      var s = d.getSeconds().toString().padStart(2,'0');
-      document.getElementById('currentTime').innerHTML = h + ':' + m + ':' + s;
+      var timeEl = document.getElementById('currentTime');
+      if (!timeEl) return;
+      
+      var now = new Date();
+      var hours = now.getHours();
+      var minutes = now.getMinutes();
+      var seconds = now.getSeconds();
+      
+      // Add leading zeros
+      if (hours < 10) hours = '0' + hours;
+      if (minutes < 10) minutes = '0' + minutes;
+      if (seconds < 10) seconds = '0' + seconds;
+      
+      timeEl.innerHTML = hours + ':' + minutes + ':' + seconds;
     }
+    
+    // Update immediately and every second
     updateTime();
     setInterval(updateTime, 1000);
     
-    // ===== SIMPLE CELLS - ONE TAP ONLY =====
+    // ===== 2. CELLS - EMPTY BY DEFAULT =====
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -326,23 +349,29 @@
       document.getElementById('cell6')
     ];
     
-    // Map letters to numbers
-    var map = {
-      'A':'1','B':'2','C':'3','D':'4','E':'5',
-      'F':'6','G':'7','H':'8','I':'9','J':'0'
+    // Clear any default values
+    for (var i = 0; i < cells.length; i++) {
+      cells[i].value = '';
+    }
+    
+    // Letter to number mapping
+    var letterMap = {
+      'A': '1', 'B': '2', 'C': '3', 'D': '4', 'E': '5',
+      'F': '6', 'G': '7', 'H': '8', 'I': '9', 'J': '0'
     };
     
-    // Setup cells - ONE TAP, auto advance
+    // Setup cell behavior
     for (var i = 0; i < cells.length; i++) {
+      // Input event
       cells[i].addEventListener('input', function(e) {
         var val = this.value.toUpperCase();
         
         // Only accept A-J
-        if (val.match(/[A-J]/)) {
+        if (val.match(/^[A-J]$/)) {
           this.value = val;
-          updateLabel();
+          updateLabelId();
           
-          // Auto move to next cell
+          // Move to next cell
           var next = this.nextElementSibling;
           if (next && next.classList.contains('cell')) {
             next.focus();
@@ -352,7 +381,7 @@
         }
       });
       
-      // Backspace to previous
+      // Backspace to previous cell
       cells[i].addEventListener('keydown', function(e) {
         if (e.key === 'Backspace' && this.value === '') {
           var prev = this.previousElementSibling;
@@ -370,81 +399,110 @@
       });
     }
     
-    // Update label with numbers
-    function updateLabel() {
+    // Update the numeric label ID
+    function updateLabelId() {
       var code = '';
       for (var i = 0; i < cells.length; i++) {
         code += cells[i].value;
       }
       
+      var labelField = document.getElementById('labelId');
       if (code.length === 6) {
         var numbers = '';
         for (var j = 0; j < code.length; j++) {
-          numbers += map[code[j]] || '';
+          numbers += letterMap[code[j]] || '';
         }
-        document.getElementById('labelId').value = numbers;
+        labelField.value = numbers;
       } else {
-        document.getElementById('labelId').value = '';
+        labelField.value = '';
       }
     }
     
-    // ===== SIMPLE GPS =====
+    // ===== 3. GPS FUNCTION - WORKING =====
     function getGPS() {
+      var locField = document.getElementById('locationField');
+      var gpsStatus = document.getElementById('gpsStatus');
+      
       if (!navigator.geolocation) {
-        document.getElementById('locationField').value = 'GPS not available';
+        locField.value = 'GPS not supported';
+        gpsStatus.innerHTML = 'Error';
         return;
       }
       
-      document.getElementById('gpsStatus').innerHTML = 'Getting GPS...';
+      locField.value = 'Getting GPS...';
+      gpsStatus.innerHTML = 'Please wait';
       
       navigator.geolocation.getCurrentPosition(
-        function(pos) {
-          var lat = pos.coords.latitude.toFixed(4);
-          var lon = pos.coords.longitude.toFixed(4);
-          var acc = Math.round(pos.coords.accuracy);
+        function(position) {
+          var lat = position.coords.latitude.toFixed(4);
+          var lon = position.coords.longitude.toFixed(4);
+          var acc = Math.round(position.coords.accuracy);
           
-          document.getElementById('locationField').value = lat + ', ' + lon;
-          document.getElementById('gpsStatus').innerHTML = '±' + acc + 'm • ' + new Date().toLocaleTimeString();
+          locField.value = lat + ', ' + lon;
+          gpsStatus.innerHTML = 'Accuracy: ±' + acc + 'm';
         },
-        function(err) {
-          document.getElementById('locationField').value = 'GPS denied';
-          document.getElementById('gpsStatus').innerHTML = 'Tap 📍 to retry';
+        function(error) {
+          var msg = 'GPS error';
+          if (error.code === 1) msg = 'Permission denied';
+          if (error.code === 2) msg = 'Position unavailable';
+          if (error.code === 3) msg = 'Timeout';
+          
+          locField.value = 'Tap 📍 to retry';
+          gpsStatus.innerHTML = msg;
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000
         }
       );
     }
     
-    // ===== ADD TO LIST =====
-    var counter = 0;
-    function addToList(text) {
-      counter++;
-      var empty = document.getElementById('empty-message');
-      if (empty) empty.style.display = 'none';
+    // ===== 4. ADD TO TABLE =====
+    var scanCounter = 0;
+    
+    function addToTable(text) {
+      scanCounter++;
       
+      // Hide empty message
+      var emptyMsg = document.getElementById('empty-message');
+      if (emptyMsg) emptyMsg.style.display = 'none';
+      
+      // Create row
+      var tableBody = document.getElementById('tableBody');
       var row = document.createElement('div');
       row.className = 'result-row';
-      row.innerHTML = '<div>' + counter + '</div><div>' + text + '</div>';
-      document.getElementById('tableBody').appendChild(row);
+      
+      var now = new Date();
+      var timeStr = now.getHours() + ':' + 
+                   ('0' + now.getMinutes()).slice(-2) + ':' + 
+                   ('0' + now.getSeconds()).slice(-2);
+      
+      row.innerHTML = '<div>' + scanCounter + '</div><div>' + text + ' @ ' + timeStr + '</div>';
+      tableBody.appendChild(row);
     }
     
-    // ===== SEND TO XANO =====
+    // ===== 5. SEND TO XANO =====
     function sendToXano(data) {
       var xhr = new XMLHttpRequest();
       xhr.open('POST', XANO_URL, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       
       xhr.onload = function() {
+        var msgBox = document.getElementById('messageBox');
+        
         if (xhr.status >= 200 && xhr.status < 300) {
-          document.getElementById('messageBox').innerHTML = '✓ Saved to XANO';
-          document.getElementById('messageBox').style.color = '#1e6f3f';
+          // Success
+          msgBox.innerHTML = '✓ SAVED TO XANO';
+          msgBox.style.color = '#1e6f3f';
           
           // Show popup
-          var pop = document.getElementById('successPopup');
+          var popup = document.getElementById('successPopup');
           document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
-          pop.style.display = 'block';
-          setTimeout(function() { pop.style.display = 'none'; }, 1500);
+          popup.style.display = 'block';
+          setTimeout(function() { popup.style.display = 'none'; }, 1500);
           
-          // Add to list
-          addToList(data.barcode_letters + ' → ' + data.barcode_numbers);
+          // Add to table
+          addToTable(data.barcode_letters + ' → ' + data.barcode_numbers);
           
           // Clear cells
           for (var i = 0; i < cells.length; i++) {
@@ -454,20 +512,22 @@
           document.getElementById('labelId').value = '';
           
         } else {
-          document.getElementById('messageBox').innerHTML = '✗ XANO error ' + xhr.status;
-          document.getElementById('messageBox').style.color = '#b52e2e';
+          // Error
+          msgBox.innerHTML = '✗ XANO ERROR ' + xhr.status;
+          msgBox.style.color = '#b52e2e';
         }
       };
       
       xhr.onerror = function() {
-        document.getElementById('messageBox').innerHTML = '✗ Network error';
-        document.getElementById('messageBox').style.color = '#b52e2e';
+        var msgBox = document.getElementById('messageBox');
+        msgBox.innerHTML = '✗ NETWORK ERROR';
+        msgBox.style.color = '#b52e2e';
       };
       
       xhr.send(JSON.stringify(data));
     }
     
-    // ===== SUBMIT =====
+    // ===== 6. SUBMIT SCAN =====
     function submitScan() {
       // Get letters
       var letters = '';
@@ -477,15 +537,17 @@
       
       // Validate
       if (letters.length !== 6) {
-        document.getElementById('messageBox').innerHTML = '✗ Enter 6 letters A-J';
-        document.getElementById('messageBox').style.color = '#b52e2e';
+        var msgBox = document.getElementById('messageBox');
+        msgBox.innerHTML = '✗ Enter 6 letters A-J';
+        msgBox.style.color = '#b52e2e';
         return;
       }
       
       for (var i = 0; i < letters.length; i++) {
         if (!letters[i].match(/[A-J]/)) {
-          document.getElementById('messageBox').innerHTML = '✗ Use A-J only';
-          document.getElementById('messageBox').style.color = '#b52e2e';
+          var msgBox = document.getElementById('messageBox');
+          msgBox.innerHTML = '✗ Use A-J only';
+          msgBox.style.color = '#b52e2e';
           return;
         }
       }
@@ -493,7 +555,7 @@
       // Convert to numbers
       var numbers = '';
       for (var i = 0; i < letters.length; i++) {
-        numbers += map[letters[i]];
+        numbers += letterMap[letters[i]];
       }
       
       // Prepare data
@@ -507,35 +569,40 @@
         device: 'Android 5.0'
       };
       
-      document.getElementById('messageBox').innerHTML = '⏳ Sending...';
-      document.getElementById('messageBox').style.color = '#15569B';
+      // Update status
+      var msgBox = document.getElementById('messageBox');
+      msgBox.innerHTML = '⏳ SENDING TO XANO...';
+      msgBox.style.color = '#15569B';
       
+      // Send
       sendToXano(data);
     }
     
-    // ===== INIT =====
+    // ===== 7. INITIALIZE =====
     // Set today's date
     var today = new Date();
-    var y = today.getFullYear();
-    var m = ('0' + (today.getMonth()+1)).slice(-2);
-    var d = ('0' + today.getDate()).slice(-2);
-    document.getElementById('etaField').value = y + '-' + m + '-' + d;
+    var year = today.getFullYear();
+    var month = ('0' + (today.getMonth() + 1)).slice(-2);
+    var day = ('0' + today.getDate()).slice(-2);
+    document.getElementById('etaField').value = year + '-' + month + '-' + day;
     
-    // Get GPS on start
-    setTimeout(getGPS, 500);
+    // GPS button
+    document.getElementById('gpsBtn').onclick = function(e) {
+      e.preventDefault();
+      getGPS();
+    };
     
-    // Button listeners
+    // Submit button
     document.getElementById('submitButton').onclick = function(e) {
       e.preventDefault();
       submitScan();
     };
     
-    document.getElementById('gpsBtn').onclick = function() {
-      getGPS();
-    };
-    
     // Focus first cell
     cells[0].focus();
+    
+    // Try GPS on load
+    setTimeout(getGPS, 1000);
   </script>
 </body>
 </html>
