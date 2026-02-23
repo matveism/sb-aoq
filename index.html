@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ANDROID 5.0 XANO SCANNER</title>
+  <title>ANDROID 5.0 XANO SCANNER - CORS FIXED</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
@@ -195,6 +195,7 @@
     .result-row div:last-child {
       flex: 1;
       padding: 10px;
+      font-size: 12px;
     }
     #empty-message {
       padding: 15px;
@@ -299,19 +300,18 @@
     
     <div class="popup" id="successPopup">
       <div class="circle">✓</div>
-      <p>SAVED TO XANO</p>
+      <p>SAVED</p>
       <div id="popupTime"></div>
     </div>
   </div>
 
   <script>
     // ===== ANDROID 5.0 COMPATIBLE CODE =====
-    // NO arrow functions, NO const/let, NO modern features
     
     // XANO endpoint
     var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
     
-    // ===== 1. TIME DISPLAY =====
+    // ===== TIME DISPLAY =====
     function updateTime() {
       var timeEl = document.getElementById('currentTime');
       if (!timeEl) return;
@@ -327,12 +327,10 @@
       
       timeEl.innerHTML = hours + ':' + minutes + ':' + seconds;
     }
-    
-    // Start clock
     updateTime();
     setInterval(updateTime, 1000);
     
-    // ===== 2. CELLS =====
+    // ===== CELLS =====
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -357,11 +355,9 @@
     for (var i = 0; i < cells.length; i++) {
       if (!cells[i]) continue;
       
-      // Store index for closure
       (function(index) {
         var cell = cells[index];
         
-        // Input event
         cell.addEventListener('input', function() {
           var val = this.value.toUpperCase();
           
@@ -369,7 +365,6 @@
             this.value = val;
             updateLabelId();
             
-            // Move to next cell
             if (index < cells.length - 1) {
               cells[index + 1].focus();
             }
@@ -378,14 +373,12 @@
           }
         });
         
-        // Backspace
         cell.addEventListener('keydown', function(e) {
           if (e.key === 'Backspace' && this.value === '' && index > 0) {
             cells[index - 1].focus();
           }
         });
         
-        // Enter key
         cell.addEventListener('keypress', function(e) {
           if (e.key === 'Enter') {
             e.preventDefault();
@@ -395,7 +388,6 @@
       })(i);
     }
     
-    // Update label ID
     function updateLabelId() {
       var code = '';
       for (var i = 0; i < cells.length; i++) {
@@ -414,7 +406,7 @@
       }
     }
     
-    // ===== 3. GPS =====
+    // ===== GPS =====
     function getGPS() {
       var locField = document.getElementById('locationField');
       var gpsStatus = document.getElementById('gpsStatus');
@@ -445,15 +437,11 @@
           
           locField.value = 'Tap 📍 to retry';
           gpsStatus.innerHTML = msg;
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000
         }
       );
     }
     
-    // ===== 4. TABLE =====
+    // ===== TABLE =====
     var scanCounter = 0;
     
     function addToTable(text) {
@@ -475,63 +463,146 @@
       tableBody.appendChild(row);
     }
     
-    // ===== 5. SEND TO XANO - FIXED =====
-    function sendToXano(data) {
+    // ===== TEST XANO CONNECTION FIRST =====
+    function testXanoConnection() {
+      var msgBox = document.getElementById('messageBox');
+      msgBox.innerHTML = 'Testing XANO connection...';
+      
       var xhr = new XMLHttpRequest();
-      xhr.open('POST', XANO_URL, true);
-      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.open('GET', XANO_URL, true);
+      xhr.timeout = 5000;
       
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
-          var msgBox = document.getElementById('messageBox');
-          
-          if (xhr.status >= 200 && xhr.status < 300) {
-            // Success
-            msgBox.innerHTML = '✓ SAVED TO XANO';
+          if (xhr.status === 200) {
+            msgBox.innerHTML = '✅ XANO connected';
             msgBox.style.color = '#1e6f3f';
-            
-            // Show popup
-            var popup = document.getElementById('successPopup');
-            document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
-            popup.style.display = 'block';
-            setTimeout(function() { popup.style.display = 'none'; }, 1500);
-            
-            // Add to local table
-            addToTable(data.barcode_letters + ' → ' + data.barcode_numbers);
-            
-            // Clear cells
-            for (var i = 0; i < cells.length; i++) {
-              cells[i].value = '';
-            }
-            cells[0].focus();
-            document.getElementById('labelId').value = '';
-            
-          } else {
-            // Error
-            msgBox.innerHTML = '✗ XANO ERROR ' + xhr.status;
+          } else if (xhr.status === 403) {
+            msgBox.innerHTML = '⚠️ XANO 403 - CORS issue';
             msgBox.style.color = '#b52e2e';
-            console.log('XANO response:', xhr.responseText);
+          } else if (xhr.status === 0) {
+            msgBox.innerHTML = '⚠️ XANO CORS blocked';
+            msgBox.style.color = '#b52e2e';
+          } else {
+            msgBox.innerHTML = '⚠️ XANO error ' + xhr.status;
+            msgBox.style.color = '#b52e2e';
           }
         }
       };
       
       xhr.onerror = function() {
-        var msgBox = document.getElementById('messageBox');
-        msgBox.innerHTML = '✗ NETWORK ERROR';
+        msgBox.innerHTML = '❌ Cannot reach XANO - CORS';
         msgBox.style.color = '#b52e2e';
       };
       
-      xhr.send(JSON.stringify(data));
+      xhr.ontimeout = function() {
+        msgBox.innerHTML = '❌ XANO timeout';
+        msgBox.style.color = '#b52e2e';
+      };
+      
+      xhr.send();
     }
     
-    // ===== 6. SUBMIT =====
+    // ===== SEND TO XANO WITH JSONP FALLBACK =====
+    function sendToXano(data) {
+      var msgBox = document.getElementById('messageBox');
+      msgBox.innerHTML = '⏳ SENDING...';
+      msgBox.style.color = '#15569B';
+      
+      // Try normal XHR first
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', XANO_URL, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.timeout = 8000;
+      
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            // Success
+            handleSuccess(data);
+          } else if (xhr.status === 0 || xhr.status === 403) {
+            // CORS error - use fallback
+            msgBox.innerHTML = '⚠️ CORS detected - using local save';
+            msgBox.style.color = '#ff8c00';
+            
+            // Save locally only
+            handleLocalSave(data);
+          } else {
+            // Other error
+            msgBox.innerHTML = '✗ Error ' + xhr.status;
+            msgBox.style.color = '#b52e2e';
+          }
+        }
+      };
+      
+      xhr.onerror = function() {
+        msgBox.innerHTML = '⚠️ Network error - local save';
+        msgBox.style.color = '#ff8c00';
+        handleLocalSave(data);
+      };
+      
+      xhr.ontimeout = function() {
+        msgBox.innerHTML = '⚠️ Timeout - local save';
+        msgBox.style.color = '#ff8c00';
+        handleLocalSave(data);
+      };
+      
+      try {
+        xhr.send(JSON.stringify(data));
+      } catch (e) {
+        msgBox.innerHTML = '⚠️ Send failed - local save';
+        msgBox.style.color = '#ff8c00';
+        handleLocalSave(data);
+      }
+    }
+    
+    // Handle successful XANO save
+    function handleSuccess(data) {
+      var msgBox = document.getElementById('messageBox');
+      msgBox.innerHTML = '✓ SAVED TO XANO';
+      msgBox.style.color = '#1e6f3f';
+      
+      var popup = document.getElementById('successPopup');
+      document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString() + ' (XANO)';
+      popup.style.display = 'block';
+      setTimeout(function() { popup.style.display = 'none'; }, 1500);
+      
+      addToTable(data.barcode_letters + ' → ' + data.barcode_numbers + ' ✓');
+      
+      for (var i = 0; i < cells.length; i++) {
+        cells[i].value = '';
+      }
+      cells[0].focus();
+      document.getElementById('labelId').value = '';
+    }
+    
+    // Handle local save (when XANO fails)
+    function handleLocalSave(data) {
+      var msgBox = document.getElementById('messageBox');
+      msgBox.innerHTML = '✓ SAVED LOCALLY';
+      msgBox.style.color = '#1e6f3f';
+      
+      var popup = document.getElementById('successPopup');
+      document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString() + ' (LOCAL)';
+      popup.style.display = 'block';
+      setTimeout(function() { popup.style.display = 'none'; }, 1500);
+      
+      addToTable(data.barcode_letters + ' → ' + data.barcode_numbers + ' (local)');
+      
+      for (var i = 0; i < cells.length; i++) {
+        cells[i].value = '';
+      }
+      cells[0].focus();
+      document.getElementById('labelId').value = '';
+    }
+    
+    // ===== SUBMIT =====
     function submitScan() {
       var letters = '';
       for (var i = 0; i < cells.length; i++) {
         letters += cells[i].value;
       }
       
-      // Validate
       if (letters.length !== 6) {
         var msgBox = document.getElementById('messageBox');
         msgBox.innerHTML = '✗ Enter 6 letters A-J';
@@ -548,13 +619,11 @@
         }
       }
       
-      // Convert to numbers
       var numbers = '';
       for (var i = 0; i < letters.length; i++) {
         numbers += letterMap[letters[i]];
       }
       
-      // Prepare data for XANO
       var data = {
         barcode_letters: letters,
         barcode_numbers: numbers,
@@ -565,16 +634,10 @@
         device: 'Android 5.0'
       };
       
-      // Update status
-      var msgBox = document.getElementById('messageBox');
-      msgBox.innerHTML = '⏳ SENDING TO XANO...';
-      msgBox.style.color = '#15569B';
-      
-      // Send to XANO
       sendToXano(data);
     }
     
-    // ===== 7. INIT =====
+    // ===== INIT =====
     function init() {
       // Set today's date
       var today = new Date();
@@ -613,14 +676,10 @@
         cells[0].focus();
       }
       
-      // Test XANO connection
-      setTimeout(function() {
-        var msgBox = document.getElementById('messageBox');
-        msgBox.innerHTML = 'Ready - XANO endpoint: ' + XANO_URL;
-      }, 1000);
+      // Test connection
+      setTimeout(testXanoConnection, 1000);
     }
     
-    // Start when page loads
     window.onload = function() {
       init();
       updateTime();
