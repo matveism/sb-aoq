@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>XANO SCANNER - TIME & GPS FIXED</title>
+  <title>XANO SCANNER - ENDPOINT FIX</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -73,6 +73,8 @@
         <input type="date" id="etaField">
       </div>
       
+      <!-- New Field to show the detected endpoint -->
+      <div class="status-message" id="apiCheckMessage">Checking XANO endpoint...</div>
       <div class="status-message" id="messageBox">Ready</div>
     </div>
     
@@ -84,29 +86,26 @@
   </div>
 
   <script>
-    // ===== 1. TIME DISPLAY - ALWAYS VISIBLE =====
+    // ===== 1. CONFIGURATION =====
+    // *** IMPORTANT: VERIFY THIS IS YOUR CORRECT TABLE NAME ***
+    var XANO_BASE_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG';
+    var XANO_TABLE = 'qr_scans'; // <-- CHANGE THIS to your actual table name if different
+    var XANO_URL = XANO_BASE_URL + '/' + XANO_TABLE;
+    
+    // ===== 2. TIME DISPLAY =====
     function updateTime() {
       var timeEl = document.getElementById('currentTime');
       if (!timeEl) return;
-      
       var now = new Date();
-      var hours = now.getHours();
-      var minutes = now.getMinutes();
-      var seconds = now.getSeconds();
-      
-      // Format with leading zeros
-      hours = (hours < 10) ? '0' + hours : hours;
-      minutes = (minutes < 10) ? '0' + minutes : minutes;
-      seconds = (seconds < 10) ? '0' + seconds : seconds;
-      
+      var hours = now.getHours().toString().padStart(2,'0');
+      var minutes = now.getMinutes().toString().padStart(2,'0');
+      var seconds = now.getSeconds().toString().padStart(2,'0');
       timeEl.innerHTML = hours + ':' + minutes + ':' + seconds;
     }
-    
-    // Update immediately and every second
     updateTime();
     setInterval(updateTime, 1000);
     
-    // ===== 2. AUTO GPS ON LOAD =====
+    // ===== 3. AUTO GPS =====
     function getGPS() {
       var locField = document.getElementById('locationField');
       var gpsStatus = document.getElementById('gpsStatus');
@@ -118,13 +117,11 @@
       }
       
       gpsStatus.innerHTML = '📍 Getting GPS...';
-      
       navigator.geolocation.getCurrentPosition(
         function(position) {
           var lat = position.coords.latitude.toFixed(4);
           var lon = position.coords.longitude.toFixed(4);
           var acc = Math.round(position.coords.accuracy);
-          
           locField.value = lat + ', ' + lon;
           gpsStatus.innerHTML = '✅ GPS: ±' + acc + 'm';
         },
@@ -133,18 +130,13 @@
           if (error.code === 1) msg = 'Permission denied';
           else if (error.code === 2) msg = 'Unavailable';
           else if (error.code === 3) msg = 'Timeout';
-          
-          locField.value = 'Click to retry GPS';
+          locField.value = 'Tap to retry GPS';
           gpsStatus.innerHTML = '❌ ' + msg;
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000
         }
       );
     }
     
-    // ===== 3. CELLS =====
+    // ===== 4. CELLS HANDLING =====
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -181,7 +173,7 @@
       document.getElementById('labelId').value = num;
     }
     
-    // ===== 4. BEEP =====
+    // ===== 5. BEEP =====
     function beep() {
       try {
         var ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -193,7 +185,37 @@
       } catch(e) {}
     }
     
-    // ===== 5. SEND TO XANO =====
+    // ===== 6. TEST XANO ENDPOINT =====
+    function testXanoEndpoint() {
+      var apiMsg = document.getElementById('apiCheckMessage');
+      apiMsg.innerHTML = '🔍 Testing: ' + XANO_URL;
+      
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', XANO_URL, true);
+      xhr.timeout = 5000;
+      
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          apiMsg.innerHTML = '✅ Endpoint OK (200)';
+        } else if (xhr.status === 404) {
+          apiMsg.innerHTML = '❌ ERROR 404: Table "' + XANO_TABLE + '" not found. Check your table name.';
+        } else {
+          apiMsg.innerHTML = '⚠️ Endpoint returned: ' + xhr.status;
+        }
+      };
+      
+      xhr.onerror = function() {
+        apiMsg.innerHTML = '❌ Cannot reach XANO. Check URL: ' + XANO_BASE_URL;
+      };
+      
+      xhr.ontimeout = function() {
+        apiMsg.innerHTML = '❌ Connection timeout';
+      };
+      
+      xhr.send();
+    }
+    
+    // ===== 7. SEND TO XANO =====
     function sendToXano() {
       var letters = '';
       for (var i = 0; i < cells.length; i++) letters += cells[i].value;
@@ -216,10 +238,10 @@
         eta: document.getElementById('etaField').value
       };
       
-      document.getElementById('messageBox').innerHTML = '⏳ Sending...';
+      document.getElementById('messageBox').innerHTML = '⏳ Sending to ' + XANO_TABLE + '...';
       
       var xhr = new XMLHttpRequest();
-      xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
+      xhr.open('POST', XANO_URL, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       
       xhr.onload = function() {
@@ -232,41 +254,38 @@
             document.getElementById('successPopup').style.display = 'none'; 
           }, 1500);
           
-          // Clear cells
           for (var i = 0; i < cells.length; i++) cells[i].value = '';
           cells[0].focus();
           document.getElementById('labelId').value = '';
         } else {
-          document.getElementById('messageBox').innerHTML = '❌ Error: ' + xhr.status;
+          document.getElementById('messageBox').innerHTML = '❌ Error ' + xhr.status + ': Check table name "' + XANO_TABLE + '"';
         }
       };
       
       xhr.onerror = function() {
         beep();
-        document.getElementById('messageBox').innerHTML = '❌ Network Error';
+        document.getElementById('messageBox').innerHTML = '❌ Network Error - Cannot reach XANO';
       };
       
       xhr.send(JSON.stringify(data));
     }
     
-    // ===== 6. CLICK TO REFRESH GPS =====
-    document.getElementById('locationField').addEventListener('click', function() {
-      getGPS();
-    });
-    
-    // ===== 7. SET TODAY'S DATE =====
-    var today = new Date().toISOString().split('T')[0];
-    document.getElementById('etaField').value = today;
-    
-    // ===== 8. SUBMIT BUTTON =====
+    // ===== 8. EVENT LISTENERS =====
+    document.getElementById('locationField').addEventListener('click', getGPS);
     document.getElementById('submitButton').onclick = function(e) {
       e.preventDefault();
       sendToXano();
     };
     
-    // ===== 9. START EVERYTHING =====
+    // ===== 9. INIT =====
+    var today = new Date().toISOString().split('T')[0];
+    document.getElementById('etaField').value = today;
+    
     cells[0].focus();
-    setTimeout(getGPS, 500); // Auto GPS after 0.5 seconds
+    setTimeout(getGPS, 500);
+    
+    // Test the endpoint after everything loads
+    setTimeout(testXanoEndpoint, 1000);
   </script>
 </body>
 </html>
