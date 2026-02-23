@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Android 5.0 Barcode Scanner (fixed view)</title>
-  <!-- viewport tuned: initial-scale=0.8 + maximum-scale=2.0 allows zoom out -->
-  <meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=2.0, user-scalable=yes">
+  <title>Android 5.0 Barcode Scanner - XANO Live</title>
+  <!-- Optimized for 5.0-inch 720p display -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
       -webkit-box-sizing: border-box;
@@ -14,182 +14,133 @@
     }
     body {
       background: #000;
-      display: -webkit-box;
-      display: -webkit-flex;
       display: flex;
-      -webkit-box-pack: center;
-      -webkit-justify-content: center;
       justify-content: center;
-      -webkit-box-align: center;
-      -webkit-align-items: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       font-family: Roboto, Arial, sans-serif;
-      overflow: hidden;
-      /* tiny extra padding so device never touches edges */
-      padding: 4px;
+      padding: 8px;
     }
     .device {
-      width: 340px;
-      height: 600px;
+      width: 100%;
+      max-width: 400px;
+      min-height: 700px;
       background: #B0C8E2;
-      display: -webkit-box;
-      display: -webkit-flex;
       display: flex;
-      -webkit-box-orient: vertical;
-      -webkit-box-direction: normal;
-      -webkit-flex-direction: column;
       flex-direction: column;
-      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.7);
       box-shadow: 0 0 20px rgba(0,0,0,0.7);
       overflow: hidden;
       position: relative;
+      border-radius: 20px;
     }
-    /* HEADER — now fully visible because viewport is scaled out a bit */
+    /* HEADER */
     .header {
       background: #15569B;
       color: white;
-      height: 48px;
-      display: -webkit-box;
-      display: -webkit-flex;
+      height: 56px;
       display: flex;
-      -webkit-box-align: center;
-      -webkit-align-items: center;
       align-items: center;
-      -webkit-box-pack: justify;
-      -webkit-justify-content: space-between;
       justify-content: space-between;
-      padding: 0 15px;
-      font-size: 18px;
+      padding: 0 16px;
+      font-size: 20px;
       font-weight: bold;
-      -webkit-flex-shrink: 0;
       flex-shrink: 0;
     }
     .time-display {
       background: #1e3a6b;
-      padding: 6px 15px;
-      -webkit-border-radius: 30px;
+      padding: 6px 16px;
       border-radius: 30px;
       font-family: monospace;
-      font-size: 16px;
+      font-size: 18px;
       color: white;
       border: 1px solid #79A4D2;
-      min-width: 95px;
+      min-width: 110px;
       text-align: center;
     }
     /* SCAN ROW */
     .scan-row {
-      display: -webkit-box;
-      display: -webkit-flex;
       display: flex;
-      -webkit-box-align: center;
-      -webkit-align-items: center;
       align-items: center;
-      padding: 15px;
-      gap: 10px;
+      padding: 16px;
+      gap: 12px;
       background: #B0C8E2;
-      height: 85px;
+      min-height: 90px;
       border-bottom: 2px solid #79A4D2;
-      -webkit-flex-shrink: 0;
       flex-shrink: 0;
     }
     .submit-btn {
       background: #28a745;
       color: white;
       border: 2px solid #1e7e34;
-      width: 75px;
-      height: 52px;
-      -webkit-border-radius: 8px;
+      width: 80px;
+      height: 56px;
       border-radius: 8px;
-      font-size: 17px;
+      font-size: 18px;
       font-weight: bold;
       cursor: pointer;
-      -webkit-flex-shrink: 0;
       flex-shrink: 0;
       -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
     }
     .submit-btn:active {
       background: #1e7e34;
     }
     .grid-container {
-      display: -webkit-box;
-      display: -webkit-flex;
       display: flex;
-      gap: 3px;
-      -webkit-box-flex: 1;
-      -webkit-flex: 1;
+      gap: 4px;
       flex: 1;
-      -webkit-box-pack: end;
-      -webkit-justify-content: flex-end;
       justify-content: flex-end;
     }
     .cell {
-      width: 28px;
-      height: 52px;
+      width: 32px;
+      height: 56px;
       background: white;
       border: 2px solid #666;
-      -webkit-border-radius: 6px;
       border-radius: 6px;
       text-align: center;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: bold;
       text-transform: uppercase;
       outline: none;
       color: black;
-      padding: 0;
       -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
     }
     .cell:focus {
       border: 3px solid #FCC57A;
       background: #FB9809 !important;
     }
     .content {
-      -webkit-box-flex: 1;
-      -webkit-flex: 1;
       flex: 1;
-      padding: 15px;
+      padding: 16px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       background: #B0C8E2;
+      max-height: 500px;
     }
     .status-section {
       background: #96BEEE;
       border: 2px solid #79A4D2;
-      -webkit-border-radius: 10px;
       border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 15px;
+      padding: 16px;
+      margin-bottom: 16px;
     }
     .field {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
     .field label {
       display: block;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: bold;
       color: #15569B;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
     .field input, .field select {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       border: 2px solid #79A4D2;
-      -webkit-border-radius: 6px;
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 16px;
       background: white;
-      height: 42px;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-    }
-    .field select {
-      -webkit-appearance: menulist;
-      -moz-appearance: menulist;
-      appearance: menulist;
+      height: 46px;
     }
     .field input[readonly] {
       background: #e2e8d3;
@@ -198,121 +149,114 @@
     }
     .result-section {
       border: 2px solid #79A4D2;
-      -webkit-border-radius: 8px;
       border-radius: 8px;
       overflow: hidden;
       background: #96BEEE;
-      margin-bottom: 15px;
+      margin-bottom: 16px;
     }
     .result-header {
-      display: -webkit-box;
-      display: -webkit-flex;
       display: flex;
       background: #79A4D2;
       border-bottom: 2px solid #15569B;
     }
     .result-header div:first-child {
-      width: 45px;
-      padding: 8px;
+      width: 50px;
+      padding: 10px;
       text-align: center;
       border-right: 2px solid #15569B;
       color: white;
       font-weight: bold;
-      font-size: 14px;
     }
     .result-header div:last-child {
-      -webkit-box-flex: 1;
-      -webkit-flex: 1;
       flex: 1;
-      padding: 8px;
+      padding: 10px;
       color: white;
       font-weight: bold;
-      font-size: 14px;
     }
     .result-row {
-      display: -webkit-box;
-      display: -webkit-flex;
       display: flex;
       border-bottom: 1px solid #79A4D2;
     }
     .result-row div:first-child {
-      width: 45px;
-      padding: 8px;
+      width: 50px;
+      padding: 10px;
       text-align: center;
       border-right: 1px solid #79A4D2;
-      font-size: 14px;
     }
     .result-row div:last-child {
-      -webkit-box-flex: 1;
-      -webkit-flex: 1;
       flex: 1;
-      padding: 8px;
-      font-size: 14px;
+      padding: 10px;
     }
     #empty-message {
-      padding: 10px;
+      padding: 12px;
       color: #666;
       font-style: italic;
       text-align: center;
     }
     .status-message {
-      padding: 8px;
+      padding: 10px;
       text-align: center;
       background: rgba(255,255,255,0.4);
-      -webkit-border-radius: 6px;
       border-radius: 6px;
-      min-height: 40px;
-      font-size: 14px;
+      min-height: 45px;
       border: 1px solid #79A4D2;
     }
-    /* Popup */
     .popup {
       position: absolute;
       top: 50%;
       left: 50%;
-      -webkit-transform: translate(-50%, -50%);
       transform: translate(-50%, -50%);
-      width: 180px;
+      width: 200px;
       background: white;
       border: 4px solid #28a745;
-      -webkit-border-radius: 30px;
       border-radius: 30px;
       text-align: center;
-      padding: 15px;
+      padding: 18px;
       display: none;
       z-index: 999;
     }
     .popup .circle {
+      width: 60px;
+      height: 60px;
+      background: #28a745;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      color: white;
+      font-size: 36px;
+      line-height: 60px;
+    }
+    .loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .loading-spinner {
       width: 50px;
       height: 50px;
-      background: #28a745;
-      -webkit-border-radius: 50%;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #15569B;
       border-radius: 50%;
-      margin: 0 auto 8px;
-      color: white;
-      font-size: 30px;
-      line-height: 50px;
+      animation: spin 1s linear infinite;
     }
-    .popup p {
-      font-weight: bold;
-      color: #1e7e34;
-      font-size: 16px;
-      margin: 5px 0;
-    }
-    .popup-time {
-      font-size: 11px;
-      color: #666;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
   <div class="device">
-    <!-- HEADER now visible with adjusted viewport scale -->
     <div class="header">
       <span>SCAN BARCODE</span>
       <span class="time-display" id="currentTime">12:00:00</span>
     </div>
-    <!-- SCAN ROW -->
     <div class="scan-row">
       <button class="submit-btn" id="submitButton">SUBMIT</button>
       <div class="grid-container">
@@ -324,62 +268,79 @@
         <input class="cell" maxlength="1" id="cell6">
       </div>
     </div>
-    <!-- CONTENT -->
     <div class="content">
       <div class="status-section">
         <div class="field">
-          <label>Label ID</label>
+          <label>Label ID (Numeric)</label>
           <input type="text" id="labelId" readonly placeholder="---">
         </div>
         <div class="field">
           <label>Type</label>
-          <input type="text" value="manual" readonly>
+          <input type="text" id="scanType" value="manual" readonly>
         </div>
         <div class="field">
           <label>Status</label>
           <select id="statusSelect">
-            <option>📥 Received</option>
-            <option>📬 Picked Up</option>
-            <option>🚚 Depart</option>
-            <option>📍 Arrival</option>
+            <option value="Received">📥 Received</option>
+            <option value="Picked Up">📬 Picked Up</option>
+            <option value="Depart">🚚 Depart</option>
+            <option value="Arrival">📍 Arrival</option>
           </select>
         </div>
         <div class="field">
           <label>Location</label>
-          <input type="text" id="locationField" placeholder="City, State">
+          <input type="text" id="locationField" placeholder="City, State" value="Los Angeles, CA">
         </div>
         <div class="field">
           <label>ETA</label>
-          <input type="text" id="etaField" placeholder="2025-03-15">
+          <input type="date" id="etaField">
         </div>
       </div>
-      <!-- RESULT TABLE -->
       <div class="result-section">
         <div class="result-header">
           <div>#</div>
-          <div>LABEL ID</div>
+          <div>SCAN RECORD</div>
         </div>
         <div id="tableBody"></div>
         <div id="empty-message">No scans yet</div>
       </div>
-      <!-- STATUS MESSAGE -->
-      <div class="status-message" id="messageBox"></div>
+      <div class="status-message" id="messageBox">Ready to scan</div>
     </div>
-    <!-- POPUP -->
     <div class="popup" id="successPopup">
-      <div class="circle">&#10003;</div>
-      <p>SAVED OK</p>
+      <div class="circle">✓</div>
+      <p>SAVED TO XANO</p>
       <div class="popup-time" id="popupTime"></div>
     </div>
+    <div class="loading" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+    </div>
   </div>
+
   <script>
-    // ===== BEEP SOUND (Web Audio API - works on Android 5.0+) =====
+    // ===== YOUR LIVE XANO CONFIGURATION =====
+    const XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+    const USE_MOCK_MODE = false; // Set to false to use real XANO
+    
+    // No API key needed if your endpoint is public
+    // If it requires authentication, you'll need to add headers
+    
+    // ===== UI Helpers =====
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+    }
+    
+    function setMessage(msg, isError) {
+      const msgBox = document.getElementById('messageBox');
+      msgBox.style.color = isError ? '#b52e2e' : '#1e6f3f';
+      msgBox.innerHTML = msg;
+    }
+    
+    // ===== BEEP SOUND =====
     function playBeep() {
       try {
         var AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtx) return;
         var ctx = new AudioCtx();
-        // First tone
         var osc = ctx.createOscillator();
         var gain = ctx.createGain();
         osc.connect(gain);
@@ -389,7 +350,7 @@
         gain.gain.value = 0.3;
         osc.start(0);
         osc.stop(ctx.currentTime + 0.15);
-        // Second tone (higher pitch after delay)
+        
         setTimeout(function() {
           try {
             var osc2 = ctx.createOscillator();
@@ -403,10 +364,9 @@
             osc2.stop(ctx.currentTime + 0.15);
           } catch(e) {}
         }, 150);
-      } catch(e) {
-        // Silently fail on unsupported browsers
-      }
+      } catch(e) {}
     }
+    
     function playErrorBeep() {
       try {
         var AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -423,22 +383,21 @@
         osc.stop(ctx.currentTime + 0.3);
       } catch(e) {}
     }
+    
     // ===== TIME DISPLAY =====
     function updateClock() {
       var timeElement = document.getElementById('currentTime');
       if (!timeElement) return;
       var now = new Date();
-      var hours = now.getHours();
-      var minutes = now.getMinutes();
-      var seconds = now.getSeconds();
-      if (hours < 10) hours = '0' + hours;
-      if (minutes < 10) minutes = '0' + minutes;
-      if (seconds < 10) seconds = '0' + seconds;
+      var hours = now.getHours().toString().padStart(2, '0');
+      var minutes = now.getMinutes().toString().padStart(2, '0');
+      var seconds = now.getSeconds().toString().padStart(2, '0');
       timeElement.innerHTML = hours + ':' + minutes + ':' + seconds;
     }
     updateClock();
     setInterval(updateClock, 1000);
-    // ===== CELLS =====
+    
+    // ===== CELLS HANDLING =====
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -447,11 +406,13 @@
       document.getElementById('cell5'),
       document.getElementById('cell6')
     ];
+    
     var letterMap = {
       'A':'1','B':'2','C':'3','D':'4','E':'5',
       'F':'6','G':'7','H':'8','I':'9','J':'0'
     };
     var validLetters = 'ABCDEFGHIJ';
+    
     for (var i = 0; i < cells.length; i++) {
       (function(index) {
         cells[index].addEventListener('input', function() {
@@ -466,16 +427,15 @@
           }
           updateLabelId();
         });
+        
         cells[index].addEventListener('keydown', function(e) {
           if (e.key === 'Backspace' && this.value === '' && index > 0) {
             cells[index - 1].focus();
           }
         });
-        cells[index].addEventListener('click', function() {
-          this.focus();
-        });
       })(i);
     }
+    
     function updateLabelId() {
       var code = '';
       for (var i = 0; i < cells.length; i++) {
@@ -499,6 +459,7 @@
         labelField.value = '';
       }
     }
+    
     function clearCells() {
       for (var i = 0; i < cells.length; i++) {
         cells[i].value = '';
@@ -506,6 +467,7 @@
       document.getElementById('labelId').value = '';
       cells[0].focus();
     }
+    
     function getBarcodeValue() {
       var code = '';
       for (var i = 0; i < cells.length; i++) {
@@ -513,40 +475,56 @@
       }
       return code;
     }
-    // ===== RESULT TABLE =====
+    
+    // ===== LOCAL TABLE MANAGEMENT =====
     var scanCounter = 0;
-    function addToTable(barcode) {
+    
+    function addToLocalTable(record) {
       scanCounter++;
       var emptyMsg = document.getElementById('empty-message');
       if (emptyMsg) emptyMsg.style.display = 'none';
+      
       var tableBody = document.getElementById('tableBody');
       var row = document.createElement('div');
       row.className = 'result-row';
-      row.innerHTML = '<div>' + scanCounter + '</div><div>' + barcode + '</div>';
+      row.innerHTML = '<div>' + scanCounter + '</div><div>' + record + '</div>';
       tableBody.appendChild(row);
     }
+    
+    // ===== XANO DATABASE FUNCTIONS =====
+    async function sendToXano(scanData) {
+      // Using your specific XANO endpoint
+      const response = await fetch(XANO_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(scanData)
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`XANO error (${response.status}): ${errorText}`);
+      }
+      
+      return await response.json();
+    }
+    
     // ===== POPUP =====
     function showSuccessPopup() {
       var popup = document.getElementById('successPopup');
       var now = new Date();
       document.getElementById('popupTime').innerHTML = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
       popup.style.display = 'block';
-      setTimeout(function() { popup.style.display = 'none'; }, 2000);
+      setTimeout(function() { popup.style.display = 'none'; }, 2500);
     }
-    // ===== STATUS MESSAGE =====
-    function setMessage(msg, isError) {
-      var msgBox = document.getElementById('messageBox');
-      msgBox.style.color = isError ? '#b52e2e' : '#1e6f3f';
-      msgBox.innerHTML = msg;
-    }
-    // ===== SUBMIT (fixed: now sends barcode to table, updates label, saves to "database" = visual table) =====
-    function submitScan() {
-      // get raw letters (A-J) from cells
-      var rawBarcode = getBarcodeValue();    // e.g. "AB3DEF" but we restrict to letters only
-      var labelField = document.getElementById('labelId');
-      var labelValue = labelField.value;     // numeric converted value or INVALID / empty
-
-      // validation: must be 6 letters A-J and labelValue must be numeric (not INVALID, not empty)
+    
+    // ===== MAIN SUBMIT FUNCTION =====
+    async function submitScan() {
+      var rawBarcode = getBarcodeValue();
+      var numericLabel = document.getElementById('labelId').value;
+      
+      // Validate
       var isValid = true;
       if (rawBarcode.length !== 6) isValid = false;
       for (var ch = 0; ch < rawBarcode.length; ch++) {
@@ -555,50 +533,80 @@
           break;
         }
       }
-      // also ensure labelValue is not 'INVALID' and not empty
-      if (!labelValue || labelValue === 'INVALID') isValid = false;
-
-      if (!isValid) {
-        setMessage('&#10071; Enter A-J only', true);
+      
+      if (!numericLabel || numericLabel === 'INVALID' || !isValid) {
+        setMessage('❌ Invalid! Use A-J only', true);
         playErrorBeep();
         return;
       }
-
-      // All good: play success beep, show popup, add to table, clear
-      playBeep();
-      showSuccessPopup();
-      setMessage('&#10003; Saved (to local list)', false);  // "database" = local list
-
-      // Add the LETTER combination (rawBarcode) to the result table as "LABEL ID"
-      // you could also store the numeric version; but user sees letters in cells. we store letters
-      addToTable(rawBarcode);   // sends to UI table (acts as persistent database for demo)
-
-      // Extra: you could also store to localStorage if needed, but requirement was "dint send to database either fix"
-      // so we make sure it sends to table (the visible "database"). Done.
-
-      clearCells();
+      
+      // Prepare data for XANO - matching your endpoint structure
+      const scanData = {
+        barcode_letters: rawBarcode,
+        barcode_numbers: numericLabel,
+        timestamp: new Date().toISOString(),
+        status: document.getElementById('statusSelect').value,
+        location: document.getElementById('locationField').value || 'Unknown',
+        eta: document.getElementById('etaField').value || new Date().toISOString().split('T')[0],
+        scan_type: 'manual',
+        device_info: 'Android 5.0 - 5" display'
+      };
+      
+      showLoading(true);
+      setMessage('⏳ Sending to XANO...', false);
+      
+      try {
+        // Send to your live XANO endpoint
+        const result = await sendToXano(scanData);
+        
+        playBeep();
+        showSuccessPopup();
+        setMessage('✅ Saved to XANO successfully!', false);
+        
+        // Show in local table
+        addToLocalTable(rawBarcode + ' → ' + numericLabel);
+        
+        clearCells();
+        console.log('XANO response:', result);
+        
+      } catch (error) {
+        playErrorBeep();
+        setMessage('❌ XANO failed: ' + error.message, true);
+        console.error('XANO error:', error);
+      } finally {
+        showLoading(false);
+      }
     }
+    
     // ===== EVENT LISTENERS =====
     document.getElementById('submitButton').addEventListener('click', function(e) {
       e.preventDefault();
       submitScan();
     });
+    
     for (var k = 0; k < cells.length; k++) {
       (function(idx) {
         cells[idx].addEventListener('keypress', function(e) {
-          if (e.key === 'Enter' || e.keyCode === 13) {
+          if (e.key === 'Enter') {
             e.preventDefault();
             submitScan();
           }
         });
       })(k);
     }
-    // Start with first cell focused
+    
+    // Set default date
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('etaField').value = today;
+    
+    // Focus first cell
     cells[0].focus();
-
-    // Additionally, prefill with sample data to show it works? No, leave empty.
-    // But ensure the empty message toggles correctly
-    // If tableBody is empty, empty message is visible; addToTable hides it.
+    
+    // Test connection on load
+    window.addEventListener('load', function() {
+      setMessage('Ready - XANO endpoint: ' + XANO_API_URL, false);
+    });
+    
   </script>
 </body>
 </html>
