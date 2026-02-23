@@ -281,63 +281,6 @@
       flex-shrink: 0;
     }
 
-    /* ANDROID 5.0 KEYPAD - A-J ONLY */
-    .android-keypad {
-      background: #B0C8E2;
-      border-top: 2px solid #1a1a1a;
-      flex-shrink: 0;
-      padding: 8px 5px;
-    }
-
-    .keypad-row {
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-      margin-bottom: 6px;
-    }
-
-    .keypad-key {
-      background: gray;
-      color: white;
-      border: 1px solid #666;
-      border-radius: 4px;
-      height: 48px;
-      width: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      font-weight: bold;
-      box-shadow: 0 2px 0 #1a1a1a;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .keypad-key:active {
-      background: #666;
-      transform: translateY(1px);
-      box-shadow: 0 1px 0 #1a1a1a;
-    }
-
-    .keypad-key.wide {
-      width: 80px;
-      font-size: 18px;
-    }
-
-    .keypad-key.special {
-      background: #5a5a5a;
-      font-size: 20px;
-    }
-
-    .keypad-key.backspace {
-      background: #6a4a4a;
-    }
-
-    .keypad-key.enter {
-      background: #28a745;
-      border-color: #1e7e34;
-    }
-
     /* HIDE VIDEO */
     #preview {
       display: none;
@@ -470,34 +413,6 @@
       <div id="errorDetail" class="error-detail"></div>
     </div>
 
-    <!-- ANDROID 5.0 KEYPAD - A-J ONLY -->
-    <div class="android-keypad">
-      <!-- Row 1: A B C D E -->
-      <div class="keypad-row">
-        <div class="keypad-key" data-key="A">A</div>
-        <div class="keypad-key" data-key="B">B</div>
-        <div class="keypad-key" data-key="C">C</div>
-        <div class="keypad-key" data-key="D">D</div>
-        <div class="keypad-key" data-key="E">E</div>
-      </div>
-      
-      <!-- Row 2: F G H I J -->
-      <div class="keypad-row">
-        <div class="keypad-key" data-key="F">F</div>
-        <div class="keypad-key" data-key="G">G</div>
-        <div class="keypad-key" data-key="H">H</div>
-        <div class="keypad-key" data-key="I">I</div>
-        <div class="keypad-key" data-key="J">J</div>
-      </div>
-      
-      <!-- Row 3: Backspace, Clear, Submit -->
-      <div class="keypad-row">
-        <div class="keypad-key wide backspace" data-key="backspace">⌫</div>
-        <div class="keypad-key wide" data-key="clear">CLEAR</div>
-        <div class="keypad-key wide enter" data-key="submit">ENTER</div>
-      </div>
-    </div>
-
     <!-- SUCCESS POPUP -->
     <div id="popup">
       <div class="circle">✓</div>
@@ -565,6 +480,9 @@
         var decoded = decodeLetters(code);
         if (decoded) {
           document.getElementById('decoded').value = decoded;
+          addRow(code);
+        } else {
+          alert('Invalid letters. Use A-J only');
         }
       }
     }
@@ -582,34 +500,6 @@
         result += map[ch];
       }
       return result;
-    }
-
-    function getAllCellValues() {
-      let code = "";
-      for (let i = 0; i < cells.length; i++) {
-        code += cells[i].value;
-      }
-      return code;
-    }
-
-    function setCellValue(index, value) {
-      if (index >= 0 && index < cells.length) {
-        cells[index].value = value;
-        cells[index].style.background = "#FB9809";
-        
-        // Trigger input event
-        const event = new Event('input', { bubbles: true });
-        cells[index].dispatchEvent(event);
-      }
-    }
-
-    function clearAllCells() {
-      for (let i = 0; i < cells.length; i++) {
-        cells[i].value = '';
-        cells[i].style.background = '#E2E8D3';
-      }
-      document.getElementById('decoded').value = '';
-      cells[0].focus();
     }
 
     /* ========== RESULT TABLE ========== */
@@ -689,14 +579,12 @@
             showPopup();
             setStatus('✓ Saved', false);
             
-            // Get the barcode value before clearing
-            var barcodeValue = getAllCellValues();
-            
-            // Add to result table
-            addRow(barcodeValue);
-            
-            // Clear cells
-            clearAllCells();
+            for (var i = 0; i < cells.length; i++) {
+              cells[i].value = '';
+              cells[i].style.background = '#E2E8D3';
+            }
+            document.getElementById('decoded').value = '';
+            cells[0].focus();
           } else {
             setStatus('Error ' + xhr.status, true);
             try {
@@ -716,64 +604,6 @@
 
       xhr.send(JSON.stringify(payload));
     }
-
-    /* ========== KEYPAD FUNCTIONALITY ========== */
-    document.querySelectorAll('.keypad-key').forEach(key => {
-      key.addEventListener('click', function() {
-        const keyValue = this.getAttribute('data-key');
-        
-        // Find first empty cell
-        let targetIndex = -1;
-        for (let i = 0; i < cells.length; i++) {
-          if (cells[i].value === '') {
-            targetIndex = i;
-            break;
-          }
-        }
-        
-        // If no empty cell, find last cell with value
-        if (targetIndex === -1) {
-          for (let i = cells.length - 1; i >= 0; i--) {
-            if (cells[i].value !== '') {
-              targetIndex = i;
-              break;
-            }
-          }
-        }
-
-        if (keyValue === 'backspace') {
-          // Delete from current position or last filled cell
-          for (let i = cells.length - 1; i >= 0; i--) {
-            if (cells[i].value !== '') {
-              setCellValue(i, '');
-              if (i > 0) {
-                cells[i - 1].focus();
-              } else {
-                cells[0].focus();
-              }
-              break;
-            }
-          }
-        } 
-        else if (keyValue === 'clear') {
-          // Clear all cells
-          clearAllCells();
-        }
-        else if (keyValue === 'submit') {
-          // Trigger submit
-          sendToXano();
-        }
-        else if (targetIndex !== -1) {
-          // A-J letters
-          setCellValue(targetIndex, keyValue);
-          
-          // Move focus to next cell if available
-          if (targetIndex < cells.length - 1) {
-            cells[targetIndex + 1].focus();
-          }
-        }
-      });
-    });
 
     /* ========== EVENT LISTENERS ========== */
     document.getElementById('submitBtn').addEventListener('click', function(e) {
