@@ -41,37 +41,39 @@
     .header {
       background: #15569B;
       color: white;
-      height: 40px;
+      height: 45px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 12px;
-      font-size: 16px;
+      padding: 0 15px;
+      font-size: 18px;
       font-weight: 500;
       flex-shrink: 0;
     }
 
     .header-time {
       background: #1e3a6b;
-      padding: 4px 10px;
-      border-radius: 20px;
+      padding: 6px 12px;
+      border-radius: 25px;
       font-family: monospace;
-      font-size: 15px;
+      font-size: 16px;
       color: #fff;
       font-weight: bold;
-      min-width: 80px;
+      min-width: 90px;
       text-align: center;
+      display: block;
+      border: 1px solid #79A4D2;
     }
 
     .scan-row {
       display: flex;
       flex-direction: row;
       align-items: center;
-      padding: 10px 12px;
-      gap: 10px;
+      padding: 12px 15px;
+      gap: 12px;
       background: #B0C8E2;
       flex-shrink: 0;
-      height: 70px;
+      height: 80px;
       border-bottom: 2px solid #79A4D2;
     }
 
@@ -81,15 +83,15 @@
       padding: 0;
       font-weight: bold;
       color: white;
-      border-radius: 6px;
-      font-size: 16px;
-      width: 75px;
-      height: 48px;
+      border-radius: 8px;
+      font-size: 18px;
+      width: 80px;
+      height: 52px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
       border: 2px solid #1e7e34;
       flex-shrink: 0;
     }
@@ -98,15 +100,15 @@
       display: flex;
       flex-direction: row;
       gap: 4px;
-      height: 48px;
+      height: 52px;
       align-items: center;
       flex: 1;
       justify-content: flex-end;
     }
 
     .mini-cell {
-      width: 35px;
-      height: 48px;
+      width: 32px;
+      height: 52px;
       background: #E2E8D3;
       border: 2px solid #666;
       text-align: center;
@@ -125,9 +127,14 @@
       outline: none;
     }
 
+    .mini-cell.highlighted {
+      background: #FB9809 !important;
+      border-color: #15569B;
+    }
+
     .content {
       flex: 1;
-      padding: 12px;
+      padding: 15px;
       background: #B0C8E2;
       display: flex;
       flex-direction: column;
@@ -136,16 +143,16 @@
 
     /* STATUS FIELDS */
     .status-fields {
-      padding: 12px;
+      padding: 15px;
       background: #96BEEE;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 2px solid #79A4D2;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
       flex-shrink: 0;
     }
 
     .field-row {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .field-row:last-child {
@@ -154,21 +161,21 @@
 
     .field-row label {
       display: block;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: bold;
       color: #15569B;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
 
     .field-row select,
     .field-row input {
       width: 100%;
-      padding: 8px 10px;
-      border: 1px solid #79A4D2;
-      border-radius: 6px;
-      font-size: 14px;
+      padding: 10px;
+      border: 2px solid #79A4D2;
+      border-radius: 8px;
+      font-size: 15px;
       background: white;
-      height: 40px;
+      height: 45px;
     }
 
     .field-row input[readonly] {
@@ -184,7 +191,7 @@
       overflow: hidden;
       background: #96BEEE;
       flex-shrink: 0;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
     }
 
     .result-header {
@@ -194,21 +201,21 @@
     }
 
     .result-header .cell-number {
-      width: 45px;
-      padding: 8px;
+      width: 50px;
+      padding: 10px;
       font-weight: bold;
       text-align: center;
       border-right: 2px solid #15569B;
-      font-size: 14px;
+      font-size: 15px;
       color: white;
     }
 
     .result-header .cell-label {
       flex: 1;
-      padding: 8px 12px;
+      padding: 10px 15px;
       font-weight: bold;
       text-align: left;
-      font-size: 14px;
+      font-size: 15px;
       color: white;
     }
 
@@ -223,20 +230,20 @@
     }
 
     .result-row .cell-number {
-      width: 45px;
-      padding: 8px;
+      width: 50px;
+      padding: 10px;
       text-align: center;
       border-right: 1px solid #79A4D2;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 15px;
     }
 
     .result-row .cell-label {
       flex: 1;
-      padding: 8px 12px;
+      padding: 10px 15px;
       text-align: left;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 15px;
     }
 
     #emptyRow {
@@ -251,32 +258,32 @@
     }
 
     #resultTable {
-      max-height: 130px;
+      max-height: 140px;
       overflow-y: auto;
     }
 
     /* STATUS AREA */
     #statusBox {
-      padding: 8px;
-      font-size: 14px;
+      padding: 10px;
+      font-size: 15px;
       text-align: center;
-      min-height: 40px;
+      min-height: 45px;
       font-weight: 500;
       background: rgba(255,255,255,0.4);
-      border-radius: 6px;
-      margin-bottom: 6px;
+      border-radius: 8px;
+      margin-bottom: 8px;
       flex-shrink: 0;
       border: 1px solid #79A4D2;
     }
 
     .error-detail {
-      font-size: 12px;
+      font-size: 13px;
       color: #b52e2e;
       word-break: break-word;
-      padding: 6px;
+      padding: 8px;
       background: rgba(255,255,255,0.6);
-      border-radius: 4px;
-      max-height: 40px;
+      border-radius: 6px;
+      max-height: 45px;
       overflow-y: auto;
       flex-shrink: 0;
       border: 1px solid #b52e2e;
@@ -292,41 +299,41 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 180px;
-      margin-left: -90px;
-      margin-top: -80px;
+      width: 200px;
+      margin-left: -100px;
+      margin-top: -90px;
       background: #ffffff;
       border: 4px solid #28a745;
-      border-radius: 30px;
+      border-radius: 40px;
       text-align: center;
-      padding: 15px 8px 10px 8px;
+      padding: 20px 10px 15px 10px;
       display: none;
       z-index: 9999;
-      box-shadow: 0 15px 25px black;
+      box-shadow: 0 20px 30px black;
     }
 
     #popup .circle {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       background: #28a745;
-      margin: 0 auto 8px auto;
+      margin: 0 auto 12px auto;
       color: #fff;
-      font-size: 30px;
+      font-size: 35px;
       font-weight: bold;
-      line-height: 54px;
+      line-height: 64px;
     }
 
     #popup p {
-      margin: 3px 0;
-      font-size: 16px;
+      margin: 5px 0;
+      font-size: 18px;
       font-weight: 600;
       color: #1e7e34;
     }
 
     #popup-time {
-      font-size: 11px;
-      margin-top: 5px;
+      font-size: 12px;
+      margin-top: 8px;
       color: #666;
     }
   </style>
@@ -336,19 +343,19 @@
 
     <div class="header">
       <div class="header-title">SCAN BARCODE</div>
-      <div class="header-time" id="deviceTime"></div>
+      <div class="header-time" id="deviceTime">--:--:--</div>
     </div>
 
     <div class="scan-row">
       <button class="submit-btn" id="submitBtn">SUBMIT</button>
 
       <div class="mini-grid">
-        <input class="mini-cell" maxlength="1" id="cell1">
-        <input class="mini-cell" maxlength="1" id="cell2">
-        <input class="mini-cell" maxlength="1" id="cell3">
-        <input class="mini-cell" maxlength="1" id="cell4">
-        <input class="mini-cell" maxlength="1" id="cell5">
-        <input class="mini-cell" maxlength="1" id="cell6">
+        <input class="mini-cell" maxlength="1" id="cell1" placeholder="">
+        <input class="mini-cell" maxlength="1" id="cell2" placeholder="">
+        <input class="mini-cell" maxlength="1" id="cell3" placeholder="">
+        <input class="mini-cell" maxlength="1" id="cell4" placeholder="">
+        <input class="mini-cell" maxlength="1" id="cell5" placeholder="">
+        <input class="mini-cell" maxlength="1" id="cell6" placeholder="">
       </div>
     </div>
 
@@ -421,42 +428,27 @@
   </div>
 
   <script>
-    /* ========== TIME DISPLAY - FIXED ========== */
+    /* ========== TIME DISPLAY ========== */
     function updateTime() {
       var timeElement = document.getElementById('deviceTime');
-      if (!timeElement) {
-        console.log('Time element not found');
-        return;
-      }
+      if (!timeElement) return;
       
       var now = new Date();
       var hours = now.getHours();
       var minutes = now.getMinutes();
       var seconds = now.getSeconds();
       
-      // Add leading zeros
-      if (hours < 10) hours = '0' + hours;
-      if (minutes < 10) minutes = '0' + minutes;
-      if (seconds < 10) seconds = '0' + seconds;
+      hours = (hours < 10 ? '0' : '') + hours;
+      minutes = (minutes < 10 ? '0' : '') + minutes;
+      seconds = (seconds < 10 ? '0' : '') + seconds;
       
       timeElement.innerHTML = hours + ':' + minutes + ':' + seconds;
-      console.log('Time updated:', hours + ':' + minutes + ':' + seconds);
     }
     
-    // Run immediately when page loads
-    window.onload = function() {
-      console.log('Page loaded');
-      updateTime();
-      // Focus first cell
-      if (cells && cells[0]) {
-        cells[0].focus();
-      }
-    };
-    
-    // Update every second
+    updateTime();
     setInterval(updateTime, 1000);
 
-    /* ========== CELLS - CLICKABLE ========== */
+    /* ========== CELLS - NARROWER ========== */
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -466,37 +458,67 @@
       document.getElementById('cell6')
     ];
 
-    // Check if cells exist
-    console.log('Cells found:', cells.length);
+    // Track current cell index
+    var currentIndex = 0;
 
-    // Add input handlers to each cell
-    for (let i = 0; i < cells.length; i++) {
-      if (cells[i]) {
-        // Handle input
-        cells[i].oninput = function() {
-          this.style.background = "#FB9809";
-          // Auto-advance to next cell
-          if (this.value.length === 1 && i < cells.length - 1) {
-            cells[i + 1].focus();
-          }
-          checkManualEntry();
-        };
-
-        // Handle backspace
-        cells[i].onkeydown = function(e) {
-          if (e.key === 'Backspace' && this.value === '' && i > 0) {
-            cells[i - 1].focus();
-          }
-        };
-
-        // Handle enter key
-        cells[i].onkeypress = function(e) {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            sendToXano();
-          }
-        };
+    // Function to highlight current cell
+    function highlightCell(index) {
+      for (var i = 0; i < cells.length; i++) {
+        cells[i].classList.remove('highlighted');
       }
+      if (cells[index]) {
+        cells[index].classList.add('highlighted');
+        cells[index].focus();
+      }
+    }
+
+    // Initial highlight
+    highlightCell(0);
+
+    // Add event listeners
+    for (let i = 0; i < cells.length; i++) {
+      cells[i].addEventListener('click', function() {
+        currentIndex = i;
+        highlightCell(i);
+      });
+
+      cells[i].addEventListener('focus', function() {
+        currentIndex = i;
+        highlightCell(i);
+      });
+
+      cells[i].addEventListener('input', function(e) {
+        var value = this.value.toUpperCase();
+        
+        if (value && !'ABCDEFGHIJ'.includes(value)) {
+          this.value = '';
+          return;
+        }
+        
+        this.value = value;
+        this.style.background = "#FB9809";
+        
+        if (this.value.length === 1 && i < cells.length - 1) {
+          currentIndex = i + 1;
+          highlightCell(i + 1);
+        }
+        
+        checkManualEntry();
+      });
+
+      cells[i].addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && this.value === '' && i > 0) {
+          currentIndex = i - 1;
+          highlightCell(i - 1);
+        }
+      });
+
+      cells[i].addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendToXano();
+        }
+      });
     }
 
     function checkManualEntry() {
@@ -504,23 +526,27 @@
       for (let i = 0; i < cells.length; i++) {
         code += cells[i].value;
       }
+      
+      var decodedLabel = document.getElementById('decoded');
+      
       if (code.length === 6) {
         var decoded = decodeLetters(code);
         if (decoded) {
-          document.getElementById('decoded').value = decoded;
+          decodedLabel.value = decoded;
         } else {
-          document.getElementById('decoded').value = 'INVALID';
+          decodedLabel.value = 'INVALID';
         }
+      } else {
+        decodedLabel.value = '';
       }
     }
 
     function decodeLetters(encoded) {
       var map = {
-        'A': '1','B': '2','C': '3','D': '4','E': '5',
-        'F': '6','G': '7','H': '8','I': '9','J': '0',
-        'a': '1','b': '2','c': '3','d': '4','e': '5',
-        'f': '6','g': '7','h': '8','i': '9','j': '0'
+        'A': '1', 'B': '2', 'C': '3', 'D': '4', 'E': '5',
+        'F': '6', 'G': '7', 'H': '8', 'I': '9', 'J': '0'
       };
+      
       var result = '';
       for (var i = 0; i < encoded.length; i++) {
         var ch = encoded.charAt(i);
@@ -536,6 +562,17 @@
         code += cells[i].value;
       }
       return code;
+    }
+
+    function clearAllCells() {
+      for (var i = 0; i < cells.length; i++) {
+        cells[i].value = '';
+        cells[i].style.background = '#E2E8D3';
+        cells[i].classList.remove('highlighted');
+      }
+      document.getElementById('decoded').value = '';
+      currentIndex = 0;
+      highlightCell(0);
     }
 
     /* ========== RESULT TABLE ========== */
@@ -587,7 +624,7 @@
       var labelId = document.getElementById('decoded').value;
       
       if (!labelId || labelId === 'INVALID') {
-        setStatus('❗ Enter valid barcode (A-J only)', true);
+        setStatus('❗ Enter A-J only', true);
         return;
       }
 
@@ -616,19 +653,9 @@
             showPopup();
             setStatus('✓ Saved', false);
             
-            // Get the barcode value before clearing
             var barcodeValue = getAllCellValues();
-            
-            // Add to result table
             addRow(barcodeValue);
-            
-            // Clear cells
-            for (var i = 0; i < cells.length; i++) {
-              cells[i].value = '';
-              cells[i].style.background = '#E2E8D3';
-            }
-            document.getElementById('decoded').value = '';
-            cells[0].focus();
+            clearAllCells();
           } else {
             setStatus('Error ' + xhr.status, true);
             try {
@@ -650,20 +677,14 @@
     }
 
     /* ========== EVENT LISTENERS ========== */
-    var submitBtn = document.getElementById('submitBtn');
-    if (submitBtn) {
-      submitBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        sendToXano();
-      });
-    }
+    document.getElementById('submitBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      sendToXano();
+    });
 
-    // Make sure first cell is focused
-    if (cells[0]) {
-      cells[0].focus();
-    }
-
-    console.log('Script loaded successfully');
+    setTimeout(function() {
+      highlightCell(0);
+    }, 100);
   </script>
 </body>
 </html>
