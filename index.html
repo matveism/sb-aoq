@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ANDROID 5.0 SCANNER - QWERTY</title>
+  <title>ANDROID 5.0 SCANNER - FINAL FIXED</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
@@ -91,8 +91,6 @@
       text-transform: uppercase;
       outline: none;
       color: black;
-      /* QWERTY KEYBOARD - text mode */
-      -webkit-appearance: none;
     }
     .cell:focus {
       border: 3px solid #FCC57A;
@@ -243,7 +241,7 @@
 </head>
 <body>
   <div class="device">
-    <!-- HEADER - TIME VISIBLE -->
+    <!-- HEADER - TIME WILL SHOW HERE -->
     <div class="header">
       <span>SCAN BARCODE</span>
       <span class="time-display" id="currentTime">--:--:--</span>
@@ -253,12 +251,12 @@
     <div class="scan-row">
       <button class="submit-btn" id="submitButton">OK</button>
       <div class="grid-container">
-        <input class="cell" type="text" inputmode="text" maxlength="1" id="cell1">
-        <input class="cell" type="text" inputmode="text" maxlength="1" id="cell2">
-        <input class="cell" type="text" inputmode="text" maxlength="1" id="cell3">
-        <input class="cell" type="text" inputmode="text" maxlength="1" id="cell4">
-        <input class="cell" type="text" inputmode="text" maxlength="1" id="cell5">
-        <input class="cell" type="text" inputmode="text" maxlength="1" id="cell6">
+        <input class="cell" type="text" maxlength="1" id="cell1">
+        <input class="cell" type="text" maxlength="1" id="cell2">
+        <input class="cell" type="text" maxlength="1" id="cell3">
+        <input class="cell" type="text" maxlength="1" id="cell4">
+        <input class="cell" type="text" maxlength="1" id="cell5">
+        <input class="cell" type="text" maxlength="1" id="cell6">
       </div>
     </div>
     
@@ -281,10 +279,10 @@
         <div class="field">
           <label>📍 Location (GPS)</label>
           <div class="location-row">
-            <input type="text" id="locationField" readonly value="Tap GPS button">
+            <input type="text" id="locationField" readonly value="Press 📍 for GPS">
             <button class="gps-btn" id="gpsBtn">📍</button>
           </div>
-          <div class="gps-status" id="gpsStatus">Ready</div>
+          <div class="gps-status" id="gpsStatus">Ready - tap 📍</div>
         </div>
         <div class="field">
           <label>📅 ETA</label>
@@ -315,25 +313,39 @@
   </div>
 
   <script>
-    // ===== FINAL PRODUCTION CODE - QWERTY =====
+    // ===== FINAL FIXED CODE - TIME WORKING, GPS WORKING =====
     var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
     
-    // ===== 1. TIME DISPLAY =====
+    // ===== 1. TIME DISPLAY - DEFINITELY WORKING =====
     function updateTime() {
       var timeEl = document.getElementById('currentTime');
-      if (!timeEl) return;
+      if (!timeEl) {
+        console.log('Time element not found');
+        return;
+      }
       
       var now = new Date();
-      var hours = now.getHours().toString().padStart(2,'0');
-      var minutes = now.getMinutes().toString().padStart(2,'0');
-      var seconds = now.getSeconds().toString().padStart(2,'0');
+      var hours = now.getHours();
+      var minutes = now.getMinutes();
+      var seconds = now.getSeconds();
       
-      timeEl.innerHTML = hours + ':' + minutes + ':' + seconds;
+      // Format with leading zeros
+      hours = (hours < 10) ? '0' + hours : hours;
+      minutes = (minutes < 10) ? '0' + minutes : minutes;
+      seconds = (seconds < 10) ? '0' + seconds : seconds;
+      
+      var timeString = hours + ':' + minutes + ':' + seconds;
+      timeEl.innerHTML = timeString;
+      console.log('Time updated:', timeString); // For debugging
     }
+    
+    // Update immediately
     updateTime();
+    
+    // Update every second
     setInterval(updateTime, 1000);
     
-    // ===== 2. CELLS - EMPTY, QWERTY KEYBOARD =====
+    // ===== 2. CELLS - EMPTY =====
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -343,9 +355,11 @@
       document.getElementById('cell6')
     ];
     
-    // Clear any default values
+    // Clear cells
     for (var i = 0; i < cells.length; i++) {
-      cells[i].value = '';
+      if (cells[i]) {
+        cells[i].value = '';
+      }
     }
     
     // Letter to number mapping
@@ -356,27 +370,26 @@
     
     // Setup cell behavior
     for (var i = 0; i < cells.length; i++) {
-      // Input event - accept any letter but only store A-J
+      if (!cells[i]) continue;
+      
+      // Input event
       cells[i].addEventListener('input', function(e) {
         var val = this.value.toUpperCase();
         
-        // Only accept A-J, ignore others
         if (val.match(/^[A-J]$/)) {
           this.value = val;
           updateLabelId();
           
-          // Move to next cell
           var next = this.nextElementSibling;
           if (next && next.classList.contains('cell')) {
             next.focus();
           }
         } else {
-          // Clear invalid input
           this.value = '';
         }
       });
       
-      // Backspace to previous cell
+      // Backspace
       cells[i].addEventListener('keydown', function(e) {
         if (e.key === 'Backspace' && this.value === '') {
           var prev = this.previousElementSibling;
@@ -386,7 +399,7 @@
         }
       });
       
-      // Enter submits
+      // Enter key
       cells[i].addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -395,7 +408,7 @@
       });
     }
     
-    // Update the numeric label ID
+    // Update label ID
     function updateLabelId() {
       var code = '';
       for (var i = 0; i < cells.length; i++) {
@@ -414,19 +427,22 @@
       }
     }
     
-    // ===== 3. GPS FUNCTION =====
+    // ===== 3. GPS FUNCTION - FIXED =====
     function getGPS() {
       var locField = document.getElementById('locationField');
       var gpsStatus = document.getElementById('gpsStatus');
+      var gpsBtn = document.getElementById('gpsBtn');
       
       if (!navigator.geolocation) {
         locField.value = 'GPS not supported';
-        gpsStatus.innerHTML = 'Error';
+        gpsStatus.innerHTML = 'Not available';
         return;
       }
       
+      // Update UI
       locField.value = 'Getting GPS...';
       gpsStatus.innerHTML = 'Please wait';
+      gpsBtn.style.opacity = '0.5';
       
       navigator.geolocation.getCurrentPosition(
         function(position) {
@@ -436,15 +452,17 @@
           
           locField.value = lat + ', ' + lon;
           gpsStatus.innerHTML = 'Accuracy: ±' + acc + 'm';
+          gpsBtn.style.opacity = '1';
         },
         function(error) {
           var msg = 'GPS error';
           if (error.code === 1) msg = 'Permission denied';
-          if (error.code === 2) msg = 'Position unavailable';
+          if (error.code === 2) msg = 'Unavailable';
           if (error.code === 3) msg = 'Timeout';
           
           locField.value = 'Tap 📍 to retry';
           gpsStatus.innerHTML = msg;
+          gpsBtn.style.opacity = '1';
         },
         {
           enableHighAccuracy: true,
@@ -551,7 +569,7 @@
         status: document.getElementById('statusSelect').value,
         location: document.getElementById('locationField').value,
         eta: document.getElementById('etaField').value,
-        device: 'Android 5.0 QWERTY'
+        device: 'Android 5.0'
       };
       
       var msgBox = document.getElementById('messageBox');
@@ -561,25 +579,56 @@
       sendToXano(data);
     }
     
-    // ===== 7. INITIALIZE =====
-    var today = new Date();
-    var year = today.getFullYear();
-    var month = ('0' + (today.getMonth() + 1)).slice(-2);
-    var day = ('0' + today.getDate()).slice(-2);
-    document.getElementById('etaField').value = year + '-' + month + '-' + day;
+    // ===== 7. INITIALIZE EVERYTHING =====
+    function init() {
+      console.log('Initializing app...');
+      
+      // Set today's date
+      var today = new Date();
+      var year = today.getFullYear();
+      var month = ('0' + (today.getMonth() + 1)).slice(-2);
+      var day = ('0' + today.getDate()).slice(-2);
+      var etaField = document.getElementById('etaField');
+      if (etaField) {
+        etaField.value = year + '-' + month + '-' + day;
+      }
+      
+      // GPS button
+      var gpsBtn = document.getElementById('gpsBtn');
+      if (gpsBtn) {
+        gpsBtn.onclick = function(e) {
+          e.preventDefault();
+          getGPS();
+        };
+      }
+      
+      // Submit button
+      var submitBtn = document.getElementById('submitButton');
+      if (submitBtn) {
+        submitBtn.onclick = function(e) {
+          e.preventDefault();
+          submitScan();
+        };
+      }
+      
+      // Focus first cell
+      if (cells[0]) {
+        cells[0].focus();
+      }
+      
+      // Get GPS after 2 seconds
+      setTimeout(function() {
+        console.log('Getting initial GPS...');
+        getGPS();
+      }, 2000);
+    }
     
-    document.getElementById('gpsBtn').onclick = function(e) {
-      e.preventDefault();
-      getGPS();
+    // Run init when page loads
+    window.onload = function() {
+      init();
+      // Make sure time is updated immediately
+      updateTime();
     };
-    
-    document.getElementById('submitButton').onclick = function(e) {
-      e.preventDefault();
-      submitScan();
-    };
-    
-    cells[0].focus();
-    setTimeout(getGPS, 1000);
   </script>
 </body>
 </html>
