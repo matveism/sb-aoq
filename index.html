@@ -39,35 +39,44 @@
     .header {
       background: #15569B;
       color: white;
-      height: 30px;
+      height: 40px; /* Taller header */
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 12px;
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 500;
       flex-shrink: 0;
     }
 
     .header-time {
       background: #1e3a6b;
-      padding: 2px 8px;
+      padding: 4px 10px;
       border-radius: 4px;
       font-family: monospace;
-      font-size: 14px;
+      font-size: 16px;
       color: #fff;
       font-weight: bold;
+    }
+
+    /* SPACER to push scan row down */
+    .top-spacer {
+      height: 30px;
+      background: #B0C8E2;
+      flex-shrink: 0;
     }
 
     .scan-row {
       display: flex;
       flex-direction: row;
       align-items: center;
-      padding: 8px;
-      gap: 8px;
+      padding: 10px;
+      gap: 10px;
       background: #B0C8E2;
       flex-shrink: 0;
-      height: 60px;
+      height: 70px;
+      border-top: 1px solid #79A4D2;
+      border-bottom: 1px solid #79A4D2;
     }
 
     .submit-btn {
@@ -76,70 +85,71 @@
       padding: 0;
       font-weight: bold;
       color: white;
-      border-radius: 4px;
-      font-size: 16px;
-      width: 75px;
-      height: 42px;
+      border-radius: 6px;
+      font-size: 18px;
+      width: 85px;
+      height: 50px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      border: 1px solid #1e7e34;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      border: 2px solid #1e7e34;
       flex-shrink: 0;
     }
 
     .mini-grid {
       display: flex;
       flex-direction: row;
-      gap: 4px;
-      height: 42px;
+      gap: 5px;
+      height: 50px;
       align-items: center;
       flex: 1;
-      max-width: 240px;
+      max-width: 250px;
     }
 
     .mini-cell {
-      width: 36px;
-      height: 42px;
+      width: 38px;
+      height: 50px;
       background: #E2E8D3;
-      border: 1px solid #666;
+      border: 2px solid #666;
       text-align: center;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: bold;
       color: black;
       outline: none;
       padding: 0;
       flex-shrink: 0;
+      border-radius: 4px;
     }
 
     .mini-cell:focus {
-      border: 2px solid #FCC57A;
+      border: 3px solid #FCC57A;
       background: #fff;
     }
 
     .content {
       flex: 1;
-      padding: 8px;
+      padding: 12px;
       background: #B0C8E2;
       display: flex;
       flex-direction: column;
       overflow-y: auto;
-      padding-bottom: 15px;
+      padding-bottom: 20px;
     }
 
     /* STATUS FIELDS */
     .status-fields {
-      padding: 8px;
+      padding: 12px;
       background: #96BEEE;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 2px solid #79A4D2;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       flex-shrink: 0;
     }
 
     .field-row {
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .field-row:last-child {
@@ -148,21 +158,21 @@
 
     .field-row label {
       display: block;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: bold;
       color: #15569B;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
 
     .field-row select,
     .field-row input {
       width: 100%;
-      padding: 5px 8px;
+      padding: 8px 10px;
       border: 1px solid #79A4D2;
       border-radius: 4px;
-      font-size: 14px;
+      font-size: 15px;
       background: white;
-      height: 32px;
+      height: 38px;
     }
 
     .field-row input[readonly] {
@@ -174,11 +184,11 @@
     /* RESULT BOX */
     .result-box {
       border: 2px solid #79A4D2;
-      border-radius: 6px;
+      border-radius: 8px;
       overflow: hidden;
       background: #96BEEE;
       flex-shrink: 0;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
 
     .result-header {
@@ -188,20 +198,20 @@
     }
 
     .result-header .cell-number {
-      width: 45px;
-      padding: 6px;
+      width: 50px;
+      padding: 8px;
       font-weight: bold;
       text-align: center;
       border-right: 1px solid #15569B;
-      font-size: 14px;
+      font-size: 15px;
     }
 
     .result-header .cell-label {
       flex: 1;
-      padding: 6px 10px;
+      padding: 8px 12px;
       font-weight: bold;
       text-align: left;
-      font-size: 14px;
+      font-size: 15px;
     }
 
     .result-row {
@@ -215,20 +225,20 @@
     }
 
     .result-row .cell-number {
-      width: 45px;
-      padding: 6px;
+      width: 50px;
+      padding: 8px;
       text-align: center;
       border-right: 1px solid #79A4D2;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 15px;
     }
 
     .result-row .cell-label {
       flex: 1;
-      padding: 6px 10px;
+      padding: 8px 12px;
       text-align: left;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 15px;
     }
 
     #emptyRow {
@@ -243,31 +253,31 @@
     }
 
     #resultTable {
-      max-height: 120px;
+      max-height: 130px;
       overflow-y: auto;
     }
 
     /* STATUS AREA */
     #statusBox {
-      padding: 6px;
-      font-size: 13px;
+      padding: 8px;
+      font-size: 14px;
       text-align: center;
-      min-height: 32px;
+      min-height: 38px;
       font-weight: 500;
       background: rgba(255,255,255,0.3);
       border-radius: 4px;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
       flex-shrink: 0;
     }
 
     .error-detail {
-      font-size: 11px;
+      font-size: 12px;
       color: #b52e2e;
       word-break: break-word;
-      padding: 4px;
+      padding: 6px;
       background: rgba(255,255,255,0.5);
-      border-radius: 3px;
-      max-height: 40px;
+      border-radius: 4px;
+      max-height: 45px;
       overflow-y: auto;
       flex-shrink: 0;
     }
@@ -282,41 +292,41 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 180px;
-      margin-left: -90px;
-      margin-top: -80px;
+      width: 200px;
+      margin-left: -100px;
+      margin-top: -90px;
       background: #ffffff;
       border: 4px solid #28a745;
       border-radius: 30px;
       text-align: center;
-      padding: 15px 10px 10px 10px;
+      padding: 20px 10px 15px 10px;
       display: none;
       z-index: 9999;
       box-shadow: 0 20px 30px black;
     }
 
     #popup .circle {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       background: #28a745;
-      margin: 0 auto 8px auto;
+      margin: 0 auto 10px auto;
       color: #fff;
-      font-size: 30px;
+      font-size: 35px;
       font-weight: bold;
-      line-height: 54px;
+      line-height: 64px;
     }
 
     #popup p {
-      margin: 3px 0;
-      font-size: 16px;
+      margin: 5px 0;
+      font-size: 18px;
       font-weight: 600;
       color: #1e7e34;
     }
 
     #popup-time {
-      font-size: 11px;
-      margin-top: 5px;
+      font-size: 12px;
+      margin-top: 8px;
       color: #666;
     }
   </style>
@@ -328,6 +338,9 @@
       <div class="header-title">SCAN BARCODE</div>
       <div class="header-time" id="deviceTime"></div>
     </div>
+
+    <!-- SPACER to push scan row down -->
+    <div class="top-spacer"></div>
 
     <div class="scan-row">
       <button class="submit-btn" id="submitBtn">SUBMIT</button>
