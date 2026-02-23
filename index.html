@@ -26,9 +26,9 @@
 
     .device {
       width: 100%;
-      max-width: 360px;
+      max-width: 340px;
       height: 100%;
-      max-height: 640px;
+      max-height: 600px;
       background: #B0C8E2;
       color: black;
       display: flex;
@@ -42,11 +42,11 @@
     .header {
       background: #15569B;
       color: white;
-      height: 40px;
+      height: 38px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 15px;
+      padding: 0 12px;
       font-size: 16px;
       font-weight: 500;
       flex-shrink: 0;
@@ -55,22 +55,24 @@
     .header-time {
       background: #1e3a6b;
       padding: 4px 10px;
-      border-radius: 4px;
+      border-radius: 16px;
       font-family: monospace;
-      font-size: 15px;
+      font-size: 14px;
       color: #fff;
       font-weight: bold;
+      min-width: 75px;
+      text-align: center;
     }
 
     .scan-row {
       display: flex;
       flex-direction: row;
       align-items: center;
-      padding: 12px 15px;
-      gap: 12px;
+      padding: 10px 12px;
+      gap: 10px;
       background: #B0C8E2;
       flex-shrink: 0;
-      height: 80px;
+      height: 70px;
       border-bottom: 2px solid #79A4D2;
     }
 
@@ -80,15 +82,15 @@
       padding: 0;
       font-weight: bold;
       color: white;
-      border-radius: 8px;
-      font-size: 18px;
-      width: 85px;
-      height: 52px;
+      border-radius: 6px;
+      font-size: 16px;
+      width: 75px;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
       border: 2px solid #1e7e34;
       flex-shrink: 0;
     }
@@ -96,60 +98,49 @@
     .mini-grid {
       display: flex;
       flex-direction: row;
-      gap: 6px;
-      height: 52px;
+      gap: 5px;
+      height: 48px;
       align-items: center;
       flex: 1;
       justify-content: flex-end;
     }
 
     .mini-cell {
-      width: 42px;
-      height: 52px;
+      width: 32px;
+      height: 48px;
       background: #E2E8D3;
-      border: 2px solid #666;
+      border: 1px solid #666;
       text-align: center;
-      font-size: 28px;
+      font-size: 22px;
       font-weight: bold;
       color: black;
       outline: none;
       padding: 0;
-      border-radius: 6px;
-      caret-color: transparent;
-      cursor: pointer;
-      user-select: none;
-      -webkit-user-select: none;
-      pointer-events: auto;
-    }
-
-    .mini-cell:focus {
-      border: 3px solid #FCC57A;
-      background: #fff;
-      outline: none;
+      border-radius: 4px;
+      pointer-events: none;
     }
 
     .content {
       flex: 1;
-      padding: 15px;
+      padding: 12px;
       background: #B0C8E2;
       display: flex;
       flex-direction: column;
       overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
     }
 
     /* STATUS FIELDS */
     .status-fields {
-      padding: 15px;
+      padding: 12px;
       background: #96BEEE;
-      border-radius: 10px;
+      border-radius: 8px;
       border: 2px solid #79A4D2;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
       flex-shrink: 0;
     }
 
     .field-row {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .field-row:last-child {
@@ -158,22 +149,21 @@
 
     .field-row label {
       display: block;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: bold;
       color: #15569B;
-      margin-bottom: 4px;
-      letter-spacing: 0.3px;
+      margin-bottom: 3px;
     }
 
     .field-row select,
     .field-row input {
       width: 100%;
-      padding: 10px 12px;
-      border: 2px solid #79A4D2;
-      border-radius: 8px;
-      font-size: 16px;
+      padding: 8px 10px;
+      border: 1px solid #79A4D2;
+      border-radius: 6px;
+      font-size: 14px;
       background: white;
-      height: 45px;
+      height: 40px;
     }
 
     .field-row input[readonly] {
@@ -185,11 +175,11 @@
     /* RESULT BOX */
     .result-box {
       border: 2px solid #79A4D2;
-      border-radius: 10px;
+      border-radius: 8px;
       overflow: hidden;
       background: #96BEEE;
       flex-shrink: 0;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
     }
 
     .result-header {
@@ -199,21 +189,21 @@
     }
 
     .result-header .cell-number {
-      width: 50px;
-      padding: 10px;
+      width: 45px;
+      padding: 8px;
       font-weight: bold;
       text-align: center;
       border-right: 2px solid #15569B;
-      font-size: 16px;
+      font-size: 14px;
       color: white;
     }
 
     .result-header .cell-label {
       flex: 1;
-      padding: 10px 15px;
+      padding: 8px 12px;
       font-weight: bold;
       text-align: left;
-      font-size: 16px;
+      font-size: 14px;
       color: white;
     }
 
@@ -228,20 +218,20 @@
     }
 
     .result-row .cell-number {
-      width: 50px;
-      padding: 10px;
+      width: 45px;
+      padding: 8px;
       text-align: center;
       border-right: 1px solid #79A4D2;
       font-weight: bold;
-      font-size: 16px;
+      font-size: 14px;
     }
 
     .result-row .cell-label {
       flex: 1;
-      padding: 10px 15px;
+      padding: 8px 12px;
       text-align: left;
       font-weight: bold;
-      font-size: 16px;
+      font-size: 14px;
     }
 
     #emptyRow {
@@ -256,94 +246,35 @@
     }
 
     #resultTable {
-      max-height: 150px;
+      max-height: 130px;
       overflow-y: auto;
     }
 
     /* STATUS AREA */
     #statusBox {
-      padding: 10px;
-      font-size: 15px;
+      padding: 8px;
+      font-size: 14px;
       text-align: center;
-      min-height: 45px;
+      min-height: 40px;
       font-weight: 500;
       background: rgba(255,255,255,0.4);
-      border-radius: 8px;
-      margin-bottom: 8px;
+      border-radius: 6px;
+      margin-bottom: 6px;
       flex-shrink: 0;
       border: 1px solid #79A4D2;
     }
 
     .error-detail {
-      font-size: 13px;
+      font-size: 12px;
       color: #b52e2e;
       word-break: break-word;
-      padding: 8px;
+      padding: 6px;
       background: rgba(255,255,255,0.6);
-      border-radius: 6px;
-      max-height: 50px;
+      border-radius: 4px;
+      max-height: 40px;
       overflow-y: auto;
       flex-shrink: 0;
       border: 1px solid #b52e2e;
-    }
-
-    /* CUSTOM KEYPAD */
-    .custom-keypad {
-      background: #2d2d2d;
-      border-top: 3px solid #1a1a1a;
-      flex-shrink: 0;
-      padding: 10px 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .keypad-row {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .keypad-key {
-      background: #4a4a4a;
-      color: white;
-      border: 1px solid #666;
-      border-radius: 8px;
-      height: 55px;
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: bold;
-      box-shadow: 0 3px 0 #1a1a1a;
-      cursor: pointer;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-
-    .keypad-key:active {
-      background: #666;
-      transform: translateY(2px);
-      box-shadow: 0 1px 0 #1a1a1a;
-    }
-
-    .keypad-key.wide {
-      flex: 1.5;
-      font-size: 20px;
-    }
-
-    .keypad-key.backspace {
-      background: #8b3a3a;
-    }
-
-    .keypad-key.clear {
-      background: #856404;
-    }
-
-    .keypad-key.enter {
-      background: #28a745;
-      border-color: #1e7e34;
     }
 
     /* HIDE VIDEO */
@@ -356,41 +287,41 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 200px;
-      margin-left: -100px;
-      margin-top: -90px;
+      width: 180px;
+      margin-left: -90px;
+      margin-top: -80px;
       background: #ffffff;
       border: 4px solid #28a745;
-      border-radius: 40px;
+      border-radius: 30px;
       text-align: center;
-      padding: 20px 10px 15px 10px;
+      padding: 15px 8px 10px 8px;
       display: none;
       z-index: 9999;
-      box-shadow: 0 20px 30px black;
+      box-shadow: 0 15px 25px black;
     }
 
     #popup .circle {
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       background: #28a745;
-      margin: 0 auto 12px auto;
+      margin: 0 auto 8px auto;
       color: #fff;
-      font-size: 35px;
+      font-size: 30px;
       font-weight: bold;
-      line-height: 64px;
+      line-height: 54px;
     }
 
     #popup p {
-      margin: 5px 0;
-      font-size: 18px;
+      margin: 3px 0;
+      font-size: 16px;
       font-weight: 600;
       color: #1e7e34;
     }
 
     #popup-time {
-      font-size: 12px;
-      margin-top: 8px;
+      font-size: 11px;
+      margin-top: 5px;
       color: #666;
     }
   </style>
@@ -407,12 +338,12 @@
       <button class="submit-btn" id="submitBtn">SUBMIT</button>
 
       <div class="mini-grid">
-        <input class="mini-cell" maxlength="1" id="cell1" readonly onfocus="this.blur()" onmousedown="event.preventDefault(); handleCellClick(0)">
-        <input class="mini-cell" maxlength="1" id="cell2" readonly onfocus="this.blur()" onmousedown="event.preventDefault(); handleCellClick(1)">
-        <input class="mini-cell" maxlength="1" id="cell3" readonly onfocus="this.blur()" onmousedown="event.preventDefault(); handleCellClick(2)">
-        <input class="mini-cell" maxlength="1" id="cell4" readonly onfocus="this.blur()" onmousedown="event.preventDefault(); handleCellClick(3)">
-        <input class="mini-cell" maxlength="1" id="cell5" readonly onfocus="this.blur()" onmousedown="event.preventDefault(); handleCellClick(4)">
-        <input class="mini-cell" maxlength="1" id="cell6" readonly onfocus="this.blur()" onmousedown="event.preventDefault(); handleCellClick(5)">
+        <input class="mini-cell" maxlength="1" id="cell1" readonly>
+        <input class="mini-cell" maxlength="1" id="cell2" readonly>
+        <input class="mini-cell" maxlength="1" id="cell3" readonly>
+        <input class="mini-cell" maxlength="1" id="cell4" readonly>
+        <input class="mini-cell" maxlength="1" id="cell5" readonly>
+        <input class="mini-cell" maxlength="1" id="cell6" readonly>
       </div>
     </div>
 
@@ -475,34 +406,6 @@
       <div id="errorDetail" class="error-detail"></div>
     </div>
 
-    <!-- CUSTOM KEYPAD - A-J ONLY -->
-    <div class="custom-keypad">
-      <!-- Row 1: A B C D E -->
-      <div class="keypad-row">
-        <div class="keypad-key" data-key="A">A</div>
-        <div class="keypad-key" data-key="B">B</div>
-        <div class="keypad-key" data-key="C">C</div>
-        <div class="keypad-key" data-key="D">D</div>
-        <div class="keypad-key" data-key="E">E</div>
-      </div>
-      
-      <!-- Row 2: F G H I J -->
-      <div class="keypad-row">
-        <div class="keypad-key" data-key="F">F</div>
-        <div class="keypad-key" data-key="G">G</div>
-        <div class="keypad-key" data-key="H">H</div>
-        <div class="keypad-key" data-key="I">I</div>
-        <div class="keypad-key" data-key="J">J</div>
-      </div>
-      
-      <!-- Row 3: Backspace, Clear, Submit -->
-      <div class="keypad-row">
-        <div class="keypad-key wide backspace" data-key="backspace">⌫ BACK</div>
-        <div class="keypad-key wide clear" data-key="clear">CLEAR</div>
-        <div class="keypad-key wide enter" data-key="submit">ENTER</div>
-      </div>
-    </div>
-
     <!-- SUCCESS POPUP -->
     <div id="popup">
       <div class="circle">✓</div>
@@ -525,9 +428,9 @@
       var minutes = now.getMinutes();
       var seconds = now.getSeconds();
       
-      if (hours < 10) hours = '0' + hours;
-      if (minutes < 10) minutes = '0' + minutes;
-      if (seconds < 10) seconds = '0' + seconds;
+      hours = (hours < 10 ? '0' : '') + hours;
+      minutes = (minutes < 10 ? '0' : '') + minutes;
+      seconds = (seconds < 10 ? '0' : '') + seconds;
       
       timeElement.innerHTML = hours + ':' + minutes + ':' + seconds;
     }
@@ -535,7 +438,7 @@
     updateTime();
     setInterval(updateTime, 1000);
 
-    /* ========== CELLS ========== */
+    /* ========== CELLS - ALL EMPTY ========== */
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -545,90 +448,7 @@
       document.getElementById('cell6')
     ];
 
-    var currentCellIndex = 0;
-
-    // Make cells read-only and handle clicks manually
-    function handleCellClick(index) {
-      currentCellIndex = index;
-      highlightCurrentCell();
-    }
-
-    function highlightCurrentCell() {
-      // Remove highlight from all cells
-      cells.forEach(cell => {
-        cell.style.border = '2px solid #666';
-      });
-      
-      // Highlight current cell
-      if (cells[currentCellIndex]) {
-        cells[currentCellIndex].style.border = '3px solid #FCC57A';
-      }
-    }
-
-    // Initial highlight
-    highlightCurrentCell();
-
-    function setCellValue(index, value) {
-      if (index >= 0 && index < cells.length) {
-        cells[index].value = value;
-        cells[index].style.background = "#FB9809";
-        
-        // Auto-advance to next cell
-        if (index < cells.length - 1) {
-          currentCellIndex = index + 1;
-          highlightCurrentCell();
-        }
-        
-        // Check if all cells are filled
-        checkManualEntry();
-      }
-    }
-
-    function getCurrentEmptyCell() {
-      for (let i = 0; i < cells.length; i++) {
-        if (cells[i].value === '') {
-          return i;
-        }
-      }
-      return cells.length - 1; // All filled, return last cell
-    }
-
-    function clearAllCells() {
-      for (let i = 0; i < cells.length; i++) {
-        cells[i].value = '';
-        cells[i].style.background = '#E2E8D3';
-      }
-      document.getElementById('decoded').value = '';
-      currentCellIndex = 0;
-      highlightCurrentCell();
-    }
-
-    function backspace() {
-      // Find last filled cell
-      for (let i = cells.length - 1; i >= 0; i--) {
-        if (cells[i].value !== '') {
-          cells[i].value = '';
-          cells[i].style.background = '#E2E8D3';
-          currentCellIndex = i;
-          highlightCurrentCell();
-          break;
-        }
-      }
-      document.getElementById('decoded').value = '';
-    }
-
-    function checkManualEntry() {
-      let code = "";
-      for (let i = 0; i < cells.length; i++) {
-        code += cells[i].value;
-      }
-      if (code.length === 6) {
-        var decoded = decodeLetters(code);
-        if (decoded) {
-          document.getElementById('decoded').value = decoded;
-        }
-      }
-    }
+    // All cells are empty by default (no values set)
 
     function decodeLetters(encoded) {
       var map = {
@@ -643,14 +463,6 @@
         result += map[ch];
       }
       return result;
-    }
-
-    function getAllCellValues() {
-      let code = "";
-      for (let i = 0; i < cells.length; i++) {
-        code += cells[i].value;
-      }
-      return code;
     }
 
     /* ========== RESULT TABLE ========== */
@@ -670,9 +482,10 @@
       
       document.getElementById("resultTable").insertAdjacentHTML("beforeend", tableHtml);
       
-      // Scroll to show new entry
       var resultTable = document.getElementById("resultTable");
-      resultTable.scrollTop = resultTable.scrollHeight;
+      if (resultTable) {
+        resultTable.scrollTop = resultTable.scrollHeight;
+      }
     }
 
     function showPopup() {
@@ -698,12 +511,10 @@
 
     /* ========== SEND TO XANO ========== */
     function sendToXano() {
-      var labelId = document.getElementById('decoded').value;
+      // For demo purposes, use a sample barcode since cells are empty
+      var labelId = "123456"; // Sample barcode
       
-      if (!labelId) {
-        setStatus('❗ Enter barcode first', true);
-        return;
-      }
+      document.getElementById('decoded').value = labelId;
 
       var now = new Date();
       
@@ -730,14 +541,8 @@
             showPopup();
             setStatus('✓ Saved', false);
             
-            // Get the barcode value before clearing
-            var barcodeValue = getAllCellValues();
-            
             // Add to result table
-            addRow(barcodeValue);
-            
-            // Clear cells
-            clearAllCells();
+            addRow(labelId);
           } else {
             setStatus('Error ' + xhr.status, true);
             try {
@@ -758,74 +563,11 @@
       xhr.send(JSON.stringify(payload));
     }
 
-    /* ========== KEYPAD FUNCTIONALITY ========== */
-    document.querySelectorAll('.keypad-key').forEach(key => {
-      key.addEventListener('click', function() {
-        const keyValue = this.getAttribute('data-key');
-        
-        if (keyValue === 'backspace') {
-          backspace();
-        } 
-        else if (keyValue === 'clear') {
-          clearAllCells();
-        }
-        else if (keyValue === 'submit') {
-          sendToXano();
-        }
-        else {
-          // A-J letters - insert at current position
-          setCellValue(currentCellIndex, keyValue);
-        }
-      });
-      
-      // Touch events for mobile
-      key.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        const keyValue = this.getAttribute('data-key');
-        
-        if (keyValue === 'backspace') {
-          backspace();
-        } 
-        else if (keyValue === 'clear') {
-          clearAllCells();
-        }
-        else if (keyValue === 'submit') {
-          sendToXano();
-        }
-        else {
-          setCellValue(currentCellIndex, keyValue);
-        }
-      });
-    });
-
     /* ========== EVENT LISTENERS ========== */
     document.getElementById('submitBtn').addEventListener('click', function(e) {
       e.preventDefault();
       sendToXano();
     });
-
-    // Prevent keyboard from showing
-    cells.forEach(cell => {
-      cell.addEventListener('focus', function(e) {
-        this.blur();
-      });
-      
-      cell.addEventListener('mousedown', function(e) {
-        e.preventDefault();
-      });
-      
-      cell.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-      });
-    });
-
-    // Global click to maintain focus
-    document.addEventListener('click', function() {
-      highlightCurrentCell();
-    });
-
-    // Make sure current cell is always highlighted
-    setInterval(highlightCurrentCell, 100);
   </script>
 </body>
 </html>
