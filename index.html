@@ -2,36 +2,189 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PRODUCTION XANO SCANNER</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PRODUCTION XANO SCANNER</title>
   <style>
+    /* [Previous styles remain exactly the same as above] */
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { background:#000; display:flex; justify-content:center; align-items:center; min-height:100vh; font-family:Roboto,Arial,sans-serif; }
-    .device { width:100%; max-width:400px; background:#B0C8E2; display:flex; flex-direction:column; border-radius:15px; overflow:hidden; }
-    .header { background:#15569B; color:white; height:60px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; font-size:20px; font-weight:bold; }
-    .time-display { background:#1e3a6b; padding:8px 16px; border-radius:30px; font-size:18px; font-family:monospace; min-width:110px; text-align:center; border:1px solid #79A4D2; }
-    .scan-row { display:flex; align-items:center; padding:12px 16px; gap:10px; background:#B0C8E2; border-bottom:2px solid #79A4D2; }
-    .submit-btn { background:#28a745; color:white; border:none; width:70px; height:55px; border-radius:8px; font-size:20px; font-weight:bold; cursor:pointer; }
-    .grid-container { display:flex; gap:4px; flex:1; justify-content:flex-end; }
-    .cell { width:40px; height:55px; background:white; border:2px solid #666; border-radius:8px; text-align:center; font-size:28px; font-weight:bold; text-transform:uppercase; outline:none; }
-    .cell:focus { border:3px solid #FCC57A; background:#FB9809; }
-    .content { padding:16px; background:#B0C8E2; }
-    .field { margin-bottom:15px; }
-    .field label { display:block; font-size:14px; font-weight:bold; color:#15569B; margin-bottom:4px; }
-    .field input, .field select { width:100%; padding:12px; border:2px solid #79A4D2; border-radius:8px; font-size:14px; background:white; }
-    .field input[readonly] { background:#e2e8d3; font-weight:bold; }
-    .gps-status { font-size:12px; color:#15569B; margin-top:4px; }
-    .status-message { padding:12px; text-align:center; background:white; border-radius:8px; border:2px solid #79A4D2; font-size:14px; font-weight:bold; margin-top:10px; }
-    .popup { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:200px; background:white; border:4px solid #28a745; border-radius:20px; text-align:center; padding:20px; display:none; z-index:999; }
-    .popup .circle { width:60px; height:60px; background:#28a745; border-radius:50%; margin:0 auto 10px; color:white; font-size:40px; line-height:60px; }
-    .result-section { border:2px solid #79A4D2; border-radius:8px; overflow:hidden; background:white; margin-bottom:16px; }
-    .result-header { display:flex; background:#79A4D2; border-bottom:2px solid #15569B; }
-    .result-header div:first-child { width:45px; padding:10px; text-align:center; border-right:2px solid #15569B; font-weight:bold; }
-    .result-header div:last-child { flex:1; padding:10px; font-weight:bold; }
-    .result-row { display:flex; border-bottom:1px solid #79A4D2; }
-    .result-row div:first-child { width:45px; padding:10px; text-align:center; border-right:1px solid #79A4D2; }
-    .result-row div:last-child { flex:1; padding:10px; font-size:12px; }
-    #empty-message { padding:15px; color:#666; font-style:italic; text-align:center; }
+    body {
+      background: #1b1b1b;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: "Courier New", Courier, monospace;
+      color: #ddd;
+    }
+    .device {
+      width: 100%;
+      max-width: 400px;
+      background: #222;
+      border: 3px solid #999;
+      display: flex;
+      flex-direction: column;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    }
+    .header {
+      background: #444;
+      color: white;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 3px solid #777;
+    }
+    .time-display {
+      background: #222;
+      padding: 4px 8px;
+      font-size: 18px;
+      font-family: monospace;
+      border-radius: 8px;
+      color: #f0f0f0;
+    }
+    .scan-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      background: #333;
+      border-bottom: 2px solid #666;
+    }
+    .submit-btn {
+      background: #777;
+      color: white;
+      border: none;
+      width: 70px;
+      height: 45px;
+      border-radius: 5px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .submit-btn:hover {
+      background: #555;
+    }
+    .grid-container {
+      display: flex;
+      gap: 5px;
+      justify-content: flex-end;
+      margin-left: 12px;
+    }
+    .cell {
+      width: 40px;
+      height: 50px;
+      background: #333;
+      border: 2px solid #777;
+      border-radius: 6px;
+      color: #f0f0f0;
+      text-align: center;
+      font-size: 22px;
+      text-transform: uppercase;
+      outline: none;
+    }
+    .cell:focus {
+      border: 3px solid #bbb;
+      background: #444;
+    }
+    .content {
+      padding: 16px;
+      background: #444;
+    }
+    .field {
+      margin-bottom: 15px;
+    }
+    .field label {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      color: #bbb;
+      margin-bottom: 4px;
+    }
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #666;
+      border-radius: 5px;
+      font-size: 14px;
+      background: #333;
+      color: #f0f0f0;
+    }
+    .field input[readonly] {
+      background: #555;
+      font-weight: bold;
+    }
+    .gps-status {
+      font-size: 12px;
+      color: #aaa;
+    }
+    .status-message {
+      padding: 12px;
+      background: #444;
+      border: 2px solid #777;
+      border-radius: 5px;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .popup {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 180px;
+      background: #444;
+      border: 3px solid #777;
+      border-radius: 12px;
+      text-align: center;
+      padding: 16px;
+      display: none;
+      z-index: 999;
+    }
+    .popup .circle {
+      width: 50px;
+      height: 50px;
+      background: #28a745;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      color: white;
+      font-size: 30px;
+      line-height: 50px;
+    }
+    .result-section {
+      border: 2px solid #777;
+      border-radius: 5px;
+      background: #555;
+      margin-top: 16px;
+      overflow: hidden;
+    }
+    .result-header {
+      display: flex;
+      background: #777;
+      border-bottom: 2px solid #444;
+    }
+    .result-header div {
+      padding: 8px;
+      font-weight: bold;
+    }
+    .result-row {
+      display: flex;
+      border-bottom: 1px solid #777;
+    }
+    .result-row div {
+      padding: 8px;
+      font-size: 12px;
+    }
+    #empty-message {
+      padding: 12px;
+      color: #999;
+      font-style: italic;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -60,7 +213,7 @@
       </div>
       <div class="field">
         <label>Barcode Type</label>
-        <input type="text" id="barcodeType" value="manual" readonly>
+        <input type="text" id="barcodeType" value="XANO-PROD" readonly>
       </div>
       <div class="field">
         <label>Status</label>
@@ -101,199 +254,298 @@
   </div>
 
   <script>
-  // ===== PRODUCTION XANO CONFIGURATION =====
-  var XANO_BASE_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG';
-  var XANO_TABLE = 'qr_scans'; // <-- Ensure this is the correct table name
-  
-  var XANO_URL = XANO_BASE_URL + '/' + XANO_TABLE;
-
-  // ===== TIME DISPLAY =====
-  function updateTime() {
-    var timeEl = document.getElementById('currentTime');
-    if (!timeEl) return;
-    var now = new Date();
-    var hours = now.getHours().toString().padStart(2,'0');
-    var minutes = now.getMinutes().toString().padStart(2,'0');
-    var seconds = now.getSeconds().toString().padStart(2,'0');
-    timeEl.innerHTML = hours + ':' + minutes + ':' + seconds;
-  }
-  updateTime();
-  setInterval(updateTime, 1000);
-
-  // ===== AUTO GPS =====
-  function getGPS() {
-    var locField = document.getElementById('locationField');
-    var gpsStatus = document.getElementById('gpsStatus');
+    // ===== CONFIGURATION =====
+    const XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG';
+    const XANO_API_KEY = ''; // Add your API key if required
     
-    if (!navigator.geolocation) {
-      locField.value = 'GPS not supported';
-      gpsStatus.innerHTML = 'Not available';
-      return;
+    // ===== TIME DISPLAY =====
+    function updateTime() {
+      const timeEl = document.getElementById('currentTime');
+      if (!timeEl) return;
+      const now = new Date();
+      timeEl.innerHTML = now.toLocaleTimeString('en-US', { hour12: false });
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // ===== BARCODE INPUT HANDLING =====
+    const cells = ['cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6'].map(id => document.getElementById(id));
+    
+    cells.forEach((cell, index) => {
+      cell.addEventListener('input', function() {
+        this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (this.value.length === 1 && index < cells.length - 1) {
+          cells[index + 1].focus();
+        }
+        updateLabelId();
+      });
+      
+      cell.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
+          cells[index - 1].focus();
+        }
+      });
+    });
+
+    function updateLabelId() {
+      const barcode = cells.map(cell => cell.value).join('');
+      document.getElementById('labelId').value = barcode || '---';
     }
 
-    gpsStatus.innerHTML = '📍 Getting GPS...';
-    navigator.geolocation.getCurrentPosition(
-      function(position) {
-        var lat = position.coords.latitude.toFixed(4);
-        var lon = position.coords.longitude.toFixed(4);
-        var acc = Math.round(position.coords.accuracy);
-        locField.value = lat + ', ' + lon;
-        gpsStatus.innerHTML = '✅ GPS: ±' + acc + 'm';
-      },
-      function(error) {
-        var msg = 'GPS error';
-        if (error.code === 1) msg = 'Permission denied';
-        else if (error.code === 2) msg = 'Unavailable';
-        else if (error.code === 3) msg = 'Timeout';
-        locField.value = 'Tap to retry GPS';
-        gpsStatus.innerHTML = '❌ ' + msg;
+    // ===== GPS FUNCTION =====
+    function getGPS() {
+      const locField = document.getElementById('locationField');
+      const gpsStatus = document.getElementById('gpsStatus');
+      
+      if (!navigator.geolocation) {
+        locField.value = 'GPS_NOT_SUPPORTED';
+        gpsStatus.innerHTML = '❌ GPS not supported';
+        return;
       }
-    );
-  }
+      
+      gpsStatus.innerHTML = '📍 Acquiring GPS...';
+      
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude.toFixed(6);
+          const lng = position.coords.longitude.toFixed(6);
+          locField.value = `${lat},${lng}`;
+          gpsStatus.innerHTML = '✅ GPS locked';
+        },
+        (error) => {
+          locField.value = 'GPS_UNAVAILABLE';
+          let errorMsg = '❌ GPS error: ';
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMsg += 'permission_denied';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMsg += 'position_unavailable';
+              break;
+            case error.TIMEOUT:
+              errorMsg += 'timeout';
+              break;
+            default:
+              errorMsg += 'unknown';
+          }
+          gpsStatus.innerHTML = errorMsg;
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0
+        }
+      );
+    }
+    getGPS();
 
-  // ===== CELLS HANDLING =====
-  var cells = [
-    document.getElementById('cell1'),
-    document.getElementById('cell2'),
-    document.getElementById('cell3'),
-    document.getElementById('cell4'),
-    document.getElementById('cell5'),
-    document.getElementById('cell6')
-  ];
+    // ===== SET DEFAULT DATE =====
+    function setDefaultDate() {
+      const etaField = document.getElementById('etaField');
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      etaField.value = `${yyyy}-${mm}-${dd}`;
+    }
+    setDefaultDate();
 
-  var letterMap = {
-    'A':'1','B':'2','C':'3','D':'4','E':'5',
-    'F':'6','G':'7','H':'8','I':'9','J':'0'
-  };
+    // ===== SCAN RECORDS STORAGE =====
+    let scanRecords = JSON.parse(localStorage.getItem('xano_scans') || '[]');
+    
+    function updateTable() {
+      const tableBody = document.getElementById('tableBody');
+      const emptyMessage = document.getElementById('empty-message');
+      
+      if (scanRecords.length === 0) {
+        tableBody.innerHTML = '';
+        emptyMessage.style.display = 'block';
+        return;
+      }
+      
+      emptyMessage.style.display = 'none';
+      
+      let html = '';
+      scanRecords.slice(0, 10).forEach((record, index) => {
+        html += `<div class="result-row">
+          <div>${index + 1}</div>
+          <div>${record.labelId} | ${record.status} | ${new Date(record.timestamp).toLocaleTimeString()}</div>
+        </div>`;
+      });
+      
+      tableBody.innerHTML = html;
+    }
+    updateTable();
 
-  for (var i = 0; i < cells.length; i++) {
-    cells[i].addEventListener('input', function() {
-      var val = this.value.toUpperCase();
-      if (val.match(/[A-J]/)) {
-        this.value = val;
-        updateLabel();
-        var next = this.nextElementSibling;
-        if (next) next.focus();
-      } else {
-        this.value = '';
+    function showPopup() {
+      const popup = document.getElementById('successPopup');
+      const popupTime = document.getElementById('popupTime');
+      popupTime.innerHTML = new Date().toLocaleTimeString();
+      popup.style.display = 'block';
+      setTimeout(() => { popup.style.display = 'none'; }, 1500);
+    }
+
+    // ===== XANO API FUNCTIONS =====
+    async function saveToXano(data) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      try {
+        const headers = {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        };
+        
+        // Add API key if provided
+        if (XANO_API_KEY) {
+          headers['Authorization'] = `Bearer ${XANO_API_KEY}`;
+        }
+        
+        const response = await fetch(XANO_API_URL, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(data),
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`XANO error ${response.status}: ${errorText}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          throw new Error('XANO timeout after 10s');
+        }
+        throw error;
+      }
+    }
+
+    // ===== SUBMIT HANDLER =====
+    document.getElementById('submitButton').addEventListener('click', async function() {
+      const labelId = document.getElementById('labelId').value;
+      const status = document.getElementById('statusSelect').value;
+      const location = document.getElementById('locationField').value;
+      const eta = document.getElementById('etaField').value;
+      const messageBox = document.getElementById('messageBox');
+      const submitBtn = this;
+      
+      if (labelId === '---' || labelId === '') {
+        messageBox.innerHTML = '❌ BARCODE_REQUIRED';
+        messageBox.style.background = '#660000';
+        setTimeout(() => {
+          messageBox.innerHTML = 'Ready';
+          messageBox.style.background = '#444';
+        }, 2000);
+        return;
+      }
+      
+      // Prepare data
+      const scanData = {
+        barcode: labelId,
+        status: status,
+        location: location,
+        eta: eta,
+        timestamp: new Date().toISOString(),
+        device: 'web-prod',
+        type: document.getElementById('barcodeType').value
+      };
+      
+      // Disable button during submission
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '0.5';
+      messageBox.innerHTML = '⏳ Sending to XANO...';
+      messageBox.style.background = '#886622';
+      
+      try {
+        // Send to XANO
+        const result = await saveToXano(scanData);
+        
+        // Create local record
+        const localRecord = {
+          labelId: labelId,
+          status: status,
+          location: location,
+          eta: eta,
+          timestamp: new Date().toISOString(),
+          xanoId: result.id || 'pending'
+        };
+        
+        // Save locally
+        scanRecords.unshift(localRecord);
+        if (scanRecords.length > 50) scanRecords.pop();
+        localStorage.setItem('xano_scans', JSON.stringify(scanRecords));
+        
+        // Update UI
+        updateTable();
+        showPopup();
+        
+        messageBox.innerHTML = `✅ XANO OK: ${labelId}`;
+        messageBox.style.background = '#226622';
+        
+        // Clear input
+        cells.forEach(cell => cell.value = '');
+        document.getElementById('labelId').value = '---';
+        cells[0].focus();
+        
+      } catch (error) {
+        console.error('XANO error:', error);
+        messageBox.innerHTML = `❌ XANO FAIL: ${error.message.substring(0, 30)}`;
+        messageBox.style.background = '#660000';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        
+        setTimeout(() => {
+          messageBox.innerHTML = 'Ready';
+          messageBox.style.background = '#444';
+        }, 3000);
       }
     });
-  }
 
-  function updateLabel() {
-    var code = '';
-    for (var i = 0; i < cells.length; i++) code += cells[i].value;
-    var num = '';
-    for (var i = 0; i < code.length; i++) num += letterMap[code[i]] || '';
-    document.getElementById('labelId').value = num;
-  }
-
-  // ===== BEEP =====
-  function beep() {
-    try {
-      var ctx = new (window.AudioContext || window.webkitAudioContext)();
-      var osc = ctx.createOscillator();
-      osc.connect(ctx.destination);
-      osc.frequency.value = 800;
-      osc.start();
-      osc.stop(ctx.currentTime + 0.1);
-    } catch(e) {}
-  }
-
-  // ===== ADD TO LOCAL TABLE =====
-  var scanCounter = 0;
-
-  function addToTable(labelId) {
-    scanCounter++;
-    var emptyMsg = document.getElementById('empty-message');
-    if (emptyMsg) emptyMsg.style.display = 'none';
+    // ===== SCANNER SUPPORT =====
+    let scanBuffer = '';
+    let scanTimer;
     
-    var tableBody = document.getElementById('tableBody');
-    var row = document.createElement('div');
-    row.className = 'result-row';
-    
-    var now = new Date();
-    var timeStr = now.getHours() + ':' + 
-                 (now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes()) + ':' + 
-                 (now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds());
-    
-    row.innerHTML = '<div>' + scanCounter + '</div><div>' + labelId + ' @ ' + timeStr + '</div>';
-    tableBody.appendChild(row);
-  }
-
-  // ===== SEND TO XANO =====
-  function sendToXano() {
-    var letters = '';
-    for (var i = 0; i < cells.length; i++) letters += cells[i].value;
-
-    if (letters.length !== 6) {
-      document.getElementById('messageBox').innerHTML = '❌ Enter 6 letters A-J';
-      return;
-    }
-
-    var numbers = '';
-    for (var i = 0; i < letters.length; i++) numbers += letterMap[letters[i]];
-
-    var data = {
-      label_id: numbers,
-      barcode_type: 'manual',
-      status: document.getElementById('statusSelect').value,
-      date: new Date().toISOString().split('T')[0],
-      time: Math.floor(new Date().getTime() / 1000),
-      location: document.getElementById('locationField').value || 'Unknown',
-      eta: document.getElementById('etaField').value
-    };
-
-    document.getElementById('messageBox').innerHTML = '⏳ Sending to XANO...';
-
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', XANO_URL, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-
-    xhr.onload = function() {
-      beep();
-      if (xhr.status >= 200 && xhr.status < 300) {
-        document.getElementById('messageBox').innerHTML = '✅ SAVED TO XANO';
-        document.getElementById('successPopup').style.display = 'block';
-        document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
-        setTimeout(function() { 
-          document.getElementById('successPopup').style.display = 'none'; 
-        }, 1500);
-        
-        addToTable(numbers);
-        
-        // Clear cells
-        for (var i = 0; i < cells.length; i++) cells[i].value = '';
-        cells[0].focus();
-        document.getElementById('labelId').value = '';
-      } else {
-        var errorMsg = `❌ Error ${xhr.status}: ${xhr.responseText || 'Check table name'}`;
-        document.getElementById('messageBox').innerHTML = errorMsg;
-        beep();
+    document.addEventListener('keypress', (e) => {
+      if (e.target.tagName !== 'INPUT') {
+        const key = e.key;
+        if (key.length === 1 && key.match(/[A-Za-z0-9]/i)) {
+          clearTimeout(scanTimer);
+          scanBuffer += key.toUpperCase();
+          
+          if (scanBuffer.length >= 6) {
+            for (let i = 0; i < 6; i++) {
+              if (cells[i]) cells[i].value = scanBuffer[i] || '';
+            }
+            updateLabelId();
+            cells[5].focus();
+            scanBuffer = '';
+            
+            // Auto-submit for scanner
+            setTimeout(() => {
+              document.getElementById('submitButton').click();
+            }, 100);
+          }
+          
+          scanTimer = setTimeout(() => { scanBuffer = ''; }, 200);
+        }
       }
-    };
+    });
 
-    xhr.onerror = function() {
-      beep();
-      document.getElementById('messageBox').innerHTML = '❌ Cannot reach XANO - Check URL';
-    };
+    // ===== KEYBOARD SHORTCUTS =====
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey && e.target.tagName !== 'BUTTON') {
+        e.preventDefault();
+        document.getElementById('submitButton').click();
+      }
+    });
 
-    xhr.send(JSON.stringify(data));
-  }
-
-  // ===== EVENT LISTENERS =====
-  document.getElementById('locationField').addEventListener('click', getGPS);
-  document.getElementById('submitButton').onclick = function(e) {
-    e.preventDefault();
-    sendToXano();
-  };
-
-  // ===== INIT =====
-  var today = new Date().toISOString().split('T')[0];
-  document.getElementById('etaField').value = today;
-
-  cells[0].focus();
-  setTimeout(getGPS, 500);
-</script>
+    // ===== INIT =====
+    cells[0].focus();
+  </script>
 </body>
 </html>
