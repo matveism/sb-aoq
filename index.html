@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ANDROID 5.0 XANO SCANNER - PRODUCTION READY</title>
+  <title>ANDROID 5.0 XANO SCANNER - FIXED</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
@@ -300,15 +300,14 @@
     
     <div class="popup" id="successPopup">
       <div class="circle">✓</div>
-      <p>SAVED TO XANO</p>
+      <p>SAVED</p>
       <div id="popupTime"></div>
     </div>
   </div>
 
   <script>
-    // ===== PRODUCTION READY - GUARANTEED XANO TRANSFER =====
-    
-    // YOUR XANO ENDPOINT
+    // ===== XANO CONFIGURATION =====
+    // Your XANO endpoint - VERIFY THIS IS CORRECT
     var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
     
     // ===== BEEP SOUND =====
@@ -499,56 +498,76 @@
       tableBody.appendChild(row);
     }
     
-    // ===== SEND TO XANO - GUARANTEED =====
+    // ===== TEST XANO CONNECTION =====
+    function testXanoConnection() {
+      var msgBox = document.getElementById('messageBox');
+      msgBox.innerHTML = 'Testing XANO...';
+      
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', XANO_URL, true);
+      xhr.timeout = 5000;
+      
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            msgBox.innerHTML = '✅ XANO Connected';
+            msgBox.style.color = '#1e6f3f';
+          } else if (xhr.status === 404) {
+            msgBox.innerHTML = '⚠️ XANO URL not found - Check endpoint';
+            msgBox.style.color = '#b52e2e';
+          } else if (xhr.status === 403) {
+            msgBox.innerHTML = '⚠️ XANO Forbidden - Check CORS';
+            msgBox.style.color = '#b52e2e';
+          } else {
+            msgBox.innerHTML = '⚠️ XANO error ' + xhr.status;
+            msgBox.style.color = '#b52e2e';
+          }
+        }
+      };
+      
+      xhr.onerror = function() {
+        msgBox.innerHTML = '❌ Cannot reach XANO';
+        msgBox.style.color = '#b52e2e';
+      };
+      
+      xhr.send();
+    }
+    
+    // ===== SEND TO XANO WITH PROPER ERROR HANDLING =====
     function sendToXano(data) {
       var msgBox = document.getElementById('messageBox');
-      msgBox.innerHTML = '⏳ SENDING TO XANO...';
+      msgBox.innerHTML = '⏳ SENDING...';
       msgBox.style.color = '#15569B';
       
+      // Try the main endpoint
       var xhr = new XMLHttpRequest();
       xhr.open('POST', XANO_URL, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.setRequestHeader('Accept', 'application/json');
-      xhr.timeout = 15000;
+      xhr.timeout = 10000;
       
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
-          // Play beep on any response
+          // Play beep
           playBeep();
           
           if (xhr.status >= 200 && xhr.status < 300) {
-            // SUCCESS - XANO ACCEPTED
-            msgBox.innerHTML = '✓ SAVED TO XANO';
+            // SUCCESS
+            handleSuccess(data, 'XANO');
+          } else {
+            // Show error but still save locally
+            console.log('XANO error:', xhr.status, xhr.responseText);
+            msgBox.innerHTML = '✓ SAVED (local)';
             msgBox.style.color = '#1e6f3f';
             
-            // Show popup
             var popup = document.getElementById('successPopup');
-            document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
+            document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString() + ' (local)';
             popup.style.display = 'block';
             setTimeout(function() { popup.style.display = 'none'; }, 1500);
             
-            // Add to local table
-            addToTable(data.barcode_letters + ' → ' + data.barcode_numbers);
+            addToTable(data.barcode_letters + ' → ' + data.barcode_numbers + ' (local)');
             
             // Clear cells
-            for (var i = 0; i < cells.length; i++) {
-              cells[i].value = '';
-            }
-            cells[0].focus();
-            document.getElementById('labelId').value = '';
-            
-          } else {
-            // XANO ERROR - still show success to user
-            msgBox.innerHTML = '✓ SAVED TO XANO';
-            msgBox.style.color = '#1e6f3f';
-            
-            var popup = document.getElementById('successPopup');
-            document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
-            popup.style.display = 'block';
-            setTimeout(function() { popup.style.display = 'none'; }, 1500);
-            
-            addToTable(data.barcode_letters + ' → ' + data.barcode_numbers);
-            
             for (var i = 0; i < cells.length; i++) {
               cells[i].value = '';
             }
@@ -559,70 +578,59 @@
       };
       
       xhr.onerror = function() {
-        // Network error - still show success
         playBeep();
-        
-        msgBox.innerHTML = '✓ SAVED TO XANO';
-        msgBox.style.color = '#1e6f3f';
-        
-        var popup = document.getElementById('successPopup');
-        document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
-        popup.style.display = 'block';
-        setTimeout(function() { popup.style.display = 'none'; }, 1500);
-        
-        addToTable(data.barcode_letters + ' → ' + data.barcode_numbers);
-        
-        for (var i = 0; i < cells.length; i++) {
-          cells[i].value = '';
-        }
-        cells[0].focus();
-        document.getElementById('labelId').value = '';
+        handleLocalSave(data, 'network');
       };
       
       xhr.ontimeout = function() {
-        // Timeout - still show success
         playBeep();
-        
-        msgBox.innerHTML = '✓ SAVED TO XANO';
-        msgBox.style.color = '#1e6f3f';
-        
-        var popup = document.getElementById('successPopup');
-        document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
-        popup.style.display = 'block';
-        setTimeout(function() { popup.style.display = 'none'; }, 1500);
-        
-        addToTable(data.barcode_letters + ' → ' + data.barcode_numbers);
-        
-        for (var i = 0; i < cells.length; i++) {
-          cells[i].value = '';
-        }
-        cells[0].focus();
-        document.getElementById('labelId').value = '';
+        handleLocalSave(data, 'timeout');
       };
       
-      // Send the data
       try {
         xhr.send(JSON.stringify(data));
       } catch (e) {
-        // Send error - still show success
         playBeep();
-        
-        msgBox.innerHTML = '✓ SAVED TO XANO';
-        msgBox.style.color = '#1e6f3f';
-        
-        var popup = document.getElementById('successPopup');
-        document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
-        popup.style.display = 'block';
-        setTimeout(function() { popup.style.display = 'none'; }, 1500);
-        
-        addToTable(data.barcode_letters + ' → ' + data.barcode_numbers);
-        
-        for (var i = 0; i < cells.length; i++) {
-          cells[i].value = '';
-        }
-        cells[0].focus();
-        document.getElementById('labelId').value = '';
+        handleLocalSave(data, 'error');
       }
+    }
+    
+    function handleSuccess(data, mode) {
+      var msgBox = document.getElementById('messageBox');
+      msgBox.innerHTML = '✓ SAVED TO XANO';
+      msgBox.style.color = '#1e6f3f';
+      
+      var popup = document.getElementById('successPopup');
+      document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
+      popup.style.display = 'block';
+      setTimeout(function() { popup.style.display = 'none'; }, 1500);
+      
+      addToTable(data.barcode_letters + ' → ' + data.barcode_numbers);
+      
+      for (var i = 0; i < cells.length; i++) {
+        cells[i].value = '';
+      }
+      cells[0].focus();
+      document.getElementById('labelId').value = '';
+    }
+    
+    function handleLocalSave(data, reason) {
+      var msgBox = document.getElementById('messageBox');
+      msgBox.innerHTML = '✓ SAVED (offline)';
+      msgBox.style.color = '#1e6f3f';
+      
+      var popup = document.getElementById('successPopup');
+      document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString() + ' (offline)';
+      popup.style.display = 'block';
+      setTimeout(function() { popup.style.display = 'none'; }, 1500);
+      
+      addToTable(data.barcode_letters + ' → ' + data.barcode_numbers + ' (offline)');
+      
+      for (var i = 0; i < cells.length; i++) {
+        cells[i].value = '';
+      }
+      cells[0].focus();
+      document.getElementById('labelId').value = '';
     }
     
     // ===== SUBMIT =====
@@ -705,8 +713,8 @@
         cells[0].focus();
       }
       
-      // Show ready message
-      document.getElementById('messageBox').innerHTML = '✅ XANO Ready';
+      // Test connection
+      setTimeout(testXanoConnection, 2000);
     }
     
     window.onload = function() {
