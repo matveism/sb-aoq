@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ANDROID 5.0 SCANNER - FINAL FIXED</title>
+  <title>ANDROID 5.0 XANO SCANNER</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
@@ -28,7 +28,6 @@
       flex-direction: column;
       overflow: hidden;
     }
-    /* HEADER - WITH TIME */
     .header {
       background: #15569B;
       color: white;
@@ -50,7 +49,6 @@
       min-width: 110px;
       text-align: center;
     }
-    /* SCAN ROW */
     .scan-row {
       display: flex;
       align-items: center;
@@ -241,13 +239,11 @@
 </head>
 <body>
   <div class="device">
-    <!-- HEADER - TIME WILL SHOW HERE -->
     <div class="header">
       <span>SCAN BARCODE</span>
       <span class="time-display" id="currentTime">--:--:--</span>
     </div>
     
-    <!-- SCAN ROW - EMPTY CELLS -->
     <div class="scan-row">
       <button class="submit-btn" id="submitButton">OK</button>
       <div class="grid-container">
@@ -260,7 +256,6 @@
       </div>
     </div>
     
-    <!-- CONTENT -->
     <div class="content">
       <div class="status-section">
         <div class="field">
@@ -270,7 +265,7 @@
         <div class="field">
           <label>Status</label>
           <select id="statusSelect">
-            <option value="Received" selected>📥 Received</option>
+            <option value="Received">📥 Received</option>
             <option value="Picked Up">📬 Picked Up</option>
             <option value="Depart">🚚 Depart</option>
             <option value="Arrival">📍 Arrival</option>
@@ -282,7 +277,7 @@
             <input type="text" id="locationField" readonly value="Press 📍 for GPS">
             <button class="gps-btn" id="gpsBtn">📍</button>
           </div>
-          <div class="gps-status" id="gpsStatus">Ready - tap 📍</div>
+          <div class="gps-status" id="gpsStatus">Ready</div>
         </div>
         <div class="field">
           <label>📅 ETA</label>
@@ -290,7 +285,6 @@
         </div>
       </div>
       
-      <!-- RESULTS TABLE -->
       <div class="result-section">
         <div class="result-header">
           <div>#</div>
@@ -300,11 +294,9 @@
         <div id="empty-message">No scans yet</div>
       </div>
       
-      <!-- STATUS MESSAGE -->
       <div class="status-message" id="messageBox">Ready</div>
     </div>
     
-    <!-- SUCCESS POPUP -->
     <div class="popup" id="successPopup">
       <div class="circle">✓</div>
       <p>SAVED TO XANO</p>
@@ -313,39 +305,34 @@
   </div>
 
   <script>
-    // ===== FINAL FIXED CODE - TIME WORKING, GPS WORKING =====
+    // ===== ANDROID 5.0 COMPATIBLE CODE =====
+    // NO arrow functions, NO const/let, NO modern features
+    
+    // XANO endpoint
     var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
     
-    // ===== 1. TIME DISPLAY - DEFINITELY WORKING =====
+    // ===== 1. TIME DISPLAY =====
     function updateTime() {
       var timeEl = document.getElementById('currentTime');
-      if (!timeEl) {
-        console.log('Time element not found');
-        return;
-      }
+      if (!timeEl) return;
       
       var now = new Date();
       var hours = now.getHours();
       var minutes = now.getMinutes();
       var seconds = now.getSeconds();
       
-      // Format with leading zeros
-      hours = (hours < 10) ? '0' + hours : hours;
-      minutes = (minutes < 10) ? '0' + minutes : minutes;
-      seconds = (seconds < 10) ? '0' + seconds : seconds;
+      if (hours < 10) hours = '0' + hours;
+      if (minutes < 10) minutes = '0' + minutes;
+      if (seconds < 10) seconds = '0' + seconds;
       
-      var timeString = hours + ':' + minutes + ':' + seconds;
-      timeEl.innerHTML = timeString;
-      console.log('Time updated:', timeString); // For debugging
+      timeEl.innerHTML = hours + ':' + minutes + ':' + seconds;
     }
     
-    // Update immediately
+    // Start clock
     updateTime();
-    
-    // Update every second
     setInterval(updateTime, 1000);
     
-    // ===== 2. CELLS - EMPTY =====
+    // ===== 2. CELLS =====
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -357,9 +344,7 @@
     
     // Clear cells
     for (var i = 0; i < cells.length; i++) {
-      if (cells[i]) {
-        cells[i].value = '';
-      }
+      if (cells[i]) cells[i].value = '';
     }
     
     // Letter to number mapping
@@ -368,44 +353,46 @@
       'F': '6', 'G': '7', 'H': '8', 'I': '9', 'J': '0'
     };
     
-    // Setup cell behavior
+    // Setup cells
     for (var i = 0; i < cells.length; i++) {
       if (!cells[i]) continue;
       
-      // Input event
-      cells[i].addEventListener('input', function(e) {
-        var val = this.value.toUpperCase();
+      // Store index for closure
+      (function(index) {
+        var cell = cells[index];
         
-        if (val.match(/^[A-J]$/)) {
-          this.value = val;
-          updateLabelId();
+        // Input event
+        cell.addEventListener('input', function() {
+          var val = this.value.toUpperCase();
           
-          var next = this.nextElementSibling;
-          if (next && next.classList.contains('cell')) {
-            next.focus();
+          if (val.match(/^[A-J]$/)) {
+            this.value = val;
+            updateLabelId();
+            
+            // Move to next cell
+            if (index < cells.length - 1) {
+              cells[index + 1].focus();
+            }
+          } else {
+            this.value = '';
           }
-        } else {
-          this.value = '';
-        }
-      });
-      
-      // Backspace
-      cells[i].addEventListener('keydown', function(e) {
-        if (e.key === 'Backspace' && this.value === '') {
-          var prev = this.previousElementSibling;
-          if (prev && prev.classList.contains('cell')) {
-            prev.focus();
+        });
+        
+        // Backspace
+        cell.addEventListener('keydown', function(e) {
+          if (e.key === 'Backspace' && this.value === '' && index > 0) {
+            cells[index - 1].focus();
           }
-        }
-      });
-      
-      // Enter key
-      cells[i].addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          submitScan();
-        }
-      });
+        });
+        
+        // Enter key
+        cell.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            submitScan();
+          }
+        });
+      })(i);
     }
     
     // Update label ID
@@ -427,11 +414,10 @@
       }
     }
     
-    // ===== 3. GPS FUNCTION - FIXED =====
+    // ===== 3. GPS =====
     function getGPS() {
       var locField = document.getElementById('locationField');
       var gpsStatus = document.getElementById('gpsStatus');
-      var gpsBtn = document.getElementById('gpsBtn');
       
       if (!navigator.geolocation) {
         locField.value = 'GPS not supported';
@@ -439,10 +425,8 @@
         return;
       }
       
-      // Update UI
       locField.value = 'Getting GPS...';
       gpsStatus.innerHTML = 'Please wait';
-      gpsBtn.style.opacity = '0.5';
       
       navigator.geolocation.getCurrentPosition(
         function(position) {
@@ -452,17 +436,15 @@
           
           locField.value = lat + ', ' + lon;
           gpsStatus.innerHTML = 'Accuracy: ±' + acc + 'm';
-          gpsBtn.style.opacity = '1';
         },
         function(error) {
           var msg = 'GPS error';
           if (error.code === 1) msg = 'Permission denied';
-          if (error.code === 2) msg = 'Unavailable';
-          if (error.code === 3) msg = 'Timeout';
+          else if (error.code === 2) msg = 'Unavailable';
+          else if (error.code === 3) msg = 'Timeout';
           
           locField.value = 'Tap 📍 to retry';
           gpsStatus.innerHTML = msg;
-          gpsBtn.style.opacity = '1';
         },
         {
           enableHighAccuracy: true,
@@ -471,7 +453,7 @@
       );
     }
     
-    // ===== 4. ADD TO TABLE =====
+    // ===== 4. TABLE =====
     var scanCounter = 0;
     
     function addToTable(text) {
@@ -486,42 +468,50 @@
       
       var now = new Date();
       var timeStr = now.getHours() + ':' + 
-                   ('0' + now.getMinutes()).slice(-2) + ':' + 
-                   ('0' + now.getSeconds()).slice(-2);
+                   (now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes()) + ':' + 
+                   (now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds());
       
       row.innerHTML = '<div>' + scanCounter + '</div><div>' + text + ' @ ' + timeStr + '</div>';
       tableBody.appendChild(row);
     }
     
-    // ===== 5. SEND TO XANO =====
+    // ===== 5. SEND TO XANO - FIXED =====
     function sendToXano(data) {
       var xhr = new XMLHttpRequest();
       xhr.open('POST', XANO_URL, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       
-      xhr.onload = function() {
-        var msgBox = document.getElementById('messageBox');
-        
-        if (xhr.status >= 200 && xhr.status < 300) {
-          msgBox.innerHTML = '✓ SAVED TO XANO';
-          msgBox.style.color = '#1e6f3f';
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          var msgBox = document.getElementById('messageBox');
           
-          var popup = document.getElementById('successPopup');
-          document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
-          popup.style.display = 'block';
-          setTimeout(function() { popup.style.display = 'none'; }, 1500);
-          
-          addToTable(data.barcode_letters + ' → ' + data.barcode_numbers);
-          
-          for (var i = 0; i < cells.length; i++) {
-            cells[i].value = '';
+          if (xhr.status >= 200 && xhr.status < 300) {
+            // Success
+            msgBox.innerHTML = '✓ SAVED TO XANO';
+            msgBox.style.color = '#1e6f3f';
+            
+            // Show popup
+            var popup = document.getElementById('successPopup');
+            document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
+            popup.style.display = 'block';
+            setTimeout(function() { popup.style.display = 'none'; }, 1500);
+            
+            // Add to local table
+            addToTable(data.barcode_letters + ' → ' + data.barcode_numbers);
+            
+            // Clear cells
+            for (var i = 0; i < cells.length; i++) {
+              cells[i].value = '';
+            }
+            cells[0].focus();
+            document.getElementById('labelId').value = '';
+            
+          } else {
+            // Error
+            msgBox.innerHTML = '✗ XANO ERROR ' + xhr.status;
+            msgBox.style.color = '#b52e2e';
+            console.log('XANO response:', xhr.responseText);
           }
-          cells[0].focus();
-          document.getElementById('labelId').value = '';
-          
-        } else {
-          msgBox.innerHTML = '✗ XANO ERROR ' + xhr.status;
-          msgBox.style.color = '#b52e2e';
         }
       };
       
@@ -534,13 +524,14 @@
       xhr.send(JSON.stringify(data));
     }
     
-    // ===== 6. SUBMIT SCAN =====
+    // ===== 6. SUBMIT =====
     function submitScan() {
       var letters = '';
       for (var i = 0; i < cells.length; i++) {
         letters += cells[i].value;
       }
       
+      // Validate
       if (letters.length !== 6) {
         var msgBox = document.getElementById('messageBox');
         msgBox.innerHTML = '✗ Enter 6 letters A-J';
@@ -557,11 +548,13 @@
         }
       }
       
+      // Convert to numbers
       var numbers = '';
       for (var i = 0; i < letters.length; i++) {
         numbers += letterMap[letters[i]];
       }
       
+      // Prepare data for XANO
       var data = {
         barcode_letters: letters,
         barcode_numbers: numbers,
@@ -572,22 +565,26 @@
         device: 'Android 5.0'
       };
       
+      // Update status
       var msgBox = document.getElementById('messageBox');
       msgBox.innerHTML = '⏳ SENDING TO XANO...';
       msgBox.style.color = '#15569B';
       
+      // Send to XANO
       sendToXano(data);
     }
     
-    // ===== 7. INITIALIZE EVERYTHING =====
+    // ===== 7. INIT =====
     function init() {
-      console.log('Initializing app...');
-      
       // Set today's date
       var today = new Date();
       var year = today.getFullYear();
-      var month = ('0' + (today.getMonth() + 1)).slice(-2);
-      var day = ('0' + today.getDate()).slice(-2);
+      var month = (today.getMonth() + 1);
+      var day = today.getDate();
+      
+      if (month < 10) month = '0' + month;
+      if (day < 10) day = '0' + day;
+      
       var etaField = document.getElementById('etaField');
       if (etaField) {
         etaField.value = year + '-' + month + '-' + day;
@@ -616,17 +613,16 @@
         cells[0].focus();
       }
       
-      // Get GPS after 2 seconds
+      // Test XANO connection
       setTimeout(function() {
-        console.log('Getting initial GPS...');
-        getGPS();
-      }, 2000);
+        var msgBox = document.getElementById('messageBox');
+        msgBox.innerHTML = 'Ready - XANO endpoint: ' + XANO_URL;
+      }, 1000);
     }
     
-    // Run init when page loads
+    // Start when page loads
     window.onload = function() {
       init();
-      // Make sure time is updated immediately
       updateTime();
     };
   </script>
