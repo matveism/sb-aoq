@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ANDROID 5.0 SCANNER - FINAL</title>
+  <title>ANDROID 5.0 SCANNER - QWERTY</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
@@ -28,7 +28,7 @@
       flex-direction: column;
       overflow: hidden;
     }
-    /* HEADER - WITH TIME VISIBLE */
+    /* HEADER - WITH TIME */
     .header {
       background: #15569B;
       color: white;
@@ -47,6 +47,8 @@
       font-size: 18px;
       font-family: monospace;
       border: 1px solid #79A4D2;
+      min-width: 110px;
+      text-align: center;
     }
     /* SCAN ROW */
     .scan-row {
@@ -89,13 +91,13 @@
       text-transform: uppercase;
       outline: none;
       color: black;
-      /* EMPTY BY DEFAULT - NO PLACEHOLDERS */
+      /* QWERTY KEYBOARD - text mode */
+      -webkit-appearance: none;
     }
     .cell:focus {
       border: 3px solid #FCC57A;
       background: #FB9809;
     }
-    /* CONTENT AREA */
     .content {
       flex: 1;
       padding: 16px;
@@ -241,7 +243,7 @@
 </head>
 <body>
   <div class="device">
-    <!-- HEADER - TIME IS HERE AND WORKING -->
+    <!-- HEADER - TIME VISIBLE -->
     <div class="header">
       <span>SCAN BARCODE</span>
       <span class="time-display" id="currentTime">--:--:--</span>
@@ -251,12 +253,12 @@
     <div class="scan-row">
       <button class="submit-btn" id="submitButton">OK</button>
       <div class="grid-container">
-        <input class="cell" type="tel" maxlength="1" id="cell1">
-        <input class="cell" type="tel" maxlength="1" id="cell2">
-        <input class="cell" type="tel" maxlength="1" id="cell3">
-        <input class="cell" type="tel" maxlength="1" id="cell4">
-        <input class="cell" type="tel" maxlength="1" id="cell5">
-        <input class="cell" type="tel" maxlength="1" id="cell6">
+        <input class="cell" type="text" inputmode="text" maxlength="1" id="cell1">
+        <input class="cell" type="text" inputmode="text" maxlength="1" id="cell2">
+        <input class="cell" type="text" inputmode="text" maxlength="1" id="cell3">
+        <input class="cell" type="text" inputmode="text" maxlength="1" id="cell4">
+        <input class="cell" type="text" inputmode="text" maxlength="1" id="cell5">
+        <input class="cell" type="text" inputmode="text" maxlength="1" id="cell6">
       </div>
     </div>
     
@@ -313,33 +315,25 @@
   </div>
 
   <script>
-    // ===== FINAL PRODUCTION CODE =====
-    // XANO endpoint
+    // ===== FINAL PRODUCTION CODE - QWERTY =====
     var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
     
-    // ===== 1. TIME DISPLAY - DEFINITELY WORKING =====
+    // ===== 1. TIME DISPLAY =====
     function updateTime() {
       var timeEl = document.getElementById('currentTime');
       if (!timeEl) return;
       
       var now = new Date();
-      var hours = now.getHours();
-      var minutes = now.getMinutes();
-      var seconds = now.getSeconds();
-      
-      // Add leading zeros
-      if (hours < 10) hours = '0' + hours;
-      if (minutes < 10) minutes = '0' + minutes;
-      if (seconds < 10) seconds = '0' + seconds;
+      var hours = now.getHours().toString().padStart(2,'0');
+      var minutes = now.getMinutes().toString().padStart(2,'0');
+      var seconds = now.getSeconds().toString().padStart(2,'0');
       
       timeEl.innerHTML = hours + ':' + minutes + ':' + seconds;
     }
-    
-    // Update immediately and every second
     updateTime();
     setInterval(updateTime, 1000);
     
-    // ===== 2. CELLS - EMPTY BY DEFAULT =====
+    // ===== 2. CELLS - EMPTY, QWERTY KEYBOARD =====
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -362,11 +356,11 @@
     
     // Setup cell behavior
     for (var i = 0; i < cells.length; i++) {
-      // Input event
+      // Input event - accept any letter but only store A-J
       cells[i].addEventListener('input', function(e) {
         var val = this.value.toUpperCase();
         
-        // Only accept A-J
+        // Only accept A-J, ignore others
         if (val.match(/^[A-J]$/)) {
           this.value = val;
           updateLabelId();
@@ -377,6 +371,7 @@
             next.focus();
           }
         } else {
+          // Clear invalid input
           this.value = '';
         }
       });
@@ -394,6 +389,7 @@
       // Enter submits
       cells[i].addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
+          e.preventDefault();
           submitScan();
         }
       });
@@ -418,7 +414,7 @@
       }
     }
     
-    // ===== 3. GPS FUNCTION - WORKING =====
+    // ===== 3. GPS FUNCTION =====
     function getGPS() {
       var locField = document.getElementById('locationField');
       var gpsStatus = document.getElementById('gpsStatus');
@@ -463,11 +459,9 @@
     function addToTable(text) {
       scanCounter++;
       
-      // Hide empty message
       var emptyMsg = document.getElementById('empty-message');
       if (emptyMsg) emptyMsg.style.display = 'none';
       
-      // Create row
       var tableBody = document.getElementById('tableBody');
       var row = document.createElement('div');
       row.className = 'result-row';
@@ -491,20 +485,16 @@
         var msgBox = document.getElementById('messageBox');
         
         if (xhr.status >= 200 && xhr.status < 300) {
-          // Success
           msgBox.innerHTML = '✓ SAVED TO XANO';
           msgBox.style.color = '#1e6f3f';
           
-          // Show popup
           var popup = document.getElementById('successPopup');
           document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
           popup.style.display = 'block';
           setTimeout(function() { popup.style.display = 'none'; }, 1500);
           
-          // Add to table
           addToTable(data.barcode_letters + ' → ' + data.barcode_numbers);
           
-          // Clear cells
           for (var i = 0; i < cells.length; i++) {
             cells[i].value = '';
           }
@@ -512,7 +502,6 @@
           document.getElementById('labelId').value = '';
           
         } else {
-          // Error
           msgBox.innerHTML = '✗ XANO ERROR ' + xhr.status;
           msgBox.style.color = '#b52e2e';
         }
@@ -529,13 +518,11 @@
     
     // ===== 6. SUBMIT SCAN =====
     function submitScan() {
-      // Get letters
       var letters = '';
       for (var i = 0; i < cells.length; i++) {
         letters += cells[i].value;
       }
       
-      // Validate
       if (letters.length !== 6) {
         var msgBox = document.getElementById('messageBox');
         msgBox.innerHTML = '✗ Enter 6 letters A-J';
@@ -552,13 +539,11 @@
         }
       }
       
-      // Convert to numbers
       var numbers = '';
       for (var i = 0; i < letters.length; i++) {
         numbers += letterMap[letters[i]];
       }
       
-      // Prepare data
       var data = {
         barcode_letters: letters,
         barcode_numbers: numbers,
@@ -566,42 +551,34 @@
         status: document.getElementById('statusSelect').value,
         location: document.getElementById('locationField').value,
         eta: document.getElementById('etaField').value,
-        device: 'Android 5.0'
+        device: 'Android 5.0 QWERTY'
       };
       
-      // Update status
       var msgBox = document.getElementById('messageBox');
       msgBox.innerHTML = '⏳ SENDING TO XANO...';
       msgBox.style.color = '#15569B';
       
-      // Send
       sendToXano(data);
     }
     
     // ===== 7. INITIALIZE =====
-    // Set today's date
     var today = new Date();
     var year = today.getFullYear();
     var month = ('0' + (today.getMonth() + 1)).slice(-2);
     var day = ('0' + today.getDate()).slice(-2);
     document.getElementById('etaField').value = year + '-' + month + '-' + day;
     
-    // GPS button
     document.getElementById('gpsBtn').onclick = function(e) {
       e.preventDefault();
       getGPS();
     };
     
-    // Submit button
     document.getElementById('submitButton').onclick = function(e) {
       e.preventDefault();
       submitScan();
     };
     
-    // Focus first cell
     cells[0].focus();
-    
-    // Try GPS on load
     setTimeout(getGPS, 1000);
   </script>
 </body>
