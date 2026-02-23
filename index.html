@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>PRODUCTION XANO SCANNER</title>
   <style>
-    /* [Previous styles remain exactly the same as above] */
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
       background: #1b1b1b;
@@ -121,6 +120,7 @@
     .gps-status {
       font-size: 12px;
       color: #aaa;
+      margin-top: 4px;
     }
     .status-message {
       padding: 12px;
@@ -227,7 +227,7 @@
       <div class="field">
         <label>📍 Location (Auto GPS)</label>
         <input type="text" id="locationField" readonly placeholder="Detecting location...">
-        <div class="gps-status" id="gpsStatus">Getting GPS...</div>
+        <div class="gps-status" id="gpsStatus">📍 Requesting GPS permission...</div>
       </div>
       <div class="field">
         <label>📅 ETA</label>
@@ -292,52 +292,154 @@
       document.getElementById('labelId').value = barcode || '---';
     }
 
-    // ===== GPS FUNCTION =====
+    // ===== GPS FUNCTION - FIXED VERSION =====
     function getGPS() {
       const locField = document.getElementById('locationField');
       const gpsStatus = document.getElementById('gpsStatus');
       
+      // Check if browser supports geolocation
       if (!navigator.geolocation) {
         locField.value = 'GPS_NOT_SUPPORTED';
-        gpsStatus.innerHTML = '❌ GPS not supported';
+        gpsStatus.innerHTML = '❌ GPS not supported by browser';
         return;
       }
       
-      gpsStatus.innerHTML = '📍 Acquiring GPS...';
+      gpsStatus.innerHTML = '📍 Requesting GPS permission...';
       
+      // Try to get high accuracy position
       navigator.geolocation.getCurrentPosition(
+        // Success callback
         (position) => {
           const lat = position.coords.latitude.toFixed(6);
           const lng = position.coords.longitude.toFixed(6);
-          locField.value = `${lat},${lng}`;
-          gpsStatus.innerHTML = '✅ GPS locked';
+          const accuracy = position.coords.accuracy.toFixed(0);
+          
+          // Format location with accuracy
+          locField.value = `${lat}, ${lng}`;
+          gpsStatus.innerHTML = `✅ GPS locked (accuracy: ±${accuracy}m)`;
+          
+          // Save to localStorage for backup
+          localStorage.setItem('last_gps', `${lat},${lng}`);
         },
+        // Error callback
         (error) => {
-          locField.value = 'GPS_UNAVAILABLE';
-          let errorMsg = '❌ GPS error: ';
+          console.error('GPS Error:', error);
+          
+          // Try fallback with lower accuracy
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const lat = position.coords.latitude.toFixed(6);
+              const lng = position.coords.longitude.toFixed(6);
+              locField.value = `${lat}, ${lng}`;
+              gpsStatus.innerHTML = `⚠️ Low accuracy GPS`;
+              localStorage.setItem('last_gps', `${lat},${lng}`);
+            },
+            (fallbackError) => {
+              // If both attempts fail, use IP-based location
+              gpsStatus.innerHTML = '⚠️ Trying IP location...';
+              getIPLocation();
+            },
+            {
+              enableHighAccuracy: false,
+              timeout: 5000,
+              maximumAge: 60000
+            }
+          );
+          
+          // Handle specific errors
+          let errorMsg = '';
           switch(error.code) {
             case error.PERMISSION_DENIED:
-              errorMsg += 'permission_denied';
+              errorMsg = 'permission_denied';
+              gpsStatus.innerHTML = '❌ GPS permission denied. Using IP location...';
+              getIPLocation();
               break;
             case error.POSITION_UNAVAILABLE:
-              errorMsg += 'position_unavailable';
+              errorMsg = 'position_unavailable';
+              gpsStatus.innerHTML = '❌ GPS unavailable. Using IP location...';
+              getIPLocation();
               break;
             case error.TIMEOUT:
-              errorMsg += 'timeout';
+              errorMsg = 'timeout';
+              gpsStatus.innerHTML = '❌ GPS timeout. Using IP location...';
+              getIPLocation();
               break;
             default:
-              errorMsg += 'unknown';
+              errorMsg = 'unknown';
+              gpsStatus.innerHTML = '❌ GPS error. Using IP location...';
+              getIPLocation();
           }
-          gpsStatus.innerHTML = errorMsg;
         },
         {
           enableHighAccuracy: true,
-          timeout: 15000,
+          timeout: 10000,
           maximumAge: 0
         }
       );
     }
-    getGPS();
+    
+    // Fallback function to get location by IP
+    function getIPLocation() {
+      const locField = document.getElementById('locationField');
+      const gpsStatus = document.getElementById('gpsStatus');
+      
+      // Try multiple IP geolocation services
+      const ipServices = [
+        'https://ipapi.co/json/',
+        'https://freegeoip.app/json/',
+        'https://geolocation-db.com/json/'
+      ];
+      
+      let serviceIndex = 0;
+      
+      function tryNextService() {
+        if (serviceIndex >= ipServices.length) {
+          // All services failed, use last known or default
+          const lastGPS = localStorage.getItem('last_gps');
+          if (lastGPS) {
+            locField.value = lastGPS.replace(',', ', ');
+            gpsStatus.innerHTML = '⚠️ Using last known location';
+          } else {
+            locField.value = 'LOCATION_UNAVAILABLE';
+            gpsStatus.innerHTML = '❌ Could not determine location';
+          }
+          return;
+        }
+        
+        fetch(ipServices[serviceIndex])
+          .then(response => response.json())
+          .then(data => {
+            let lat, lon;
+            
+            // Parse different API response formats
+            if (data.latitude && data.longitude) {
+              lat = data.latitude;
+              lon = data.longitude;
+            } else if (data.lat && data.lon) {
+              lat = data.lat;
+              lon = data.lon;
+            } else if (data.city && data.country_code) {
+              // If no coordinates, show city/country
+              locField.value = `${data.city || 'Unknown'}, ${data.country_code || '??'}`;
+              gpsStatus.innerHTML = '⚠️ Approximate location (city level)';
+              return;
+            } else {
+              throw new Error('No coordinates');
+            }
+            
+            locField.value = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+            gpsStatus.innerHTML = '⚠️ Approximate location (IP based)';
+            localStorage.setItem('last_gps', `${lat},${lon}`);
+          })
+          .catch(error => {
+            console.log(`IP service ${serviceIndex} failed:`, error);
+            serviceIndex++;
+            tryNextService();
+          });
+      }
+      
+      tryNextService();
+    }
 
     // ===== SET DEFAULT DATE =====
     function setDefaultDate() {
@@ -396,7 +498,6 @@
           'Accept': 'application/json'
         };
         
-        // Add API key if provided
         if (XANO_API_KEY) {
           headers['Authorization'] = `Bearer ${XANO_API_KEY}`;
         }
@@ -447,24 +548,21 @@
       const scanData = {
         barcode: labelId,
         status: status,
-        location: location,
+        location: location || 'NO_LOCATION',
         eta: eta,
         timestamp: new Date().toISOString(),
         device: 'web-prod',
         type: document.getElementById('barcodeType').value
       };
       
-      // Disable button during submission
       submitBtn.disabled = true;
       submitBtn.style.opacity = '0.5';
       messageBox.innerHTML = '⏳ Sending to XANO...';
       messageBox.style.background = '#886622';
       
       try {
-        // Send to XANO
         const result = await saveToXano(scanData);
         
-        // Create local record
         const localRecord = {
           labelId: labelId,
           status: status,
@@ -474,19 +572,16 @@
           xanoId: result.id || 'pending'
         };
         
-        // Save locally
         scanRecords.unshift(localRecord);
         if (scanRecords.length > 50) scanRecords.pop();
         localStorage.setItem('xano_scans', JSON.stringify(scanRecords));
         
-        // Update UI
         updateTable();
         showPopup();
         
         messageBox.innerHTML = `✅ XANO OK: ${labelId}`;
         messageBox.style.background = '#226622';
         
-        // Clear input
         cells.forEach(cell => cell.value = '');
         document.getElementById('labelId').value = '---';
         cells[0].focus();
@@ -525,7 +620,6 @@
             cells[5].focus();
             scanBuffer = '';
             
-            // Auto-submit for scanner
             setTimeout(() => {
               document.getElementById('submitButton').click();
             }, 100);
@@ -546,6 +640,10 @@
 
     // ===== INIT =====
     cells[0].focus();
+    getGPS(); // Initialize GPS on load
+    
+    // Refresh GPS every 5 minutes
+    setInterval(getGPS, 300000);
   </script>
 </body>
 </html>
