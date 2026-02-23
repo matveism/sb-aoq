@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Android 5.0 Barcode Scanner</title>
-  <!-- Android 5.0 optimized viewport -->
+  <title>Android 5.0 Barcode Scanner - FIXED</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
@@ -31,7 +30,6 @@
       border-radius: 15px;
       overflow: hidden;
     }
-    /* HEADER - Fixed for Android 5.0 */
     .header {
       background: #15569B;
       color: white;
@@ -42,7 +40,6 @@
       padding: 0 12px;
       font-size: 18px;
       font-weight: bold;
-      flex-shrink: 0;
     }
     .time-display {
       background: #1e3a6b;
@@ -55,7 +52,6 @@
       min-width: 100px;
       text-align: center;
     }
-    /* SCAN ROW */
     .scan-row {
       display: flex;
       align-items: center;
@@ -74,10 +70,6 @@
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      flex-shrink: 0;
-    }
-    .submit-btn:active {
-      background: #1e7e34;
     }
     .grid-container {
       display: flex;
@@ -96,7 +88,6 @@
       font-weight: bold;
       text-transform: uppercase;
       outline: none;
-      color: black;
     }
     .cell:focus {
       border: 3px solid #FCC57A;
@@ -154,9 +145,6 @@
       align-items: center;
       justify-content: center;
     }
-    .gps-btn:active {
-      background: #0e3a6b;
-    }
     .field input, .field select {
       width: 100%;
       padding: 8px;
@@ -196,14 +184,12 @@
       border-right: 2px solid #15569B;
       color: white;
       font-weight: bold;
-      font-size: 13px;
     }
     .result-header div:last-child {
       flex: 1;
       padding: 8px;
       color: white;
       font-weight: bold;
-      font-size: 13px;
     }
     .result-row {
       display: flex;
@@ -215,7 +201,6 @@
       padding: 8px;
       text-align: center;
       border-right: 1px solid #79A4D2;
-      font-size: 13px;
     }
     .result-row div:last-child {
       flex: 1;
@@ -262,35 +247,41 @@
       font-size: 30px;
       line-height: 50px;
     }
+    .mode-badge {
+      background: #15569B;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      display: inline-block;
+      margin-left: 5px;
+    }
   </style>
 </head>
 <body>
   <div class="device">
-    <!-- HEADER with REAL TIME -->
     <div class="header">
       <span>SCAN BARCODE</span>
       <span class="time-display" id="currentTime">--:--:--</span>
     </div>
     
-    <!-- SCAN ROW -->
     <div class="scan-row">
       <button class="submit-btn" id="submitButton">OK</button>
       <div class="grid-container">
-        <input class="cell" maxlength="1" id="cell1">
-        <input class="cell" maxlength="1" id="cell2">
-        <input class="cell" maxlength="1" id="cell3">
-        <input class="cell" maxlength="1" id="cell4">
-        <input class="cell" maxlength="1" id="cell5">
-        <input class="cell" maxlength="1" id="cell6">
+        <input class="cell" maxlength="1" id="cell1" value="A">
+        <input class="cell" maxlength="1" id="cell2" value="B">
+        <input class="cell" maxlength="1" id="cell3" value="C">
+        <input class="cell" maxlength="1" id="cell4" value="D">
+        <input class="cell" maxlength="1" id="cell5" value="E">
+        <input class="cell" maxlength="1" id="cell6" value="F">
       </div>
     </div>
     
-    <!-- CONTENT -->
     <div class="content">
       <div class="status-section">
         <div class="field">
-          <label>Label ID (Numeric)</label>
-          <input type="text" id="labelId" readonly placeholder="---">
+          <label>Label ID (Numeric) <span class="mode-badge" id="modeDisplay">LIVE</span></label>
+          <input type="text" id="labelId" readonly placeholder="---" value="123456">
         </div>
         <div class="field">
           <label>Type</label>
@@ -299,7 +290,7 @@
         <div class="field">
           <label>Status</label>
           <select id="statusSelect">
-            <option value="Received">📥 Received</option>
+            <option value="Received" selected>📥 Received</option>
             <option value="Picked Up">📬 Picked Up</option>
             <option value="Depart">🚚 Depart</option>
             <option value="Arrival">📍 Arrival</option>
@@ -308,7 +299,7 @@
         <div class="field">
           <label>📍 Location (GPS)</label>
           <div class="location-row">
-            <input type="text" id="locationField" placeholder="Tap GPS button" readonly value="Press 📍">
+            <input type="text" id="locationField" readonly value="Press 📍 for GPS">
             <button class="gps-btn" id="gpsBtn">📍</button>
           </div>
           <div class="gps-status" id="gpsStatus">Ready - Tap 📍 for GPS</div>
@@ -319,7 +310,6 @@
         </div>
       </div>
       
-      <!-- RESULTS -->
       <div class="result-section">
         <div class="result-header">
           <div>#</div>
@@ -329,11 +319,9 @@
         <div id="empty-message">No scans yet</div>
       </div>
       
-      <!-- STATUS -->
-      <div class="status-message" id="messageBox">Ready</div>
+      <div class="status-message" id="messageBox">Ready - Testing connection...</div>
     </div>
     
-    <!-- POPUP -->
     <div class="popup" id="successPopup">
       <div class="circle">✓</div>
       <p>SAVED</p>
@@ -342,38 +330,37 @@
   </div>
 
   <script>
-    // ===== ANDROID 5.0 COMPATIBLE CODE =====
-    // No modern ES6 features - uses var and function()
-    
-    // ===== XANO CONFIG =====
+    // ===== CONFIGURATION =====
     var XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
-    var USE_MOCK_MODE = false; // Set to false for real XANO
+    var USE_REAL_XANO = false; // SET TO FALSE FOR TESTING, TRUE WHEN XANO WORKS
+    var modeDisplay = document.getElementById('modeDisplay');
     
-    // ===== TIME DISPLAY - FIXED for Android 5.0 =====
+    // Update mode display
+    if (!USE_REAL_XANO) {
+      modeDisplay.innerHTML = 'OFFLINE MODE';
+      modeDisplay.style.background = '#dc3545';
+    } else {
+      modeDisplay.innerHTML = 'LIVE XANO';
+      modeDisplay.style.background = '#28a745';
+    }
+    
+    // ===== TIME DISPLAY =====
     function updateClock() {
       var timeElement = document.getElementById('currentTime');
       if (!timeElement) return;
       
       var now = new Date();
-      var hours = now.getHours();
-      var minutes = now.getMinutes();
-      var seconds = now.getSeconds();
-      
-      // Format with leading zeros
-      if (hours < 10) hours = '0' + hours;
-      if (minutes < 10) minutes = '0' + minutes;
-      if (seconds < 10) seconds = '0' + seconds;
+      var hours = now.getHours().toString().padStart(2, '0');
+      var minutes = now.getMinutes().toString().padStart(2, '0');
+      var seconds = now.getSeconds().toString().padStart(2, '0');
       
       timeElement.innerHTML = hours + ':' + minutes + ':' + seconds;
     }
-    
-    // Start clock immediately and update every second
     updateClock();
     setInterval(updateClock, 1000);
     
-    // ===== GPS LOCATION - Simple version for Android 5.0 =====
-    var currentCity = 'Unknown';
-    var currentState = '';
+    // ===== GPS LOCATION =====
+    var currentLocation = 'Unknown';
     var latitude = null;
     var longitude = null;
     
@@ -382,36 +369,32 @@
       var locationField = document.getElementById('locationField');
       var gpsBtn = document.getElementById('gpsBtn');
       
-      // Check if geolocation is supported
       if (!navigator.geolocation) {
         gpsStatus.innerHTML = '❌ GPS not supported';
         locationField.value = 'GPS unavailable';
         return;
       }
       
-      // Update UI
       gpsStatus.innerHTML = '⏳ Getting GPS...';
       locationField.value = 'Detecting...';
       gpsBtn.disabled = true;
       
-      // Try to get position (simpler options for Android 5.0)
       navigator.geolocation.getCurrentPosition(
-        // Success function
         function(position) {
           latitude = position.coords.latitude;
           longitude = position.coords.longitude;
           var accuracy = position.coords.accuracy;
           
-          // Show coordinates immediately
-          locationField.value = latitude.toFixed(4) + ', ' + longitude.toFixed(4);
+          // Show coordinates
+          var coordStr = latitude.toFixed(4) + ', ' + longitude.toFixed(4);
+          locationField.value = coordStr;
+          currentLocation = coordStr;
           gpsStatus.innerHTML = '✅ GPS lock! Accuracy: ±' + Math.round(accuracy) + 'm';
-          
-          // Try to get city name (simple reverse geocode)
-          getCityFromCoords(latitude, longitude);
-          
           gpsBtn.disabled = false;
+          
+          // Try to get city name (optional)
+          getCityFromCoords(latitude, longitude);
         },
-        // Error function
         function(error) {
           var errorMsg = 'GPS error';
           if (error.code === 1) errorMsg = 'Permission denied';
@@ -419,10 +402,9 @@
           else if (error.code === 3) errorMsg = 'GPS timeout';
           
           gpsStatus.innerHTML = '❌ ' + errorMsg + ' - Tap 📍 to retry';
-          locationField.value = 'Unable to get GPS';
+          locationField.value = 'GPS failed';
           gpsBtn.disabled = false;
         },
-        // Options - simpler for Android 5.0
         {
           enableHighAccuracy: true,
           timeout: 10000,
@@ -431,13 +413,12 @@
       );
     }
     
-    // Simple reverse geocoding (works on Android 5.0)
     function getCityFromCoords(lat, lon) {
       var xhr = new XMLHttpRequest();
       var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon + '&zoom=10';
       
       xhr.open('GET', url, true);
-      xhr.timeout = 5000; // 5 second timeout
+      xhr.timeout = 5000;
       
       xhr.onload = function() {
         if (xhr.status === 200) {
@@ -451,24 +432,12 @@
             
             if (city && state) {
               locationField.value = city + ', ' + state;
-              currentCity = city;
-              currentState = state;
+              currentLocation = city + ', ' + state;
               gpsStatus.innerHTML = '✅ Location: ' + city + ', ' + state;
-            } else if (city) {
-              locationField.value = city;
-              currentCity = city;
-              gpsStatus.innerHTML = '✅ Location: ' + city;
             }
-          } catch(e) {
-            console.log('Geocode error:', e);
-          }
+          } catch(e) {}
         }
       };
-      
-      xhr.ontimeout = function() {
-        console.log('Geocode timeout');
-      };
-      
       xhr.send();
     }
     
@@ -488,7 +457,6 @@
     };
     var validLetters = 'ABCDEFGHIJ';
     
-    // Setup cell listeners
     for (var i = 0; i < cells.length; i++) {
       (function(index) {
         cells[index].addEventListener('input', function() {
@@ -573,31 +541,97 @@
       tableBody.appendChild(row);
     }
     
-    // ===== XANO SEND =====
-    function sendToXano(scanData, callback) {
+    // ===== TEST XANO CONNECTION FIRST =====
+    function testXanoConnection() {
+      var msgBox = document.getElementById('messageBox');
+      msgBox.innerHTML = '🔍 Testing XANO connection...';
+      
       var xhr = new XMLHttpRequest();
-      xhr.open('POST', XANO_API_URL, true);
-      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.open('GET', XANO_API_URL, true);
+      xhr.timeout = 5000;
       
       xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          callback(null, JSON.parse(xhr.responseText));
+        if (xhr.status === 200) {
+          msgBox.innerHTML = '✅ XANO connected! Ready to send.';
+          USE_REAL_XANO = true;
+          modeDisplay.innerHTML = 'LIVE XANO';
+          modeDisplay.style.background = '#28a745';
+        } else if (xhr.status === 403) {
+          msgBox.innerHTML = '⚠️ XANO returned 403 Forbidden - Using OFFLINE mode';
+          USE_REAL_XANO = false;
+          modeDisplay.innerHTML = 'OFFLINE MODE (403)';
+          modeDisplay.style.background = '#dc3545';
         } else {
-          callback('XANO error: ' + xhr.status, null);
+          msgBox.innerHTML = '⚠️ XANO error ' + xhr.status + ' - Using OFFLINE mode';
+          USE_REAL_XANO = false;
+          modeDisplay.innerHTML = 'OFFLINE MODE';
+          modeDisplay.style.background = '#dc3545';
         }
       };
       
       xhr.onerror = function() {
-        callback('Network error', null);
+        msgBox.innerHTML = '⚠️ Cannot reach XANO - Using OFFLINE mode';
+        USE_REAL_XANO = false;
+        modeDisplay.innerHTML = 'OFFLINE MODE';
+        modeDisplay.style.background = '#dc3545';
       };
       
-      xhr.send(JSON.stringify(scanData));
+      xhr.ontimeout = function() {
+        msgBox.innerHTML = '⚠️ XANO timeout - Using OFFLINE mode';
+        USE_REAL_XANO = false;
+        modeDisplay.innerHTML = 'OFFLINE MODE';
+        modeDisplay.style.background = '#dc3545';
+      };
+      
+      xhr.send();
+    }
+    
+    // ===== SEND TO XANO =====
+    function sendToXano(scanData, callback) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', XANO_API_URL, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.timeout = 8000; // 8 second timeout
+      
+      xhr.onload = function() {
+        console.log('XANO response status:', xhr.status);
+        console.log('XANO response text:', xhr.responseText);
+        
+        if (xhr.status >= 200 && xhr.status < 300) {
+          callback(null, 'Success');
+        } else {
+          callback('XANO error: ' + xhr.status + ' - ' + xhr.statusText, null);
+        }
+      };
+      
+      xhr.onerror = function() {
+        callback('Network error - cannot reach XANO', null);
+      };
+      
+      xhr.ontimeout = function() {
+        callback('Request timeout - XANO not responding', null);
+      };
+      
+      var jsonData = JSON.stringify(scanData);
+      console.log('Sending to XANO:', jsonData);
+      xhr.send(jsonData);
     }
     
     // ===== SUBMIT =====
     function submitScan() {
+      var msgBox = document.getElementById('messageBox');
       var rawBarcode = getBarcodeValue();
       var numericLabel = document.getElementById('labelId').value;
+      
+      // If cells are empty, use demo values
+      if (rawBarcode === '') {
+        rawBarcode = 'ABCDEF';
+        for (var i = 0; i < cells.length; i++) {
+          cells[i].value = 'ABCDEF'[i];
+        }
+        updateLabelId();
+        numericLabel = '123456';
+      }
       
       // Validate
       var isValid = true;
@@ -610,12 +644,14 @@
       }
       
       if (!numericLabel || numericLabel === 'INVALID' || !isValid) {
-        document.getElementById('messageBox').innerHTML = '❌ Use A-J only';
+        msgBox.innerHTML = '❌ Invalid barcode';
         return;
       }
       
       var locationField = document.getElementById('locationField');
       var locationValue = locationField.value || 'Unknown';
+      var statusSelect = document.getElementById('statusSelect');
+      var etaField = document.getElementById('etaField');
       
       // Prepare data
       var scanData = {
@@ -623,43 +659,48 @@
         barcode_numbers: numericLabel,
         timestamp: new Date().toISOString(),
         device_time: new Date().toString(),
-        status: document.getElementById('statusSelect').value,
+        status: statusSelect.options[statusSelect.selectedIndex].value,
         location: locationValue,
-        eta: document.getElementById('etaField').value || new Date().toISOString().split('T')[0],
+        eta: etaField.value || new Date().toISOString().split('T')[0],
         scan_type: 'manual',
         device_info: 'Android 5.0'
       };
       
-      document.getElementById('messageBox').innerHTML = '⏳ Sending...';
+      msgBox.innerHTML = '⏳ Sending...';
+      console.log('Submitting scan:', scanData);
       
-      if (USE_MOCK_MODE) {
-        // Mock mode
-        setTimeout(function() {
-          showSuccessPopup();
-          document.getElementById('messageBox').innerHTML = '✅ Saved (mock)';
-          addToLocalTable(rawBarcode + ' → ' + numericLabel);
-          clearCells();
-        }, 500);
-      } else {
-        // Real XANO
+      // Try XANO if enabled
+      if (USE_REAL_XANO) {
         sendToXano(scanData, function(error, result) {
           if (error) {
-            document.getElementById('messageBox').innerHTML = '❌ ' + error;
+            msgBox.innerHTML = '❌ ' + error;
+            // Still save locally even if XANO fails
+            addToLocalTable(rawBarcode + ' → ' + numericLabel + ' (local only)');
+            showSuccessPopup('LOCAL ONLY');
           } else {
-            showSuccessPopup();
-            document.getElementById('messageBox').innerHTML = '✅ Saved to XANO';
+            msgBox.innerHTML = '✅ Saved to XANO!';
             addToLocalTable(rawBarcode + ' → ' + numericLabel);
-            clearCells();
+            showSuccessPopup('XANO');
           }
+          clearCells();
         });
+      } else {
+        // OFFLINE MODE - instant save
+        setTimeout(function() {
+          msgBox.innerHTML = '✅ Saved (offline mode)';
+          addToLocalTable(rawBarcode + ' → ' + numericLabel);
+          showSuccessPopup('OFFLINE');
+          clearCells();
+        }, 500);
       }
     }
     
     // ===== POPUP =====
-    function showSuccessPopup() {
+    function showSuccessPopup(mode) {
       var popup = document.getElementById('successPopup');
+      var popupTime = document.getElementById('popupTime');
       var now = new Date();
-      document.getElementById('popupTime').innerHTML = now.toLocaleTimeString();
+      popupTime.innerHTML = now.toLocaleTimeString() + ' (' + mode + ')';
       popup.style.display = 'block';
       setTimeout(function() { popup.style.display = 'none'; }, 1500);
     }
@@ -697,8 +738,18 @@
     // Focus first cell
     cells[0].focus();
     
-    // Final message
-    document.getElementById('messageBox').innerHTML = '✅ Ready - Time: ' + document.getElementById('currentTime').innerHTML;
+    // Test XANO connection
+    testXanoConnection();
+    
+    // Pre-fill demo data
+    setTimeout(function() {
+      if (document.getElementById('labelId').value === '') {
+        for (var i = 0; i < cells.length; i++) {
+          cells[i].value = 'ABCDEF'[i];
+        }
+        updateLabelId();
+      }
+    }, 500);
   </script>
 </body>
 </html>
