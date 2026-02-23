@@ -1,15 +1,23 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>PRODUCTION XANO SCANNER</title>
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * { margin:0; padding:0; -webkit-box-sizing:border-box; box-sizing:border-box; }
     body {
       background: #1b1b1b;
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
+      -webkit-box-pack: center;
+      -webkit-justify-content: center;
       justify-content: center;
+      -webkit-box-align: center;
+      -webkit-align-items: center;
       align-items: center;
       min-height: 100vh;
       font-family: "Courier New", Courier, monospace;
@@ -20,18 +28,31 @@
       max-width: 400px;
       background: #222;
       border: 3px solid #999;
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+      -webkit-flex-direction: column;
       flex-direction: column;
+      -webkit-border-radius: 12px;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+      -webkit-box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
     }
     .header {
       background: #444;
       color: white;
       height: 60px;
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
+      -webkit-box-align: center;
+      -webkit-align-items: center;
       align-items: center;
+      -webkit-box-pack: justify;
+      -webkit-justify-content: space-between;
       justify-content: space-between;
       padding: 0 12px;
       font-size: 18px;
@@ -43,11 +64,16 @@
       padding: 4px 8px;
       font-size: 18px;
       font-family: monospace;
+      -webkit-border-radius: 8px;
       border-radius: 8px;
       color: #f0f0f0;
     }
     .scan-row {
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
+      -webkit-box-align: center;
+      -webkit-align-items: center;
       align-items: center;
       padding: 12px 16px;
       background: #333;
@@ -59,25 +85,39 @@
       border: none;
       width: 70px;
       height: 45px;
+      -webkit-border-radius: 5px;
       border-radius: 5px;
       font-size: 18px;
       cursor: pointer;
+      -webkit-transition: background 0.2s;
       transition: background 0.2s;
     }
-    .submit-btn:hover {
+    .submit-btn:active {
       background: #555;
     }
     .grid-container {
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
       gap: 5px;
+      -webkit-box-pack: end;
+      -webkit-justify-content: flex-end;
       justify-content: flex-end;
       margin-left: 12px;
+    }
+    /* gap not supported in old Android, use margin instead */
+    .grid-container .cell {
+      margin-left: 4px;
+    }
+    .grid-container .cell:first-child {
+      margin-left: 0;
     }
     .cell {
       width: 40px;
       height: 50px;
       background: #333;
       border: 2px solid #777;
+      -webkit-border-radius: 6px;
       border-radius: 6px;
       color: #f0f0f0;
       text-align: center;
@@ -108,10 +148,13 @@
       width: 100%;
       padding: 12px;
       border: 2px solid #666;
+      -webkit-border-radius: 5px;
       border-radius: 5px;
       font-size: 14px;
       background: #333;
       color: #f0f0f0;
+      -webkit-appearance: none;
+      appearance: none;
     }
     .field input[readonly] {
       background: #555;
@@ -126,19 +169,22 @@
       padding: 12px;
       background: #444;
       border: 2px solid #777;
+      -webkit-border-radius: 5px;
       border-radius: 5px;
       font-size: 14px;
       text-align: center;
       margin-top: 10px;
     }
     .popup {
-      position: absolute;
+      position: fixed;
       top: 50%;
       left: 50%;
+      -webkit-transform: translate(-50%, -50%);
       transform: translate(-50%, -50%);
       width: 180px;
       background: #444;
       border: 3px solid #777;
+      -webkit-border-radius: 12px;
       border-radius: 12px;
       text-align: center;
       padding: 16px;
@@ -149,6 +195,7 @@
       width: 50px;
       height: 50px;
       background: #28a745;
+      -webkit-border-radius: 50%;
       border-radius: 50%;
       margin: 0 auto 10px;
       color: white;
@@ -157,12 +204,15 @@
     }
     .result-section {
       border: 2px solid #777;
+      -webkit-border-radius: 5px;
       border-radius: 5px;
       background: #555;
       margin-top: 16px;
       overflow: hidden;
     }
     .result-header {
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
       background: #777;
       border-bottom: 2px solid #444;
@@ -172,6 +222,8 @@
       font-weight: bold;
     }
     .result-row {
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
       border-bottom: 1px solid #777;
     }
@@ -197,18 +249,18 @@
     <div class="scan-row">
       <button class="submit-btn" id="submitButton">OK</button>
       <div class="grid-container">
-        <input class="cell" maxlength="1" id="cell1">
-        <input class="cell" maxlength="1" id="cell2">
-        <input class="cell" maxlength="1" id="cell3">
-        <input class="cell" maxlength="1" id="cell4">
-        <input class="cell" maxlength="1" id="cell5">
-        <input class="cell" maxlength="1" id="cell6">
+        <input class="cell" maxlength="1" id="cell1" type="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+        <input class="cell" maxlength="1" id="cell2" type="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+        <input class="cell" maxlength="1" id="cell3" type="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+        <input class="cell" maxlength="1" id="cell4" type="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+        <input class="cell" maxlength="1" id="cell5" type="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+        <input class="cell" maxlength="1" id="cell6" type="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
       </div>
     </div>
     
     <div class="content">
       <div class="field">
-        <label>Label ID (A-J → 1-0)</label>
+        <label>Label ID</label>
         <input type="text" id="labelId" readonly placeholder="---">
       </div>
       <div class="field">
@@ -218,19 +270,19 @@
       <div class="field">
         <label>Status</label>
         <select id="statusSelect">
-          <option value="Received">📥 Received</option>
-          <option value="Picked Up">📬 Picked Up</option>
-          <option value="Depart">🚚 Depart</option>
-          <option value="Arrival">📍 Arrival</option>
+          <option value="Received">Received</option>
+          <option value="Picked Up">Picked Up</option>
+          <option value="Depart">Depart</option>
+          <option value="Arrival">Arrival</option>
         </select>
       </div>
       <div class="field">
-        <label>📍 Location (Auto GPS)</label>
+        <label>Location (Auto GPS)</label>
         <input type="text" id="locationField" readonly placeholder="Detecting location...">
-        <div class="gps-status" id="gpsStatus">📍 Requesting GPS permission...</div>
+        <div class="gps-status" id="gpsStatus">Requesting GPS...</div>
       </div>
       <div class="field">
-        <label>📅 ETA</label>
+        <label>ETA</label>
         <input type="date" id="etaField">
       </div>
       
@@ -247,7 +299,7 @@
     </div>
     
     <div class="popup" id="successPopup">
-      <div class="circle">✓</div>
+      <div class="circle">&#10003;</div>
       <p>SAVED TO XANO</p>
       <div id="popupTime"></div>
     </div>
@@ -255,23 +307,43 @@
 
   <script>
     // ===== CONFIGURATION =====
-    const XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG';
-    const XANO_API_KEY = ''; // Add your API key if required
-    
+    var XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG';
+    var XANO_API_KEY = '';
+
+    // ===== SAFE LOCALSTORAGE =====
+    var safeStorage = {
+      get: function(key) {
+        try { return localStorage.getItem(key); } catch(e) { return null; }
+      },
+      set: function(key, val) {
+        try { localStorage.setItem(key, val); } catch(e) {}
+      }
+    };
+
     // ===== TIME DISPLAY =====
     function updateTime() {
-      const timeEl = document.getElementById('currentTime');
+      var timeEl = document.getElementById('currentTime');
       if (!timeEl) return;
-      const now = new Date();
-      timeEl.innerHTML = now.toLocaleTimeString('en-US', { hour12: false });
+      var now = new Date();
+      var h = String(now.getHours()).length < 2 ? '0' + now.getHours() : '' + now.getHours();
+      var m = now.getMinutes() < 10 ? '0' + now.getMinutes() : '' + now.getMinutes();
+      var s = now.getSeconds() < 10 ? '0' + now.getSeconds() : '' + now.getSeconds();
+      timeEl.innerHTML = h + ':' + m + ':' + s;
     }
     updateTime();
     setInterval(updateTime, 1000);
 
     // ===== BARCODE INPUT HANDLING =====
-    const cells = ['cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6'].map(id => document.getElementById(id));
-    
-    cells.forEach((cell, index) => {
+    var cells = [
+      document.getElementById('cell1'),
+      document.getElementById('cell2'),
+      document.getElementById('cell3'),
+      document.getElementById('cell4'),
+      document.getElementById('cell5'),
+      document.getElementById('cell6')
+    ];
+
+    function setupCell(cell, index) {
       cell.addEventListener('input', function() {
         this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
         if (this.value.length === 1 && index < cells.length - 1) {
@@ -279,370 +351,308 @@
         }
         updateLabelId();
       });
-      
       cell.addEventListener('keydown', function(e) {
-        if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
+        var key = e.key || e.keyCode;
+        if ((key === 'Backspace' || key === 8) && this.value.length === 0 && index > 0) {
           cells[index - 1].focus();
         }
       });
-    });
+    }
+
+    for (var i = 0; i < cells.length; i++) {
+      setupCell(cells[i], i);
+    }
 
     function updateLabelId() {
-      const barcode = cells.map(cell => cell.value).join('');
+      var barcode = '';
+      for (var j = 0; j < cells.length; j++) {
+        barcode += cells[j].value;
+      }
       document.getElementById('labelId').value = barcode || '---';
     }
 
-    // ===== GPS FUNCTION - FIXED VERSION =====
+    // ===== GPS =====
     function getGPS() {
-      const locField = document.getElementById('locationField');
-      const gpsStatus = document.getElementById('gpsStatus');
-      
-      // Check if browser supports geolocation
+      var locField = document.getElementById('locationField');
+      var gpsStatus = document.getElementById('gpsStatus');
+
       if (!navigator.geolocation) {
         locField.value = 'GPS_NOT_SUPPORTED';
-        gpsStatus.innerHTML = '❌ GPS not supported by browser';
+        gpsStatus.innerHTML = 'GPS not supported';
         return;
       }
-      
-      gpsStatus.innerHTML = '📍 Requesting GPS permission...';
-      
-      // Try to get high accuracy position
+
+      gpsStatus.innerHTML = 'Requesting GPS...';
+
       navigator.geolocation.getCurrentPosition(
-        // Success callback
-        (position) => {
-          const lat = position.coords.latitude.toFixed(6);
-          const lng = position.coords.longitude.toFixed(6);
-          const accuracy = position.coords.accuracy.toFixed(0);
-          
-          // Format location with accuracy
-          locField.value = `${lat}, ${lng}`;
-          gpsStatus.innerHTML = `✅ GPS locked (accuracy: ±${accuracy}m)`;
-          
-          // Save to localStorage for backup
-          localStorage.setItem('last_gps', `${lat},${lng}`);
+        function(position) {
+          var lat = position.coords.latitude.toFixed(6);
+          var lng = position.coords.longitude.toFixed(6);
+          var acc = Math.round(position.coords.accuracy);
+          locField.value = lat + ', ' + lng;
+          gpsStatus.innerHTML = 'GPS OK (+-' + acc + 'm)';
+          safeStorage.set('last_gps', lat + ',' + lng);
         },
-        // Error callback
-        (error) => {
-          console.error('GPS Error:', error);
-          
-          // Try fallback with lower accuracy
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const lat = position.coords.latitude.toFixed(6);
-              const lng = position.coords.longitude.toFixed(6);
-              locField.value = `${lat}, ${lng}`;
-              gpsStatus.innerHTML = `⚠️ Low accuracy GPS`;
-              localStorage.setItem('last_gps', `${lat},${lng}`);
-            },
-            (fallbackError) => {
-              // If both attempts fail, use IP-based location
-              gpsStatus.innerHTML = '⚠️ Trying IP location...';
-              getIPLocation();
-            },
-            {
-              enableHighAccuracy: false,
-              timeout: 5000,
-              maximumAge: 60000
-            }
-          );
-          
-          // Handle specific errors
-          let errorMsg = '';
-          switch(error.code) {
-            case error.PERMISSION_DENIED:
-              errorMsg = 'permission_denied';
-              gpsStatus.innerHTML = '❌ GPS permission denied. Using IP location...';
-              getIPLocation();
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMsg = 'position_unavailable';
-              gpsStatus.innerHTML = '❌ GPS unavailable. Using IP location...';
-              getIPLocation();
-              break;
-            case error.TIMEOUT:
-              errorMsg = 'timeout';
-              gpsStatus.innerHTML = '❌ GPS timeout. Using IP location...';
-              getIPLocation();
-              break;
-            default:
-              errorMsg = 'unknown';
-              gpsStatus.innerHTML = '❌ GPS error. Using IP location...';
-              getIPLocation();
-          }
+        function(error) {
+          gpsStatus.innerHTML = 'GPS failed, trying IP...';
+          getIPLocation();
         },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
-    
-    // Fallback function to get location by IP
+
     function getIPLocation() {
-      const locField = document.getElementById('locationField');
-      const gpsStatus = document.getElementById('gpsStatus');
-      
-      // Try multiple IP geolocation services
-      const ipServices = [
-        'https://ipapi.co/json/',
-        'https://freegeoip.app/json/',
-        'https://geolocation-db.com/json/'
-      ];
-      
-      let serviceIndex = 0;
-      
-      function tryNextService() {
-        if (serviceIndex >= ipServices.length) {
-          // All services failed, use last known or default
-          const lastGPS = localStorage.getItem('last_gps');
-          if (lastGPS) {
-            locField.value = lastGPS.replace(',', ', ');
-            gpsStatus.innerHTML = '⚠️ Using last known location';
-          } else {
-            locField.value = 'LOCATION_UNAVAILABLE';
-            gpsStatus.innerHTML = '❌ Could not determine location';
-          }
-          return;
-        }
-        
-        fetch(ipServices[serviceIndex])
-          .then(response => response.json())
-          .then(data => {
-            let lat, lon;
-            
-            // Parse different API response formats
-            if (data.latitude && data.longitude) {
-              lat = data.latitude;
-              lon = data.longitude;
-            } else if (data.lat && data.lon) {
-              lat = data.lat;
-              lon = data.lon;
-            } else if (data.city && data.country_code) {
-              // If no coordinates, show city/country
-              locField.value = `${data.city || 'Unknown'}, ${data.country_code || '??'}`;
-              gpsStatus.innerHTML = '⚠️ Approximate location (city level)';
-              return;
-            } else {
-              throw new Error('No coordinates');
+      var locField = document.getElementById('locationField');
+      var gpsStatus = document.getElementById('gpsStatus');
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://ipapi.co/json/', true);
+      xhr.timeout = 8000;
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              if (data.latitude && data.longitude) {
+                locField.value = data.latitude.toFixed(4) + ', ' + data.longitude.toFixed(4);
+                gpsStatus.innerHTML = 'Approx location (IP)';
+                safeStorage.set('last_gps', data.latitude + ',' + data.longitude);
+              } else {
+                useLastGPS();
+              }
+            } catch(e) {
+              useLastGPS();
             }
-            
-            locField.value = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
-            gpsStatus.innerHTML = '⚠️ Approximate location (IP based)';
-            localStorage.setItem('last_gps', `${lat},${lon}`);
-          })
-          .catch(error => {
-            console.log(`IP service ${serviceIndex} failed:`, error);
-            serviceIndex++;
-            tryNextService();
-          });
-      }
-      
-      tryNextService();
+          } else {
+            useLastGPS();
+          }
+        }
+      };
+      xhr.onerror = function() { useLastGPS(); };
+      xhr.ontimeout = function() { useLastGPS(); };
+      try { xhr.send(); } catch(e) { useLastGPS(); }
     }
 
-    // ===== SET DEFAULT DATE =====
+    function useLastGPS() {
+      var locField = document.getElementById('locationField');
+      var gpsStatus = document.getElementById('gpsStatus');
+      var lastGPS = safeStorage.get('last_gps');
+      if (lastGPS) {
+        locField.value = lastGPS.replace(',', ', ');
+        gpsStatus.innerHTML = 'Last known location';
+      } else {
+        locField.value = 'LOCATION_UNAVAILABLE';
+        gpsStatus.innerHTML = 'Could not get location';
+      }
+    }
+
+    // ===== DEFAULT DATE =====
     function setDefaultDate() {
-      const etaField = document.getElementById('etaField');
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      etaField.value = `${yyyy}-${mm}-${dd}`;
+      var etaField = document.getElementById('etaField');
+      var today = new Date();
+      var yyyy = today.getFullYear();
+      var mm = today.getMonth() + 1 < 10 ? '0' + (today.getMonth() + 1) : '' + (today.getMonth() + 1);
+      var dd = today.getDate() < 10 ? '0' + today.getDate() : '' + today.getDate();
+      etaField.value = yyyy + '-' + mm + '-' + dd;
     }
     setDefaultDate();
 
-    // ===== SCAN RECORDS STORAGE =====
-    let scanRecords = JSON.parse(localStorage.getItem('xano_scans') || '[]');
-    
+    // ===== SCAN RECORDS =====
+    var scanRecords = [];
+    try {
+      var stored = safeStorage.get('xano_scans');
+      if (stored) scanRecords = JSON.parse(stored);
+    } catch(e) { scanRecords = []; }
+
     function updateTable() {
-      const tableBody = document.getElementById('tableBody');
-      const emptyMessage = document.getElementById('empty-message');
-      
+      var tableBody = document.getElementById('tableBody');
+      var emptyMessage = document.getElementById('empty-message');
       if (scanRecords.length === 0) {
         tableBody.innerHTML = '';
         emptyMessage.style.display = 'block';
         return;
       }
-      
       emptyMessage.style.display = 'none';
-      
-      let html = '';
-      scanRecords.slice(0, 10).forEach((record, index) => {
-        html += `<div class="result-row">
-          <div>${index + 1}</div>
-          <div>${record.labelId} | ${record.status} | ${new Date(record.timestamp).toLocaleTimeString()}</div>
-        </div>`;
-      });
-      
+      var html = '';
+      var limit = scanRecords.length < 10 ? scanRecords.length : 10;
+      for (var i = 0; i < limit; i++) {
+        var rec = scanRecords[i];
+        var d = new Date(rec.timestamp);
+        var tstr = d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes() + ':' + (d.getSeconds() < 10 ? '0' : '') + d.getSeconds();
+        html += '<div class="result-row"><div>' + (i + 1) + '</div><div>' + rec.labelId + ' | ' + rec.status + ' | ' + tstr + '</div></div>';
+      }
       tableBody.innerHTML = html;
     }
     updateTable();
 
     function showPopup() {
-      const popup = document.getElementById('successPopup');
-      const popupTime = document.getElementById('popupTime');
-      popupTime.innerHTML = new Date().toLocaleTimeString();
+      var popup = document.getElementById('successPopup');
+      var popupTime = document.getElementById('popupTime');
+      var now = new Date();
+      popupTime.innerHTML = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
       popup.style.display = 'block';
-      setTimeout(() => { popup.style.display = 'none'; }, 1500);
+      setTimeout(function() { popup.style.display = 'none'; }, 1500);
     }
 
-    // ===== XANO API FUNCTIONS =====
-    async function saveToXano(data) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-      
+    // ===== XANO API (XMLHttpRequest - ES5 compatible) =====
+    function saveToXano(data, onSuccess, onError) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', XANO_API_URL, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Accept', 'application/json');
+      if (XANO_API_KEY) {
+        xhr.setRequestHeader('Authorization', 'Bearer ' + XANO_API_KEY);
+      }
+      xhr.timeout = 10000;
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              var result = JSON.parse(xhr.responseText);
+              onSuccess(result);
+            } catch(e) {
+              onSuccess({});
+            }
+          } else {
+            onError('XANO error ' + xhr.status + ': ' + xhr.responseText.substring(0, 50));
+          }
+        }
+      };
+      xhr.onerror = function() { onError('Network error'); };
+      xhr.ontimeout = function() { onError('XANO timeout after 10s'); };
       try {
-        const headers = {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        };
-        
-        if (XANO_API_KEY) {
-          headers['Authorization'] = `Bearer ${XANO_API_KEY}`;
-        }
-        
-        const response = await fetch(XANO_API_URL, {
-          method: 'POST',
-          headers: headers,
-          body: JSON.stringify(data),
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`XANO error ${response.status}: ${errorText}`);
-        }
-        
-        return await response.json();
-      } catch (error) {
-        if (error.name === 'AbortError') {
-          throw new Error('XANO timeout after 10s');
-        }
-        throw error;
+        xhr.send(JSON.stringify(data));
+      } catch(e) {
+        onError('Send failed: ' + e.message);
       }
     }
 
     // ===== SUBMIT HANDLER =====
-    document.getElementById('submitButton').addEventListener('click', async function() {
-      const labelId = document.getElementById('labelId').value;
-      const status = document.getElementById('statusSelect').value;
-      const location = document.getElementById('locationField').value;
-      const eta = document.getElementById('etaField').value;
-      const messageBox = document.getElementById('messageBox');
-      const submitBtn = this;
-      
+    document.getElementById('submitButton').addEventListener('click', function() {
+      var labelId = document.getElementById('labelId').value;
+      var status = document.getElementById('statusSelect').value;
+      var location = document.getElementById('locationField').value;
+      var eta = document.getElementById('etaField').value;
+      var messageBox = document.getElementById('messageBox');
+      var submitBtn = document.getElementById('submitButton');
+
       if (labelId === '---' || labelId === '') {
-        messageBox.innerHTML = '❌ BARCODE_REQUIRED';
+        messageBox.innerHTML = 'BARCODE REQUIRED';
         messageBox.style.background = '#660000';
-        setTimeout(() => {
+        setTimeout(function() {
           messageBox.innerHTML = 'Ready';
           messageBox.style.background = '#444';
         }, 2000);
         return;
       }
-      
-      // Prepare data
-      const scanData = {
+
+      var now = new Date();
+      var isoTime = now.toISOString ? now.toISOString() : now.getFullYear() + '-' + (now.getMonth()+1) + '-' + now.getDate() + 'T' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds() + 'Z';
+
+      var scanData = {
         barcode: labelId,
         status: status,
         location: location || 'NO_LOCATION',
         eta: eta,
-        timestamp: new Date().toISOString(),
+        timestamp: isoTime,
         device: 'web-prod',
         type: document.getElementById('barcodeType').value
       };
-      
+
       submitBtn.disabled = true;
       submitBtn.style.opacity = '0.5';
-      messageBox.innerHTML = '⏳ Sending to XANO...';
+      messageBox.innerHTML = 'Sending to XANO...';
       messageBox.style.background = '#886622';
-      
-      try {
-        const result = await saveToXano(scanData);
-        
-        const localRecord = {
-          labelId: labelId,
-          status: status,
-          location: location,
-          eta: eta,
-          timestamp: new Date().toISOString(),
-          xanoId: result.id || 'pending'
-        };
-        
-        scanRecords.unshift(localRecord);
-        if (scanRecords.length > 50) scanRecords.pop();
-        localStorage.setItem('xano_scans', JSON.stringify(scanRecords));
-        
-        updateTable();
-        showPopup();
-        
-        messageBox.innerHTML = `✅ XANO OK: ${labelId}`;
-        messageBox.style.background = '#226622';
-        
-        cells.forEach(cell => cell.value = '');
-        document.getElementById('labelId').value = '---';
-        cells[0].focus();
-        
-      } catch (error) {
-        console.error('XANO error:', error);
-        messageBox.innerHTML = `❌ XANO FAIL: ${error.message.substring(0, 30)}`;
-        messageBox.style.background = '#660000';
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.style.opacity = '1';
-        
-        setTimeout(() => {
-          messageBox.innerHTML = 'Ready';
-          messageBox.style.background = '#444';
-        }, 3000);
-      }
+
+      saveToXano(
+        scanData,
+        function(result) {
+          var localRecord = {
+            labelId: labelId,
+            status: status,
+            location: location,
+            eta: eta,
+            timestamp: isoTime,
+            xanoId: result.id || 'pending'
+          };
+
+          scanRecords.unshift(localRecord);
+          if (scanRecords.length > 50) scanRecords.pop();
+          try { safeStorage.set('xano_scans', JSON.stringify(scanRecords)); } catch(e) {}
+
+          updateTable();
+          showPopup();
+
+          messageBox.innerHTML = 'XANO OK: ' + labelId;
+          messageBox.style.background = '#226622';
+
+          for (var k = 0; k < cells.length; k++) { cells[k].value = ''; }
+          document.getElementById('labelId').value = '---';
+          cells[0].focus();
+
+          submitBtn.disabled = false;
+          submitBtn.style.opacity = '1';
+
+          setTimeout(function() {
+            messageBox.innerHTML = 'Ready';
+            messageBox.style.background = '#444';
+          }, 3000);
+        },
+        function(errMsg) {
+          messageBox.innerHTML = 'XANO FAIL: ' + errMsg.substring(0, 30);
+          messageBox.style.background = '#660000';
+
+          submitBtn.disabled = false;
+          submitBtn.style.opacity = '1';
+
+          setTimeout(function() {
+            messageBox.innerHTML = 'Ready';
+            messageBox.style.background = '#444';
+          }, 3000);
+        }
+      );
     });
 
-    // ===== SCANNER SUPPORT =====
-    let scanBuffer = '';
-    let scanTimer;
-    
-    document.addEventListener('keypress', (e) => {
-      if (e.target.tagName !== 'INPUT') {
-        const key = e.key;
-        if (key.length === 1 && key.match(/[A-Za-z0-9]/i)) {
-          clearTimeout(scanTimer);
+    // ===== SCANNER SUPPORT (physical barcode scanner) =====
+    var scanBuffer = '';
+    var scanTimer = null;
+
+    document.addEventListener('keypress', function(e) {
+      var target = e.target || e.srcElement;
+      if (target.tagName !== 'INPUT') {
+        var key = e.key || String.fromCharCode(e.charCode || e.keyCode);
+        if (key && key.length === 1 && /[A-Za-z0-9]/i.test(key)) {
+          if (scanTimer) clearTimeout(scanTimer);
           scanBuffer += key.toUpperCase();
-          
           if (scanBuffer.length >= 6) {
-            for (let i = 0; i < 6; i++) {
+            for (var i = 0; i < 6; i++) {
               if (cells[i]) cells[i].value = scanBuffer[i] || '';
             }
             updateLabelId();
             cells[5].focus();
             scanBuffer = '';
-            
-            setTimeout(() => {
+            setTimeout(function() {
               document.getElementById('submitButton').click();
             }, 100);
           }
-          
-          scanTimer = setTimeout(() => { scanBuffer = ''; }, 200);
+          scanTimer = setTimeout(function() { scanBuffer = ''; }, 200);
         }
       }
     });
 
-    // ===== KEYBOARD SHORTCUTS =====
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey && e.target.tagName !== 'BUTTON') {
-        e.preventDefault();
+    // ===== ENTER KEY SHORTCUT =====
+    document.addEventListener('keydown', function(e) {
+      var key = e.key || e.keyCode;
+      var target = e.target || e.srcElement;
+      if ((key === 'Enter' || key === 13) && target.tagName !== 'BUTTON') {
+        if (e.preventDefault) e.preventDefault();
         document.getElementById('submitButton').click();
       }
     });
 
     // ===== INIT =====
     cells[0].focus();
-    getGPS(); // Initialize GPS on load
-    
-    // Refresh GPS every 5 minutes
+    getGPS();
     setInterval(getGPS, 300000);
   </script>
 </body>
