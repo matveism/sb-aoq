@@ -9,7 +9,6 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -42,7 +41,7 @@
     .header {
       background: #15569B;
       color: white;
-      height: 38px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -55,12 +54,12 @@
     .header-time {
       background: #1e3a6b;
       padding: 4px 10px;
-      border-radius: 16px;
+      border-radius: 20px;
       font-family: monospace;
-      font-size: 14px;
+      font-size: 15px;
       color: #fff;
       font-weight: bold;
-      min-width: 75px;
+      min-width: 80px;
       text-align: center;
     }
 
@@ -98,7 +97,7 @@
     .mini-grid {
       display: flex;
       flex-direction: row;
-      gap: 5px;
+      gap: 4px;
       height: 48px;
       align-items: center;
       flex: 1;
@@ -106,18 +105,24 @@
     }
 
     .mini-cell {
-      width: 32px;
+      width: 35px;
       height: 48px;
       background: #E2E8D3;
-      border: 1px solid #666;
+      border: 2px solid #666;
       text-align: center;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: bold;
       color: black;
       outline: none;
       padding: 0;
-      border-radius: 4px;
-      pointer-events: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .mini-cell:focus {
+      border: 3px solid #FCC57A;
+      background: #fff;
+      outline: none;
     }
 
     .content {
@@ -338,12 +343,12 @@
       <button class="submit-btn" id="submitBtn">SUBMIT</button>
 
       <div class="mini-grid">
-        <input class="mini-cell" maxlength="1" id="cell1" readonly>
-        <input class="mini-cell" maxlength="1" id="cell2" readonly>
-        <input class="mini-cell" maxlength="1" id="cell3" readonly>
-        <input class="mini-cell" maxlength="1" id="cell4" readonly>
-        <input class="mini-cell" maxlength="1" id="cell5" readonly>
-        <input class="mini-cell" maxlength="1" id="cell6" readonly>
+        <input class="mini-cell" maxlength="1" id="cell1">
+        <input class="mini-cell" maxlength="1" id="cell2">
+        <input class="mini-cell" maxlength="1" id="cell3">
+        <input class="mini-cell" maxlength="1" id="cell4">
+        <input class="mini-cell" maxlength="1" id="cell5">
+        <input class="mini-cell" maxlength="1" id="cell6">
       </div>
     </div>
 
@@ -415,30 +420,43 @@
 
   </div>
 
-  <script src="https://unpkg.com/@zxing/library@0.18.6"></script>
-
   <script>
-    /* ========== TIME FUNCTION ========== */
+    /* ========== TIME DISPLAY - FIXED ========== */
     function updateTime() {
       var timeElement = document.getElementById('deviceTime');
-      if (!timeElement) return;
+      if (!timeElement) {
+        console.log('Time element not found');
+        return;
+      }
       
       var now = new Date();
       var hours = now.getHours();
       var minutes = now.getMinutes();
       var seconds = now.getSeconds();
       
-      hours = (hours < 10 ? '0' : '') + hours;
-      minutes = (minutes < 10 ? '0' : '') + minutes;
-      seconds = (seconds < 10 ? '0' : '') + seconds;
+      // Add leading zeros
+      if (hours < 10) hours = '0' + hours;
+      if (minutes < 10) minutes = '0' + minutes;
+      if (seconds < 10) seconds = '0' + seconds;
       
       timeElement.innerHTML = hours + ':' + minutes + ':' + seconds;
+      console.log('Time updated:', hours + ':' + minutes + ':' + seconds);
     }
     
-    updateTime();
+    // Run immediately when page loads
+    window.onload = function() {
+      console.log('Page loaded');
+      updateTime();
+      // Focus first cell
+      if (cells && cells[0]) {
+        cells[0].focus();
+      }
+    };
+    
+    // Update every second
     setInterval(updateTime, 1000);
 
-    /* ========== CELLS - ALL EMPTY ========== */
+    /* ========== CELLS - CLICKABLE ========== */
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -448,21 +466,76 @@
       document.getElementById('cell6')
     ];
 
-    // All cells are empty by default (no values set)
+    // Check if cells exist
+    console.log('Cells found:', cells.length);
+
+    // Add input handlers to each cell
+    for (let i = 0; i < cells.length; i++) {
+      if (cells[i]) {
+        // Handle input
+        cells[i].oninput = function() {
+          this.style.background = "#FB9809";
+          // Auto-advance to next cell
+          if (this.value.length === 1 && i < cells.length - 1) {
+            cells[i + 1].focus();
+          }
+          checkManualEntry();
+        };
+
+        // Handle backspace
+        cells[i].onkeydown = function(e) {
+          if (e.key === 'Backspace' && this.value === '' && i > 0) {
+            cells[i - 1].focus();
+          }
+        };
+
+        // Handle enter key
+        cells[i].onkeypress = function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            sendToXano();
+          }
+        };
+      }
+    }
+
+    function checkManualEntry() {
+      let code = "";
+      for (let i = 0; i < cells.length; i++) {
+        code += cells[i].value;
+      }
+      if (code.length === 6) {
+        var decoded = decodeLetters(code);
+        if (decoded) {
+          document.getElementById('decoded').value = decoded;
+        } else {
+          document.getElementById('decoded').value = 'INVALID';
+        }
+      }
+    }
 
     function decodeLetters(encoded) {
       var map = {
         'A': '1','B': '2','C': '3','D': '4','E': '5',
-        'F': '6','G': '7','H': '8','I': '9','J': '0'
+        'F': '6','G': '7','H': '8','I': '9','J': '0',
+        'a': '1','b': '2','c': '3','d': '4','e': '5',
+        'f': '6','g': '7','h': '8','i': '9','j': '0'
       };
       var result = '';
-      var upper = encoded.toUpperCase();
-      for (var i = 0; i < upper.length; i++) {
-        var ch = upper.charAt(i);
+      for (var i = 0; i < encoded.length; i++) {
+        var ch = encoded.charAt(i);
         if (!map[ch]) return null;
         result += map[ch];
       }
       return result;
+    }
+
+    function getAllCellValues() {
+      let code = "";
+      for (let i = 0; i < cells.length; i++) {
+        code += cells[i].value;
+      }
+      return code;
     }
 
     /* ========== RESULT TABLE ========== */
@@ -511,10 +584,12 @@
 
     /* ========== SEND TO XANO ========== */
     function sendToXano() {
-      // For demo purposes, use a sample barcode since cells are empty
-      var labelId = "123456"; // Sample barcode
+      var labelId = document.getElementById('decoded').value;
       
-      document.getElementById('decoded').value = labelId;
+      if (!labelId || labelId === 'INVALID') {
+        setStatus('❗ Enter valid barcode (A-J only)', true);
+        return;
+      }
 
       var now = new Date();
       
@@ -541,8 +616,19 @@
             showPopup();
             setStatus('✓ Saved', false);
             
+            // Get the barcode value before clearing
+            var barcodeValue = getAllCellValues();
+            
             // Add to result table
-            addRow(labelId);
+            addRow(barcodeValue);
+            
+            // Clear cells
+            for (var i = 0; i < cells.length; i++) {
+              cells[i].value = '';
+              cells[i].style.background = '#E2E8D3';
+            }
+            document.getElementById('decoded').value = '';
+            cells[0].focus();
           } else {
             setStatus('Error ' + xhr.status, true);
             try {
@@ -564,10 +650,20 @@
     }
 
     /* ========== EVENT LISTENERS ========== */
-    document.getElementById('submitBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      sendToXano();
-    });
+    var submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        sendToXano();
+      });
+    }
+
+    // Make sure first cell is focused
+    if (cells[0]) {
+      cells[0].focus();
+    }
+
+    console.log('Script loaded successfully');
   </script>
 </body>
 </html>
