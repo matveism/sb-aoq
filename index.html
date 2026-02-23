@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <title>Android 5.0 Screen</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       padding: 0;
@@ -11,12 +16,14 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       font-family: Roboto, Arial, sans-serif;
+      font-size: 16px;
     }
 
     .device {
-      width: 360px;
+      width: 100%;
+      max-width: 360px;
       height: 640px;
       background: #B0C8E2;
       color: black;
@@ -25,16 +32,27 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.7);
       overflow: hidden;
       position: relative;
+      margin: 0 auto;
     }
 
     .header {
       background: #15569B;
       color: #D0D7DC;
-      height: 25px;
+      height: 30px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
+      padding: 0 12px;
+      font-size: 14px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .header-time {
+      background: rgba(0,0,0,0.2);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-family: monospace;
       font-size: 14px;
     }
 
@@ -42,22 +60,25 @@
       display: flex;
       flex-direction: row;
       align-items: center;
-      padding: 10px 8px;
+      padding: 8px;
       gap: 6px;
       background: #B0C8E2;
+      flex-shrink: 0;
     }
 
     .submit-btn {
       background: #28a745;
       border: none;
-      padding: 8px 16px;
+      padding: 8px 12px;
       font-weight: bold;
       color: white;
       border-radius: 4px;
-      font-size: 16px;
-      height: 36px;
+      font-size: 15px;
+      height: 40px;
+      min-width: 70px;
       display: flex;
       align-items: center;
+      justify-content: center;
       cursor: pointer;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       border: 1px solid #1e7e34;
@@ -72,49 +93,63 @@
       display: flex;
       flex-direction: row;
       gap: 2px;
-      height: 28px;
+      height: 40px;
       align-items: center;
       flex: 1;
     }
 
     .mini-cell {
-      width: 33px;
-      height: 25px;
+      width: 0;
+      flex: 1;
+      height: 38px;
       background: #E2E8D3;
-      border: 1px solid #999;
-      border-radius: 2px;
+      border: 1px solid #666;
+      border-radius: 3px;
       text-align: center;
-      font-size: 16px;
+      font-size: 20px;
       font-weight: bold;
       color: black;
       outline: none;
+      padding: 0;
+    }
+
+    .mini-cell:focus {
+      border: 2px solid #FCC57A;
+      background: #fff;
     }
 
     .content {
       flex: 1;
       padding: 8px;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     #preview {
       width: 100%;
-      height: 200px;
+      height: auto;
+      max-height: 180px;
       background: #000;
       display: none;
       object-fit: cover;
+      border-radius: 4px;
     }
 
     /* STATUS FIELDS */
     .status-fields {
-      margin: 10px 0;
-      padding: 8px;
+      margin: 8px 0;
+      padding: 10px;
       background: #96BEEE;
-      border-radius: 4px;
+      border-radius: 6px;
       border: 2px solid #79A4D2;
     }
 
     .field-row {
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    .field-row:last-child {
+      margin-bottom: 0;
     }
 
     .field-row label {
@@ -122,18 +157,19 @@
       font-size: 12px;
       font-weight: bold;
       color: #15569B;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .field-row select,
     .field-row input {
       width: 100%;
-      padding: 6px;
+      padding: 8px;
       border: 1px solid #79A4D2;
-      border-radius: 3px;
-      font-size: 14px;
+      border-radius: 4px;
+      font-size: 15px;
       background: white;
-      box-sizing: border-box;
     }
 
     .field-row input:focus,
@@ -145,41 +181,53 @@
     .field-row input[readonly] {
       background: #e2e8d3;
       font-weight: bold;
+      color: #15569B;
     }
 
     /* RESULT BOX */
     .result-box {
-      margin-top: 10px;
+      margin-top: 12px;
       border: 2px solid #79A4D2;
-      border-radius: 4px;
+      border-radius: 6px;
       overflow: hidden;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
     }
 
-    .result-header,
-    .result-row {
-      display: grid;
-      grid-template-columns: 40px 1fr;
-      align-items: center;
-    }
-
     .result-header {
+      display: grid;
+      grid-template-columns: 45px 1fr;
       background: #79A4D2;
       color: black;
+      font-weight: bold;
     }
 
     .result-row {
+      display: grid;
+      grid-template-columns: 45px 1fr;
       background: #96BEEE;
       color: black;
+      border-top: 1px solid #79A4D2;
     }
 
     .result-cell {
-      padding: 6px 10px;
+      padding: 8px 10px;
+      text-align: center;
+      border-right: 1px solid #79A4D2;
+    }
+
+    .result-cell:last-child {
+      border-right: none;
+    }
+
+    .result-header .result-cell {
+      background: #79A4D2;
+      text-align: center;
     }
 
     .result-cell-value {
       font-weight: bold;
+      text-align: left;
     }
 
     /* POPUP */
@@ -187,9 +235,9 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 180px;
-      margin-left: -90px;
-      margin-top: -80px;
+      width: 200px;
+      margin-left: -100px;
+      margin-top: -90px;
       background: #ffffff;
       border: 4px solid #28a745;
       border-radius: 30px;
@@ -213,7 +261,7 @@
     }
 
     #popup p {
-      margin: 0;
+      margin: 5px 0;
       font-size: 18px;
       font-weight: 600;
       color: #1e7e34;
@@ -226,18 +274,37 @@
     }
 
     #statusBox {
-      margin-top: 8px;
+      margin-top: 10px;
+      padding: 8px;
       font-size: 14px;
       text-align: center;
-      min-height: 20px;
+      min-height: 36px;
       font-weight: 500;
+      background: rgba(255,255,255,0.3);
+      border-radius: 4px;
     }
 
     .error-detail {
       font-size: 11px;
       color: #b52e2e;
-      margin-top: 2px;
+      margin-top: 4px;
       word-break: break-word;
+      padding: 4px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 3px;
+    }
+
+    /* Android 5.0 specific fixes */
+    input, select, button {
+      -webkit-appearance: none;
+      appearance: none;
+      border-radius: 0;
+    }
+
+    .mini-cell {
+      -webkit-appearance: none;
+      appearance: none;
+      border-radius: 3px;
     }
   </style>
 </head>
@@ -245,8 +312,8 @@
   <div class="device">
 
     <div class="header">
-      <div class="header-title">Scan Barcode</div>
-      <div class="header-time" id="deviceTime">--:--</div>
+      <div class="header-title">SCAN BARCODE</div>
+      <div class="header-time" id="deviceTime">--:--:--</div>
     </div>
 
     <div class="scan-row">
@@ -269,7 +336,7 @@
       <div class="status-fields">
         <div class="field-row">
           <label>Decoded Label ID</label>
-          <input type="text" id="decoded" readonly>
+          <input type="text" id="decoded" readonly placeholder="---">
         </div>
         
         <div class="field-row">
@@ -308,9 +375,9 @@
           <div class="result-cell">LABEL ID</div>
         </div>
 
-        <div id="emptyRow" class="result-row">
+        <div id="emptyRow" class="result-row" style="display: grid;">
           <div class="result-cell"></div>
-          <div class="result-cell"></div>
+          <div class="result-cell">No scans yet</div>
         </div>
 
         <div id="resultTable"></div>
@@ -333,16 +400,24 @@
   <script src="https://unpkg.com/@zxing/library@0.18.6"></script>
 
   <script>
-    /* ========== SIMPLE DEVICE TIME ========== */
+    /* ========== DEVICE TIME - FIXED FOR ANDROID 5.0 ========== */
     function updateDeviceTime() {
       var now = new Date();
       var hours = String(now.getHours()).padStart(2, '0');
       var minutes = String(now.getMinutes()).padStart(2, '0');
       var seconds = String(now.getSeconds()).padStart(2, '0');
-      document.getElementById('deviceTime').textContent = hours + ':' + minutes + ':' + seconds;
+      
+      var timeElement = document.getElementById('deviceTime');
+      if (timeElement) {
+        timeElement.textContent = hours + ':' + minutes + ':' + seconds;
+        console.log('Time updated: ' + hours + ':' + minutes + ':' + seconds); // Debug
+      }
     }
     
+    // Initial update
     updateDeviceTime();
+    
+    // Update every second
     setInterval(updateDeviceTime, 1000);
 
     /* ========== CELLS ========== */
@@ -355,20 +430,23 @@
       document.getElementById('cell6')
     ];
 
-    for (let i = 0; i < cells.length; i++) {
-      cells[i].oninput = function() {
-        this.style.background = "#FB9809";
-        if (this.value.length === 1 && i < cells.length - 1) {
-          cells[i + 1].focus();
-        }
-        checkManualEntry();
-      };
+    // Check if cells exist
+    if (cells[0]) {
+      for (let i = 0; i < cells.length; i++) {
+        cells[i].oninput = function() {
+          this.style.background = "#FB9809";
+          if (this.value.length === 1 && i < cells.length - 1) {
+            cells[i + 1].focus();
+          }
+          checkManualEntry();
+        };
 
-      cells[i].onkeydown = function(e) {
-        if (e.keyCode === 8 && this.value === "" && i > 0) {
-          cells[i - 1].focus();
-        }
-      };
+        cells[i].onkeydown = function(e) {
+          if (e.keyCode === 8 && this.value === "" && i > 0) {
+            cells[i - 1].focus();
+          }
+        };
+      }
     }
 
     function checkManualEntry() {
@@ -407,35 +485,53 @@
 
     function addRow(value) {
       scanIndex++;
-      document.getElementById("emptyRow").style.display = "none";
+      var emptyRow = document.getElementById("emptyRow");
+      if (emptyRow) {
+        emptyRow.style.display = "none";
+      }
+      
       let row = `
         <div class="result-row">
           <div class="result-cell">${scanIndex}</div>
           <div class="result-cell result-cell-value">${value}</div>
         </div>
       `;
-      document.getElementById("resultTable").insertAdjacentHTML("beforeend", row);
+      
+      var resultTable = document.getElementById("resultTable");
+      if (resultTable) {
+        resultTable.insertAdjacentHTML("beforeend", row);
+      }
     }
 
     function showPopup() {
       var p = document.getElementById('popup');
       var now = new Date();
       var dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-      document.getElementById('popup-time').innerHTML = dateStr;
-      p.style.display = 'block';
-      setTimeout(function() {
-        p.style.display = 'none';
-      }, 2000);
+      var popupTime = document.getElementById('popup-time');
+      if (popupTime) {
+        popupTime.innerHTML = dateStr;
+      }
+      if (p) {
+        p.style.display = 'block';
+        setTimeout(function() {
+          p.style.display = 'none';
+        }, 2000);
+      }
     }
 
     function setStatus(msg, isError) {
       var box = document.getElementById('statusBox');
-      box.style.color = isError ? '#b52e2e' : '#1e6f3f';
-      box.innerHTML = msg || ' ';
+      if (box) {
+        box.style.color = isError ? '#b52e2e' : '#1e6f3f';
+        box.innerHTML = msg || ' ';
+      }
     }
 
     function showErrorDetail(detail) {
-      document.getElementById('errorDetail').innerHTML = detail;
+      var errorEl = document.getElementById('errorDetail');
+      if (errorEl) {
+        errorEl.innerHTML = detail;
+      }
     }
 
     /* ========== SEND TO XANO ========== */
@@ -449,16 +545,12 @@
 
       var now = new Date();
       
-      // FIXED: Use milliseconds for timestamp (not seconds)
-      // JavaScript uses milliseconds since epoch, so divide by 1000 for seconds
       var payload = {
         label_id: labelId,
         barcode_type: "manual",
         status: document.getElementById('status').value,
-        timestamp: now.getTime(),                    // milliseconds (correct for JS)
-        // OR if your API expects seconds, uncomment this line and comment the one above:
-        // timestamp: Math.floor(now.getTime() / 1000),  // seconds
-        time: now.getTime(),                           // milliseconds
+        timestamp: now.getTime(),
+        time: now.getTime(),
         date: now.toISOString().split('T')[0],
         location: document.getElementById('location').value || '',
         eta: document.getElementById('eta').value || ''
@@ -482,11 +574,15 @@
             
             // Clear cells
             for (var i = 0; i < cells.length; i++) {
-              cells[i].value = '';
-              cells[i].style.background = '#E2E8D3';
+              if (cells[i]) {
+                cells[i].value = '';
+                cells[i].style.background = '#E2E8D3';
+              }
             }
             document.getElementById('decoded').value = '';
-            cells[0].focus();
+            if (cells[0]) {
+              cells[0].focus();
+            }
           } else {
             setStatus('Error ' + xhr.status, true);
             try {
@@ -508,25 +604,39 @@
     }
 
     /* ========== EVENT LISTENERS ========== */
-    document.getElementById('submitBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      sendToXano();
-    });
+    var submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        sendToXano();
+      });
+    }
 
-    cells.forEach(cell => {
-      cell.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          sendToXano();
+    if (cells[0]) {
+      cells.forEach(cell => {
+        if (cell) {
+          cell.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              sendToXano();
+            }
+          });
         }
       });
-    });
+    }
 
     window.addEventListener('load', function() {
-      cells[0].focus();
-      console.log('✅ Using device time - timestamp fixed');
+      if (cells[0]) {
+        cells[0].focus();
+      }
+      console.log('✅ Android 5.0 optimized - time display fixed');
     });
 
+    // Additional Android 5.0 compatibility
+    document.addEventListener('DOMContentLoaded', function() {
+      // Force time update on load
+      updateDeviceTime();
+    });
   </script>
 </body>
 </html>
