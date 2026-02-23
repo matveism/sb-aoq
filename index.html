@@ -37,7 +37,7 @@
 
     .header {
       background: #15569B;
-      color: #D0D7DC;
+      color: white;
       height: 30px;
       display: flex;
       align-items: center;
@@ -49,11 +49,13 @@
     }
 
     .header-time {
-      background: rgba(0,0,0,0.2);
+      background: #1e3a6b;
       padding: 2px 8px;
-      border-radius: 12px;
+      border-radius: 4px;
       font-family: monospace;
       font-size: 14px;
+      color: #fff;
+      font-weight: bold;
     }
 
     .scan-row {
@@ -86,7 +88,6 @@
 
     .submit-btn:active {
       background: #218838;
-      transform: translateY(1px);
     }
 
     .mini-grid {
@@ -104,7 +105,6 @@
       height: 38px;
       background: #E2E8D3;
       border: 1px solid #666;
-      border-radius: 3px;
       text-align: center;
       font-size: 20px;
       font-weight: bold;
@@ -123,16 +123,6 @@
       padding: 8px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-    }
-
-    #preview {
-      width: 100%;
-      height: auto;
-      max-height: 180px;
-      background: #000;
-      display: none;
-      object-fit: cover;
-      border-radius: 4px;
     }
 
     /* STATUS FIELDS */
@@ -158,8 +148,6 @@
       font-weight: bold;
       color: #15569B;
       margin-bottom: 3px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
     .field-row select,
@@ -184,50 +172,70 @@
       color: #15569B;
     }
 
-    /* RESULT BOX */
+    /* RESULT BOX - FIXED TABLE HEADER */
     .result-box {
       margin-top: 12px;
       border: 2px solid #79A4D2;
       border-radius: 6px;
       overflow: hidden;
-      font-size: 15px;
-      font-weight: bold;
     }
 
     .result-header {
-      display: grid;
-      grid-template-columns: 45px 1fr;
+      display: flex;
       background: #79A4D2;
-      color: black;
+      border-bottom: 2px solid #15569B;
+    }
+
+    .result-header .cell-number {
+      width: 45px;
+      padding: 8px 5px;
       font-weight: bold;
+      text-align: center;
+      border-right: 1px solid #15569B;
+    }
+
+    .result-header .cell-label {
+      flex: 1;
+      padding: 8px 10px;
+      font-weight: bold;
+      text-align: left;
     }
 
     .result-row {
-      display: grid;
-      grid-template-columns: 45px 1fr;
+      display: flex;
       background: #96BEEE;
-      color: black;
-      border-top: 1px solid #79A4D2;
+      border-bottom: 1px solid #79A4D2;
     }
 
-    .result-cell {
-      padding: 8px 10px;
+    .result-row:last-child {
+      border-bottom: none;
+    }
+
+    .result-row .cell-number {
+      width: 45px;
+      padding: 8px 5px;
       text-align: center;
       border-right: 1px solid #79A4D2;
-    }
-
-    .result-cell:last-child {
-      border-right: none;
-    }
-
-    .result-header .result-cell {
-      background: #79A4D2;
-      text-align: center;
-    }
-
-    .result-cell-value {
       font-weight: bold;
+    }
+
+    .result-row .cell-label {
+      flex: 1;
+      padding: 8px 10px;
       text-align: left;
+      font-weight: bold;
+    }
+
+    #emptyRow {
+      display: flex;
+      background: #96BEEE;
+      color: #666;
+      font-style: italic;
+    }
+
+    #emptyRow .cell-label {
+      color: #15569B;
+      font-weight: normal;
     }
 
     /* POPUP */
@@ -293,19 +301,6 @@
       background: rgba(255,255,255,0.5);
       border-radius: 3px;
     }
-
-    /* Android 5.0 specific fixes */
-    input, select, button {
-      -webkit-appearance: none;
-      appearance: none;
-      border-radius: 0;
-    }
-
-    .mini-cell {
-      -webkit-appearance: none;
-      appearance: none;
-      border-radius: 3px;
-    }
   </style>
 </head>
 <body>
@@ -313,7 +308,7 @@
 
     <div class="header">
       <div class="header-title">SCAN BARCODE</div>
-      <div class="header-time" id="deviceTime">--:--:--</div>
+      <div class="header-time" id="deviceTime">12:00:00</div>
     </div>
 
     <div class="scan-row">
@@ -368,16 +363,16 @@
         </div>
       </div>
 
-      <!-- RESULT BOX -->
+      <!-- RESULT BOX - FIXED TABLE -->
       <div class="result-box">
         <div class="result-header">
-          <div class="result-cell">#</div>
-          <div class="result-cell">LABEL ID</div>
+          <div class="cell-number">#</div>
+          <div class="cell-label">LABEL ID</div>
         </div>
 
-        <div id="emptyRow" class="result-row" style="display: grid;">
-          <div class="result-cell"></div>
-          <div class="result-cell">No scans yet</div>
+        <div id="emptyRow" class="result-row">
+          <div class="cell-number"></div>
+          <div class="cell-label">No scans yet</div>
         </div>
 
         <div id="resultTable"></div>
@@ -400,25 +395,29 @@
   <script src="https://unpkg.com/@zxing/library@0.18.6"></script>
 
   <script>
-    /* ========== DEVICE TIME - FIXED FOR ANDROID 5.0 ========== */
-    function updateDeviceTime() {
-      var now = new Date();
-      var hours = String(now.getHours()).padStart(2, '0');
-      var minutes = String(now.getMinutes()).padStart(2, '0');
-      var seconds = String(now.getSeconds()).padStart(2, '0');
-      
+    /* ========== SIMPLE TIME FUNCTION FOR ANDROID 5.0 ========== */
+    function updateTime() {
       var timeElement = document.getElementById('deviceTime');
-      if (timeElement) {
-        timeElement.textContent = hours + ':' + minutes + ':' + seconds;
-        console.log('Time updated: ' + hours + ':' + minutes + ':' + seconds); // Debug
-      }
+      if (!timeElement) return;
+      
+      var now = new Date();
+      var hours = now.getHours();
+      var minutes = now.getMinutes();
+      var seconds = now.getSeconds();
+      
+      // Format with leading zeros
+      hours = (hours < 10 ? '0' : '') + hours;
+      minutes = (minutes < 10 ? '0' : '') + minutes;
+      seconds = (seconds < 10 ? '0' : '') + seconds;
+      
+      timeElement.innerHTML = hours + ':' + minutes + ':' + seconds;
     }
     
-    // Initial update
-    updateDeviceTime();
+    // Run immediately
+    updateTime();
     
     // Update every second
-    setInterval(updateDeviceTime, 1000);
+    setInterval(updateTime, 1000);
 
     /* ========== CELLS ========== */
     var cells = [
@@ -430,23 +429,20 @@
       document.getElementById('cell6')
     ];
 
-    // Check if cells exist
-    if (cells[0]) {
-      for (let i = 0; i < cells.length; i++) {
-        cells[i].oninput = function() {
-          this.style.background = "#FB9809";
-          if (this.value.length === 1 && i < cells.length - 1) {
-            cells[i + 1].focus();
-          }
-          checkManualEntry();
-        };
+    for (let i = 0; i < cells.length; i++) {
+      cells[i].oninput = function() {
+        this.style.background = "#FB9809";
+        if (this.value.length === 1 && i < cells.length - 1) {
+          cells[i + 1].focus();
+        }
+        checkManualEntry();
+      };
 
-        cells[i].onkeydown = function(e) {
-          if (e.keyCode === 8 && this.value === "" && i > 0) {
-            cells[i - 1].focus();
-          }
-        };
-      }
+      cells[i].onkeydown = function(e) {
+        if (e.keyCode === 8 && this.value === "" && i > 0) {
+          cells[i - 1].focus();
+        }
+      };
     }
 
     function checkManualEntry() {
@@ -490,48 +486,33 @@
         emptyRow.style.display = "none";
       }
       
-      let row = `
-        <div class="result-row">
-          <div class="result-cell">${scanIndex}</div>
-          <div class="result-cell result-cell-value">${value}</div>
-        </div>
-      `;
+      var tableHtml = '<div class="result-row">' +
+                      '<div class="cell-number">' + scanIndex + '</div>' +
+                      '<div class="cell-label">' + value + '</div>' +
+                      '</div>';
       
-      var resultTable = document.getElementById("resultTable");
-      if (resultTable) {
-        resultTable.insertAdjacentHTML("beforeend", row);
-      }
+      document.getElementById("resultTable").insertAdjacentHTML("beforeend", tableHtml);
     }
 
     function showPopup() {
       var p = document.getElementById('popup');
       var now = new Date();
       var dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-      var popupTime = document.getElementById('popup-time');
-      if (popupTime) {
-        popupTime.innerHTML = dateStr;
-      }
-      if (p) {
-        p.style.display = 'block';
-        setTimeout(function() {
-          p.style.display = 'none';
-        }, 2000);
-      }
+      document.getElementById('popup-time').innerHTML = dateStr;
+      p.style.display = 'block';
+      setTimeout(function() {
+        p.style.display = 'none';
+      }, 2000);
     }
 
     function setStatus(msg, isError) {
       var box = document.getElementById('statusBox');
-      if (box) {
-        box.style.color = isError ? '#b52e2e' : '#1e6f3f';
-        box.innerHTML = msg || ' ';
-      }
+      box.style.color = isError ? '#b52e2e' : '#1e6f3f';
+      box.innerHTML = msg || ' ';
     }
 
     function showErrorDetail(detail) {
-      var errorEl = document.getElementById('errorDetail');
-      if (errorEl) {
-        errorEl.innerHTML = detail;
-      }
+      document.getElementById('errorDetail').innerHTML = detail;
     }
 
     /* ========== SEND TO XANO ========== */
@@ -556,8 +537,6 @@
         eta: document.getElementById('eta').value || ''
       };
 
-      console.log('📤 SENDING:', JSON.stringify(payload, null, 2));
-      
       showErrorDetail('');
 
       var xhr = new XMLHttpRequest();
@@ -566,23 +545,16 @@
 
       xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
-          console.log('📥 RESPONSE:', xhr.status, xhr.responseText);
-          
           if (xhr.status >= 200 && xhr.status < 300) {
             showPopup();
             setStatus('✓ Saved successfully', false);
             
-            // Clear cells
             for (var i = 0; i < cells.length; i++) {
-              if (cells[i]) {
-                cells[i].value = '';
-                cells[i].style.background = '#E2E8D3';
-              }
+              cells[i].value = '';
+              cells[i].style.background = '#E2E8D3';
             }
             document.getElementById('decoded').value = '';
-            if (cells[0]) {
-              cells[0].focus();
-            }
+            cells[0].focus();
           } else {
             setStatus('Error ' + xhr.status, true);
             try {
@@ -604,39 +576,22 @@
     }
 
     /* ========== EVENT LISTENERS ========== */
-    var submitBtn = document.getElementById('submitBtn');
-    if (submitBtn) {
-      submitBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        sendToXano();
-      });
-    }
+    document.getElementById('submitBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      sendToXano();
+    });
 
-    if (cells[0]) {
-      cells.forEach(cell => {
-        if (cell) {
-          cell.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              sendToXano();
-            }
-          });
+    cells.forEach(cell => {
+      cell.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendToXano();
         }
       });
-    }
-
-    window.addEventListener('load', function() {
-      if (cells[0]) {
-        cells[0].focus();
-      }
-      console.log('✅ Android 5.0 optimized - time display fixed');
     });
 
-    // Additional Android 5.0 compatibility
-    document.addEventListener('DOMContentLoaded', function() {
-      // Force time update on load
-      updateDeviceTime();
-    });
+    // Focus first cell
+    cells[0].focus();
   </script>
 </body>
 </html>
