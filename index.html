@@ -78,8 +78,8 @@
       color: white;
       border-radius: 4px;
       font-size: 16px;
-      width: 80px;
-      height: 44px;
+      width: 75px;
+      height: 42px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -92,24 +92,25 @@
     .mini-grid {
       display: flex;
       flex-direction: row;
-      gap: 3px;
-      height: 44px;
+      gap: 4px;
+      height: 42px;
       align-items: center;
       flex: 1;
+      max-width: 240px;
     }
 
     .mini-cell {
-      flex: 1;
-      height: 44px;
+      width: 36px;
+      height: 42px;
       background: #E2E8D3;
       border: 1px solid #666;
       text-align: center;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: bold;
       color: black;
       outline: none;
       padding: 0;
-      min-width: 0;
+      flex-shrink: 0;
     }
 
     .mini-cell:focus {
@@ -123,7 +124,8 @@
       background: #B0C8E2;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow-y: auto;
+      padding-bottom: 15px;
     }
 
     /* STATUS FIELDS */
@@ -137,7 +139,7 @@
     }
 
     .field-row {
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .field-row:last-child {
@@ -155,12 +157,12 @@
     .field-row select,
     .field-row input {
       width: 100%;
-      padding: 4px 6px;
+      padding: 5px 8px;
       border: 1px solid #79A4D2;
       border-radius: 4px;
-      font-size: 13px;
+      font-size: 14px;
       background: white;
-      height: 28px;
+      height: 32px;
     }
 
     .field-row input[readonly] {
@@ -186,20 +188,20 @@
     }
 
     .result-header .cell-number {
-      width: 40px;
-      padding: 4px;
+      width: 45px;
+      padding: 6px;
       font-weight: bold;
       text-align: center;
       border-right: 1px solid #15569B;
-      font-size: 13px;
+      font-size: 14px;
     }
 
     .result-header .cell-label {
       flex: 1;
-      padding: 4px 8px;
+      padding: 6px 10px;
       font-weight: bold;
       text-align: left;
-      font-size: 13px;
+      font-size: 14px;
     }
 
     .result-row {
@@ -213,20 +215,20 @@
     }
 
     .result-row .cell-number {
-      width: 40px;
-      padding: 4px;
+      width: 45px;
+      padding: 6px;
       text-align: center;
       border-right: 1px solid #79A4D2;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 14px;
     }
 
     .result-row .cell-label {
       flex: 1;
-      padding: 4px 8px;
+      padding: 6px 10px;
       text-align: left;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 14px;
     }
 
     #emptyRow {
@@ -241,16 +243,16 @@
     }
 
     #resultTable {
-      max-height: 100px;
+      max-height: 120px;
       overflow-y: auto;
     }
 
     /* STATUS AREA */
     #statusBox {
-      padding: 4px;
-      font-size: 12px;
+      padding: 6px;
+      font-size: 13px;
       text-align: center;
-      min-height: 28px;
+      min-height: 32px;
       font-weight: 500;
       background: rgba(255,255,255,0.3);
       border-radius: 4px;
@@ -259,13 +261,13 @@
     }
 
     .error-detail {
-      font-size: 10px;
+      font-size: 11px;
       color: #b52e2e;
       word-break: break-word;
-      padding: 2px 4px;
+      padding: 4px;
       background: rgba(255,255,255,0.5);
       border-radius: 3px;
-      max-height: 30px;
+      max-height: 40px;
       overflow-y: auto;
       flex-shrink: 0;
     }
