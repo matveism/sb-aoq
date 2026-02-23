@@ -2,53 +2,70 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Android 5.0 Barcode</title>
+  <title>Android 5.0 Barcode Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
+      -webkit-box-sizing: border-box;
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-    
     body {
       background: #000;
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
+      -webkit-box-pack: center;
+      -webkit-justify-content: center;
       justify-content: center;
+      -webkit-box-align: center;
+      -webkit-align-items: center;
       align-items: center;
       height: 100vh;
       font-family: Roboto, Arial, sans-serif;
       overflow: hidden;
     }
-    
     .device {
       width: 340px;
       height: 600px;
       background: #B0C8E2;
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+      -webkit-flex-direction: column;
       flex-direction: column;
+      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.7);
       box-shadow: 0 0 20px rgba(0,0,0,0.7);
       overflow: hidden;
       position: relative;
     }
-    
     /* HEADER */
     .header {
       background: #15569B;
       color: white;
       height: 48px;
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
+      -webkit-box-align: center;
+      -webkit-align-items: center;
       align-items: center;
+      -webkit-box-pack: justify;
+      -webkit-justify-content: space-between;
       justify-content: space-between;
       padding: 0 15px;
       font-size: 18px;
       font-weight: bold;
+      -webkit-flex-shrink: 0;
       flex-shrink: 0;
     }
-    
     .time-display {
       background: #1e3a6b;
       padding: 6px 15px;
+      -webkit-border-radius: 30px;
       border-radius: 30px;
       font-family: monospace;
       font-size: 16px;
@@ -57,46 +74,60 @@
       min-width: 95px;
       text-align: center;
     }
-    
     /* SCAN ROW */
     .scan-row {
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
+      -webkit-box-align: center;
+      -webkit-align-items: center;
       align-items: center;
       padding: 15px;
       gap: 10px;
       background: #B0C8E2;
       height: 85px;
       border-bottom: 2px solid #79A4D2;
+      -webkit-flex-shrink: 0;
       flex-shrink: 0;
     }
-    
     .submit-btn {
       background: #28a745;
       color: white;
-      border: none;
+      border: 2px solid #1e7e34;
       width: 75px;
       height: 52px;
+      -webkit-border-radius: 8px;
       border-radius: 8px;
       font-size: 17px;
       font-weight: bold;
-      border: 2px solid #1e7e34;
       cursor: pointer;
+      -webkit-flex-shrink: 0;
       flex-shrink: 0;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
     }
-    
+    .submit-btn:active {
+      background: #1e7e34;
+    }
     .grid-container {
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
       gap: 3px;
+      -webkit-box-flex: 1;
+      -webkit-flex: 1;
       flex: 1;
+      -webkit-box-pack: end;
+      -webkit-justify-content: flex-end;
       justify-content: flex-end;
     }
-    
-    /* MUCH NARROWER CELLS */
     .cell {
       width: 28px;
       height: 52px;
       background: white;
       border: 2px solid #666;
+      -webkit-border-radius: 6px;
       border-radius: 6px;
       text-align: center;
       font-size: 22px;
@@ -105,32 +136,34 @@
       outline: none;
       color: black;
       padding: 0;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
     }
-    
     .cell:focus {
       border: 3px solid #FCC57A;
       background: #FB9809 !important;
     }
-    
     .content {
+      -webkit-box-flex: 1;
+      -webkit-flex: 1;
       flex: 1;
       padding: 15px;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       background: #B0C8E2;
     }
-    
     .status-section {
       background: #96BEEE;
       border: 2px solid #79A4D2;
+      -webkit-border-radius: 10px;
       border-radius: 10px;
       padding: 15px;
       margin-bottom: 15px;
     }
-    
     .field {
       margin-bottom: 10px;
     }
-    
     .field label {
       display: block;
       font-size: 12px;
@@ -138,37 +171,43 @@
       color: #15569B;
       margin-bottom: 3px;
     }
-    
     .field input, .field select {
       width: 100%;
       padding: 8px;
       border: 2px solid #79A4D2;
+      -webkit-border-radius: 6px;
       border-radius: 6px;
       font-size: 14px;
       background: white;
       height: 42px;
+      -webkit-appearance: none;
+      -moz-appearance: none;
     }
-    
+    .field select {
+      -webkit-appearance: menulist;
+      -moz-appearance: menulist;
+      appearance: menulist;
+    }
     .field input[readonly] {
       background: #e2e8d3;
       font-weight: bold;
       color: #15569B;
     }
-    
     .result-section {
       border: 2px solid #79A4D2;
+      -webkit-border-radius: 8px;
       border-radius: 8px;
       overflow: hidden;
       background: #96BEEE;
       margin-bottom: 15px;
     }
-    
     .result-header {
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
       background: #79A4D2;
       border-bottom: 2px solid #15569B;
     }
-    
     .result-header div:first-child {
       width: 45px;
       padding: 8px;
@@ -178,20 +217,21 @@
       font-weight: bold;
       font-size: 14px;
     }
-    
     .result-header div:last-child {
+      -webkit-box-flex: 1;
+      -webkit-flex: 1;
       flex: 1;
       padding: 8px;
       color: white;
       font-weight: bold;
       font-size: 14px;
     }
-    
     .result-row {
+      display: -webkit-box;
+      display: -webkit-flex;
       display: flex;
       border-bottom: 1px solid #79A4D2;
     }
-    
     .result-row div:first-child {
       width: 45px;
       padding: 8px;
@@ -199,64 +239,63 @@
       border-right: 1px solid #79A4D2;
       font-size: 14px;
     }
-    
     .result-row div:last-child {
+      -webkit-box-flex: 1;
+      -webkit-flex: 1;
       flex: 1;
       padding: 8px;
       font-size: 14px;
     }
-    
     #empty-message {
       padding: 10px;
       color: #666;
       font-style: italic;
       text-align: center;
     }
-    
     .status-message {
       padding: 8px;
       text-align: center;
       background: rgba(255,255,255,0.4);
+      -webkit-border-radius: 6px;
       border-radius: 6px;
       min-height: 40px;
       font-size: 14px;
       border: 1px solid #79A4D2;
     }
-    
     /* Popup */
     .popup {
       position: absolute;
       top: 50%;
       left: 50%;
+      -webkit-transform: translate(-50%, -50%);
       transform: translate(-50%, -50%);
       width: 180px;
       background: white;
       border: 4px solid #28a745;
+      -webkit-border-radius: 30px;
       border-radius: 30px;
       text-align: center;
       padding: 15px;
       display: none;
       z-index: 999;
     }
-    
     .popup .circle {
       width: 50px;
       height: 50px;
       background: #28a745;
+      -webkit-border-radius: 50%;
       border-radius: 50%;
       margin: 0 auto 8px;
       color: white;
       font-size: 30px;
       line-height: 50px;
     }
-    
     .popup p {
       font-weight: bold;
       color: #1e7e34;
       font-size: 16px;
       margin: 5px 0;
     }
-    
     .popup-time {
       font-size: 11px;
       color: #666;
@@ -270,8 +309,7 @@
       <span>SCAN BARCODE</span>
       <span class="time-display" id="currentTime">12:00:00</span>
     </div>
-
-    <!-- SCAN ROW - NARROW CELLS -->
+    <!-- SCAN ROW -->
     <div class="scan-row">
       <button class="submit-btn" id="submitButton">SUBMIT</button>
       <div class="grid-container">
@@ -283,7 +321,6 @@
         <input class="cell" maxlength="1" id="cell6">
       </div>
     </div>
-
     <!-- CONTENT -->
     <div class="content">
       <div class="status-section">
@@ -313,7 +350,6 @@
           <input type="text" id="etaField" placeholder="2025-03-15">
         </div>
       </div>
-
       <!-- RESULT TABLE -->
       <div class="result-section">
         <div class="result-header">
@@ -323,41 +359,83 @@
         <div id="tableBody"></div>
         <div id="empty-message">No scans yet</div>
       </div>
-
       <!-- STATUS MESSAGE -->
       <div class="status-message" id="messageBox"></div>
     </div>
-
     <!-- POPUP -->
     <div class="popup" id="successPopup">
-      <div class="circle">✓</div>
+      <div class="circle">&#10003;</div>
       <p>SAVED OK</p>
       <div class="popup-time" id="popupTime"></div>
     </div>
   </div>
-
   <script>
+    // ===== BEEP SOUND (Web Audio API - works on Android 5.0+) =====
+    function playBeep() {
+      try {
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        var ctx = new AudioCtx();
+        // First tone
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = 1200;
+        gain.gain.value = 0.3;
+        osc.start(0);
+        osc.stop(ctx.currentTime + 0.15);
+        // Second tone (higher pitch after delay)
+        setTimeout(function() {
+          try {
+            var osc2 = ctx.createOscillator();
+            var gain2 = ctx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.type = 'sine';
+            osc2.frequency.value = 1600;
+            gain2.gain.value = 0.3;
+            osc2.start(0);
+            osc2.stop(ctx.currentTime + 0.15);
+          } catch(e) {}
+        }, 150);
+      } catch(e) {
+        // Silently fail on unsupported browsers
+      }
+    }
+    function playErrorBeep() {
+      try {
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        var ctx = new AudioCtx();
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'square';
+        osc.frequency.value = 300;
+        gain.gain.value = 0.2;
+        osc.start(0);
+        osc.stop(ctx.currentTime + 0.3);
+      } catch(e) {}
+    }
     // ===== TIME DISPLAY =====
     function updateClock() {
       var timeElement = document.getElementById('currentTime');
       if (!timeElement) return;
-      
       var now = new Date();
       var hours = now.getHours();
       var minutes = now.getMinutes();
       var seconds = now.getSeconds();
-      
       if (hours < 10) hours = '0' + hours;
       if (minutes < 10) minutes = '0' + minutes;
       if (seconds < 10) seconds = '0' + seconds;
-      
       timeElement.innerHTML = hours + ':' + minutes + ':' + seconds;
     }
-    
     updateClock();
     setInterval(updateClock, 1000);
-
-    // ===== CELLS - NARROW AND FUNCTIONAL =====
+    // ===== CELLS =====
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -366,73 +444,58 @@
       document.getElementById('cell5'),
       document.getElementById('cell6')
     ];
-
     var letterMap = {
       'A':'1','B':'2','C':'3','D':'4','E':'5',
       'F':'6','G':'7','H':'8','I':'9','J':'0'
     };
-
-    // Setup each cell
+    var validLetters = 'ABCDEFGHIJ';
     for (var i = 0; i < cells.length; i++) {
       (function(index) {
         cells[index].addEventListener('input', function() {
           var val = this.value.toUpperCase();
-          
-          if (val.length > 0 && !'ABCDEFGHIJ'.includes(val)) {
+          if (val.length > 0 && validLetters.indexOf(val) === -1) {
             this.value = '';
             return;
           }
-          
           this.value = val;
-          
-          // Auto move to next cell
           if (this.value.length === 1 && index < cells.length - 1) {
             cells[index + 1].focus();
           }
-          
           updateLabelId();
         });
-
         cells[index].addEventListener('keydown', function(e) {
           if (e.key === 'Backspace' && this.value === '' && index > 0) {
             cells[index - 1].focus();
           }
         });
-
         cells[index].addEventListener('click', function() {
           this.focus();
         });
       })(i);
     }
-
     function updateLabelId() {
       var code = '';
       for (var i = 0; i < cells.length; i++) {
-        code += cells[i].value;
+        code = code + cells[i].value;
       }
-      
       var labelField = document.getElementById('labelId');
-      
       if (code.length === 6) {
         var numbers = '';
         var valid = true;
-        
-        for (var i = 0; i < code.length; i++) {
-          var letter = code[i];
+        for (var j = 0; j < code.length; j++) {
+          var letter = code[j];
           if (letterMap[letter]) {
-            numbers += letterMap[letter];
+            numbers = numbers + letterMap[letter];
           } else {
             valid = false;
             break;
           }
         }
-        
         labelField.value = valid ? numbers : 'INVALID';
       } else {
         labelField.value = '';
       }
     }
-
     function clearCells() {
       for (var i = 0; i < cells.length; i++) {
         cells[i].value = '';
@@ -440,31 +503,25 @@
       document.getElementById('labelId').value = '';
       cells[0].focus();
     }
-
     function getBarcodeValue() {
       var code = '';
       for (var i = 0; i < cells.length; i++) {
-        code += cells[i].value;
+        code = code + cells[i].value;
       }
       return code;
     }
-
     // ===== RESULT TABLE =====
     var scanCounter = 0;
-
     function addToTable(barcode) {
       scanCounter++;
-      
       var emptyMsg = document.getElementById('empty-message');
       if (emptyMsg) emptyMsg.style.display = 'none';
-      
       var tableBody = document.getElementById('tableBody');
       var row = document.createElement('div');
       row.className = 'result-row';
       row.innerHTML = '<div>' + scanCounter + '</div><div>' + barcode + '</div>';
       tableBody.appendChild(row);
     }
-
     // ===== POPUP =====
     function showSuccessPopup() {
       var popup = document.getElementById('successPopup');
@@ -473,46 +530,42 @@
       popup.style.display = 'block';
       setTimeout(function() { popup.style.display = 'none'; }, 2000);
     }
-
     // ===== STATUS MESSAGE =====
     function setMessage(msg, isError) {
       var msgBox = document.getElementById('messageBox');
       msgBox.style.color = isError ? '#b52e2e' : '#1e6f3f';
       msgBox.innerHTML = msg;
     }
-
     // ===== SUBMIT =====
     function submitScan() {
       var labelValue = document.getElementById('labelId').value;
-      
       if (!labelValue || labelValue === 'INVALID') {
-        setMessage('❗ Enter A-J only', true);
+        setMessage('&#10071; Enter A-J only', true);
+        playErrorBeep();
         return;
       }
-      
       var barcode = getBarcodeValue();
-      
+      playBeep();
       showSuccessPopup();
-      setMessage('✓ Saved', false);
+      setMessage('&#10003; Saved', false);
       addToTable(barcode);
       clearCells();
     }
-
     // ===== EVENT LISTENERS =====
     document.getElementById('submitButton').addEventListener('click', function(e) {
       e.preventDefault();
       submitScan();
     });
-
-    for (var i = 0; i < cells.length; i++) {
-      cells[i].addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          submitScan();
-        }
-      });
+    for (var k = 0; k < cells.length; k++) {
+      (function(idx) {
+        cells[idx].addEventListener('keypress', function(e) {
+          if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            submitScan();
+          }
+        });
+      })(k);
     }
-
     // Start with first cell focused
     cells[0].focus();
   </script>
