@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Android 5.0 Barcode Scanner - FIXED</title>
+  <title>Android 5.0 Barcode Scanner - PRODUCTION</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
@@ -18,76 +18,85 @@
       align-items: center;
       min-height: 100vh;
       font-family: Roboto, Arial, sans-serif;
-      padding: 5px;
+      padding: 0;
+      margin: 0;
     }
     .device {
       width: 100%;
       max-width: 400px;
+      height: 100vh;
+      max-height: 800px;
       background: #B0C8E2;
       display: flex;
       flex-direction: column;
       box-shadow: 0 0 20px rgba(0,0,0,0.7);
-      border-radius: 15px;
       overflow: hidden;
     }
     .header {
       background: #15569B;
       color: white;
-      height: 50px;
+      height: 60px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 12px;
-      font-size: 18px;
+      padding: 0 16px;
+      font-size: 20px;
       font-weight: bold;
+      flex-shrink: 0;
     }
     .time-display {
       background: #1e3a6b;
-      padding: 5px 12px;
-      border-radius: 20px;
+      padding: 8px 16px;
+      border-radius: 30px;
       font-family: monospace;
-      font-size: 16px;
+      font-size: 18px;
       color: white;
       border: 1px solid #79A4D2;
-      min-width: 100px;
+      min-width: 120px;
       text-align: center;
     }
     .scan-row {
       display: flex;
       align-items: center;
-      padding: 12px;
-      gap: 8px;
+      padding: 12px 16px;
+      gap: 10px;
       background: #B0C8E2;
       border-bottom: 2px solid #79A4D2;
+      flex-shrink: 0;
     }
     .submit-btn {
       background: #28a745;
       color: white;
       border: 2px solid #1e7e34;
-      width: 70px;
-      height: 50px;
+      width: 75px;
+      height: 55px;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
       cursor: pointer;
+      flex-shrink: 0;
+    }
+    .submit-btn:active {
+      background: #1e7e34;
     }
     .grid-container {
       display: flex;
-      gap: 3px;
+      gap: 4px;
       flex: 1;
       justify-content: flex-end;
     }
     .cell {
-      width: 30px;
-      height: 50px;
+      width: 32px;
+      height: 55px;
       background: white;
       border: 2px solid #666;
       border-radius: 6px;
       text-align: center;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: bold;
       text-transform: uppercase;
       outline: none;
+      color: black;
     }
     .cell:focus {
       border: 3px solid #FCC57A;
@@ -95,64 +104,66 @@
     }
     .content {
       flex: 1;
-      padding: 12px;
+      padding: 16px;
       overflow-y: auto;
       background: #B0C8E2;
-      max-height: 550px;
     }
     .status-section {
       background: #96BEEE;
       border: 2px solid #79A4D2;
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 12px;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
     }
     .field {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
     .field label {
       display: block;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: bold;
       color: #15569B;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
     .location-row {
       display: flex;
-      gap: 5px;
+      gap: 8px;
       align-items: center;
     }
     .location-row input {
       flex: 1;
-      padding: 8px;
+      padding: 10px;
       border: 2px solid #79A4D2;
       border-radius: 6px;
       font-size: 14px;
       background: white;
-      height: 40px;
+      height: 45px;
     }
     .gps-btn {
       background: #15569B;
       color: white;
       border: none;
       border-radius: 6px;
-      padding: 8px;
-      font-size: 18px;
+      padding: 0;
+      font-size: 22px;
       cursor: pointer;
-      height: 40px;
-      width: 40px;
+      height: 45px;
+      width: 45px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
+    .gps-btn:active {
+      background: #0e3a6b;
+    }
     .field input, .field select {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       border: 2px solid #79A4D2;
       border-radius: 6px;
       font-size: 14px;
       background: white;
-      height: 40px;
+      height: 45px;
     }
     .field input[readonly] {
       background: #e2e8d3;
@@ -160,9 +171,9 @@
       color: #15569B;
     }
     .gps-status {
-      font-size: 11px;
+      font-size: 12px;
       color: #15569B;
-      margin-top: 3px;
+      margin-top: 4px;
       padding-left: 4px;
     }
     .result-section {
@@ -170,7 +181,7 @@
       border-radius: 8px;
       overflow: hidden;
       background: #96BEEE;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
     .result-header {
       display: flex;
@@ -179,7 +190,7 @@
     }
     .result-header div:first-child {
       width: 45px;
-      padding: 8px;
+      padding: 10px;
       text-align: center;
       border-right: 2px solid #15569B;
       color: white;
@@ -187,7 +198,7 @@
     }
     .result-header div:last-child {
       flex: 1;
-      padding: 8px;
+      padding: 10px;
       color: white;
       font-weight: bold;
     }
@@ -198,90 +209,90 @@
     }
     .result-row div:first-child {
       width: 45px;
-      padding: 8px;
+      padding: 10px;
       text-align: center;
       border-right: 1px solid #79A4D2;
     }
     .result-row div:last-child {
       flex: 1;
-      padding: 8px;
-      font-size: 12px;
+      padding: 10px;
+      font-size: 13px;
     }
     #empty-message {
-      padding: 10px;
+      padding: 12px;
       color: #666;
       font-style: italic;
       text-align: center;
       background: white;
     }
     .status-message {
-      padding: 8px;
+      padding: 10px;
       text-align: center;
       background: white;
       border-radius: 6px;
-      min-height: 40px;
+      min-height: 45px;
       border: 2px solid #79A4D2;
-      font-size: 13px;
+      font-size: 14px;
+      font-weight: bold;
     }
     .popup {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 180px;
+      width: 200px;
       background: white;
       border: 4px solid #28a745;
       border-radius: 20px;
       text-align: center;
-      padding: 15px;
+      padding: 20px;
       display: none;
       z-index: 999;
     }
     .popup .circle {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       background: #28a745;
       border-radius: 50%;
-      margin: 0 auto 8px;
+      margin: 0 auto 10px;
       color: white;
-      font-size: 30px;
-      line-height: 50px;
+      font-size: 36px;
+      line-height: 60px;
     }
-    .mode-badge {
-      background: #15569B;
-      color: white;
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-size: 11px;
-      display: inline-block;
-      margin-left: 5px;
+    .popup p {
+      font-size: 18px;
+      font-weight: bold;
+      color: #1e7e34;
     }
   </style>
 </head>
 <body>
   <div class="device">
+    <!-- HEADER with REAL TIME -->
     <div class="header">
       <span>SCAN BARCODE</span>
       <span class="time-display" id="currentTime">--:--:--</span>
     </div>
     
+    <!-- SCAN ROW -->
     <div class="scan-row">
       <button class="submit-btn" id="submitButton">OK</button>
       <div class="grid-container">
-        <input class="cell" maxlength="1" id="cell1" value="A">
-        <input class="cell" maxlength="1" id="cell2" value="B">
-        <input class="cell" maxlength="1" id="cell3" value="C">
-        <input class="cell" maxlength="1" id="cell4" value="D">
-        <input class="cell" maxlength="1" id="cell5" value="E">
-        <input class="cell" maxlength="1" id="cell6" value="F">
+        <input class="cell" maxlength="1" id="cell1">
+        <input class="cell" maxlength="1" id="cell2">
+        <input class="cell" maxlength="1" id="cell3">
+        <input class="cell" maxlength="1" id="cell4">
+        <input class="cell" maxlength="1" id="cell5">
+        <input class="cell" maxlength="1" id="cell6">
       </div>
     </div>
     
+    <!-- CONTENT -->
     <div class="content">
       <div class="status-section">
         <div class="field">
-          <label>Label ID (Numeric) <span class="mode-badge" id="modeDisplay">LIVE</span></label>
-          <input type="text" id="labelId" readonly placeholder="---" value="123456">
+          <label>Label ID (Numeric)</label>
+          <input type="text" id="labelId" readonly placeholder="---">
         </div>
         <div class="field">
           <label>Type</label>
@@ -297,12 +308,12 @@
           </select>
         </div>
         <div class="field">
-          <label>📍 Location (GPS)</label>
+          <label>📍 Location (GPS Auto)</label>
           <div class="location-row">
-            <input type="text" id="locationField" readonly value="Press 📍 for GPS">
+            <input type="text" id="locationField" readonly placeholder="Detecting location...">
             <button class="gps-btn" id="gpsBtn">📍</button>
           </div>
-          <div class="gps-status" id="gpsStatus">Ready - Tap 📍 for GPS</div>
+          <div class="gps-status" id="gpsStatus">Getting GPS...</div>
         </div>
         <div class="field">
           <label>📅 ETA</label>
@@ -310,6 +321,7 @@
         </div>
       </div>
       
+      <!-- RESULTS -->
       <div class="result-section">
         <div class="result-header">
           <div>#</div>
@@ -319,65 +331,62 @@
         <div id="empty-message">No scans yet</div>
       </div>
       
-      <div class="status-message" id="messageBox">Ready - Testing connection...</div>
+      <!-- STATUS -->
+      <div class="status-message" id="messageBox">XANO Live • Ready</div>
     </div>
     
+    <!-- POPUP -->
     <div class="popup" id="successPopup">
       <div class="circle">✓</div>
-      <p>SAVED</p>
+      <p>SAVED TO XANO</p>
       <div class="popup-time" id="popupTime"></div>
     </div>
   </div>
 
   <script>
-    // ===== CONFIGURATION =====
+    // ===== PRODUCTION CONFIG - XANO LIVE =====
     var XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
-    var USE_REAL_XANO = false; // SET TO FALSE FOR TESTING, TRUE WHEN XANO WORKS
-    var modeDisplay = document.getElementById('modeDisplay');
     
-    // Update mode display
-    if (!USE_REAL_XANO) {
-      modeDisplay.innerHTML = 'OFFLINE MODE';
-      modeDisplay.style.background = '#dc3545';
-    } else {
-      modeDisplay.innerHTML = 'LIVE XANO';
-      modeDisplay.style.background = '#28a745';
-    }
-    
-    // ===== TIME DISPLAY =====
+    // ===== REAL TIME CLOCK - ALWAYS VISIBLE =====
     function updateClock() {
       var timeElement = document.getElementById('currentTime');
       if (!timeElement) return;
       
       var now = new Date();
-      var hours = now.getHours().toString().padStart(2, '0');
-      var minutes = now.getMinutes().toString().padStart(2, '0');
-      var seconds = now.getSeconds().toString().padStart(2, '0');
+      var hours = now.getHours();
+      var minutes = now.getMinutes();
+      var seconds = now.getSeconds();
+      
+      // Format with leading zeros
+      if (hours < 10) hours = '0' + hours;
+      if (minutes < 10) minutes = '0' + minutes;
+      if (seconds < 10) seconds = '0' + seconds;
       
       timeElement.innerHTML = hours + ':' + minutes + ':' + seconds;
     }
+    
+    // Start clock immediately and update every second
     updateClock();
     setInterval(updateClock, 1000);
     
-    // ===== GPS LOCATION =====
+    // ===== GPS LOCATION - AUTO ON LOAD =====
     var currentLocation = 'Unknown';
     var latitude = null;
     var longitude = null;
     
-    function getLocation() {
+    function getLocation(auto) {
       var gpsStatus = document.getElementById('gpsStatus');
       var locationField = document.getElementById('locationField');
-      var gpsBtn = document.getElementById('gpsBtn');
       
       if (!navigator.geolocation) {
-        gpsStatus.innerHTML = '❌ GPS not supported';
+        gpsStatus.innerHTML = 'GPS not supported';
         locationField.value = 'GPS unavailable';
         return;
       }
       
-      gpsStatus.innerHTML = '⏳ Getting GPS...';
-      locationField.value = 'Detecting...';
-      gpsBtn.disabled = true;
+      if (!auto) {
+        gpsStatus.innerHTML = 'Updating GPS...';
+      }
       
       navigator.geolocation.getCurrentPosition(
         function(position) {
@@ -389,26 +398,24 @@
           var coordStr = latitude.toFixed(4) + ', ' + longitude.toFixed(4);
           locationField.value = coordStr;
           currentLocation = coordStr;
-          gpsStatus.innerHTML = '✅ GPS lock! Accuracy: ±' + Math.round(accuracy) + 'm';
-          gpsBtn.disabled = false;
+          gpsStatus.innerHTML = 'GPS: ±' + Math.round(accuracy) + 'm • ' + new Date().toLocaleTimeString();
           
-          // Try to get city name (optional)
+          // Try to get city name
           getCityFromCoords(latitude, longitude);
         },
         function(error) {
           var errorMsg = 'GPS error';
           if (error.code === 1) errorMsg = 'Permission denied';
-          else if (error.code === 2) errorMsg = 'Position unavailable';
-          else if (error.code === 3) errorMsg = 'GPS timeout';
+          else if (error.code === 2) errorMsg = 'Unavailable';
+          else if (error.code === 3) errorMsg = 'Timeout';
           
-          gpsStatus.innerHTML = '❌ ' + errorMsg + ' - Tap 📍 to retry';
-          locationField.value = 'GPS failed';
-          gpsBtn.disabled = false;
+          gpsStatus.innerHTML = errorMsg + ' - tap 📍';
+          locationField.value = 'Tap 📍 to retry';
         },
         {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 0
+          maximumAge: 30000
         }
       );
     }
@@ -425,7 +432,6 @@
           try {
             var data = JSON.parse(xhr.responseText);
             var locationField = document.getElementById('locationField');
-            var gpsStatus = document.getElementById('gpsStatus');
             
             var city = data.address.city || data.address.town || data.address.village || '';
             var state = data.address.state || '';
@@ -433,7 +439,6 @@
             if (city && state) {
               locationField.value = city + ', ' + state;
               currentLocation = city + ', ' + state;
-              gpsStatus.innerHTML = '✅ Location: ' + city + ', ' + state;
             }
           } catch(e) {}
         }
@@ -541,110 +546,62 @@
       tableBody.appendChild(row);
     }
     
-    // ===== TEST XANO CONNECTION FIRST =====
-    function testXanoConnection() {
-      var msgBox = document.getElementById('messageBox');
-      msgBox.innerHTML = '🔍 Testing XANO connection...';
-      
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', XANO_API_URL, true);
-      xhr.timeout = 5000;
-      
-      xhr.onload = function() {
-        if (xhr.status === 200) {
-          msgBox.innerHTML = '✅ XANO connected! Ready to send.';
-          USE_REAL_XANO = true;
-          modeDisplay.innerHTML = 'LIVE XANO';
-          modeDisplay.style.background = '#28a745';
-        } else if (xhr.status === 403) {
-          msgBox.innerHTML = '⚠️ XANO returned 403 Forbidden - Using OFFLINE mode';
-          USE_REAL_XANO = false;
-          modeDisplay.innerHTML = 'OFFLINE MODE (403)';
-          modeDisplay.style.background = '#dc3545';
-        } else {
-          msgBox.innerHTML = '⚠️ XANO error ' + xhr.status + ' - Using OFFLINE mode';
-          USE_REAL_XANO = false;
-          modeDisplay.innerHTML = 'OFFLINE MODE';
-          modeDisplay.style.background = '#dc3545';
-        }
-      };
-      
-      xhr.onerror = function() {
-        msgBox.innerHTML = '⚠️ Cannot reach XANO - Using OFFLINE mode';
-        USE_REAL_XANO = false;
-        modeDisplay.innerHTML = 'OFFLINE MODE';
-        modeDisplay.style.background = '#dc3545';
-      };
-      
-      xhr.ontimeout = function() {
-        msgBox.innerHTML = '⚠️ XANO timeout - Using OFFLINE mode';
-        USE_REAL_XANO = false;
-        modeDisplay.innerHTML = 'OFFLINE MODE';
-        modeDisplay.style.background = '#dc3545';
-      };
-      
-      xhr.send();
-    }
-    
-    // ===== SEND TO XANO =====
-    function sendToXano(scanData, callback) {
+    // ===== XANO LIVE SEND =====
+    function sendToXano(scanData) {
       var xhr = new XMLHttpRequest();
       xhr.open('POST', XANO_API_URL, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.timeout = 8000; // 8 second timeout
+      xhr.timeout = 10000;
       
       xhr.onload = function() {
-        console.log('XANO response status:', xhr.status);
-        console.log('XANO response text:', xhr.responseText);
-        
         if (xhr.status >= 200 && xhr.status < 300) {
-          callback(null, 'Success');
+          document.getElementById('messageBox').innerHTML = '✓ Saved to XANO';
+          document.getElementById('messageBox').style.color = '#1e6f3f';
+          showSuccessPopup();
+          addToLocalTable(scanData.barcode_letters + ' → ' + scanData.barcode_numbers);
+          clearCells();
         } else {
-          callback('XANO error: ' + xhr.status + ' - ' + xhr.statusText, null);
+          document.getElementById('messageBox').innerHTML = '✗ XANO error ' + xhr.status;
+          document.getElementById('messageBox').style.color = '#b52e2e';
         }
       };
       
       xhr.onerror = function() {
-        callback('Network error - cannot reach XANO', null);
+        document.getElementById('messageBox').innerHTML = '✗ Network error - retry';
+        document.getElementById('messageBox').style.color = '#b52e2e';
       };
       
       xhr.ontimeout = function() {
-        callback('Request timeout - XANO not responding', null);
+        document.getElementById('messageBox').innerHTML = '✗ Timeout - retry';
+        document.getElementById('messageBox').style.color = '#b52e2e';
       };
       
-      var jsonData = JSON.stringify(scanData);
-      console.log('Sending to XANO:', jsonData);
-      xhr.send(jsonData);
+      xhr.send(JSON.stringify(scanData));
     }
     
     // ===== SUBMIT =====
     function submitScan() {
-      var msgBox = document.getElementById('messageBox');
       var rawBarcode = getBarcodeValue();
       var numericLabel = document.getElementById('labelId').value;
       
-      // If cells are empty, use demo values
-      if (rawBarcode === '') {
-        rawBarcode = 'ABCDEF';
-        for (var i = 0; i < cells.length; i++) {
-          cells[i].value = 'ABCDEF'[i];
-        }
-        updateLabelId();
-        numericLabel = '123456';
+      // Validate
+      if (rawBarcode.length !== 6) {
+        document.getElementById('messageBox').innerHTML = '✗ Enter 6 letters A-J';
+        document.getElementById('messageBox').style.color = '#b52e2e';
+        return;
       }
       
-      // Validate
-      var isValid = true;
-      if (rawBarcode.length !== 6) isValid = false;
       for (var ch = 0; ch < rawBarcode.length; ch++) {
         if (validLetters.indexOf(rawBarcode[ch]) === -1) {
-          isValid = false;
-          break;
+          document.getElementById('messageBox').innerHTML = '✗ Use only A-J';
+          document.getElementById('messageBox').style.color = '#b52e2e';
+          return;
         }
       }
       
-      if (!numericLabel || numericLabel === 'INVALID' || !isValid) {
-        msgBox.innerHTML = '❌ Invalid barcode';
+      if (!numericLabel || numericLabel === 'INVALID') {
+        document.getElementById('messageBox').innerHTML = '✗ Invalid conversion';
+        document.getElementById('messageBox').style.color = '#b52e2e';
         return;
       }
       
@@ -653,7 +610,7 @@
       var statusSelect = document.getElementById('statusSelect');
       var etaField = document.getElementById('etaField');
       
-      // Prepare data
+      // Prepare data for XANO
       var scanData = {
         barcode_letters: rawBarcode,
         barcode_numbers: numericLabel,
@@ -663,44 +620,22 @@
         location: locationValue,
         eta: etaField.value || new Date().toISOString().split('T')[0],
         scan_type: 'manual',
-        device_info: 'Android 5.0'
+        device_info: 'Android 5.0 Production'
       };
       
-      msgBox.innerHTML = '⏳ Sending...';
-      console.log('Submitting scan:', scanData);
+      document.getElementById('messageBox').innerHTML = '⏳ Sending to XANO...';
+      document.getElementById('messageBox').style.color = '#15569B';
       
-      // Try XANO if enabled
-      if (USE_REAL_XANO) {
-        sendToXano(scanData, function(error, result) {
-          if (error) {
-            msgBox.innerHTML = '❌ ' + error;
-            // Still save locally even if XANO fails
-            addToLocalTable(rawBarcode + ' → ' + numericLabel + ' (local only)');
-            showSuccessPopup('LOCAL ONLY');
-          } else {
-            msgBox.innerHTML = '✅ Saved to XANO!';
-            addToLocalTable(rawBarcode + ' → ' + numericLabel);
-            showSuccessPopup('XANO');
-          }
-          clearCells();
-        });
-      } else {
-        // OFFLINE MODE - instant save
-        setTimeout(function() {
-          msgBox.innerHTML = '✅ Saved (offline mode)';
-          addToLocalTable(rawBarcode + ' → ' + numericLabel);
-          showSuccessPopup('OFFLINE');
-          clearCells();
-        }, 500);
-      }
+      // Send to XANO
+      sendToXano(scanData);
     }
     
     // ===== POPUP =====
-    function showSuccessPopup(mode) {
+    function showSuccessPopup() {
       var popup = document.getElementById('successPopup');
       var popupTime = document.getElementById('popupTime');
       var now = new Date();
-      popupTime.innerHTML = now.toLocaleTimeString() + ' (' + mode + ')';
+      popupTime.innerHTML = now.toLocaleTimeString();
       popup.style.display = 'block';
       setTimeout(function() { popup.style.display = 'none'; }, 1500);
     }
@@ -712,10 +647,9 @@
     });
     
     document.getElementById('gpsBtn').addEventListener('click', function() {
-      getLocation();
+      getLocation(false);
     });
     
-    // Enter key
     for (var k = 0; k < cells.length; k++) {
       (function(idx) {
         cells[idx].addEventListener('keypress', function(e) {
@@ -727,8 +661,8 @@
       })(k);
     }
     
-    // ===== INIT =====
-    // Set default date
+    // ===== PRODUCTION INIT =====
+    // Set today's date
     var today = new Date();
     var year = today.getFullYear();
     var month = ('0' + (today.getMonth() + 1)).slice(-2);
@@ -738,18 +672,14 @@
     // Focus first cell
     cells[0].focus();
     
-    // Test XANO connection
-    testXanoConnection();
-    
-    // Pre-fill demo data
+    // Auto-get GPS on load
     setTimeout(function() {
-      if (document.getElementById('labelId').value === '') {
-        for (var i = 0; i < cells.length; i++) {
-          cells[i].value = 'ABCDEF'[i];
-        }
-        updateLabelId();
-      }
-    }, 500);
+      getLocation(true);
+    }, 1000);
+    
+    // Final ready message
+    document.getElementById('messageBox').innerHTML = 'XANO Live • Ready';
+    document.getElementById('messageBox').style.color = '#1e6f3f';
   </script>
 </body>
 </html>
