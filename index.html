@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Android 5.0 Barcode Scanner - PRODUCTION</title>
+  <title>Android 5.0 Barcode Scanner - SIMPLE</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
@@ -18,8 +18,6 @@
       align-items: center;
       min-height: 100vh;
       font-family: Roboto, Arial, sans-serif;
-      padding: 0;
-      margin: 0;
     }
     .device {
       width: 100%;
@@ -29,7 +27,6 @@
       background: #B0C8E2;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
       overflow: hidden;
     }
     .header {
@@ -42,18 +39,12 @@
       padding: 0 16px;
       font-size: 20px;
       font-weight: bold;
-      flex-shrink: 0;
     }
     .time-display {
       background: #1e3a6b;
       padding: 8px 16px;
       border-radius: 30px;
-      font-family: monospace;
       font-size: 18px;
-      color: white;
-      border: 1px solid #79A4D2;
-      min-width: 120px;
-      text-align: center;
     }
     .scan-row {
       display: flex;
@@ -62,19 +53,17 @@
       gap: 10px;
       background: #B0C8E2;
       border-bottom: 2px solid #79A4D2;
-      flex-shrink: 0;
     }
     .submit-btn {
       background: #28a745;
       color: white;
-      border: 2px solid #1e7e34;
-      width: 75px;
+      border: none;
+      width: 70px;
       height: 55px;
       border-radius: 8px;
-      font-size: 18px;
+      font-size: 20px;
       font-weight: bold;
       cursor: pointer;
-      flex-shrink: 0;
     }
     .submit-btn:active {
       background: #1e7e34;
@@ -86,17 +75,21 @@
       justify-content: flex-end;
     }
     .cell {
-      width: 32px;
+      width: 40px;
       height: 55px;
       background: white;
       border: 2px solid #666;
-      border-radius: 6px;
+      border-radius: 8px;
       text-align: center;
-      font-size: 24px;
+      font-size: 28px;
       font-weight: bold;
       text-transform: uppercase;
       outline: none;
       color: black;
+      /* FORCE NUMBER KEYBOARD on Android */
+      -webkit-appearance: none;
+      -moz-appearance: textfield;
+      appearance: none;
     }
     .cell:focus {
       border: 3px solid #FCC57A;
@@ -116,7 +109,7 @@
       margin-bottom: 16px;
     }
     .field {
-      margin-bottom: 12px;
+      margin-bottom: 15px;
     }
     .field label {
       display: block;
@@ -128,59 +121,46 @@
     .location-row {
       display: flex;
       gap: 8px;
-      align-items: center;
     }
     .location-row input {
       flex: 1;
-      padding: 10px;
+      padding: 12px;
       border: 2px solid #79A4D2;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 14px;
       background: white;
-      height: 45px;
     }
     .gps-btn {
       background: #15569B;
       color: white;
       border: none;
-      border-radius: 6px;
-      padding: 0;
-      font-size: 22px;
+      border-radius: 8px;
+      width: 50px;
+      font-size: 24px;
       cursor: pointer;
-      height: 45px;
-      width: 45px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .gps-btn:active {
-      background: #0e3a6b;
     }
     .field input, .field select {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: 2px solid #79A4D2;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 14px;
       background: white;
-      height: 45px;
     }
     .field input[readonly] {
       background: #e2e8d3;
       font-weight: bold;
-      color: #15569B;
     }
     .gps-status {
       font-size: 12px;
       color: #15569B;
       margin-top: 4px;
-      padding-left: 4px;
     }
     .result-section {
       border: 2px solid #79A4D2;
       border-radius: 8px;
       overflow: hidden;
-      background: #96BEEE;
+      background: white;
       margin-bottom: 16px;
     }
     .result-header {
@@ -193,19 +173,16 @@
       padding: 10px;
       text-align: center;
       border-right: 2px solid #15569B;
-      color: white;
       font-weight: bold;
     }
     .result-header div:last-child {
       flex: 1;
       padding: 10px;
-      color: white;
       font-weight: bold;
     }
     .result-row {
       display: flex;
       border-bottom: 1px solid #79A4D2;
-      background: white;
     }
     .result-row div:first-child {
       width: 45px;
@@ -216,21 +193,18 @@
     .result-row div:last-child {
       flex: 1;
       padding: 10px;
-      font-size: 13px;
     }
     #empty-message {
-      padding: 12px;
+      padding: 15px;
       color: #666;
       font-style: italic;
       text-align: center;
-      background: white;
     }
     .status-message {
-      padding: 10px;
+      padding: 12px;
       text-align: center;
       background: white;
-      border-radius: 6px;
-      min-height: 45px;
+      border-radius: 8px;
       border: 2px solid #79A4D2;
       font-size: 14px;
       font-weight: bold;
@@ -247,7 +221,6 @@
       text-align: center;
       padding: 20px;
       display: none;
-      z-index: 999;
     }
     .popup .circle {
       width: 60px;
@@ -256,197 +229,94 @@
       border-radius: 50%;
       margin: 0 auto 10px;
       color: white;
-      font-size: 36px;
+      font-size: 40px;
       line-height: 60px;
-    }
-    .popup p {
-      font-size: 18px;
-      font-weight: bold;
-      color: #1e7e34;
     }
   </style>
 </head>
 <body>
   <div class="device">
-    <!-- HEADER with REAL TIME -->
     <div class="header">
       <span>SCAN BARCODE</span>
-      <span class="time-display" id="currentTime">--:--:--</span>
+      <span class="time-display" id="currentTime"></span>
     </div>
     
-    <!-- SCAN ROW -->
     <div class="scan-row">
       <button class="submit-btn" id="submitButton">OK</button>
       <div class="grid-container">
-        <input class="cell" maxlength="1" id="cell1">
-        <input class="cell" maxlength="1" id="cell2">
-        <input class="cell" maxlength="1" id="cell3">
-        <input class="cell" maxlength="1" id="cell4">
-        <input class="cell" maxlength="1" id="cell5">
-        <input class="cell" maxlength="1" id="cell6">
+        <input class="cell" type="tel" inputmode="numeric" pattern="[A-Ja-j]*" maxlength="1" id="cell1" placeholder="A">
+        <input class="cell" type="tel" inputmode="numeric" pattern="[A-Ja-j]*" maxlength="1" id="cell2" placeholder="B">
+        <input class="cell" type="tel" inputmode="numeric" pattern="[A-Ja-j]*" maxlength="1" id="cell3" placeholder="C">
+        <input class="cell" type="tel" inputmode="numeric" pattern="[A-Ja-j]*" maxlength="1" id="cell4" placeholder="D">
+        <input class="cell" type="tel" inputmode="numeric" pattern="[A-Ja-j]*" maxlength="1" id="cell5" placeholder="E">
+        <input class="cell" type="tel" inputmode="numeric" pattern="[A-Ja-j]*" maxlength="1" id="cell6" placeholder="F">
       </div>
     </div>
     
-    <!-- CONTENT -->
     <div class="content">
       <div class="status-section">
         <div class="field">
-          <label>Label ID (Numeric)</label>
+          <label>Label ID</label>
           <input type="text" id="labelId" readonly placeholder="---">
-        </div>
-        <div class="field">
-          <label>Type</label>
-          <input type="text" id="scanType" value="manual" readonly>
         </div>
         <div class="field">
           <label>Status</label>
           <select id="statusSelect">
-            <option value="Received" selected>📥 Received</option>
+            <option value="Received">📥 Received</option>
             <option value="Picked Up">📬 Picked Up</option>
             <option value="Depart">🚚 Depart</option>
             <option value="Arrival">📍 Arrival</option>
           </select>
         </div>
         <div class="field">
-          <label>📍 Location (GPS Auto)</label>
+          <label>📍 Location</label>
           <div class="location-row">
-            <input type="text" id="locationField" readonly placeholder="Detecting location...">
+            <input type="text" id="locationField" readonly value="Getting GPS...">
             <button class="gps-btn" id="gpsBtn">📍</button>
           </div>
-          <div class="gps-status" id="gpsStatus">Getting GPS...</div>
+          <div class="gps-status" id="gpsStatus"></div>
         </div>
         <div class="field">
-          <label>📅 ETA</label>
+          <label>📅 Date</label>
           <input type="date" id="etaField">
         </div>
       </div>
       
-      <!-- RESULTS -->
       <div class="result-section">
         <div class="result-header">
           <div>#</div>
-          <div>SCAN RECORD</div>
+          <div>SCAN</div>
         </div>
         <div id="tableBody"></div>
         <div id="empty-message">No scans yet</div>
       </div>
       
-      <!-- STATUS -->
-      <div class="status-message" id="messageBox">XANO Live • Ready</div>
+      <div class="status-message" id="messageBox">Ready</div>
     </div>
     
-    <!-- POPUP -->
     <div class="popup" id="successPopup">
       <div class="circle">✓</div>
-      <p>SAVED TO XANO</p>
-      <div class="popup-time" id="popupTime"></div>
+      <p>SAVED</p>
+      <div id="popupTime"></div>
     </div>
   </div>
 
   <script>
-    // ===== PRODUCTION CONFIG - XANO LIVE =====
-    var XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+    // ===== PRODUCTION READY =====
+    var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
     
-    // ===== REAL TIME CLOCK - ALWAYS VISIBLE =====
-    function updateClock() {
-      var timeElement = document.getElementById('currentTime');
-      if (!timeElement) return;
-      
-      var now = new Date();
-      var hours = now.getHours();
-      var minutes = now.getMinutes();
-      var seconds = now.getSeconds();
-      
-      // Format with leading zeros
-      if (hours < 10) hours = '0' + hours;
-      if (minutes < 10) minutes = '0' + minutes;
-      if (seconds < 10) seconds = '0' + seconds;
-      
-      timeElement.innerHTML = hours + ':' + minutes + ':' + seconds;
+    // ===== SIMPLE TIME =====
+    function updateTime() {
+      var d = new Date();
+      var h = d.getHours().toString().padStart(2,'0');
+      var m = d.getMinutes().toString().padStart(2,'0');
+      var s = d.getSeconds().toString().padStart(2,'0');
+      document.getElementById('currentTime').innerHTML = h + ':' + m + ':' + s;
     }
+    updateTime();
+    setInterval(updateTime, 1000);
     
-    // Start clock immediately and update every second
-    updateClock();
-    setInterval(updateClock, 1000);
-    
-    // ===== GPS LOCATION - AUTO ON LOAD =====
-    var currentLocation = 'Unknown';
-    var latitude = null;
-    var longitude = null;
-    
-    function getLocation(auto) {
-      var gpsStatus = document.getElementById('gpsStatus');
-      var locationField = document.getElementById('locationField');
-      
-      if (!navigator.geolocation) {
-        gpsStatus.innerHTML = 'GPS not supported';
-        locationField.value = 'GPS unavailable';
-        return;
-      }
-      
-      if (!auto) {
-        gpsStatus.innerHTML = 'Updating GPS...';
-      }
-      
-      navigator.geolocation.getCurrentPosition(
-        function(position) {
-          latitude = position.coords.latitude;
-          longitude = position.coords.longitude;
-          var accuracy = position.coords.accuracy;
-          
-          // Show coordinates
-          var coordStr = latitude.toFixed(4) + ', ' + longitude.toFixed(4);
-          locationField.value = coordStr;
-          currentLocation = coordStr;
-          gpsStatus.innerHTML = 'GPS: ±' + Math.round(accuracy) + 'm • ' + new Date().toLocaleTimeString();
-          
-          // Try to get city name
-          getCityFromCoords(latitude, longitude);
-        },
-        function(error) {
-          var errorMsg = 'GPS error';
-          if (error.code === 1) errorMsg = 'Permission denied';
-          else if (error.code === 2) errorMsg = 'Unavailable';
-          else if (error.code === 3) errorMsg = 'Timeout';
-          
-          gpsStatus.innerHTML = errorMsg + ' - tap 📍';
-          locationField.value = 'Tap 📍 to retry';
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 30000
-        }
-      );
-    }
-    
-    function getCityFromCoords(lat, lon) {
-      var xhr = new XMLHttpRequest();
-      var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon + '&zoom=10';
-      
-      xhr.open('GET', url, true);
-      xhr.timeout = 5000;
-      
-      xhr.onload = function() {
-        if (xhr.status === 200) {
-          try {
-            var data = JSON.parse(xhr.responseText);
-            var locationField = document.getElementById('locationField');
-            
-            var city = data.address.city || data.address.town || data.address.village || '';
-            var state = data.address.state || '';
-            
-            if (city && state) {
-              locationField.value = city + ', ' + state;
-              currentLocation = city + ', ' + state;
-            }
-          } catch(e) {}
-        }
-      };
-      xhr.send();
-    }
-    
-    // ===== CELL HANDLING =====
+    // ===== SIMPLE CELLS - ONE TAP ONLY =====
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -456,110 +326,133 @@
       document.getElementById('cell6')
     ];
     
-    var letterMap = {
+    // Map letters to numbers
+    var map = {
       'A':'1','B':'2','C':'3','D':'4','E':'5',
       'F':'6','G':'7','H':'8','I':'9','J':'0'
     };
-    var validLetters = 'ABCDEFGHIJ';
     
+    // Setup cells - ONE TAP, auto advance
     for (var i = 0; i < cells.length; i++) {
-      (function(index) {
-        cells[index].addEventListener('input', function() {
-          var val = this.value.toUpperCase();
-          if (val.length > 0 && validLetters.indexOf(val) === -1) {
-            this.value = '';
-            return;
-          }
-          this.value = val;
-          if (this.value.length === 1 && index < cells.length - 1) {
-            cells[index + 1].focus();
-          }
-          updateLabelId();
-        });
+      cells[i].addEventListener('input', function(e) {
+        var val = this.value.toUpperCase();
         
-        cells[index].addEventListener('keydown', function(e) {
-          if (e.key === 'Backspace' && this.value === '' && index > 0) {
-            cells[index - 1].focus();
+        // Only accept A-J
+        if (val.match(/[A-J]/)) {
+          this.value = val;
+          updateLabel();
+          
+          // Auto move to next cell
+          var next = this.nextElementSibling;
+          if (next && next.classList.contains('cell')) {
+            next.focus();
           }
-        });
-      })(i);
-    }
-    
-    function updateLabelId() {
-      var code = '';
-      for (var i = 0; i < cells.length; i++) {
-        code = code + cells[i].value;
-      }
-      var labelField = document.getElementById('labelId');
-      if (code.length === 6) {
-        var numbers = '';
-        var valid = true;
-        for (var j = 0; j < code.length; j++) {
-          var letter = code[j];
-          if (letterMap[letter]) {
-            numbers = numbers + letterMap[letter];
-          } else {
-            valid = false;
-            break;
+        } else {
+          this.value = '';
+        }
+      });
+      
+      // Backspace to previous
+      cells[i].addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && this.value === '') {
+          var prev = this.previousElementSibling;
+          if (prev && prev.classList.contains('cell')) {
+            prev.focus();
           }
         }
-        labelField.value = valid ? numbers : 'INVALID';
-      } else {
-        labelField.value = '';
-      }
+      });
+      
+      // Enter submits
+      cells[i].addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          submitScan();
+        }
+      });
     }
     
-    function getBarcodeValue() {
+    // Update label with numbers
+    function updateLabel() {
       var code = '';
       for (var i = 0; i < cells.length; i++) {
-        code = code + cells[i].value;
+        code += cells[i].value;
       }
-      return code;
-    }
-    
-    function clearCells() {
-      for (var i = 0; i < cells.length; i++) {
-        cells[i].value = '';
-      }
-      document.getElementById('labelId').value = '';
-      cells[0].focus();
-    }
-    
-    // ===== LOCAL TABLE =====
-    var scanCounter = 0;
-    
-    function addToLocalTable(record) {
-      scanCounter++;
-      var emptyMsg = document.getElementById('empty-message');
-      if (emptyMsg) emptyMsg.style.display = 'none';
       
-      var tableBody = document.getElementById('tableBody');
+      if (code.length === 6) {
+        var numbers = '';
+        for (var j = 0; j < code.length; j++) {
+          numbers += map[code[j]] || '';
+        }
+        document.getElementById('labelId').value = numbers;
+      } else {
+        document.getElementById('labelId').value = '';
+      }
+    }
+    
+    // ===== SIMPLE GPS =====
+    function getGPS() {
+      if (!navigator.geolocation) {
+        document.getElementById('locationField').value = 'GPS not available';
+        return;
+      }
+      
+      document.getElementById('gpsStatus').innerHTML = 'Getting GPS...';
+      
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          var lat = pos.coords.latitude.toFixed(4);
+          var lon = pos.coords.longitude.toFixed(4);
+          var acc = Math.round(pos.coords.accuracy);
+          
+          document.getElementById('locationField').value = lat + ', ' + lon;
+          document.getElementById('gpsStatus').innerHTML = '±' + acc + 'm • ' + new Date().toLocaleTimeString();
+        },
+        function(err) {
+          document.getElementById('locationField').value = 'GPS denied';
+          document.getElementById('gpsStatus').innerHTML = 'Tap 📍 to retry';
+        }
+      );
+    }
+    
+    // ===== ADD TO LIST =====
+    var counter = 0;
+    function addToList(text) {
+      counter++;
+      var empty = document.getElementById('empty-message');
+      if (empty) empty.style.display = 'none';
+      
       var row = document.createElement('div');
       row.className = 'result-row';
-      
-      var now = new Date();
-      var timeStr = now.getHours() + ':' + 
-                   ('0' + now.getMinutes()).slice(-2) + ':' + 
-                   ('0' + now.getSeconds()).slice(-2);
-      
-      row.innerHTML = '<div>' + scanCounter + '</div><div>' + record + ' @ ' + timeStr + '</div>';
-      tableBody.appendChild(row);
+      row.innerHTML = '<div>' + counter + '</div><div>' + text + '</div>';
+      document.getElementById('tableBody').appendChild(row);
     }
     
-    // ===== XANO LIVE SEND =====
-    function sendToXano(scanData) {
+    // ===== SEND TO XANO =====
+    function sendToXano(data) {
       var xhr = new XMLHttpRequest();
-      xhr.open('POST', XANO_API_URL, true);
+      xhr.open('POST', XANO_URL, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.timeout = 10000;
       
       xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) {
           document.getElementById('messageBox').innerHTML = '✓ Saved to XANO';
           document.getElementById('messageBox').style.color = '#1e6f3f';
-          showSuccessPopup();
-          addToLocalTable(scanData.barcode_letters + ' → ' + scanData.barcode_numbers);
-          clearCells();
+          
+          // Show popup
+          var pop = document.getElementById('successPopup');
+          document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
+          pop.style.display = 'block';
+          setTimeout(function() { pop.style.display = 'none'; }, 1500);
+          
+          // Add to list
+          addToList(data.barcode_letters + ' → ' + data.barcode_numbers);
+          
+          // Clear cells
+          for (var i = 0; i < cells.length; i++) {
+            cells[i].value = '';
+          }
+          cells[0].focus();
+          document.getElementById('labelId').value = '';
+          
         } else {
           document.getElementById('messageBox').innerHTML = '✗ XANO error ' + xhr.status;
           document.getElementById('messageBox').style.color = '#b52e2e';
@@ -567,119 +460,82 @@
       };
       
       xhr.onerror = function() {
-        document.getElementById('messageBox').innerHTML = '✗ Network error - retry';
+        document.getElementById('messageBox').innerHTML = '✗ Network error';
         document.getElementById('messageBox').style.color = '#b52e2e';
       };
       
-      xhr.ontimeout = function() {
-        document.getElementById('messageBox').innerHTML = '✗ Timeout - retry';
-        document.getElementById('messageBox').style.color = '#b52e2e';
-      };
-      
-      xhr.send(JSON.stringify(scanData));
+      xhr.send(JSON.stringify(data));
     }
     
     // ===== SUBMIT =====
     function submitScan() {
-      var rawBarcode = getBarcodeValue();
-      var numericLabel = document.getElementById('labelId').value;
+      // Get letters
+      var letters = '';
+      for (var i = 0; i < cells.length; i++) {
+        letters += cells[i].value;
+      }
       
       // Validate
-      if (rawBarcode.length !== 6) {
+      if (letters.length !== 6) {
         document.getElementById('messageBox').innerHTML = '✗ Enter 6 letters A-J';
         document.getElementById('messageBox').style.color = '#b52e2e';
         return;
       }
       
-      for (var ch = 0; ch < rawBarcode.length; ch++) {
-        if (validLetters.indexOf(rawBarcode[ch]) === -1) {
-          document.getElementById('messageBox').innerHTML = '✗ Use only A-J';
+      for (var i = 0; i < letters.length; i++) {
+        if (!letters[i].match(/[A-J]/)) {
+          document.getElementById('messageBox').innerHTML = '✗ Use A-J only';
           document.getElementById('messageBox').style.color = '#b52e2e';
           return;
         }
       }
       
-      if (!numericLabel || numericLabel === 'INVALID') {
-        document.getElementById('messageBox').innerHTML = '✗ Invalid conversion';
-        document.getElementById('messageBox').style.color = '#b52e2e';
-        return;
+      // Convert to numbers
+      var numbers = '';
+      for (var i = 0; i < letters.length; i++) {
+        numbers += map[letters[i]];
       }
       
-      var locationField = document.getElementById('locationField');
-      var locationValue = locationField.value || 'Unknown';
-      var statusSelect = document.getElementById('statusSelect');
-      var etaField = document.getElementById('etaField');
-      
-      // Prepare data for XANO
-      var scanData = {
-        barcode_letters: rawBarcode,
-        barcode_numbers: numericLabel,
+      // Prepare data
+      var data = {
+        barcode_letters: letters,
+        barcode_numbers: numbers,
         timestamp: new Date().toISOString(),
-        device_time: new Date().toString(),
-        status: statusSelect.options[statusSelect.selectedIndex].value,
-        location: locationValue,
-        eta: etaField.value || new Date().toISOString().split('T')[0],
-        scan_type: 'manual',
-        device_info: 'Android 5.0 Production'
+        status: document.getElementById('statusSelect').value,
+        location: document.getElementById('locationField').value,
+        eta: document.getElementById('etaField').value,
+        device: 'Android 5.0'
       };
       
-      document.getElementById('messageBox').innerHTML = '⏳ Sending to XANO...';
+      document.getElementById('messageBox').innerHTML = '⏳ Sending...';
       document.getElementById('messageBox').style.color = '#15569B';
       
-      // Send to XANO
-      sendToXano(scanData);
+      sendToXano(data);
     }
     
-    // ===== POPUP =====
-    function showSuccessPopup() {
-      var popup = document.getElementById('successPopup');
-      var popupTime = document.getElementById('popupTime');
-      var now = new Date();
-      popupTime.innerHTML = now.toLocaleTimeString();
-      popup.style.display = 'block';
-      setTimeout(function() { popup.style.display = 'none'; }, 1500);
-    }
-    
-    // ===== EVENT LISTENERS =====
-    document.getElementById('submitButton').addEventListener('click', function(e) {
-      e.preventDefault();
-      submitScan();
-    });
-    
-    document.getElementById('gpsBtn').addEventListener('click', function() {
-      getLocation(false);
-    });
-    
-    for (var k = 0; k < cells.length; k++) {
-      (function(idx) {
-        cells[idx].addEventListener('keypress', function(e) {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            submitScan();
-          }
-        });
-      })(k);
-    }
-    
-    // ===== PRODUCTION INIT =====
+    // ===== INIT =====
     // Set today's date
     var today = new Date();
-    var year = today.getFullYear();
-    var month = ('0' + (today.getMonth() + 1)).slice(-2);
-    var day = ('0' + today.getDate()).slice(-2);
-    document.getElementById('etaField').value = year + '-' + month + '-' + day;
+    var y = today.getFullYear();
+    var m = ('0' + (today.getMonth()+1)).slice(-2);
+    var d = ('0' + today.getDate()).slice(-2);
+    document.getElementById('etaField').value = y + '-' + m + '-' + d;
+    
+    // Get GPS on start
+    setTimeout(getGPS, 500);
+    
+    // Button listeners
+    document.getElementById('submitButton').onclick = function(e) {
+      e.preventDefault();
+      submitScan();
+    };
+    
+    document.getElementById('gpsBtn').onclick = function() {
+      getGPS();
+    };
     
     // Focus first cell
     cells[0].focus();
-    
-    // Auto-get GPS on load
-    setTimeout(function() {
-      getLocation(true);
-    }, 1000);
-    
-    // Final ready message
-    document.getElementById('messageBox').innerHTML = 'XANO Live • Ready';
-    document.getElementById('messageBox').style.color = '#1e6f3f';
   </script>
 </body>
 </html>
