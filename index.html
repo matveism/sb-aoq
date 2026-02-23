@@ -1,305 +1,532 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>A-J WORKING 100%</title>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:#000; font-family:Arial; padding:5px; }
-.phone { max-width:360px; margin:0 auto; background:#2b4b70; padding:10px; border-radius:10px; color:white; }
-.header { background:#2e5a88; padding:10px; text-align:center; font-size:18px; border-radius:5px; margin-bottom:10px; }
-.hint { background:#0A3A6B; padding:8px; text-align:center; font-size:14px; border-radius:5px; margin-bottom:10px; }
-.hint span { color:#ffcc00; font-weight:bold; margin:0 3px; }
+  <meta charset="UTF-8" />
+  <title>Android 5.0 Screen</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Roboto, Arial, sans-serif;
+    }
 
-.cells { display:flex; gap:2px; justify-content:center; margin-bottom:10px; }
-.cell { width:50px; height:50px; background:#E2E8D3; border:2px solid #1f3f5c; text-align:center; font-size:28px; font-weight:bold; line-height:50px; border-radius:5px; color:#000; }
+    .device {
+      width: 360px;
+      height: 640px;
+      background: #B0C8E2;
+      color: black;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      overflow: hidden;
+      position: relative;
+    }
 
-.history { background:#A6BEEF; min-height:100px; margin-bottom:10px; padding:5px; border:2px solid #1f3f5c; overflow-y:auto; border-radius:5px; color:#000; max-height:150px; }
-.entry { background:#c0d4f5; padding:5px; margin:3px 0; border-radius:3px; font-weight:bold; }
+    .header {
+      background: #15569B;
+      color: #D0D7DC;
+      height: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 14px;
+    }
 
-.keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; margin-bottom:10px; }
-.key { background:#3a5f8a; color:white; padding:15px 0; text-align:center; font-size:24px; font-weight:bold; border-radius:5px; border:1px solid #1f3f5c; cursor:pointer; }
-.key:active { background:#4CAF50; }
-.key.enter { background:#4CAF50; }
-.key.esc { background:#dc3545; }
-.key.back { background:#ffc107; color:#000; }
+    .scan-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 10px 8px;
+      gap: 6px;
+      background: #B0C8E2;
+    }
 
-.buttons { display:flex; gap:5px; margin-top:5px; }
-.btn { flex:1; background:#7496C4; color:white; padding:12px; text-align:center; font-size:16px; font-weight:bold; border-radius:5px; border:1px solid #1f3f5c; cursor:pointer; }
+    .submit-btn {
+      background: #28a745;
+      border: none;
+      padding: 8px 16px;
+      font-weight: bold;
+      color: white;
+      border-radius: 4px;
+      font-size: 16px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      border: 1px solid #1e7e34;
+    }
 
-#result { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#2b4b70; border:3px solid #4CAF50; padding:20px; border-radius:10px; text-align:center; color:white; z-index:200; width:280px; }
-</style>
+    .submit-btn:active {
+      background: #218838;
+      transform: translateY(1px);
+    }
+
+    .mini-grid {
+      display: flex;
+      flex-direction: row;
+      gap: 2px;
+      height: 28px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .mini-cell {
+      width: 33px;
+      height: 25px;
+      background: #E2E8D3;
+      border: 1px solid #999;
+      border-radius: 2px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      color: black;
+      outline: none;
+    }
+
+    .content {
+      flex: 1;
+      padding: 8px;
+      overflow-y: auto;
+    }
+
+    #preview {
+      width: 100%;
+      height: 200px;
+      background: #000;
+      display: none;
+      object-fit: cover;
+    }
+
+    /* STATUS FIELDS */
+    .status-fields {
+      margin: 10px 0;
+      padding: 8px;
+      background: #96BEEE;
+      border-radius: 4px;
+      border: 2px solid #79A4D2;
+    }
+
+    .field-row {
+      margin-bottom: 8px;
+    }
+
+    .field-row label {
+      display: block;
+      font-size: 12px;
+      font-weight: bold;
+      color: #15569B;
+      margin-bottom: 2px;
+    }
+
+    .field-row select,
+    .field-row input {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #79A4D2;
+      border-radius: 3px;
+      font-size: 14px;
+      background: white;
+      box-sizing: border-box;
+    }
+
+    .field-row input:focus,
+    .field-row select:focus {
+      outline: 2px solid #FCC57A;
+      border-color: #FCC57A;
+    }
+
+    .field-row input[readonly] {
+      background: #e2e8d3;
+      font-weight: bold;
+    }
+
+    /* RESULT BOX */
+    .result-box {
+      margin-top: 10px;
+      border: 2px solid #79A4D2;
+      border-radius: 4px;
+      overflow: hidden;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .result-header,
+    .result-row {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      align-items: center;
+    }
+
+    .result-header {
+      background: #79A4D2;
+      color: black;
+    }
+
+    .result-row {
+      background: #96BEEE;
+      color: black;
+    }
+
+    .result-cell {
+      padding: 6px 10px;
+    }
+
+    .result-cell-value {
+      font-weight: bold;
+    }
+
+    /* POPUP */
+    #popup {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 180px;
+      margin-left: -90px;
+      margin-top: -80px;
+      background: #ffffff;
+      border: 4px solid #28a745;
+      border-radius: 30px;
+      text-align: center;
+      padding: 20px 10px 15px 10px;
+      display: none;
+      z-index: 9999;
+      box-shadow: 0 20px 30px black;
+    }
+
+    #popup .circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #28a745;
+      margin: 0 auto 12px auto;
+      color: #fff;
+      font-size: 40px;
+      font-weight: bold;
+      line-height: 64px;
+    }
+
+    #popup p {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #1e7e34;
+    }
+
+    #popup-time {
+      font-size: 12px;
+      margin-top: 8px;
+      color: #666;
+    }
+
+    #statusBox {
+      margin-top: 8px;
+      font-size: 14px;
+      text-align: center;
+      min-height: 20px;
+      font-weight: 500;
+    }
+
+    .error-detail {
+      font-size: 11px;
+      color: #b52e2e;
+      margin-top: 2px;
+      word-break: break-word;
+    }
+  </style>
 </head>
 <body>
-<div class="phone">
-  <div class="header">📦 A-J SCANNER</div>
-  
-  <div class="hint">
-    <span>A=1</span> <span>B=2</span> <span>C=3</span> <span>D=4</span> <span>E=5</span>
-    <span>F=6</span> <span>G=7</span> <span>H=8</span> <span>I=9</span> <span>J=0</span>
+  <div class="device">
+
+    <div class="header">
+      <div class="header-title">Scan Barcode</div>
+      <div class="header-time" id="deviceTime">--:--</div>
+    </div>
+
+    <div class="scan-row">
+      <button class="submit-btn" id="submitBtn">SUBMIT</button>
+
+      <div class="mini-grid">
+        <input class="mini-cell" maxlength="1" id="cell1">
+        <input class="mini-cell" maxlength="1" id="cell2">
+        <input class="mini-cell" maxlength="1" id="cell3">
+        <input class="mini-cell" maxlength="1" id="cell4">
+        <input class="mini-cell" maxlength="1" id="cell5">
+        <input class="mini-cell" maxlength="1" id="cell6">
+      </div>
+    </div>
+
+    <div class="content">
+      <video id="preview" autoplay muted playsinline></video>
+
+      <!-- STATUS FIELDS -->
+      <div class="status-fields">
+        <div class="field-row">
+          <label>Decoded Label ID</label>
+          <input type="text" id="decoded" readonly>
+        </div>
+        
+        <div class="field-row">
+          <label>Entry Type</label>
+          <input type="text" id="barcode_type" value="manual" readonly>
+        </div>
+
+        <div class="field-row">
+          <label>Status</label>
+          <select id="status">
+            <option value="Data Received">📥 Data Received</option>
+            <option value="Picked Up">📬 Picked Up</option>
+            <option value="Depart Post Office">🚚 Depart Post Office</option>
+            <option value="Arrival Scan">📍 Arrival Scan</option>
+            <option value="Local Scan">🏙️ Local Scan</option>
+            <option value="Out For Delivery">🛵 Out For Delivery</option>
+            <option value="Delivered">✅ Delivered</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <label>Location</label>
+          <input type="text" id="location" placeholder="City, State">
+        </div>
+
+        <div class="field-row">
+          <label>ETA</label>
+          <input type="text" id="eta" placeholder="e.g., 2025-03-15">
+        </div>
+      </div>
+
+      <!-- RESULT BOX -->
+      <div class="result-box">
+        <div class="result-header">
+          <div class="result-cell">#</div>
+          <div class="result-cell">LABEL ID</div>
+        </div>
+
+        <div id="emptyRow" class="result-row">
+          <div class="result-cell"></div>
+          <div class="result-cell"></div>
+        </div>
+
+        <div id="resultTable"></div>
+      </div>
+
+      <!-- STATUS MESSAGE -->
+      <div id="statusBox"></div>
+      <div id="errorDetail" class="error-detail"></div>
+    </div>
+
+    <!-- SUCCESS POPUP -->
+    <div id="popup">
+      <div class="circle">✓</div>
+      <p>SAVED OK</p>
+      <p id="popup-time"></p>
+    </div>
+
   </div>
-  
-  <div class="cells">
-    <div class="cell" id="cell1"></div>
-    <div class="cell" id="cell2"></div>
-    <div class="cell" id="cell3"></div>
-    <div class="cell" id="cell4"></div>
-    <div class="cell" id="cell5"></div>
-    <div class="cell" id="cell6"></div>
-  </div>
-  
-  <div class="history" id="history"></div>
-  
-  <div class="keypad">
-    <div onclick="addLetter('A')" class="key">A</div>
-    <div onclick="addLetter('B')" class="key">B</div>
-    <div onclick="addLetter('C')" class="key">C</div>
-    <div onclick="addLetter('D')" class="key">D</div>
-    <div onclick="addLetter('E')" class="key">E</div>
-    <div onclick="addLetter('F')" class="key">F</div>
-    <div onclick="addLetter('G')" class="key">G</div>
-    <div onclick="addLetter('H')" class="key">H</div>
-    <div onclick="addLetter('I')" class="key">I</div>
-    <div onclick="addLetter('J')" class="key">J</div>
-    <div onclick="backspace()" class="key back">⌫</div>
-    <div onclick="showStatus()" class="key enter">ENT</div>
-  </div>
-  
-  <div class="buttons">
-    <div onclick="clearCells()" class="btn">CLEAR</div>
-    <div onclick="clearAll()" class="btn">CLEAR ALL</div>
-  </div>
-  
-  <div id="result">
-    <div style="font-size:48px; color:#4CAF50; margin-bottom:10px;" id="resultIcon">✓</div>
-    <p id="resultMsg">DONE!</p>
-    <p id="resultDetail" style="font-size:12px; margin-top:10px;"></p>
-  </div>
-</div>
 
-<script>
-// ===== SIMPLE CODE THAT WILL WORK =====
-var cells = [
-  document.getElementById('cell1'),
-  document.getElementById('cell2'),
-  document.getElementById('cell3'),
-  document.getElementById('cell4'),
-  document.getElementById('cell5'),
-  document.getElementById('cell6')
-];
+  <script src="https://unpkg.com/@zxing/library@0.18.6"></script>
 
-var codes = [];
-var count = 0;
-
-function addLetter(letter) {
-  for (var i = 0; i < 6; i++) {
-    if (cells[i].innerHTML === '') {
-      cells[i].innerHTML = letter;
-      break;
-    }
-  }
-  checkComplete();
-}
-
-function backspace() {
-  for (var i = 5; i >= 0; i--) {
-    if (cells[i].innerHTML !== '') {
-      cells[i].innerHTML = '';
-      break;
-    }
-  }
-}
-
-function clearCells() {
-  for (var i = 0; i < 6; i++) cells[i].innerHTML = '';
-}
-
-function clearAll() {
-  codes = [];
-  count = 0;
-  document.getElementById('history').innerHTML = '';
-  clearCells();
-}
-
-function checkComplete() {
-  var filled = true;
-  var letters = '';
-  for (var i = 0; i < 6; i++) {
-    if (cells[i].innerHTML === '') filled = false;
-    else letters += cells[i].innerHTML;
-  }
-  
-  if (filled && letters.length === 6) {
-    var numbers = '';
-    for (var i = 0; i < letters.length; i++) {
-      var ch = letters[i];
-      if (ch === 'A') numbers += '1';
-      else if (ch === 'B') numbers += '2';
-      else if (ch === 'C') numbers += '3';
-      else if (ch === 'D') numbers += '4';
-      else if (ch === 'E') numbers += '5';
-      else if (ch === 'F') numbers += '6';
-      else if (ch === 'G') numbers += '7';
-      else if (ch === 'H') numbers += '8';
-      else if (ch === 'I') numbers += '9';
-      else if (ch === 'J') numbers += '0';
+  <script>
+    /* ========== SIMPLE DEVICE TIME ========== */
+    function updateDeviceTime() {
+      var now = new Date();
+      var hours = String(now.getHours()).padStart(2, '0');
+      var minutes = String(now.getMinutes()).padStart(2, '0');
+      var seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('deviceTime').textContent = hours + ':' + minutes + ':' + seconds;
     }
     
-    count++;
-    codes.push({ letters: letters, numbers: numbers });
-    
-    var history = document.getElementById('history');
-    var div = document.createElement('div');
-    div.className = 'entry';
-    div.innerHTML = '#' + count + ': ' + letters + ' → ' + numbers;
-    history.appendChild(div);
-    
-    clearCells();
-  }
-}
+    updateDeviceTime();
+    setInterval(updateDeviceTime, 1000);
 
-function showStatus() {
-  if (codes.length === 0) {
-    alert('Enter a code first');
-    return;
-  }
-  
-  var statusHtml = '';
-  var statuses = ['Data Received', 'Picked Up', 'Depart Post Office', 'Arrival Scan', 'Local Scan', 'Out For Delivery', 'Delivered'];
-  
-  for (var i = 0; i < statuses.length; i++) {
-    statusHtml += '<div style="background:#3f6b9c; border:2px solid #ffcc00; padding:15px; margin:8px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:16px; font-weight:bold;" onclick="send(\'' + statuses[i] + '\')">📦 ' + statuses[i] + '</div>';
-  }
-  statusHtml += '<div style="background:#dc3545; border:2px solid #fff; padding:15px; margin:8px 0; text-align:center; border-radius:5px; cursor:pointer; color:white; font-size:16px; font-weight:bold;" onclick="hideStatus()">⬅️ BACK</div>';
-  
-  var div = document.createElement('div');
-  div.id = 'statusDiv';
-  div.style.position = 'fixed';
-  div.style.top = '0';
-  div.style.left = '0';
-  div.style.width = '100%';
-  div.style.height = '100%';
-  div.style.background = 'rgba(0,0,0,0.95)';
-  div.style.padding = '15px';
-  div.style.overflowY = 'auto';
-  div.style.zIndex = '100';
-  div.innerHTML = statusHtml;
-  document.body.appendChild(div);
-}
+    /* ========== CELLS ========== */
+    var cells = [
+      document.getElementById('cell1'),
+      document.getElementById('cell2'),
+      document.getElementById('cell3'),
+      document.getElementById('cell4'),
+      document.getElementById('cell5'),
+      document.getElementById('cell6')
+    ];
 
-function hideStatus() {
-  var div = document.getElementById('statusDiv');
-  if (div) div.remove();
-}
+    for (let i = 0; i < cells.length; i++) {
+      cells[i].oninput = function() {
+        this.style.background = "#FB9809";
+        if (this.value.length === 1 && i < cells.length - 1) {
+          cells[i + 1].focus();
+        }
+        checkManualEntry();
+      };
 
-function send(status) {
-  hideStatus();
-  
-  var result = document.getElementById('result');
-  var icon = document.getElementById('resultIcon');
-  var msg = document.getElementById('resultMsg');
-  var detail = document.getElementById('resultDetail');
-  
-  icon.innerHTML = '⏳';
-  icon.style.color = '#ffcc00';
-  msg.innerHTML = 'SENDING ' + codes.length + ' CODE...';
-  detail.innerHTML = '';
-  result.style.display = 'block';
-  
-  // Create a form and submit it - THIS ALWAYS WORKS ON ANDROID
-  var form = document.createElement('form');
-  form.method = 'POST';
-  form.action = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
-  form.style.display = 'none';
-  form.target = 'hiddenFrame';
-  
-  // Add hidden iframe
-  var iframe = document.createElement('iframe');
-  iframe.name = 'hiddenFrame';
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
-  
-  var sent = 0;
-  var total = codes.length;
-  
-  for (var i = 0; i < codes.length; i++) {
-    var code = codes[i];
-    
-    var now = new Date();
-    var dateStr = now.getFullYear() + '-' + 
-                  (now.getMonth() + 1 < 10 ? '0' + (now.getMonth() + 1) : now.getMonth() + 1) + '-' + 
-                  (now.getDate() < 10 ? '0' + now.getDate() : now.getDate());
-    
-    var timeStr = (now.getHours() < 10 ? '0' + now.getHours() : now.getHours()) + ':' + 
-                  (now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes()) + ':' + 
-                  (now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds());
-    
-    var timestamp = Math.floor(now.getTime() / 1000);
-    
-    var eta = new Date(now);
-    eta.setDate(eta.getDate() + 1);
-    var etaStr = eta.getFullYear() + '-' + 
-                 (eta.getMonth() + 1 < 10 ? '0' + (eta.getMonth() + 1) : eta.getMonth() + 1) + '-' + 
-                 (eta.getDate() < 10 ? '0' + eta.getDate() : eta.getDate());
-    
-    // Create a new form for each code
-    var f = document.createElement('form');
-    f.method = 'POST';
-    f.action = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
-    f.target = 'hiddenFrame';
-    f.style.display = 'none';
-    
-    var fields = {
-      label_id: code.numbers,
-      barcode_type: 'manual',
-      status: status,
-      timestamp: timestamp,
-      time: timeStr,
-      date: dateStr,
-      location: 'Unknown',
-      eta: etaStr
-    };
-    
-    for (var key in fields) {
-      var input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = fields[key];
-      f.appendChild(input);
+      cells[i].onkeydown = function(e) {
+        if (e.keyCode === 8 && this.value === "" && i > 0) {
+          cells[i - 1].focus();
+        }
+      };
     }
-    
-    document.body.appendChild(f);
-    
-    // Submit the form
-    f.submit();
-    sent++;
-    
-    // Remove form after submission
-    setTimeout(function(frm) {
-      frm.remove();
-    }, 100, f);
-  }
-  
-  setTimeout(function() {
-    if (sent === total) {
-      icon.innerHTML = '✓';
-      icon.style.color = '#4CAF50';
-      msg.innerHTML = '✅ ALL ' + total + ' CODES SENT!';
-      detail.innerHTML = 'Check XANO database';
-      
-      // Clear history
-      codes = [];
-      count = 0;
-      document.getElementById('history').innerHTML = '';
-      
+
+    function checkManualEntry() {
+      let code = "";
+      for (let i = 0; i < cells.length; i++) {
+        code += cells[i].value;
+      }
+      if (code.length === 6) {
+        var decoded = decodeLetters(code);
+        if (decoded) {
+          document.getElementById('decoded').value = decoded;
+          addRow(code);
+        } else {
+          alert('Invalid letters. Use A-J only');
+        }
+      }
+    }
+
+    function decodeLetters(encoded) {
+      var map = {
+        'A': '1','B': '2','C': '3','D': '4','E': '5',
+        'F': '6','G': '7','H': '8','I': '9','J': '0'
+      };
+      var result = '';
+      var upper = encoded.toUpperCase();
+      for (var i = 0; i < upper.length; i++) {
+        var ch = upper.charAt(i);
+        if (!map[ch]) return null;
+        result += map[ch];
+      }
+      return result;
+    }
+
+    /* ========== RESULT TABLE ========== */
+    let scanIndex = 0;
+
+    function addRow(value) {
+      scanIndex++;
+      document.getElementById("emptyRow").style.display = "none";
+      let row = `
+        <div class="result-row">
+          <div class="result-cell">${scanIndex}</div>
+          <div class="result-cell result-cell-value">${value}</div>
+        </div>
+      `;
+      document.getElementById("resultTable").insertAdjacentHTML("beforeend", row);
+    }
+
+    function showPopup() {
+      var p = document.getElementById('popup');
+      var now = new Date();
+      var dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+      document.getElementById('popup-time').innerHTML = dateStr;
+      p.style.display = 'block';
       setTimeout(function() {
-        result.style.display = 'none';
-        iframe.remove();
+        p.style.display = 'none';
       }, 2000);
     }
-  }, 1000);
-}
-</script>
+
+    function setStatus(msg, isError) {
+      var box = document.getElementById('statusBox');
+      box.style.color = isError ? '#b52e2e' : '#1e6f3f';
+      box.innerHTML = msg || ' ';
+    }
+
+    function showErrorDetail(detail) {
+      document.getElementById('errorDetail').innerHTML = detail;
+    }
+
+    /* ========== SEND TO XANO ========== */
+    function sendToXano() {
+      var labelId = document.getElementById('decoded').value;
+      
+      if (!labelId) {
+        setStatus('❗ Enter a valid barcode first', true);
+        return;
+      }
+
+      var now = new Date();
+      
+      // FIXED: Use milliseconds for timestamp (not seconds)
+      // JavaScript uses milliseconds since epoch, so divide by 1000 for seconds
+      var payload = {
+        label_id: labelId,
+        barcode_type: "manual",
+        status: document.getElementById('status').value,
+        timestamp: now.getTime(),                    // milliseconds (correct for JS)
+        // OR if your API expects seconds, uncomment this line and comment the one above:
+        // timestamp: Math.floor(now.getTime() / 1000),  // seconds
+        time: now.getTime(),                           // milliseconds
+        date: now.toISOString().split('T')[0],
+        location: document.getElementById('location').value || '',
+        eta: document.getElementById('eta').value || ''
+      };
+
+      console.log('📤 SENDING:', JSON.stringify(payload, null, 2));
+      
+      showErrorDetail('');
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          console.log('📥 RESPONSE:', xhr.status, xhr.responseText);
+          
+          if (xhr.status >= 200 && xhr.status < 300) {
+            showPopup();
+            setStatus('✓ Saved successfully', false);
+            
+            // Clear cells
+            for (var i = 0; i < cells.length; i++) {
+              cells[i].value = '';
+              cells[i].style.background = '#E2E8D3';
+            }
+            document.getElementById('decoded').value = '';
+            cells[0].focus();
+          } else {
+            setStatus('Error ' + xhr.status, true);
+            try {
+              var err = JSON.parse(xhr.responseText);
+              showErrorDetail(JSON.stringify(err));
+            } catch(e) {
+              showErrorDetail(xhr.responseText);
+            }
+          }
+        }
+      };
+
+      xhr.onerror = function() {
+        setStatus('Network error', true);
+        showErrorDetail('Check internet connection');
+      };
+
+      xhr.send(JSON.stringify(payload));
+    }
+
+    /* ========== EVENT LISTENERS ========== */
+    document.getElementById('submitBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      sendToXano();
+    });
+
+    cells.forEach(cell => {
+      cell.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendToXano();
+        }
+      });
+    });
+
+    window.addEventListener('load', function() {
+      cells[0].focus();
+      console.log('✅ Using device time - timestamp fixed');
+    });
+
+  </script>
 </body>
 </html>
