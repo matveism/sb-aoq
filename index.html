@@ -101,201 +101,199 @@
   </div>
 
   <script>
-    // ===== PRODUCTION XANO CONFIGURATION =====
-    // Your XANO base URL
-    var XANO_BASE_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG';
+  // ===== PRODUCTION XANO CONFIGURATION =====
+  var XANO_BASE_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG';
+  var XANO_TABLE = 'qr_scans'; // <-- Ensure this is the correct table name
+  
+  var XANO_URL = XANO_BASE_URL + '/' + XANO_TABLE;
+
+  // ===== TIME DISPLAY =====
+  function updateTime() {
+    var timeEl = document.getElementById('currentTime');
+    if (!timeEl) return;
+    var now = new Date();
+    var hours = now.getHours().toString().padStart(2,'0');
+    var minutes = now.getMinutes().toString().padStart(2,'0');
+    var seconds = now.getSeconds().toString().padStart(2,'0');
+    timeEl.innerHTML = hours + ':' + minutes + ':' + seconds;
+  }
+  updateTime();
+  setInterval(updateTime, 1000);
+
+  // ===== AUTO GPS =====
+  function getGPS() {
+    var locField = document.getElementById('locationField');
+    var gpsStatus = document.getElementById('gpsStatus');
     
-    // IMPORTANT: REPLACE 'your_table_name' WITH YOUR ACTUAL TABLE NAME FROM XANO DASHBOARD
-    var XANO_TABLE = 'qr_scans'; // <-- CHANGE THIS TO YOUR REAL TABLE NAME
-    
-    var XANO_URL = XANO_BASE_URL + '/' + XANO_TABLE;
-    
-    // ===== TIME DISPLAY =====
-    function updateTime() {
-      var timeEl = document.getElementById('currentTime');
-      if (!timeEl) return;
-      var now = new Date();
-      var hours = now.getHours().toString().padStart(2,'0');
-      var minutes = now.getMinutes().toString().padStart(2,'0');
-      var seconds = now.getSeconds().toString().padStart(2,'0');
-      timeEl.innerHTML = hours + ':' + minutes + ':' + seconds;
+    if (!navigator.geolocation) {
+      locField.value = 'GPS not supported';
+      gpsStatus.innerHTML = 'Not available';
+      return;
     }
-    updateTime();
-    setInterval(updateTime, 1000);
-    
-    // ===== AUTO GPS =====
-    function getGPS() {
-      var locField = document.getElementById('locationField');
-      var gpsStatus = document.getElementById('gpsStatus');
-      
-      if (!navigator.geolocation) {
-        locField.value = 'GPS not supported';
-        gpsStatus.innerHTML = 'Not available';
-        return;
+
+    gpsStatus.innerHTML = '📍 Getting GPS...';
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        var lat = position.coords.latitude.toFixed(4);
+        var lon = position.coords.longitude.toFixed(4);
+        var acc = Math.round(position.coords.accuracy);
+        locField.value = lat + ', ' + lon;
+        gpsStatus.innerHTML = '✅ GPS: ±' + acc + 'm';
+      },
+      function(error) {
+        var msg = 'GPS error';
+        if (error.code === 1) msg = 'Permission denied';
+        else if (error.code === 2) msg = 'Unavailable';
+        else if (error.code === 3) msg = 'Timeout';
+        locField.value = 'Tap to retry GPS';
+        gpsStatus.innerHTML = '❌ ' + msg;
       }
-      
-      gpsStatus.innerHTML = '📍 Getting GPS...';
-      navigator.geolocation.getCurrentPosition(
-        function(position) {
-          var lat = position.coords.latitude.toFixed(4);
-          var lon = position.coords.longitude.toFixed(4);
-          var acc = Math.round(position.coords.accuracy);
-          locField.value = lat + ', ' + lon;
-          gpsStatus.innerHTML = '✅ GPS: ±' + acc + 'm';
-        },
-        function(error) {
-          var msg = 'GPS error';
-          if (error.code === 1) msg = 'Permission denied';
-          else if (error.code === 2) msg = 'Unavailable';
-          else if (error.code === 3) msg = 'Timeout';
-          locField.value = 'Tap to retry GPS';
-          gpsStatus.innerHTML = '❌ ' + msg;
-        }
-      );
-    }
-    
-    // ===== CELLS HANDLING =====
-    var cells = [
-      document.getElementById('cell1'),
-      document.getElementById('cell2'),
-      document.getElementById('cell3'),
-      document.getElementById('cell4'),
-      document.getElementById('cell5'),
-      document.getElementById('cell6')
-    ];
-    
-    var letterMap = {
-      'A':'1','B':'2','C':'3','D':'4','E':'5',
-      'F':'6','G':'7','H':'8','I':'9','J':'0'
-    };
-    
-    for (var i = 0; i < cells.length; i++) {
-      cells[i].addEventListener('input', function() {
-        var val = this.value.toUpperCase();
-        if (val.match(/[A-J]/)) {
-          this.value = val;
-          updateLabel();
-          var next = this.nextElementSibling;
-          if (next) next.focus();
-        } else {
-          this.value = '';
-        }
-      });
-    }
-    
-    function updateLabel() {
-      var code = '';
-      for (var i = 0; i < cells.length; i++) code += cells[i].value;
-      var num = '';
-      for (var i = 0; i < code.length; i++) num += letterMap[code[i]] || '';
-      document.getElementById('labelId').value = num;
-    }
-    
-    // ===== BEEP =====
-    function beep() {
-      try {
-        var ctx = new (window.AudioContext || window.webkitAudioContext)();
-        var osc = ctx.createOscillator();
-        osc.connect(ctx.destination);
-        osc.frequency.value = 800;
-        osc.start();
-        osc.stop(ctx.currentTime + 0.1);
-      } catch(e) {}
-    }
-    
-    // ===== ADD TO LOCAL TABLE =====
-    var scanCounter = 0;
-    
-    function addToTable(labelId) {
-      scanCounter++;
-      var emptyMsg = document.getElementById('empty-message');
-      if (emptyMsg) emptyMsg.style.display = 'none';
-      
-      var tableBody = document.getElementById('tableBody');
-      var row = document.createElement('div');
-      row.className = 'result-row';
-      
-      var now = new Date();
-      var timeStr = now.getHours() + ':' + 
-                   (now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes()) + ':' + 
-                   (now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds());
-      
-      row.innerHTML = '<div>' + scanCounter + '</div><div>' + labelId + ' @ ' + timeStr + '</div>';
-      tableBody.appendChild(row);
-    }
-    
-    // ===== SEND TO XANO =====
-    function sendToXano() {
-      var letters = '';
-      for (var i = 0; i < cells.length; i++) letters += cells[i].value;
-      
-      if (letters.length !== 6) {
-        document.getElementById('messageBox').innerHTML = '❌ Enter 6 letters A-J';
-        return;
+    );
+  }
+
+  // ===== CELLS HANDLING =====
+  var cells = [
+    document.getElementById('cell1'),
+    document.getElementById('cell2'),
+    document.getElementById('cell3'),
+    document.getElementById('cell4'),
+    document.getElementById('cell5'),
+    document.getElementById('cell6')
+  ];
+
+  var letterMap = {
+    'A':'1','B':'2','C':'3','D':'4','E':'5',
+    'F':'6','G':'7','H':'8','I':'9','J':'0'
+  };
+
+  for (var i = 0; i < cells.length; i++) {
+    cells[i].addEventListener('input', function() {
+      var val = this.value.toUpperCase();
+      if (val.match(/[A-J]/)) {
+        this.value = val;
+        updateLabel();
+        var next = this.nextElementSibling;
+        if (next) next.focus();
+      } else {
+        this.value = '';
       }
-      
-      var numbers = '';
-      for (var i = 0; i < letters.length; i++) numbers += letterMap[letters[i]];
-      
-      var data = {
-        label_id: numbers,
-        barcode_type: 'manual',
-        status: document.getElementById('statusSelect').value,
-        date: new Date().toISOString().split('T')[0],
-        time: Math.floor(new Date().getTime() / 1000),
-        location: document.getElementById('locationField').value || 'Unknown',
-        eta: document.getElementById('etaField').value
-      };
-      
-      document.getElementById('messageBox').innerHTML = '⏳ Sending to XANO...';
-      
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', XANO_URL, true);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      
-      xhr.onload = function() {
-        beep();
-        if (xhr.status >= 200 && xhr.status < 300) {
-          document.getElementById('messageBox').innerHTML = '✅ SAVED TO XANO';
-          document.getElementById('successPopup').style.display = 'block';
-          document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
-          setTimeout(function() { 
-            document.getElementById('successPopup').style.display = 'none'; 
-          }, 1500);
-          
-          addToTable(numbers);
-          
-          // Clear cells
-          for (var i = 0; i < cells.length; i++) cells[i].value = '';
-          cells[0].focus();
-          document.getElementById('labelId').value = '';
-        } else {
-          document.getElementById('messageBox').innerHTML = '❌ XANO Error ' + xhr.status + ': Check table name "' + XANO_TABLE + '"';
-          beep();
-        }
-      };
-      
-      xhr.onerror = function() {
-        beep();
-        document.getElementById('messageBox').innerHTML = '❌ Cannot reach XANO - Check URL: ' + XANO_BASE_URL;
-      };
-      
-      xhr.send(JSON.stringify(data));
+    });
+  }
+
+  function updateLabel() {
+    var code = '';
+    for (var i = 0; i < cells.length; i++) code += cells[i].value;
+    var num = '';
+    for (var i = 0; i < code.length; i++) num += letterMap[code[i]] || '';
+    document.getElementById('labelId').value = num;
+  }
+
+  // ===== BEEP =====
+  function beep() {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = ctx.createOscillator();
+      osc.connect(ctx.destination);
+      osc.frequency.value = 800;
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    } catch(e) {}
+  }
+
+  // ===== ADD TO LOCAL TABLE =====
+  var scanCounter = 0;
+
+  function addToTable(labelId) {
+    scanCounter++;
+    var emptyMsg = document.getElementById('empty-message');
+    if (emptyMsg) emptyMsg.style.display = 'none';
+    
+    var tableBody = document.getElementById('tableBody');
+    var row = document.createElement('div');
+    row.className = 'result-row';
+    
+    var now = new Date();
+    var timeStr = now.getHours() + ':' + 
+                 (now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes()) + ':' + 
+                 (now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds());
+    
+    row.innerHTML = '<div>' + scanCounter + '</div><div>' + labelId + ' @ ' + timeStr + '</div>';
+    tableBody.appendChild(row);
+  }
+
+  // ===== SEND TO XANO =====
+  function sendToXano() {
+    var letters = '';
+    for (var i = 0; i < cells.length; i++) letters += cells[i].value;
+
+    if (letters.length !== 6) {
+      document.getElementById('messageBox').innerHTML = '❌ Enter 6 letters A-J';
+      return;
     }
-    
-    // ===== EVENT LISTENERS =====
-    document.getElementById('locationField').addEventListener('click', getGPS);
-    document.getElementById('submitButton').onclick = function(e) {
-      e.preventDefault();
-      sendToXano();
+
+    var numbers = '';
+    for (var i = 0; i < letters.length; i++) numbers += letterMap[letters[i]];
+
+    var data = {
+      label_id: numbers,
+      barcode_type: 'manual',
+      status: document.getElementById('statusSelect').value,
+      date: new Date().toISOString().split('T')[0],
+      time: Math.floor(new Date().getTime() / 1000),
+      location: document.getElementById('locationField').value || 'Unknown',
+      eta: document.getElementById('etaField').value
     };
-    
-    // ===== INIT =====
-    var today = new Date().toISOString().split('T')[0];
-    document.getElementById('etaField').value = today;
-    
-    cells[0].focus();
-    setTimeout(getGPS, 500);
-  </script>
+
+    document.getElementById('messageBox').innerHTML = '⏳ Sending to XANO...';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', XANO_URL, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+
+    xhr.onload = function() {
+      beep();
+      if (xhr.status >= 200 && xhr.status < 300) {
+        document.getElementById('messageBox').innerHTML = '✅ SAVED TO XANO';
+        document.getElementById('successPopup').style.display = 'block';
+        document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
+        setTimeout(function() { 
+          document.getElementById('successPopup').style.display = 'none'; 
+        }, 1500);
+        
+        addToTable(numbers);
+        
+        // Clear cells
+        for (var i = 0; i < cells.length; i++) cells[i].value = '';
+        cells[0].focus();
+        document.getElementById('labelId').value = '';
+      } else {
+        var errorMsg = `❌ Error ${xhr.status}: ${xhr.responseText || 'Check table name'}`;
+        document.getElementById('messageBox').innerHTML = errorMsg;
+        beep();
+      }
+    };
+
+    xhr.onerror = function() {
+      beep();
+      document.getElementById('messageBox').innerHTML = '❌ Cannot reach XANO - Check URL';
+    };
+
+    xhr.send(JSON.stringify(data));
+  }
+
+  // ===== EVENT LISTENERS =====
+  document.getElementById('locationField').addEventListener('click', getGPS);
+  document.getElementById('submitButton').onclick = function(e) {
+    e.preventDefault();
+    sendToXano();
+  };
+
+  // ===== INIT =====
+  var today = new Date().toISOString().split('T')[0];
+  document.getElementById('etaField').value = today;
+
+  cells[0].focus();
+  setTimeout(getGPS, 500);
+</script>
 </body>
 </html>
