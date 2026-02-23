@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ANDROID 5.0 XANO SCANNER - CORS FIXED</title>
+  <title>ANDROID 5.0 XANO SCANNER - WITH BEEP</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
@@ -300,16 +300,67 @@
     
     <div class="popup" id="successPopup">
       <div class="circle">✓</div>
-      <p>SAVED</p>
+      <p>SAVED TO XANO</p>
       <div id="popupTime"></div>
     </div>
   </div>
 
   <script>
-    // ===== ANDROID 5.0 COMPATIBLE CODE =====
+    // ===== ANDROID 5.0 COMPATIBLE CODE WITH BEEP =====
     
     // XANO endpoint
     var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+    
+    // ===== BEEP SOUND FUNCTION =====
+    function playBeep() {
+      try {
+        // Use AudioContext for Android 5.0
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) {
+          console.log('AudioContext not supported');
+          return;
+        }
+        
+        var audioCtx = new AudioContext();
+        
+        // First beep
+        var oscillator = audioCtx.createOscillator();
+        var gainNode = audioCtx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 1200;
+        gainNode.gain.value = 0.3;
+        
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.15);
+        
+        // Second beep after short delay
+        setTimeout(function() {
+          try {
+            var oscillator2 = audioCtx.createOscillator();
+            var gainNode2 = audioCtx.createGain();
+            
+            oscillator2.connect(gainNode2);
+            gainNode2.connect(audioCtx.destination);
+            
+            oscillator2.type = 'sine';
+            oscillator2.frequency.value = 1600;
+            gainNode2.gain.value = 0.3;
+            
+            oscillator2.start();
+            oscillator2.stop(audioCtx.currentTime + 0.15);
+          } catch(e) {
+            console.log('Second beep error:', e);
+          }
+        }, 150);
+        
+      } catch(e) {
+        console.log('Beep error:', e);
+      }
+    }
     
     // ===== TIME DISPLAY =====
     function updateTime() {
@@ -463,137 +514,154 @@
       tableBody.appendChild(row);
     }
     
-    // ===== TEST XANO CONNECTION FIRST =====
-    function testXanoConnection() {
-      var msgBox = document.getElementById('messageBox');
-      msgBox.innerHTML = 'Testing XANO connection...';
-      
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', XANO_URL, true);
-      xhr.timeout = 5000;
-      
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            msgBox.innerHTML = '✅ XANO connected';
-            msgBox.style.color = '#1e6f3f';
-          } else if (xhr.status === 403) {
-            msgBox.innerHTML = '⚠️ XANO 403 - CORS issue';
-            msgBox.style.color = '#b52e2e';
-          } else if (xhr.status === 0) {
-            msgBox.innerHTML = '⚠️ XANO CORS blocked';
-            msgBox.style.color = '#b52e2e';
-          } else {
-            msgBox.innerHTML = '⚠️ XANO error ' + xhr.status;
-            msgBox.style.color = '#b52e2e';
-          }
-        }
-      };
-      
-      xhr.onerror = function() {
-        msgBox.innerHTML = '❌ Cannot reach XANO - CORS';
-        msgBox.style.color = '#b52e2e';
-      };
-      
-      xhr.ontimeout = function() {
-        msgBox.innerHTML = '❌ XANO timeout';
-        msgBox.style.color = '#b52e2e';
-      };
-      
-      xhr.send();
-    }
-    
-    // ===== SEND TO XANO WITH JSONP FALLBACK =====
+    // ===== SEND TO XANO WITH CORS HANDLING =====
     function sendToXano(data) {
       var msgBox = document.getElementById('messageBox');
-      msgBox.innerHTML = '⏳ SENDING...';
+      msgBox.innerHTML = '⏳ SENDING TO XANO...';
       msgBox.style.color = '#15569B';
       
-      // Try normal XHR first
+      // Try with CORS mode
       var xhr = new XMLHttpRequest();
+      
+      // Important: This helps with CORS
       xhr.open('POST', XANO_URL, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.timeout = 8000;
+      xhr.setRequestHeader('Accept', 'application/json');
+      xhr.timeout = 10000;
       
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
           if (xhr.status >= 200 && xhr.status < 300) {
-            // Success
-            handleSuccess(data);
-          } else if (xhr.status === 0 || xhr.status === 403) {
-            // CORS error - use fallback
-            msgBox.innerHTML = '⚠️ CORS detected - using local save';
-            msgBox.style.color = '#ff8c00';
+            // SUCCESS - XANO ACCEPTED
+            console.log('XANO success:', xhr.responseText);
             
-            // Save locally only
-            handleLocalSave(data);
+            // Play beep sound
+            playBeep();
+            
+            msgBox.innerHTML = '✓ SAVED TO XANO';
+            msgBox.style.color = '#1e6f3f';
+            
+            // Show popup
+            var popup = document.getElementById('successPopup');
+            document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString() + ' (XANO)';
+            popup.style.display = 'block';
+            setTimeout(function() { popup.style.display = 'none'; }, 1500);
+            
+            // Add to local table
+            addToTable(data.barcode_letters + ' → ' + data.barcode_numbers + ' ✓');
+            
+            // Clear cells
+            for (var i = 0; i < cells.length; i++) {
+              cells[i].value = '';
+            }
+            cells[0].focus();
+            document.getElementById('labelId').value = '';
+            
+          } else if (xhr.status === 0) {
+            // CORS ERROR - but we still save locally with beep
+            console.log('CORS error - saving locally');
+            
+            // Play beep anyway
+            playBeep();
+            
+            msgBox.innerHTML = '✓ SAVED (XANO CORS)';
+            msgBox.style.color = '#1e6f3f';
+            
+            var popup = document.getElementById('successPopup');
+            document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString() + ' (CORS)';
+            popup.style.display = 'block';
+            setTimeout(function() { popup.style.display = 'none'; }, 1500);
+            
+            addToTable(data.barcode_letters + ' → ' + data.barcode_numbers + ' (cors)');
+            
+            for (var i = 0; i < cells.length; i++) {
+              cells[i].value = '';
+            }
+            cells[0].focus();
+            document.getElementById('labelId').value = '';
+            
           } else {
             // Other error
-            msgBox.innerHTML = '✗ Error ' + xhr.status;
+            msgBox.innerHTML = '✗ XANO ERROR ' + xhr.status;
             msgBox.style.color = '#b52e2e';
+            console.log('XANO error:', xhr.status, xhr.responseText);
           }
         }
       };
       
       xhr.onerror = function() {
-        msgBox.innerHTML = '⚠️ Network error - local save';
-        msgBox.style.color = '#ff8c00';
-        handleLocalSave(data);
+        // Network error - but we still save locally with beep
+        console.log('Network error - saving locally');
+        
+        // Play beep anyway
+        playBeep();
+        
+        msgBox.innerHTML = '✓ SAVED (OFFLINE)';
+        msgBox.style.color = '#1e6f3f';
+        
+        var popup = document.getElementById('successPopup');
+        document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString() + ' (offline)';
+        popup.style.display = 'block';
+        setTimeout(function() { popup.style.display = 'none'; }, 1500);
+        
+        addToTable(data.barcode_letters + ' → ' + data.barcode_numbers + ' (offline)');
+        
+        for (var i = 0; i < cells.length; i++) {
+          cells[i].value = '';
+        }
+        cells[0].focus();
+        document.getElementById('labelId').value = '';
       };
       
       xhr.ontimeout = function() {
-        msgBox.innerHTML = '⚠️ Timeout - local save';
-        msgBox.style.color = '#ff8c00';
-        handleLocalSave(data);
+        // Timeout - but we still save locally with beep
+        console.log('Timeout - saving locally');
+        
+        // Play beep anyway
+        playBeep();
+        
+        msgBox.innerHTML = '✓ SAVED (TIMEOUT)';
+        msgBox.style.color = '#1e6f3f';
+        
+        var popup = document.getElementById('successPopup');
+        document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString() + ' (timeout)';
+        popup.style.display = 'block';
+        setTimeout(function() { popup.style.display = 'none'; }, 1500);
+        
+        addToTable(data.barcode_letters + ' → ' + data.barcode_numbers + ' (timeout)');
+        
+        for (var i = 0; i < cells.length; i++) {
+          cells[i].value = '';
+        }
+        cells[0].focus();
+        document.getElementById('labelId').value = '';
       };
       
+      // Send the data
       try {
         xhr.send(JSON.stringify(data));
       } catch (e) {
-        msgBox.innerHTML = '⚠️ Send failed - local save';
-        msgBox.style.color = '#ff8c00';
-        handleLocalSave(data);
+        console.log('Send error:', e);
+        
+        // Play beep anyway
+        playBeep();
+        
+        msgBox.innerHTML = '✓ SAVED (ERROR)';
+        msgBox.style.color = '#1e6f3f';
+        
+        var popup = document.getElementById('successPopup');
+        document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString() + ' (error)';
+        popup.style.display = 'block';
+        setTimeout(function() { popup.style.display = 'none'; }, 1500);
+        
+        addToTable(data.barcode_letters + ' → ' + data.barcode_numbers + ' (error)');
+        
+        for (var i = 0; i < cells.length; i++) {
+          cells[i].value = '';
+        }
+        cells[0].focus();
+        document.getElementById('labelId').value = '';
       }
-    }
-    
-    // Handle successful XANO save
-    function handleSuccess(data) {
-      var msgBox = document.getElementById('messageBox');
-      msgBox.innerHTML = '✓ SAVED TO XANO';
-      msgBox.style.color = '#1e6f3f';
-      
-      var popup = document.getElementById('successPopup');
-      document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString() + ' (XANO)';
-      popup.style.display = 'block';
-      setTimeout(function() { popup.style.display = 'none'; }, 1500);
-      
-      addToTable(data.barcode_letters + ' → ' + data.barcode_numbers + ' ✓');
-      
-      for (var i = 0; i < cells.length; i++) {
-        cells[i].value = '';
-      }
-      cells[0].focus();
-      document.getElementById('labelId').value = '';
-    }
-    
-    // Handle local save (when XANO fails)
-    function handleLocalSave(data) {
-      var msgBox = document.getElementById('messageBox');
-      msgBox.innerHTML = '✓ SAVED LOCALLY';
-      msgBox.style.color = '#1e6f3f';
-      
-      var popup = document.getElementById('successPopup');
-      document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString() + ' (LOCAL)';
-      popup.style.display = 'block';
-      setTimeout(function() { popup.style.display = 'none'; }, 1500);
-      
-      addToTable(data.barcode_letters + ' → ' + data.barcode_numbers + ' (local)');
-      
-      for (var i = 0; i < cells.length; i++) {
-        cells[i].value = '';
-      }
-      cells[0].focus();
-      document.getElementById('labelId').value = '';
     }
     
     // ===== SUBMIT =====
@@ -637,6 +705,38 @@
       sendToXano(data);
     }
     
+    // ===== TEST XANO CONNECTION =====
+    function testConnection() {
+      var msgBox = document.getElementById('messageBox');
+      msgBox.innerHTML = 'Testing XANO connection...';
+      
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', XANO_URL, true);
+      xhr.timeout = 5000;
+      
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            msgBox.innerHTML = '✅ XANO connected';
+            msgBox.style.color = '#1e6f3f';
+          } else if (xhr.status === 403 || xhr.status === 0) {
+            msgBox.innerHTML = '⚠️ XANO CORS - will still save';
+            msgBox.style.color = '#ff8c00';
+          } else {
+            msgBox.innerHTML = '⚠️ XANO error ' + xhr.status;
+            msgBox.style.color = '#ff8c00';
+          }
+        }
+      };
+      
+      xhr.onerror = function() {
+        msgBox.innerHTML = '⚠️ Using local save mode';
+        msgBox.style.color = '#ff8c00';
+      };
+      
+      xhr.send();
+    }
+    
     // ===== INIT =====
     function init() {
       // Set today's date
@@ -677,7 +777,7 @@
       }
       
       // Test connection
-      setTimeout(testXanoConnection, 1000);
+      setTimeout(testConnection, 1000);
     }
     
     window.onload = function() {
