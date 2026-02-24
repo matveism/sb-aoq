@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>📦 COURIER SCANNER · QR FIXED</title>
+<title>COURIER SCANNER - ZXING</title>
 <style>
 * { 
     box-sizing: border-box; 
@@ -18,8 +18,8 @@ body {
     justify-content: center; 
     align-items: center; 
     min-height: 100vh; 
-    font-family: Arial, Helvetica, sans-serif; 
-    font-weight: bold; 
+    font-family: 'Segoe UI', Arial, sans-serif; 
+    font-weight: 600; 
     overflow: hidden;
     position: fixed;
     width: 100%;
@@ -30,330 +30,277 @@ body {
     height: 100%; 
     max-width: 400px;
     max-height: 800px;
-    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
-    color: #fff; 
+    background: linear-gradient(180deg, #2c3e50 0%, #1a2632 100%); 
+    color: white; 
     position: relative; 
-    overflow: hidden; 
+    overflow-y: auto;
+    overflow-x: hidden;
     display: flex; 
     flex-direction: column; 
     box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
     margin: auto;
-    transform: scale(0.95); /* Zoom out slightly */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+#phone::-webkit-scrollbar {
+    display: none;
 }
 #header { 
     width: 100%; 
     height: 48px; 
-    background: linear-gradient(180deg, #5180b0 0%, #2e5a88 100%); 
-    border-bottom: 2px solid #1f3f5c; 
+    background: #34495e; 
+    border-bottom: 2px solid #2c3e50; 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
     padding: 0 12px; 
-    font-weight: bold; 
-    font-size: 18px; 
+    font-weight: 600; 
+    font-size: 16px; 
     z-index: 2; 
     flex-shrink: 0; 
 }
-#leftText { color: #fff; } 
-#rightArea { color: #fff; font-size: 16px; display: flex; align-items: center; gap: 12px; }
+#leftText { color: white; } 
+#rightArea { color: white; font-size: 14px; display: flex; align-items: center; gap: 8px; }
 #gpsIndicator { 
-    color: #ffaa00;
-    font-size: 18px; 
-    transition: color 0.3s;
+    color: #f1c40f;
+    font-size: 16px; 
 }
-#timeDisplay { color: #ffcc00; font-size: 16px; }
+#timeDisplay { color: #f39c12; font-size: 14px; }
 #scanButton { 
     width: calc(100% - 24px); 
-    height: 60px; 
-    background: linear-gradient(180deg, #4CAF50 0%, #2b6e2f 100%); 
-    border: 3px solid #1e5a22; 
-    color: #fff; 
-    font-size: 26px; 
-    font-weight: bold; 
+    height: 56px; 
+    background: #27ae60; 
+    border: 2px solid #229954; 
+    color: white; 
+    font-size: 20px; 
+    font-weight: 600; 
     text-align: center; 
-    line-height: 60px; 
-    margin: 12px auto 8px auto; 
-    border-radius: 8px; 
+    line-height: 56px; 
+    margin: 10px auto 8px auto; 
+    border-radius: 28px; 
     z-index: 2; 
-    box-shadow: 0 5px 0 #145018; 
     cursor: pointer; 
     flex-shrink: 0; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    gap: 10px; 
+    gap: 8px; 
 }
 #scanButton:active { 
-    transform: translateY(3px); 
-    box-shadow: 0 2px 0 #145018; 
-    background: #3d9c42; 
+    background: #229954; 
 }
 .scan-button { display: flex; align-items: center; gap: 8px; font-size: 18px; }
 .icon { width: 24px; height: 18px; background: repeating-linear-gradient(to right, black, black 3px, white 3px, white 6px); }
-#scanFrame { 
-    width: calc(100% - 24px); 
-    height: 220px; 
-    margin: 4px auto 0 auto; 
-    position: relative; 
-    display: none; 
-    z-index: 3; 
-    overflow: hidden; 
-    flex-shrink: 0; 
-    background: rgba(0,0,0,0.4); 
-    border: 3px solid #ffcc00;
-    border-radius: 8px;
-}
-#preview { width: 100%; height: 100%; object-fit: cover; display: block; }
-.corner-bracket { 
-    position: absolute; 
-    width: 35px; 
-    height: 35px; 
-    border: 5px solid #ffcc00; 
-    filter: drop-shadow(0 0 8px rgba(255,204,0,0.9)); 
-    pointer-events: none; 
-    z-index: 10; 
-}
-.corner-tl { top: 5px; left: 5px; border-right: none; border-bottom: none; }
-.corner-tr { top: 5px; right: 5px; border-left: none; border-bottom: none; }
-.corner-bl { bottom: 5px; left: 5px; border-right: none; border-top: none; }
-.corner-br { bottom: 5px; right: 5px; border-left: none; border-top: none; }
-
-#flashlightBtn {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    width: 50px;
-    height: 50px;
-    background: rgba(0,0,0,0.7);
-    border: 2px solid #ffcc00;
-    border-radius: 50%;
-    color: #ffcc00;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 20;
-    transition: all 0.2s;
-}
-#flashlightBtn.active {
-    background: #ffcc00;
-    color: #000;
-    border-color: #fff;
-}
 
 #labelBlock { 
     display: flex; 
     flex-direction: column; 
     flex: 1; 
-    min-height: 0; 
     width: 100%; 
     z-index: 2; 
-    margin-top: 4px; 
+    margin-top: 0; 
 }
 #labelTitle { 
-    height: 40px; 
-    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
-    border: 2px solid #1f3f5c; 
+    height: 36px; 
+    background: #34495e; 
+    border: 2px solid #2c3e50; 
     display: flex; 
     align-items: center; 
     padding-left: 15px; 
     margin: 0 12px; 
-    font-weight: bold; 
-    font-size: 16px; 
-    color: #fff; 
+    font-weight: 600; 
+    font-size: 14px; 
+    color: white; 
     flex-shrink: 0; 
     border-radius: 4px;
 }
 #labelBox { 
     width: calc(100% - 24px); 
-    min-height: 100px; 
-    max-height: 150px; 
+    min-height: 90px; 
+    max-height: 130px; 
     margin: 0 auto; 
-    border: 3px solid #1f3f5c; 
-    background: #A6BEEF; 
-    padding: 10px; 
-    font-size: 18px; 
-    font-weight: bold; 
-    color: #000; 
-    white-space: pre-wrap; 
+    border: 2px solid #2c3e50; 
+    background: #ecf0f1; 
+    padding: 8px; 
+    font-size: 16px; 
+    font-weight: 500; 
+    color: #2c3e50; 
     overflow-y: auto; 
     word-break: break-all; 
     flex-shrink: 0; 
-    line-height: 1.5; 
+    line-height: 1.4; 
     font-family: monospace; 
-    box-shadow: inset 0 0 0 3px #fff; 
     border-radius: 4px;
 }
 #labelBox span.scan-entry { 
     display: block; 
-    border-bottom: 2px solid #2b4b70; 
-    background: #c0d4f5; 
-    padding: 6px 8px; 
-    margin: 6px 0; 
-    border-radius: 6px; 
-    font-weight: bold; 
-    color: #000; 
-    font-size: 16px;
+    border-bottom: 1px solid #bdc3c7; 
+    background: white; 
+    padding: 5px 8px; 
+    margin: 4px 0; 
+    border-radius: 4px; 
+    font-weight: 500; 
+    color: #2c3e50; 
+    font-size: 14px;
 }
 #manualInputDiv { 
-    background: #ffff99; 
-    border: 3px dashed #ffaa00; 
-    border-radius: 8px; 
-    padding: 8px; 
-    margin: 6px 0; 
-    font-weight: bold; 
-    color: #000; 
+    background: #fcf3cf; 
+    border: 2px dashed #f39c12; 
+    border-radius: 4px; 
+    padding: 6px; 
+    margin: 4px 0; 
+    font-weight: 500; 
+    color: #2c3e50; 
     display: flex; 
     align-items: center; 
-    gap: 8px; 
+    gap: 6px; 
 }
-#manualIndicator { background: #ffaa00; color: #000; padding: 4px 12px; border-radius: 16px; font-size: 14px; }
-#manualText { flex: 1; font-family: monospace; letter-spacing: 1px; color: #0066cc; font-size: 18px; }
+#manualIndicator { background: #f39c12; color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+#manualText { flex: 1; font-family: monospace; letter-spacing: 1px; color: #2980b9; font-size: 16px; }
 #labelButtons { 
-    height: 50px; 
-    background: #7496C4; 
+    height: 46px; 
+    background: #34495e; 
     display: flex; 
     align-items: center; 
     justify-content: space-between; 
-    border-radius: 8px; 
-    border: 3px solid #3a5f8a; 
-    margin: 10px 12px 0 12px; 
-    padding: 0 25px; 
-    font-weight: bold; 
-    font-size: 22px; 
-    color: #fff; 
+    border-radius: 4px; 
+    border: 2px solid #2c3e50; 
+    margin: 8px 12px 0 12px; 
+    padding: 0 20px; 
+    font-weight: 600; 
+    font-size: 18px; 
+    color: white; 
     flex-shrink: 0; 
-    box-shadow: inset 0 -3px 0 #3a5f8a; 
 }
 #labelButtons span { 
     cursor: pointer; 
-    padding: 6px 15px; 
+    padding: 4px 12px; 
     background: transparent; 
     display: inline-block;
 }
-#labelButtons span:active { background: #27ae60; border-radius: 6px; }
-#divider { color: rgba(255,255,255,0.7); padding: 0 !important; }
+#labelButtons span:active { background: #27ae60; border-radius: 4px; }
+#divider { color: #7f8c8d; padding: 0 !important; }
 #navBar { 
-    height: 44px; 
-    background: linear-gradient(180deg, #4a7aa8 0%, #2b4b70 100%); 
+    height: 40px; 
+    background: #34495e; 
     display: flex; 
     align-items: center; 
     justify-content: space-between; 
-    border-radius: 8px; 
-    border: 2px solid #1f3f5c; 
-    margin: 10px 12px 0 12px; 
-    padding: 0 20px; 
-    font-weight: bold; 
-    font-size: 18px; 
-    color: #fff; 
+    border-radius: 4px; 
+    border: 2px solid #2c3e50; 
+    margin: 8px 12px 0 12px; 
+    padding: 0 15px; 
+    font-weight: 600; 
+    font-size: 16px; 
+    color: white; 
     flex-shrink: 0; 
 }
 #navBar button { 
     background: transparent; 
     border: none; 
     color: white; 
-    font-size: 24px; 
-    font-weight: bold; 
+    font-size: 20px; 
+    font-weight: 600; 
     cursor: pointer; 
-    padding: 6px 12px; 
+    padding: 4px 10px; 
 }
-#navBar button:active { color: #4CAF50; }
+#navBar button:active { color: #27ae60; }
 #keypadWrapper { 
     width: 100%; 
-    background: linear-gradient(180deg, #2b4b70 0%, #1f3f5c 100%); 
-    border-top: 4px solid #ffcc00; 
+    background: #2c3e50; 
+    border-top: 3px solid #f39c12; 
     margin-top: auto; 
     flex-shrink: 0; 
     z-index: 2; 
-    padding-bottom: 8px; 
+    padding: 8px 0 15px 0; 
 }
 #keyTabs {
     display: flex; 
-    gap: 10px; 
-    padding: 10px 15px 6px 15px;
+    gap: 8px; 
+    padding: 8px 12px 4px 12px;
 } 
 #keyTabs button {
     flex: 1; 
-    background: #3a5f8a; 
-    border: 3px solid #1f3f5c; 
-    border-radius: 40px; 
-    color: #fff; 
-    font-size: 18px; 
-    font-weight: bold; 
-    padding: 12px 0; 
+    background: #34495e; 
+    border: 2px solid #2c3e50; 
+    border-radius: 20px; 
+    color: white; 
+    font-size: 16px; 
+    font-weight: 600; 
+    padding: 10px 0; 
     cursor: pointer;
 }
 #keyTabs button.active {
-    background: #4CAF50; 
-    border-color: #145018;
+    background: #27ae60; 
+    border-color: #229954;
 }
 #numericPad {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    padding: 8px 18px 15px 18px;
+    gap: 6px;
+    padding: 6px 12px 8px 12px;
 }
 #numericPad button {
-    background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%); 
-    border: 2px solid #1f3f5c; 
-    border-radius: 10px;
-    color: #fff; 
-    font-size: 28px; 
-    font-weight: bold; 
-    height: 60px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    cursor: pointer; 
-    box-shadow: 0 4px 0 #1f3f5c;
-    width: 100%;
-    padding: 0;
-}
-#numericPad button:active {
-    transform: translateY(3px); 
-    background: #4CAF50;
-}
-#numericPad button.backspace {
-    background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
-}
-#qwertyPad, #symbolPad {
-    display: none; 
-    padding: 0 10px 15px 10px;
-}
-.row {
-    display: flex; 
-    gap: 6px; 
-    margin-bottom: 6px; 
-    justify-content: center;
-}
-.row button {
-    flex: 1; 
-    max-width: 40px; 
-    background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%); 
-    border: 2px solid #1f3f5c; 
-    border-radius: 8px; 
-    color: #fff; 
-    font-size: 20px; 
-    font-weight: bold; 
+    background: #34495e; 
+    border: 2px solid #2c3e50; 
+    border-radius: 8px;
+    color: white; 
+    font-size: 24px; 
+    font-weight: 600; 
     height: 50px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
     cursor: pointer; 
-    box-shadow: 0 3px 0 #1f3f5c;
+    width: 100%;
+    padding: 0;
+}
+#numericPad button:active {
+    background: #27ae60;
+}
+#numericPad button.backspace {
+    background: #e67e22; 
+    border-color: #d35400;
+}
+#numericPad button.backspace:active {
+    background: #d35400;
+}
+#qwertyPad, #symbolPad {
+    display: none; 
+    padding: 0 8px 8px 8px;
+}
+.row {
+    display: flex; 
+    gap: 4px; 
+    margin-bottom: 4px; 
+    justify-content: center;
+}
+.row button {
+    flex: 1; 
+    max-width: 36px; 
+    background: #34495e; 
+    border: 2px solid #2c3e50; 
+    border-radius: 6px; 
+    color: white; 
+    font-size: 18px; 
+    font-weight: 600; 
+    height: 44px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer; 
 }
 .row button:active {
-    transform: translateY(2px); 
-    background: #4CAF50;
+    background: #27ae60;
 }
 .row button.special {
-    background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%); 
-    max-width: 60px;
+    background: #e67e22; 
+    border-color: #d35400;
+    max-width: 50px;
 }
 .row button.space {
     flex: 3; 
-    max-width: 250px;
+    max-width: 200px;
 }
 #statusScreen {
     display: none; 
@@ -363,29 +310,29 @@ body {
     left: 0; 
     right: 0; 
     bottom: 0; 
-    background: rgba(28,48,70,0.98); 
+    background: rgba(44,62,80,0.98); 
     z-index: 100; 
-    padding: 25px 20px; 
+    padding: 20px 15px; 
     overflow-y: auto; 
-    gap: 12px;
+    gap: 10px;
 }
 .statusBtn {
-    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
-    border: 3px solid #ffcc00; 
+    background: #34495e; 
+    border: 2px solid #f39c12; 
     color: white; 
-    font-size: 22px; 
-    font-weight: bold; 
-    padding: 20px 10px; 
+    font-size: 18px; 
+    font-weight: 600; 
+    padding: 16px 10px; 
     text-align: center; 
-    border-radius: 12px; 
+    border-radius: 8px; 
     cursor: pointer; 
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
-.statusBtn:active { background: #4CAF50; }
+.statusBtn:active { background: #27ae60; }
 .statusBtn.back {
-    background: linear-gradient(180deg, #3a5f8a 0%, #1f3f5c 100%); 
-    border-color: #f1c40f; 
-    margin-top: 30px;
+    background: #e67e22; 
+    border-color: #d35400; 
+    margin-top: 20px;
 }
 #successPopup {
     display: none; 
@@ -400,42 +347,36 @@ body {
     justify-content: center;
 }
 .popup-content {
-    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
-    border: 4px solid #27ae60; 
-    border-radius: 30px; 
-    padding: 40px 25px; 
+    background: #34495e; 
+    border: 3px solid #27ae60; 
+    border-radius: 16px; 
+    padding: 30px 20px; 
     text-align: center; 
-    width: 320px; 
-    animation: fadePop 0.2s;
+    width: 280px; 
 }
 .checkmark {
-    width: 90px;
-    height: 90px;
+    width: 70px;
+    height: 70px;
     background: #27ae60;
     border-radius: 50%; 
-    font-size: 60px; 
+    font-size: 40px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    margin: 0 auto 20px auto; 
+    margin: 0 auto 15px auto; 
     color: white;
 }
-.popup-message { font-size: 26px; font-weight: bold; }
-.popup-submessage { color: #ffcc00; font-size: 18px; margin-top: 8px; }
-@keyframes fadePop {
-    0% { opacity: 0; transform: scale(0.7); }
-    100% { opacity: 1; transform: scale(1); }
-}
-#barcodeType { font-size: 12px; color: #ffcc00; margin-left: 8px; }
+.popup-message { font-size: 20px; font-weight: 600; }
+.popup-submessage { color: #f39c12; font-size: 16px; margin-top: 6px; }
+#barcodeType { font-size: 11px; color: #f39c12; margin-left: 6px; }
 
-/* Exit overlay */
 #exitOverlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.9);
+    background: rgba(0,0,0,0.95);
     z-index: 10000;
     display: none;
     flex-direction: column;
@@ -444,56 +385,80 @@ body {
     color: white;
 }
 #exitPassword {
-    width: 250px;
-    height: 60px;
-    font-size: 30px;
+    width: 220px;
+    height: 50px;
+    font-size: 24px;
     text-align: center;
-    margin: 20px;
-    background: #fff;
-    color: #000;
-    border: 3px solid #ffcc00;
-    border-radius: 10px;
+    margin: 15px;
+    background: white;
+    color: black;
+    border: 3px solid #f39c12;
+    border-radius: 8px;
 }
 #exitMessage {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #ffcc00;
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: #f39c12;
 }
 #exitButton {
-    background: #4CAF50;
+    background: #27ae60;
     color: white;
-    font-size: 28px;
-    padding: 15px 40px;
-    border-radius: 10px;
+    font-size: 22px;
+    padding: 12px 30px;
+    border-radius: 8px;
     cursor: pointer;
-    border: 3px solid #1e5a22;
-}
-#exitButton:active {
-    background: #3d9c42;
+    border: 2px solid #229954;
 }
 
-/* Loading indicator */
-#scanLoading {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #ffcc00;
-    font-size: 14px;
-    background: rgba(0,0,0,0.7);
-    padding: 8px 16px;
-    border-radius: 20px;
+#zxingFrame {
     display: none;
-    z-index: 25;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    z-index: 2000;
+    flex-direction: column;
+}
+#zxingVideo {
+    width: 100%;
+    height: 80%;
+    object-fit: cover;
+}
+#zxingControls {
+    height: 20%;
+    background: #2c3e50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+#zxingClose, #zxingFlash {
+    background: #e67e22;
+    color: white;
+    font-size: 20px;
+    padding: 12px 30px;
+    border-radius: 40px;
+    border: 2px solid #d35400;
+    cursor: pointer;
+    font-weight: 600;
+}
+#zxingFlash {
+    background: #34495e;
+    border-color: #2c3e50;
+}
+#zxingFlash.active {
+    background: #f39c12;
+    border-color: #e67e22;
+    color: black;
 }
 </style>
-<!-- Include Instascan QR scanner library -->
-<script src="https://cdn.jsdelivr.net/npm/instascan@1.0.0/dist/instascan.min.js"></script>
 </head>
 <body>
 <div id="phone">
     <div id="header">
-        <span id="leftText">📦 COURIER SCANNER</span>
+        <span id="leftText">COURIER SCANNER</span>
         <span id="rightArea">
             GPS: <span id="gpsIndicator">🌐</span>
             <span>📶</span>
@@ -501,21 +466,11 @@ body {
         </span>
     </div>
     
-    <div id="scanButton" onclick="toggleScanner()">
+    <div id="scanButton" onclick="startZXingScanner()">
         <div class="scan-button">
             <div class="icon"></div>
             <div>SCAN 1D / 2D CODE</div>
         </div>
-    </div>
-    
-    <div id="scanFrame">
-        <video id="preview" autoplay playsinline></video>
-        <div class="corner-bracket corner-tl"></div>
-        <div class="corner-bracket corner-tr"></div>
-        <div class="corner-bracket corner-bl"></div>
-        <div class="corner-bracket corner-br"></div>
-        <div id="flashlightBtn" onclick="toggleFlashlight()">🔦</div>
-        <div id="scanLoading">Scanning...</div>
     </div>
     
     <div id="labelBlock">
@@ -657,11 +612,19 @@ body {
         </div>
     </div>
 
-    <!-- Exit overlay with password -->
     <div id="exitOverlay">
-        <div id="exitMessage">🔒 ENTER EXIT PASSWORD</div>
+        <div id="exitMessage">ENTER EXIT PASSWORD</div>
         <input type="password" id="exitPassword" maxlength="6" inputmode="numeric" pattern="[0-9]*">
         <div id="exitButton" onclick="checkPassword()">UNLOCK</div>
+    </div>
+</div>
+
+<!-- ZXing Scanner Frame -->
+<div id="zxingFrame">
+    <video id="zxingVideo" autoplay playsinline></video>
+    <div id="zxingControls">
+        <div id="zxingClose" onclick="closeZXingScanner()">CLOSE</div>
+        <div id="zxingFlash" onclick="toggleZXingFlash()">FLASH</div>
     </div>
 </div>
 
@@ -671,24 +634,15 @@ var scanCount = 0;
 var currentScans = [];
 var manualInput = '';
 var currentLocation = null;
-var scannerActive = false;
-var scanner = null;
-var flashlightActive = false;
-var currentStream = null;
+var zxingScanner = null;
+var zxingStream = null;
+var flashActive = false;
 
 // PREVENT ALL NAVIGATION AND BACK BUTTONS
 history.pushState(null, null, location.href);
 window.onpopstate = function () {
     history.pushState(null, null, location.href);
 };
-
-// Disable all hardware buttons and gestures
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' || e.key === 'Backspace' || e.keyCode === 27) {
-        e.preventDefault();
-        return false;
-    }
-});
 
 document.addEventListener('contextmenu', function(e) {
     e.preventDefault();
@@ -709,7 +663,7 @@ function updateTime() {
     document.getElementById('timeDisplay2').innerText = timeStr;
 }
 
-// GPS with YELLOW indicator
+// GPS
 function initGPS() {
     if (navigator.geolocation) {
         navigator.geolocation.watchPosition(
@@ -719,11 +673,11 @@ function initGPS() {
                     lng: pos.coords.longitude
                 };
                 document.getElementById('gpsIndicator').innerHTML = '📍';
-                document.getElementById('gpsIndicator').style.color = '#ffaa00';
+                document.getElementById('gpsIndicator').style.color = '#f1c40f';
             },
             function(err) {
                 document.getElementById('gpsIndicator').innerHTML = '🌐';
-                document.getElementById('gpsIndicator').style.color = '#888888';
+                document.getElementById('gpsIndicator').style.color = '#7f8c8d';
             },
             { 
                 enableHighAccuracy: true,
@@ -731,159 +685,141 @@ function initGPS() {
                 timeout: 5000
             }
         );
-    } else {
-        document.getElementById('gpsIndicator').innerHTML = '🚫';
-        document.getElementById('gpsIndicator').style.color = '#ff4444';
     }
 }
 
-// FLASHLIGHT FUNCTION - FIXED
-function toggleFlashlight() {
-    if (!scanner || !scanner.isScanning) {
-        alert('Please start camera first');
-        return;
+// ZXING SCANNER FUNCTIONS - Uses device's ZXing if available
+function startZXingScanner() {
+    // Try to use native ZXing first (for devices with ZXing installed)
+    if (window.Intent && window.Intent.ACTION_VIEW) {
+        try {
+            var intent = new Intent(Intent.ACTION_VIEW);
+            intent.setPackage("com.google.zxing.client.android");
+            intent.setData("http://scan/");
+            startActivity(intent);
+            // ZXing will return result to this page
+            return;
+        } catch(e) {
+            console.log('ZXing intent failed, using fallback');
+        }
     }
     
-    try {
-        if (!flashlightActive) {
-            scanner.flashOn(function() {
-                flashlightActive = true;
-                document.getElementById('flashlightBtn').classList.add('active');
-                document.getElementById('flashlightBtn').innerHTML = '🔆';
-            });
-        } else {
-            scanner.flashOff(function() {
-                flashlightActive = false;
-                document.getElementById('flashlightBtn').classList.remove('active');
-                document.getElementById('flashlightBtn').innerHTML = '🔦';
-            });
-        }
-    } catch(e) {
-        console.log('Flashlight error:', e);
-        // Try alternative method
-        if (currentStream) {
-            const track = currentStream.getVideoTracks()[0];
-            if (track && track.applyConstraints) {
-                if (!flashlightActive) {
-                    track.applyConstraints({ advanced: [{ torch: true }] })
-                        .then(() => {
-                            flashlightActive = true;
-                            document.getElementById('flashlightBtn').classList.add('active');
-                            document.getElementById('flashlightBtn').innerHTML = '🔆';
-                        })
-                        .catch(() => alert('Flashlight not available'));
-                } else {
-                    track.applyConstraints({ advanced: [{ torch: false }] })
-                        .then(() => {
-                            flashlightActive = false;
-                            document.getElementById('flashlightBtn').classList.remove('active');
-                            document.getElementById('flashlightBtn').innerHTML = '🔦';
-                        })
-                        .catch(() => {});
-                }
+    // Fallback: Use built-in scanner with ZXing-js
+    document.getElementById('zxingFrame').style.display = 'flex';
+    
+    var video = document.getElementById('zxingVideo');
+    
+    // Get back camera
+    navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: { exact: "environment" } } 
+    }).then(function(stream) {
+        zxingStream = stream;
+        video.srcObject = stream;
+        video.play();
+        
+        // Initialize ZXing decoder
+        if (!zxingScanner) {
+            // Use native BarcodeDetector if available (Chrome on Android)
+            if ('BarcodeDetector' in window) {
+                zxingScanner = new BarcodeDetector({ 
+                    formats: ['qr_code', 'ean_13', 'ean_8', 'code_128', 'code_39', 'aztec', 'pdf417'] 
+                });
+                
+                // Scan every 500ms
+                var scanInterval = setInterval(function() {
+                    if (!video.videoWidth) return;
+                    
+                    // Create canvas from video frame
+                    var canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    // Detect barcodes
+                    zxingScanner.detect(canvas).then(barcodes => {
+                        if (barcodes.length > 0) {
+                            clearInterval(scanInterval);
+                            handleZXingResult(barcodes[0].rawValue, barcodes[0].format);
+                        }
+                    }).catch(e => {});
+                }, 500);
+                
+                // Store interval to clear later
+                window.zxingInterval = scanInterval;
+            } else {
+                // If no BarcodeDetector, show message
+                alert('Please install ZXing Barcode Scanner app or use Chrome browser');
+                closeZXingScanner();
             }
         }
-    }
+    }).catch(function(err) {
+        alert('Camera access denied: ' + err.message);
+        closeZXingScanner();
+    });
 }
 
-// SCANNER FUNCTIONS - WITH QR CODE SUPPORT
-function toggleScanner() {
-    if (scannerActive) {
-        stopScanner();
+function handleZXingResult(text, format) {
+    // Close scanner
+    closeZXingScanner();
+    
+    // Beep
+    try {
+        var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        var osc = audioCtx.createOscillator();
+        osc.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+        audioCtx.resume();
+    } catch(e) {}
+    
+    // Add scanned code
+    addScannedCode(text, format || 'QR Code');
+}
+
+function toggleZXingFlash() {
+    if (!zxingStream) return;
+    
+    var track = zxingStream.getVideoTracks()[0];
+    if (!track) return;
+    
+    var btn = document.getElementById('zxingFlash');
+    
+    if (!flashActive) {
+        track.applyConstraints({ advanced: [{ torch: true }] })
+            .then(() => {
+                flashActive = true;
+                btn.classList.add('active');
+                btn.innerText = 'FLASH ON';
+            })
+            .catch(() => alert('Flash not available'));
     } else {
-        startScanner();
+        track.applyConstraints({ advanced: [{ torch: false }] })
+            .then(() => {
+                flashActive = false;
+                btn.classList.remove('active');
+                btn.innerText = 'FLASH';
+            })
+            .catch(() => {});
     }
 }
 
-function startScanner() {
-    var frame = document.getElementById('scanFrame');
-    var videoElement = document.getElementById('preview');
-    var loading = document.getElementById('scanLoading');
+function closeZXingScanner() {
+    document.getElementById('zxingFrame').style.display = 'none';
     
-    frame.style.display = 'block';
-    loading.style.display = 'block';
-    
-    // Initialize Instascan scanner
-    scanner = new Instascan.Scanner({
-        video: videoElement,
-        mirror: false,
-        backgroundScan: true,
-        continuous: true,
-        refractoryPeriod: 1000, // Prevent double scans
-        scanPeriod: 1
-    });
-    
-    // Add scan event listener
-    scanner.addListener('scan', function(content, image) {
-        // Success - stop scanning and add code
-        scannerActive = false;
-        scanner.stop();
-        loading.style.display = 'none';
-        
-        // Beep sound
-        try {
-            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            var osc = audioCtx.createOscillator();
-            osc.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        } catch(e) {}
-        
-        // Determine if it's QR or 1D
-        var type = content.includes('://') || content.length > 20 ? 'QR Code' : 'CODE-128';
-        if (/^\d+$/.test(content) && content.length >= 8) type = 'EAN-13';
-        
-        addScannedCode(content, type);
-        frame.style.display = 'none';
-    });
-    
-    // Start scanning with back camera only
-    Instascan.Camera.getCameras().then(function(cameras) {
-        if (cameras.length > 0) {
-            // Find back camera
-            var backCamera = cameras.find(c => c.name.toLowerCase().includes('back') || 
-                                               c.name.toLowerCase().includes('rear') ||
-                                               c.name.toLowerCase().includes('environment'));
-            
-            // Use back camera if found, otherwise first camera
-            var cameraToUse = backCamera || cameras[0];
-            
-            scanner.start(cameraToUse).then(function(stream) {
-                currentStream = stream;
-                scannerActive = true;
-                loading.style.display = 'none';
-                flashlightActive = false;
-                document.getElementById('flashlightBtn').innerHTML = '🔦';
-                document.getElementById('flashlightBtn').classList.remove('active');
-            }).catch(function(e) {
-                alert('Failed to start camera: ' + e.message);
-                loading.style.display = 'none';
-                scannerActive = false;
-            });
-        } else {
-            alert('No cameras found');
-            loading.style.display = 'none';
-        }
-    }).catch(function(e) {
-        alert('Camera access denied: ' + e.message);
-        loading.style.display = 'none';
-    });
-}
-
-function stopScanner() {
-    if (scanner && scanner.isScanning) {
-        scanner.stop();
+    if (window.zxingInterval) {
+        clearInterval(window.zxingInterval);
+        window.zxingInterval = null;
     }
-    if (currentStream) {
-        currentStream.getTracks().forEach(t => t.stop());
-        currentStream = null;
+    
+    if (zxingStream) {
+        zxingStream.getTracks().forEach(t => t.stop());
+        zxingStream = null;
     }
-    scannerActive = false;
-    flashlightActive = false;
-    document.getElementById('scanFrame').style.display = 'none';
-    document.getElementById('flashlightBtn').innerHTML = '🔦';
-    document.getElementById('flashlightBtn').classList.remove('active');
+    
+    flashActive = false;
+    document.getElementById('zxingFlash').classList.remove('active');
+    document.getElementById('zxingFlash').innerText = 'FLASH';
 }
 
 function addScannedCode(code, type) {
@@ -896,7 +832,6 @@ function addScannedCode(code, type) {
     
     var box = document.getElementById('labelBox');
     
-    // Remove manual input if present
     var manualDiv = document.getElementById('manualInputDiv');
     if (manualDiv) manualDiv.remove();
     manualInput = '';
@@ -904,12 +839,11 @@ function addScannedCode(code, type) {
     var locationText = currentLocation ? ' 📍' : '';
     var span = document.createElement('span');
     span.className = 'scan-entry';
-    span.innerHTML = '📦 SCAN #' + scanCount + ': ' + code + locationText + '<span id="barcodeType"> [' + type + ']</span>';
+    span.innerHTML = 'SCAN #' + scanCount + ': ' + code + locationText + '<span id="barcodeType"> [' + type + ']</span>';
     box.appendChild(span);
     box.scrollTop = box.scrollHeight;
 }
 
-// Add manual entry from keyboard
 function submitManualEntry() {
     if (manualInput.trim() !== '') {
         addScannedCode(manualInput.trim(), 'MANUAL');
@@ -926,7 +860,6 @@ function clearScans() {
 }
 
 function goToStatus() {
-    // Add manual text if present
     if (manualInput.trim() !== '') {
         addScannedCode(manualInput.trim(), 'MANUAL');
     }
@@ -934,11 +867,6 @@ function goToStatus() {
     if (currentScans.length === 0) {
         alert('No scans to process');
         return;
-    }
-    
-    // Stop scanner if active
-    if (scannerActive) {
-        stopScanner();
     }
     
     document.getElementById('labelBlock').style.display = 'none';
@@ -951,7 +879,7 @@ function goBackToScan() {
     document.getElementById('statusScreen').style.display = 'none';
     document.getElementById('labelBlock').style.display = 'flex';
     document.getElementById('scanButton').style.display = 'flex';
-    document.getElementById('leftText').innerText = '📦 COURIER SCANNER';
+    document.getElementById('leftText').innerText = 'COURIER SCANNER';
 }
 
 function submitStatus(status) {
@@ -960,14 +888,13 @@ function submitStatus(status) {
     document.getElementById('popupScanCount').innerHTML = currentScans.length + ' barcode(s) saved';
     popup.style.display = 'flex';
     
-    // Beep sound on success
     try {
         var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         var osc = audioCtx.createOscillator();
         osc.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.1);
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        audioCtx.resume();
     } catch(e) {}
     
     setTimeout(function() {
@@ -977,7 +904,7 @@ function submitStatus(status) {
     }, 2000);
 }
 
-// EXIT FUNCTION WITH PASSWORD 200606
+// EXIT PASSWORD 200606
 function showExitPrompt() {
     document.getElementById('exitOverlay').style.display = 'flex';
     document.getElementById('exitPassword').value = '';
@@ -988,8 +915,7 @@ function checkPassword() {
     var password = document.getElementById('exitPassword').value;
     if (password === '200606') {
         document.getElementById('exitOverlay').style.display = 'none';
-        // Stop scanner before exit
-        if (scannerActive) stopScanner();
+        closeZXingScanner();
         window.onpopstate = null;
         history.back();
     } else {
@@ -1076,7 +1002,7 @@ function nextTab() {
     }
 }
 
-// Triple tap on time to show exit prompt
+// Triple tap on time for exit
 var tapCount = 0;
 var tapTimer = null;
 document.getElementById('timeDisplay').addEventListener('click', function() {
@@ -1096,21 +1022,22 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(updateTime, 1000);
     showNumeric();
     
-    // Prevent all navigation
     document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
-    document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
     
-    // Add manual submission on Enter key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && manualInput.trim() !== '') {
             submitManualEntry();
         }
     });
-});
-
-// Cleanup
-window.addEventListener('beforeunload', function() {
-    if (scannerActive) stopScanner();
+    
+    // Check for ZXing intent return
+    if (window.location.hash) {
+        var scanResult = decodeURIComponent(window.location.hash.substring(1));
+        if (scanResult) {
+            addScannedCode(scanResult, 'ZXING');
+            window.location.hash = '';
+        }
+    }
 });
 </script>
 </body>
