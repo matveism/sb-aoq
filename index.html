@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>U-BARCODE · WORKING</title>
+<title>U-BARCODE · FINAL FIX</title>
 <style>
 body { 
   margin:0; 
@@ -196,6 +196,17 @@ button:active { transform:translateY(2px); }
   z-index:1000;
   box-shadow:0 0 30px #000;
 }
+#loading {
+  display:none;
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.8);
+  color:white;
+  z-index:2000;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+}
 </style>
 <script src="https://raw.githack.com/schmich/instascan-builds/master/instascan.min.js"></script>
 </head>
@@ -300,13 +311,19 @@ button:active { transform:translateY(2px); }
   </div>
 </div>
 
+<div id="loading">
+  <div style="font-size:48px; margin-bottom:20px;">⏳</div>
+  <div>SENDING TO XANO...</div>
+</div>
+
 <div id="result">✅ SENT TO XANO!</div>
 
 <script>
-// WORKING VERSION - TESTED WITH XANO
+// WORKING VERSION - SENDS EACH SCAN INDIVIDUALLY
 var scans = [];
 var manualInput = '';
 var currentScanner = null;
+var gpsLocation = 'Warehouse';
 
 // Update time
 function updateTime() {
@@ -322,10 +339,15 @@ updateTime();
 
 // GPS
 if(navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(function(pos) {
-    window.gps = pos.coords.latitude+','+pos.coords.longitude;
-    document.getElementById('gpsIndicator').innerHTML = '📍';
-  });
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      gpsLocation = pos.coords.latitude+','+pos.coords.longitude;
+      document.getElementById('gpsIndicator').innerHTML = '📍';
+    },
+    function() {
+      document.getElementById('gpsIndicator').style.color = '#ff4444';
+    }
+  );
 }
 
 // Display scans
@@ -458,52 +480,72 @@ document.getElementById('backBtn').onclick = function() {
   document.getElementById('keypad').style.display = 'block';
 };
 
-// STATUS BUTTONS
+// STATUS BUTTONS - FIXED: Send one at a time
 var statusBtns = document.querySelectorAll('.statusBtn[data-status]');
 for(var i=0; i<statusBtns.length; i++) {
   statusBtns[i].onclick = function() {
     var status = this.getAttribute('data-status');
     
-    // Prepare data for XANO - MATCHES YOUR TABLE EXACTLY
+    // Show loading
+    document.getElementById('loading').style.display = 'flex';
+    
+    var sentCount = 0;
+    var totalScans = scans.length;
     var now = new Date();
-    var data = {
-      label_id: scans.join(', '),
-      barcode_type: scans.length > 1 ? 'MULTIPLE' : 'SCAN',
-      status: status,
-      date: (now.getMonth()+1)+'/'+now.getDate()+'/'+now.getFullYear(),
-      time: now.getHours()+':'+ 
-            (now.getMinutes()<10?'0':'')+now.getMinutes()+':'+
-            (now.getSeconds()<10?'0':'')+now.getSeconds(),
-      location: window.gps || 'Warehouse',
-      eta: (now.getMonth()+1)+'/'+(now.getDate()+7)+'/'+now.getFullYear(),
-      timestamp: now.toISOString()
-    };
     
-    // Send to XANO
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    
-    xhr.onload = function() {
-      if(xhr.status === 200 || xhr.status === 201) {
-        document.getElementById('result').style.display = 'flex';
-        setTimeout(function() {
-          document.getElementById('result').style.display = 'none';
-          scans = [];
-          manualInput = '';
-          updateDisplay();
+    function sendOne(index) {
+      if(index >= scans.length) {
+        // All done
+        document.getElementById('loading').style.display = 'none';
+        if(sentCount > 0) {
+          document.getElementById('result').style.display = 'flex';
+          setTimeout(function() {
+            document.getElementById('result').style.display = 'none';
+            scans = [];
+            manualInput = '';
+            updateDisplay();
+            document.getElementById('backBtn').click();
+          }, 2000);
+        } else {
+          alert('Failed to send. Check connection.');
           document.getElementById('backBtn').click();
-        }, 2000);
-      } else {
-        alert('Error: ' + xhr.status + '\n' + xhr.responseText);
+        }
+        return;
       }
-    };
+      
+      var data = {
+        label_id: scans[index],
+        barcode_type: 'SCAN',
+        status: status,
+        date: (now.getMonth()+1)+'/'+now.getDate()+'/'+now.getFullYear(),
+        time: now.getHours()+':'+ 
+              (now.getMinutes()<10?'0':'')+now.getMinutes()+':'+
+              (now.getSeconds()<10?'0':'')+now.getSeconds(),
+        location: gpsLocation,
+        eta: (now.getMonth()+1)+'/'+(now.getDate()+7)+'/'+now.getFullYear(),
+        timestamp: now.toISOString()
+      };
+      
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      
+      xhr.onload = function() {
+        if(xhr.status === 200 || xhr.status === 201) {
+          sentCount++;
+        }
+        sendOne(index + 1);
+      };
+      
+      xhr.onerror = function() {
+        sendOne(index + 1);
+      };
+      
+      xhr.send(JSON.stringify(data));
+    }
     
-    xhr.onerror = function() {
-      alert('Network error - Check connection');
-    };
-    
-    xhr.send(JSON.stringify(data));
+    // Start sending first scan
+    sendOne(0);
   };
 }
 
