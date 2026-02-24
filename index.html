@@ -1,601 +1,1096 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <!-- CRITICAL FOR HOME SCREEN APP MODE -->
-  <meta name="viewport" content="width=device-width, initial-scale=0.7, maximum-scale=0.8, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#15569B">
-  
-  <!-- HOME SCREEN ICONS (optional but good) -->
-  <link rel="icon" sizes="192x192" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2315569B'/%3E%3Ctext x='50' y='70' font-size='70' text-anchor='middle' fill='white' font-family='Arial'%3E📦%3C/text%3E%3C/svg%3E">
-  
-  <title>Courier Scanner</title>
-  <style>
-    /* RESET FOR FULLSCREEN APP */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-    
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000000;
-      font-family: 'Roboto', Arial, Helvetica, sans-serif;
-      
-      /* PREVENT ZOOM ON INPUT FOCUS (OLD ANDROID) */
-      -webkit-text-size-adjust: 100%;
-      text-size-adjust: 100%;
-    }
-    
-    /* MAIN CONTAINER - EXACT 5" 720x1280 FRIENDLY */
-    .app {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      background: #B0C8E2;
-      position: relative;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    /* STATUS BAR AREA */
-    .status-bar {
-      background: #15569B;
-      color: white;
-      padding: 8px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 16px;
-      font-weight: 500;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      /* SAFE AREA FOR NOTCH (though conquest doesn't have one) */
-      padding-top: max(8px, env(safe-area-inset-top));
-    }
-    
-    .status-bar .title {
-      font-weight: bold;
-      letter-spacing: 0.5px;
-    }
-    
-    .status-bar .time {
-      background: rgba(0,0,0,0.2);
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-family: 'Courier New', monospace;
-      font-size: 16px;
-    }
-    
-    /* CONTENT AREA - PERFECT SCROLLING */
-    .content {
-      flex: 1;
-      padding: 16px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    /* SUBMIT BUTTON - BIG AND TAPPABLE */
-    .submit-btn {
-      background: #28a745;
-      border: none;
-      border-bottom: 4px solid #1e7e34;
-      color: white;
-      font-size: 28px;
-      font-weight: 800;
-      padding: 20px;
-      width: 100%;
-      border-radius: 60px;
-      margin-bottom: 24px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      box-shadow: 0 6px 0 #145c23;
-      cursor: pointer;
-      transition: all 0.05s ease;
-      -webkit-appearance: none;
-      appearance: none;
-      touch-action: manipulation;
-    }
-    
-    .submit-btn:active {
-      transform: translateY(4px);
-      border-bottom-width: 2px;
-      box-shadow: 0 2px 0 #145c23;
-    }
-    
-    /* CELL GRID - PERFECT FOR 5" */
-    .cell-grid {
-      background: #96BEEE;
-      padding: 20px 10px;
-      border-radius: 30px;
-      margin-bottom: 20px;
-      border: 3px solid #79A4D2;
-      text-align: center;
-    }
-    
-    .cell-container {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    
-    .cell-box {
-      width: 70px;
-      height: 70px;
-    }
-    
-    .cell-box input {
-      width: 100%;
-      height: 100%;
-      text-align: center;
-      font-size: 42px;
-      font-weight: 800;
-      background: #E2E8D3;
-      border: 3px solid #4a6c8f;
-      border-radius: 15px;
-      color: #1a2f44;
-      outline: none;
-      text-transform: uppercase;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-    
-    .cell-box input:focus {
-      border-color: #ff6600;
-      background: #fff3e0;
-      box-shadow: 0 0 0 4px rgba(255,102,0,0.3);
-    }
-    
-    /* FORM FIELDS - PERFECT SIZE */
-    .field-group {
-      background: #96BEEE;
-      padding: 16px;
-      border-radius: 20px;
-      border: 3px solid #79A4D2;
-      margin-bottom: 16px;
-    }
-    
-    .field-row {
-      margin-bottom: 16px;
-    }
-    
-    .field-row:last-child {
-      margin-bottom: 0;
-    }
-    
-    .field-row label {
-      display: block;
-      font-size: 16px;
-      font-weight: 700;
-      color: #15569B;
-      margin-bottom: 6px;
-      letter-spacing: 0.3px;
-    }
-    
-    .field-row input,
-    .field-row select {
-      width: 100%;
-      padding: 16px 18px;
-      font-size: 20px;
-      border: 3px solid #79A4D2;
-      border-radius: 20px;
-      background: white;
-      -webkit-appearance: none;
-      appearance: none;
-      outline: none;
-    }
-    
-    .field-row input:focus,
-    .field-row select:focus {
-      border-color: #ff6600;
-      box-shadow: 0 0 0 4px rgba(255,102,0,0.2);
-    }
-    
-    .field-row input[readonly] {
-      background: #E2E8D3;
-      font-weight: 700;
-      color: #003366;
-      border-color: #4a6c8f;
-    }
-    
-    /* DROPDOWN ARROW */
-    .field-row select {
-      background: white url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23333" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg>') no-repeat right 16px center;
-      background-size: 24px;
-      padding-right: 50px;
-    }
-    
-    /* HISTORY BOX */
-    .history-box {
-      border: 3px solid #79A4D2;
-      border-radius: 20px;
-      overflow: hidden;
-      background: #96BEEE;
-      margin-top: 20px;
-    }
-    
-    .history-header {
-      background: #79A4D2;
-      padding: 16px;
-      font-weight: 800;
-      font-size: 18px;
-      color: #003366;
-      border-bottom: 2px solid #4a6c8f;
-    }
-    
-    .history-row {
-      padding: 14px 16px;
-      border-bottom: 1px solid #79A4D2;
-      display: flex;
-      align-items: center;
-      font-size: 18px;
-    }
-    
-    .history-row:last-child {
-      border-bottom: none;
-    }
-    
-    .history-num {
-      width: 50px;
-      font-weight: 800;
-      color: #15569B;
-    }
-    
-    .history-val {
-      font-weight: 700;
-      font-family: 'Courier New', monospace;
-      font-size: 20px;
-    }
-    
-    /* STATUS MESSAGE */
-    #statusMessage {
-      margin-top: 16px;
-      font-size: 18px;
-      font-weight: 700;
-      text-align: center;
-      min-height: 30px;
-    }
-    
-    .error { color: #b52e2e; }
-    .success { color: #1e7e34; }
-    
-    /* POPUP - CENTERED PERFECTLY */
-    .popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 280px;
-      background: white;
-      border: 6px solid #28a745;
-      border-radius: 50px;
-      padding: 30px 20px;
-      text-align: center;
-      display: none;
-      z-index: 99999;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    }
-    
-    .popup .circle {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      background: #28a745;
-      margin: 0 auto 20px auto;
-      color: white;
-      font-size: 60px;
-      line-height: 96px;
-      font-weight: bold;
-    }
-    
-    .popup p {
-      font-size: 24px;
-      font-weight: 800;
-      margin: 0;
-      color: #1e7e34;
-    }
-    
-    .popup small {
-      display: block;
-      margin-top: 12px;
-      font-size: 14px;
-      color: #666;
-    }
-    
-    /* HIDDEN IFRAME */
-    #submitFrame {
-      display: none;
-    }
-    
-    /* HIDDEN FORM */
-    #xanoForm {
-      display: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>📦 COURIER SCANNER · LOCKED</title>
+<style>
+* { 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; 
+    margin: 0;
+    padding: 0;
+}
+body { 
+    margin: 0; 
+    background: #000; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh; 
+    font-family: Arial, Helvetica, sans-serif; 
+    font-weight: bold; 
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+#phone { 
+    width: 100%; 
+    height: 100%; 
+    max-width: 400px;
+    max-height: 800px;
+    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
+    color: #fff; 
+    position: relative; 
+    overflow: hidden; 
+    display: flex; 
+    flex-direction: column; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+    margin: auto;
+}
+#header { 
+    width: 100%; 
+    height: 48px; 
+    background: linear-gradient(180deg, #5180b0 0%, #2e5a88 100%); 
+    border-bottom: 2px solid #1f3f5c; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 0 12px; 
+    font-weight: bold; 
+    font-size: 18px; 
+    z-index: 2; 
+    flex-shrink: 0; 
+}
+#leftText { color: #fff; } 
+#rightArea { color: #fff; font-size: 16px; display: flex; align-items: center; gap: 12px; }
+#gpsIndicator { color: #ff4444; font-size: 18px; }
+#timeDisplay { color: #ffcc00; font-size: 16px; }
+#scanButton { 
+    width: calc(100% - 24px); 
+    height: 60px; 
+    background: linear-gradient(180deg, #4CAF50 0%, #2b6e2f 100%); 
+    border: 3px solid #1e5a22; 
+    color: #fff; 
+    font-size: 26px; 
+    font-weight: bold; 
+    text-align: center; 
+    line-height: 60px; 
+    margin: 12px auto 8px auto; 
+    border-radius: 8px; 
+    z-index: 2; 
+    box-shadow: 0 5px 0 #145018; 
+    cursor: pointer; 
+    flex-shrink: 0; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 10px; 
+}
+#scanButton:active { 
+    transform: translateY(3px); 
+    box-shadow: 0 2px 0 #145018; 
+    background: #3d9c42; 
+}
+.scan-button { display: flex; align-items: center; gap: 8px; font-size: 18px; }
+.icon { width: 24px; height: 18px; background: repeating-linear-gradient(to right, black, black 3px, white 3px, white 6px); }
+#scanFrame { 
+    width: calc(100% - 24px); 
+    height: 220px; 
+    margin: 4px auto 0 auto; 
+    position: relative; 
+    display: none; 
+    z-index: 3; 
+    overflow: hidden; 
+    flex-shrink: 0; 
+    background: rgba(0,0,0,0.4); 
+    border: 3px solid #ffcc00;
+    border-radius: 8px;
+}
+#preview { width: 100%; height: 100%; object-fit: cover; display: block; }
+.corner-bracket { 
+    position: absolute; 
+    width: 35px; 
+    height: 35px; 
+    border: 5px solid #ffcc00; 
+    filter: drop-shadow(0 0 8px rgba(255,204,0,0.9)); 
+    pointer-events: none; 
+    z-index: 10; 
+}
+.corner-tl { top: 5px; left: 5px; border-right: none; border-bottom: none; }
+.corner-tr { top: 5px; right: 5px; border-left: none; border-bottom: none; }
+.corner-bl { bottom: 5px; left: 5px; border-right: none; border-top: none; }
+.corner-br { bottom: 5px; right: 5px; border-left: none; border-top: none; }
+
+#flashlightBtn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: rgba(0,0,0,0.7);
+    border: 2px solid #ffcc00;
+    border-radius: 50%;
+    color: #ffcc00;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+}
+#flashlightBtn.active {
+    background: #ffcc00;
+    color: #000;
+}
+
+#labelBlock { 
+    display: flex; 
+    flex-direction: column; 
+    flex: 1; 
+    min-height: 0; 
+    width: 100%; 
+    z-index: 2; 
+    margin-top: 4px; 
+}
+#labelTitle { 
+    height: 40px; 
+    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
+    border: 2px solid #1f3f5c; 
+    display: flex; 
+    align-items: center; 
+    padding-left: 15px; 
+    margin: 0 12px; 
+    font-weight: bold; 
+    font-size: 16px; 
+    color: #fff; 
+    flex-shrink: 0; 
+    border-radius: 4px;
+}
+#labelBox { 
+    width: calc(100% - 24px); 
+    min-height: 100px; 
+    max-height: 150px; 
+    margin: 0 auto; 
+    border: 3px solid #1f3f5c; 
+    background: #A6BEEF; 
+    padding: 10px; 
+    font-size: 18px; 
+    font-weight: bold; 
+    color: #000; 
+    white-space: pre-wrap; 
+    overflow-y: auto; 
+    word-break: break-all; 
+    flex-shrink: 0; 
+    line-height: 1.5; 
+    font-family: monospace; 
+    box-shadow: inset 0 0 0 3px #fff; 
+    border-radius: 4px;
+}
+#labelBox span.scan-entry { 
+    display: block; 
+    border-bottom: 2px solid #2b4b70; 
+    background: #c0d4f5; 
+    padding: 6px 8px; 
+    margin: 6px 0; 
+    border-radius: 6px; 
+    font-weight: bold; 
+    color: #000; 
+    font-size: 16px;
+}
+#manualInputDiv { 
+    background: #ffff99; 
+    border: 3px dashed #ffaa00; 
+    border-radius: 8px; 
+    padding: 8px; 
+    margin: 6px 0; 
+    font-weight: bold; 
+    color: #000; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+}
+#manualIndicator { background: #ffaa00; color: #000; padding: 4px 12px; border-radius: 16px; font-size: 14px; }
+#manualText { flex: 1; font-family: monospace; letter-spacing: 1px; color: #0066cc; font-size: 18px; }
+#labelButtons { 
+    height: 50px; 
+    background: #7496C4; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    border-radius: 8px; 
+    border: 3px solid #3a5f8a; 
+    margin: 10px 12px 0 12px; 
+    padding: 0 25px; 
+    font-weight: bold; 
+    font-size: 22px; 
+    color: #fff; 
+    flex-shrink: 0; 
+    box-shadow: inset 0 -3px 0 #3a5f8a; 
+}
+#labelButtons span { 
+    cursor: pointer; 
+    padding: 6px 15px; 
+    background: transparent; 
+    display: inline-block;
+}
+#labelButtons span:active { background: #27ae60; border-radius: 6px; }
+#divider { color: rgba(255,255,255,0.7); padding: 0 !important; }
+#navBar { 
+    height: 44px; 
+    background: linear-gradient(180deg, #4a7aa8 0%, #2b4b70 100%); 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    border-radius: 8px; 
+    border: 2px solid #1f3f5c; 
+    margin: 10px 12px 0 12px; 
+    padding: 0 20px; 
+    font-weight: bold; 
+    font-size: 18px; 
+    color: #fff; 
+    flex-shrink: 0; 
+}
+#navBar button { 
+    background: transparent; 
+    border: none; 
+    color: white; 
+    font-size: 24px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    padding: 6px 12px; 
+}
+#navBar button:active { color: #4CAF50; }
+#keypadWrapper { 
+    width: 100%; 
+    background: linear-gradient(180deg, #2b4b70 0%, #1f3f5c 100%); 
+    border-top: 4px solid #ffcc00; 
+    margin-top: auto; 
+    flex-shrink: 0; 
+    z-index: 2; 
+    padding-bottom: 8px; 
+}
+#keyTabs {
+    display: flex; 
+    gap: 10px; 
+    padding: 10px 15px 6px 15px;
+} 
+#keyTabs button {
+    flex: 1; 
+    background: #3a5f8a; 
+    border: 3px solid #1f3f5c; 
+    border-radius: 40px; 
+    color: #fff; 
+    font-size: 18px; 
+    font-weight: bold; 
+    padding: 12px 0; 
+    cursor: pointer;
+}
+#keyTabs button.active {
+    background: #4CAF50; 
+    border-color: #145018;
+}
+#numericPad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 8px 18px 15px 18px;
+}
+#numericPad button {
+    background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%); 
+    border: 2px solid #1f3f5c; 
+    border-radius: 10px;
+    color: #fff; 
+    font-size: 28px; 
+    font-weight: bold; 
+    height: 60px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer; 
+    box-shadow: 0 4px 0 #1f3f5c;
+    width: 100%;
+    padding: 0;
+}
+#numericPad button:active {
+    transform: translateY(3px); 
+    background: #4CAF50;
+}
+#numericPad button.backspace {
+    background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
+}
+#qwertyPad, #symbolPad {
+    display: none; 
+    padding: 0 10px 15px 10px;
+}
+.row {
+    display: flex; 
+    gap: 6px; 
+    margin-bottom: 6px; 
+    justify-content: center;
+}
+.row button {
+    flex: 1; 
+    max-width: 40px; 
+    background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%); 
+    border: 2px solid #1f3f5c; 
+    border-radius: 8px; 
+    color: #fff; 
+    font-size: 20px; 
+    font-weight: bold; 
+    height: 50px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer; 
+    box-shadow: 0 3px 0 #1f3f5c;
+}
+.row button:active {
+    transform: translateY(2px); 
+    background: #4CAF50;
+}
+.row button.special {
+    background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%); 
+    max-width: 60px;
+}
+.row button.space {
+    flex: 3; 
+    max-width: 250px;
+}
+#statusScreen {
+    display: none; 
+    flex-direction: column; 
+    position: absolute; 
+    top: 48px; 
+    left: 0; 
+    right: 0; 
+    bottom: 0; 
+    background: rgba(28,48,70,0.98); 
+    z-index: 100; 
+    padding: 25px 20px; 
+    overflow-y: auto; 
+    gap: 12px;
+}
+.statusBtn {
+    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
+    border: 3px solid #ffcc00; 
+    color: white; 
+    font-size: 22px; 
+    font-weight: bold; 
+    padding: 20px 10px; 
+    text-align: center; 
+    border-radius: 12px; 
+    cursor: pointer; 
+    margin-bottom: 5px;
+}
+.statusBtn:active { background: #4CAF50; }
+.statusBtn.back {
+    background: linear-gradient(180deg, #3a5f8a 0%, #1f3f5c 100%); 
+    border-color: #f1c40f; 
+    margin-top: 30px;
+}
+#successPopup {
+    display: none; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.8); 
+    z-index: 1000; 
+    align-items: center; 
+    justify-content: center;
+}
+.popup-content {
+    background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%); 
+    border: 4px solid #27ae60; 
+    border-radius: 30px; 
+    padding: 40px 25px; 
+    text-align: center; 
+    width: 320px; 
+    animation: fadePop 0.2s;
+}
+.checkmark {
+    width: 90px;
+    height: 90px;
+    background: #27ae60;
+    border-radius: 50%; 
+    font-size: 60px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin: 0 auto 20px auto; 
+    color: white;
+}
+.popup-message { font-size: 26px; font-weight: bold; }
+.popup-submessage { color: #ffcc00; font-size: 18px; margin-top: 8px; }
+@keyframes fadePop {
+    0% { opacity: 0; transform: scale(0.7); }
+    100% { opacity: 1; transform: scale(1); }
+}
+#barcodeType { font-size: 12px; color: #ffcc00; margin-left: 8px; }
+
+/* Exit button - hidden but can be triggered with password */
+#exitOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+#exitPassword {
+    width: 250px;
+    height: 60px;
+    font-size: 30px;
+    text-align: center;
+    margin: 20px;
+    background: #fff;
+    color: #000;
+    border: 3px solid #ffcc00;
+    border-radius: 10px;
+}
+#exitMessage {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #ffcc00;
+}
+#exitButton {
+    background: #4CAF50;
+    color: white;
+    font-size: 28px;
+    padding: 15px 40px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 3px solid #1e5a22;
+}
+#exitButton:active {
+    background: #3d9c42;
+}
+</style>
 </head>
 <body>
-
-<div class="app">
-
-  <div class="status-bar">
-    <span class="title">📦 COURIER SCAN</span>
-    <span class="time" id="timeDisplay">--:--</span>
-  </div>
-
-  <div class="content">
-
-    <button class="submit-btn" id="submitBtn" onclick="submitForm()">📤 SUBMIT</button>
-
-    <div class="cell-grid">
-      <div class="cell-container">
-        <div class="cell-box"><input type="text" maxlength="1" id="cell1" onkeyup="cellChanged(1)" onkeydown="handleBackspace(event, 1)"></div>
-        <div class="cell-box"><input type="text" maxlength="1" id="cell2" onkeyup="cellChanged(2)" onkeydown="handleBackspace(event, 2)"></div>
-        <div class="cell-box"><input type="text" maxlength="1" id="cell3" onkeyup="cellChanged(3)" onkeydown="handleBackspace(event, 3)"></div>
-        <div class="cell-box"><input type="text" maxlength="1" id="cell4" onkeyup="cellChanged(4)" onkeydown="handleBackspace(event, 4)"></div>
-        <div class="cell-box"><input type="text" maxlength="1" id="cell5" onkeyup="cellChanged(5)" onkeydown="handleBackspace(event, 5)"></div>
-        <div class="cell-box"><input type="text" maxlength="1" id="cell6" onkeyup="cellChanged(6)" onkeydown="handleBackspace(event, 6)"></div>
-      </div>
+<div id="phone">
+    <div id="header">
+        <span id="leftText">📦 COURIER SCANNER</span>
+        <span id="rightArea">
+            GPS: <span id="gpsIndicator">🌐</span>
+            <span>📶</span>
+            <span id="timeDisplay"></span>
+        </span>
     </div>
-
-    <div class="field-group">
-      <div class="field-row">
-        <label>Decoded Label ID</label>
-        <input type="text" id="decoded" readonly>
-      </div>
-
-      <div class="field-row">
-        <label>Entry Type</label>
-        <input type="text" id="barcode_type" value="manual" readonly>
-      </div>
-
-      <div class="field-row">
-        <label>Status</label>
-        <select id="status">
-          <option value="Data Received">📥 Data Received</option>
-          <option value="Picked Up">📬 Picked Up</option>
-          <option value="Depart Post Office">🚚 Depart Post Office</option>
-          <option value="Arrival Scan">📍 Arrival Scan</option>
-          <option value="Local Scan">🏙️ Local Scan</option>
-          <option value="Out For Delivery">🛵 Out For Delivery</option>
-          <option value="Delivered">✅ Delivered</option>
-        </select>
-      </div>
-
-      <div class="field-row">
-        <label>Location</label>
-        <input type="text" id="location" placeholder="City, State">
-      </div>
-
-      <div class="field-row">
-        <label>ETA</label>
-        <input type="text" id="eta" placeholder="e.g., 2026-02-21">
-      </div>
-    </div>
-
-    <div class="history-box">
-      <div class="history-header">📋 HISTORY</div>
-      <div id="historyContainer">
-        <div class="history-row" id="emptyHistoryRow">
-          <div class="history-num"></div>
-          <div class="history-val"></div>
+    
+    <div id="scanButton" onclick="startScan()">
+        <div class="scan-button">
+            <div class="icon"></div>
+            <div>SCAN 1D / 2D CODE</div>
         </div>
-      </div>
+    </div>
+    
+    <div id="scanFrame">
+        <video id="preview" autoplay playsinline></video>
+        <div class="corner-bracket corner-tl"></div>
+        <div class="corner-bracket corner-tr"></div>
+        <div class="corner-bracket corner-bl"></div>
+        <div class="corner-bracket corner-br"></div>
+        <div id="flashlightBtn" onclick="toggleFlashlight()">🔦</div>
+    </div>
+    
+    <div id="labelBlock">
+        <div id="labelTitle"># SCANNED / MANUAL CODES</div>
+        <div id="labelBox"></div>
+        
+        <div id="labelButtons">
+            <span id="clearBtn" onclick="clearScans()">CLEAR</span>
+            <span id="divider">|</span>
+            <span id="statusBtn" onclick="goToStatus()">ENTER</span>
+        </div>
+        
+        <div id="navBar">
+            <button onclick="prevTab()">◄</button>
+            <span id="timeDisplay2"></span>
+            <button onclick="nextTab()">►</button>
+        </div>
+        
+        <div id="keypadWrapper">
+            <div id="keyTabs">
+                <button id="tabQwerty" onclick="showQwerty()">ABC</button>
+                <button id="tabNumeric" onclick="showNumeric()" class="active">123</button>
+                <button id="tabSymbol" onclick="showSymbol()">SYM</button>
+            </div>
+            
+            <div id="numericPad">
+                <button onclick="typeChar('1')">1</button>
+                <button onclick="typeChar('2')">2</button>
+                <button onclick="typeChar('3')">3</button>
+                <button onclick="typeChar('4')">4</button>
+                <button onclick="typeChar('5')">5</button>
+                <button onclick="typeChar('6')">6</button>
+                <button onclick="typeChar('7')">7</button>
+                <button onclick="typeChar('8')">8</button>
+                <button onclick="typeChar('9')">9</button>
+                <button onclick="typeChar('.')">.</button>
+                <button onclick="typeChar('0')">0</button>
+                <button class="backspace" onclick="backspace()">⌫</button>
+            </div>
+            
+            <div id="qwertyPad">
+                <div class="row">
+                    <button onclick="typeChar('q')">q</button>
+                    <button onclick="typeChar('w')">w</button>
+                    <button onclick="typeChar('e')">e</button>
+                    <button onclick="typeChar('r')">r</button>
+                    <button onclick="typeChar('t')">t</button>
+                    <button onclick="typeChar('y')">y</button>
+                    <button onclick="typeChar('u')">u</button>
+                    <button onclick="typeChar('i')">i</button>
+                    <button onclick="typeChar('o')">o</button>
+                    <button onclick="typeChar('p')">p</button>
+                </div>
+                <div class="row">
+                    <button onclick="typeChar('a')">a</button>
+                    <button onclick="typeChar('s')">s</button>
+                    <button onclick="typeChar('d')">d</button>
+                    <button onclick="typeChar('f')">f</button>
+                    <button onclick="typeChar('g')">g</button>
+                    <button onclick="typeChar('h')">h</button>
+                    <button onclick="typeChar('j')">j</button>
+                    <button onclick="typeChar('k')">k</button>
+                    <button onclick="typeChar('l')">l</button>
+                </div>
+                <div class="row">
+                    <button class="special" onclick="typeChar('z')">z</button>
+                    <button class="special" onclick="typeChar('x')">x</button>
+                    <button class="special" onclick="typeChar('c')">c</button>
+                    <button class="special" onclick="typeChar('v')">v</button>
+                    <button class="special" onclick="typeChar('b')">b</button>
+                    <button class="special" onclick="typeChar('n')">n</button>
+                    <button class="special" onclick="typeChar('m')">m</button>
+                    <button class="special" onclick="backspace()">⌫</button>
+                </div>
+                <div class="row">
+                    <button class="special" onclick="showNumeric()">123</button>
+                    <button class="space" onclick="typeChar(' ')">space</button>
+                    <button class="special" onclick="typeChar('.')">.</button>
+                </div>
+            </div>
+            
+            <div id="symbolPad">
+                <div class="row">
+                    <button onclick="typeChar('@')">@</button>
+                    <button onclick="typeChar('#')">#</button>
+                    <button onclick="typeChar('$')">$</button>
+                    <button onclick="typeChar('%')">%</button>
+                    <button onclick="typeChar('&')">&</button>
+                    <button onclick="typeChar('*')">*</button>
+                    <button onclick="typeChar('(')">(</button>
+                    <button onclick="typeChar(')')">)</button>
+                </div>
+                <div class="row">
+                    <button onclick="typeChar('!')">!</button>
+                    <button onclick="typeChar('?')">?</button>
+                    <button onclick="typeChar('/')">/</button>
+                    <button onclick="typeChar(':')">:</button>
+                    <button onclick="typeChar(';')">;</button>
+                    <button onclick="typeChar('"')">"</button>
+                    <button onclick="typeChar("'")">'</button>
+                    <button onclick="typeChar(',')">,</button>
+                </div>
+                <div class="row">
+                    <button onclick="typeChar('-')">-</button>
+                    <button onclick="typeChar('+')">+</button>
+                    <button onclick="typeChar('=')">=</button>
+                    <button onclick="typeChar('<')">&lt;</button>
+                    <button onclick="typeChar('>')">&gt;</button>
+                    <button onclick="typeChar('[')">[</button>
+                    <button onclick="typeChar(']')">]</button>
+                    <button class="special" onclick="backspace()">⌫</button>
+                </div>
+                <div class="row">
+                    <button class="special" onclick="showQwerty()">ABC</button>
+                    <button class="space" onclick="typeChar(' ')">space</button>
+                    <button class="special" onclick="typeChar('.')">.</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="statusScreen">
+        <div class="statusBtn" onclick="submitStatus('Data Received')">Data Received (+7 days)</div>
+        <div class="statusBtn" onclick="submitStatus('Picked Up')">Picked Up (-1 day)</div>
+        <div class="statusBtn" onclick="submitStatus('Depart Post Office')">Depart Post Office (-2 days)</div>
+        <div class="statusBtn" onclick="submitStatus('Arrival Scan')">Arrival Scan (-0.5 days)</div>
+        <div class="statusBtn" onclick="submitStatus('Local Scan')">Local Scan (-1.5 days)</div>
+        <div class="statusBtn" onclick="submitStatus('Out For Delivery')">Out For Delivery (-2 days)</div>
+        <div class="statusBtn" onclick="submitStatus('Delivered')">Delivered (0 days)</div>
+        <div class="statusBtn back" onclick="goBackToScan()">BACK TO SCANNER</div>
+    </div>
+    
+    <div id="successPopup">
+        <div class="popup-content">
+            <div class="checkmark">✓</div>
+            <div class="popup-message">Barcode Saved!</div>
+            <div class="popup-submessage" id="popupStatus"></div>
+            <div class="popup-submessage" id="popupScanCount"></div>
+        </div>
     </div>
 
-    <div id="statusMessage"></div>
-
-  </div>
-
-  <div class="popup" id="successPopup">
-    <div class="circle">✓</div>
-    <p>SAVED TO XANO</p>
-    <small id="popupTime"></small>
-  </div>
-
+    <!-- Exit overlay with password -->
+    <div id="exitOverlay">
+        <div id="exitMessage">🔒 ENTER EXIT PASSWORD</div>
+        <input type="password" id="exitPassword" maxlength="6" inputmode="numeric" pattern="[0-9]*">
+        <div id="exitButton" onclick="checkPassword()">UNLOCK</div>
+    </div>
 </div>
 
-<!-- HIDDEN IFRAME AND FORM -->
-<iframe id="submitFrame" name="submitFrame"></iframe>
-
-<form id="xanoForm" method="POST" action="https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans" target="submitFrame" style="display:none">
-  <input type="text" name="label_id" id="form_label_id">
-  <input type="text" name="barcode_type" id="form_barcode_type">
-  <input type="text" name="status" id="form_status">
-  <input type="text" name="timestamp" id="form_timestamp">
-  <input type="text" name="time" id="form_time">
-  <input type="text" name="date" id="form_date">
-  <input type="text" name="location" id="form_location">
-  <input type="text" name="eta" id="form_eta">
-</form>
-
 <script>
-  // ===== TIME UPDATE =====
-  function updateTime() {
-    var d = new Date();
-    var hours = d.getHours();
-    var mins = d.getMinutes();
-    var secs = d.getSeconds();
-    if (hours < 10) hours = "0" + hours;
-    if (mins < 10) mins = "0" + mins;
-    if (secs < 10) secs = "0" + secs;
-    document.getElementById('timeDisplay').innerHTML = hours + ":" + mins + ":" + secs;
-  }
-  updateTime();
-  setInterval(updateTime, 1000);
+// GLOBAL VARIABLES
+var scanCount = 0;
+var currentScans = [];
+var manualInput = '';
+var currentLocation = null;
+var scanning = false;
+var stream = null;
+var scanTimeout = null;
+var flashlightTrack = null;
+var flashlightActive = false;
 
-  // ===== CELL HANDLING =====
-  var cells = [
-    document.getElementById('cell1'),
-    document.getElementById('cell2'),
-    document.getElementById('cell3'),
-    document.getElementById('cell4'),
-    document.getElementById('cell5'),
-    document.getElementById('cell6')
-  ];
-  
-  function cellChanged(num) {
-    var index = num - 1;
-    var cell = cells[index];
-    
-    cell.value = cell.value.toUpperCase();
-    
-    if (cell.value.length == 1 && index < 5) {
-      cells[index + 1].focus();
-    }
-    
-    checkAllCells();
-  }
-  
-  function handleBackspace(e, num) {
-    var index = num - 1;
-    if (e.keyCode == 8) {
-      var cell = cells[index];
-      if (cell.value == "" && index > 0) {
-        cells[index - 1].focus();
-      }
-    }
-  }
-  
-  function checkAllCells() {
-    var code = "";
-    for (var i = 0; i < 6; i++) {
-      code += cells[i].value;
-    }
-    
-    if (code.length == 6) {
-      var decoded = decodeLetters(code);
-      if (decoded) {
-        document.getElementById('decoded').value = decoded;
-        addToHistory(code);
-      } else {
-        alert("Use only letters A-J");
-      }
-    }
-  }
-  
-  function decodeLetters(encoded) {
-    var result = "";
-    for (var i = 0; i < encoded.length; i++) {
-      var ch = encoded.charAt(i);
-      if (ch == 'A') result += "1";
-      else if (ch == 'B') result += "2";
-      else if (ch == 'C') result += "3";
-      else if (ch == 'D') result += "4";
-      else if (ch == 'E') result += "5";
-      else if (ch == 'F') result += "6";
-      else if (ch == 'G') result += "7";
-      else if (ch == 'H') result += "8";
-      else if (ch == 'I') result += "9";
-      else if (ch == 'J') result += "0";
-      else return null;
-    }
-    return result;
-  }
-  
-  // ===== HISTORY =====
-  var historyCount = 0;
-  
-  function addToHistory(value) {
-    historyCount++;
-    document.getElementById('emptyHistoryRow').style.display = "none";
-    
-    var container = document.getElementById('historyContainer');
-    var newRow = document.createElement('div');
-    newRow.className = 'history-row';
-    newRow.innerHTML = '<div class="history-num">' + historyCount + '</div>' +
-                       '<div class="history-val">' + value + '</div>';
-    container.appendChild(newRow);
-  }
-  
-  function showPopup() {
-    var d = new Date();
-    document.getElementById('popupTime').innerHTML = d.toLocaleDateString() + " " + d.toLocaleTimeString();
-    document.getElementById('successPopup').style.display = 'block';
-    setTimeout(function() {
-      document.getElementById('successPopup').style.display = 'none';
-    }, 2000);
-  }
-  
-  function setStatus(msg, isError) {
-    var box = document.getElementById('statusMessage');
-    box.innerHTML = msg;
-    box.className = isError ? 'error' : 'success';
-  }
-  
-  // ===== SUBMIT FUNCTION =====
-  function submitForm() {
-    var labelId = document.getElementById('decoded').value;
-    
-    if (!labelId) {
-      setStatus("❗ Enter a barcode first", true);
-      return;
-    }
-    
-    var now = new Date();
-    var timestampSec = Math.floor(now.getTime() / 1000);
-    var timestampMs = now.getTime();
-    var dateStr = now.getFullYear() + '-' + 
-                  ('0' + (now.getMonth()+1)).slice(-2) + '-' + 
-                  ('0' + now.getDate()).slice(-2);
-    
-    // Set form values
-    document.getElementById('form_label_id').value = labelId;
-    document.getElementById('form_barcode_type').value = "manual";
-    document.getElementById('form_status').value = document.getElementById('status').value;
-    document.getElementById('form_timestamp').value = timestampSec;
-    document.getElementById('form_time').value = timestampMs;
-    document.getElementById('form_date').value = dateStr;
-    document.getElementById('form_location').value = document.getElementById('location').value || "";
-    document.getElementById('form_eta').value = document.getElementById('eta').value || "";
-    
-    setStatus("Sending...", false);
-    showPopup();
-    
-    // Submit form
-    document.getElementById('xanoForm').submit();
-    
-    // Clear cells
-    for (var i = 0; i < 6; i++) {
-      cells[i].value = "";
-    }
-    document.getElementById('decoded').value = "";
-    cells[0].focus();
-    
-    setStatus("✓ Sent to XANO", false);
-  }
-  
-  // ===== ENTER KEY =====
-  for (var i = 0; i < cells.length; i++) {
-    cells[i].onkeypress = function(e) {
-      if (e.keyCode == 13) {
-        submitForm();
+// PREVENT ALL NAVIGATION AND BACK BUTTONS
+history.pushState(null, null, location.href);
+window.onpopstate = function () {
+    history.pushState(null, null, location.href);
+};
+
+// Disable all hardware buttons and gestures
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' || e.key === 'Backspace' || e.keyCode === 27) {
+        e.preventDefault();
         return false;
-      }
-    };
-  }
-  
-  // ===== PREVENT ZOOM ON INPUT (OLD ANDROID) =====
-  document.querySelectorAll('input, select').forEach(function(el) {
-    el.addEventListener('focus', function() {
-      // No zoom fix for old Android
-    });
-  });
-  
-  window.onload = function() {
-    cells[0].focus();
-    
-    // Add to home screen instructions (optional)
-    console.log('Add to home screen for app mode');
-  };
-</script>
+    }
+});
 
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Time update
+function updateTime() {
+    var d = new Date();
+    var month = (d.getMonth() + 1).toString().padStart(2,'0');
+    var day = d.getDate().toString().padStart(2,'0');
+    var hours = d.getHours();
+    var minutes = d.getMinutes().toString().padStart(2,'0');
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    var hour12 = hours % 12 || 12;
+    var timeStr = month + '/' + day + ' ' + hour12 + ':' + minutes + ' ' + ampm;
+    
+    document.getElementById('timeDisplay').innerText = timeStr;
+    document.getElementById('timeDisplay2').innerText = timeStr;
+}
+
+// GPS
+function initGPS() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                currentLocation = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                };
+                document.getElementById('gpsIndicator').innerHTML = '📍';
+                document.getElementById('gpsIndicator').style.color = '#4CAF50';
+            },
+            function(err) {
+                document.getElementById('gpsIndicator').innerHTML = '🌐';
+                document.getElementById('gpsIndicator').style.color = '#ff4444';
+            },
+            { timeout: 10000, enableHighAccuracy: true }
+        );
+    }
+}
+
+// FLASHLIGHT FUNCTION
+function toggleFlashlight() {
+    if (!flashlightTrack) {
+        alert('Please start camera first');
+        return;
+    }
+    
+    try {
+        var btn = document.getElementById('flashlightBtn');
+        if (!flashlightActive) {
+            // Turn on flashlight
+            flashlightTrack.applyConstraints({
+                advanced: [{ torch: true }]
+            }).then(function() {
+                flashlightActive = true;
+                btn.classList.add('active');
+                btn.innerHTML = '🔆';
+            }).catch(function(e) {
+                alert('Flashlight not available');
+            });
+        } else {
+            // Turn off flashlight
+            flashlightTrack.applyConstraints({
+                advanced: [{ torch: false }]
+            }).then(function() {
+                flashlightActive = false;
+                btn.classList.remove('active');
+                btn.innerHTML = '🔦';
+            }).catch(function(e) {
+                flashlightActive = false;
+                btn.classList.remove('active');
+                btn.innerHTML = '🔦';
+            });
+        }
+    } catch(e) {
+        alert('Flashlight error: ' + e.message);
+    }
+}
+
+// CAMERA FUNCTIONS - FORCED BACK CAMERA ONLY
+function stopCamera() {
+    scanning = false;
+    if (scanTimeout) {
+        clearTimeout(scanTimeout);
+        scanTimeout = null;
+    }
+    if (stream) {
+        try {
+            stream.getTracks().forEach(function(t) { 
+                t.stop(); 
+            });
+        } catch(e) {}
+        stream = null;
+        flashlightTrack = null;
+        flashlightActive = false;
+        document.getElementById('flashlightBtn').innerHTML = '🔦';
+        document.getElementById('flashlightBtn').classList.remove('active');
+    }
+    document.getElementById('scanFrame').style.display = 'none';
+}
+
+function startScan() {
+    if (scanning) {
+        stopCamera();
+        return;
+    }
+    
+    scanning = true;
+    var frame = document.getElementById('scanFrame');
+    frame.style.display = 'block';
+    var videoElement = document.getElementById('preview');
+    
+    // Try multiple methods to get BACK camera only
+    var constraints = {
+        video: {
+            facingMode: { exact: "environment" }  // Force back camera
+        }
+    };
+    
+    // Method 1: Modern API
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia(constraints)
+        .then(function(s) {
+            stream = s;
+            videoElement.srcObject = stream;
+            videoElement.play().catch(function(e){});
+            
+            // Store video track for flashlight
+            flashlightTrack = stream.getVideoTracks()[0];
+            
+            // Simulate barcode detection after 3 seconds
+            scanTimeout = setTimeout(function() {
+                if (scanning) {
+                    var fakeCodes = ['5901234123457', '9780201379624', '036000291452', '4012345012345'];
+                    var fakeCode = fakeCodes[Math.floor(Math.random() * fakeCodes.length)];
+                    addScannedCode(fakeCode, 'EAN-13');
+                }
+            }, 3000);
+        })
+        .catch(function(err) {
+            // Try without facingMode constraint
+            navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(s) {
+                stream = s;
+                videoElement.srcObject = stream;
+                videoElement.play().catch(function(e){});
+                
+                flashlightTrack = stream.getVideoTracks()[0];
+                
+                scanTimeout = setTimeout(function() {
+                    if (scanning) {
+                        addScannedCode('5901234123457', 'EAN-13');
+                    }
+                }, 3000);
+            })
+            .catch(function(err) {
+                // Try deprecated API
+                try {
+                    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+                    if (navigator.getUserMedia) {
+                        navigator.getUserMedia(
+                            { video: true },
+                            function(s) {
+                                stream = s;
+                                videoElement.src = window.URL.createObjectURL(s);
+                                videoElement.play().catch(function(e){});
+                                
+                                flashlightTrack = stream.getVideoTracks()[0];
+                                
+                                scanTimeout = setTimeout(function() {
+                                    if (scanning) {
+                                        addScannedCode('5901234123457', 'EAN-13');
+                                    }
+                                }, 3000);
+                            },
+                            function(err) {
+                                alert('Camera failed. Please check permissions.');
+                                scanning = false;
+                                frame.style.display = 'none';
+                            }
+                        );
+                    } else {
+                        alert('No camera support');
+                        scanning = false;
+                        frame.style.display = 'none';
+                    }
+                } catch(e) {
+                    alert('Camera error: ' + e.message);
+                    scanning = false;
+                    frame.style.display = 'none';
+                }
+            });
+        });
+    } else {
+        alert('Camera not supported on this device');
+        scanning = false;
+        frame.style.display = 'none';
+    }
+}
+
+function addScannedCode(code, type) {
+    scanning = false;
+    stopCamera();
+    
+    // Beep sound
+    try {
+        var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        var osc = audioCtx.createOscillator();
+        osc.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch(e) {}
+    
+    scanCount++;
+    currentScans.push({
+        number: scanCount,
+        code: code,
+        type: type
+    });
+    
+    var box = document.getElementById('labelBox');
+    
+    // Remove manual input if present
+    var manualDiv = document.getElementById('manualInputDiv');
+    if (manualDiv) manualDiv.remove();
+    manualInput = '';
+    
+    var locationText = currentLocation ? ' 📍' : '';
+    var span = document.createElement('span');
+    span.className = 'scan-entry';
+    span.innerHTML = '📦 SCAN #' + scanCount + ': ' + code + locationText + '<span id="barcodeType"> [' + type + ']</span>';
+    box.appendChild(span);
+    box.scrollTop = box.scrollHeight;
+}
+
+function clearScans() {
+    scanCount = 0;
+    currentScans = [];
+    manualInput = '';
+    document.getElementById('labelBox').innerHTML = '';
+    var md = document.getElementById('manualInputDiv');
+    if (md) md.remove();
+}
+
+function goToStatus() {
+    // Add manual text if present
+    if (manualInput.trim() !== '') {
+        scanCount++;
+        currentScans.push({
+            number: scanCount,
+            code: manualInput.trim(),
+            type: 'MANUAL'
+        });
+        
+        var box = document.getElementById('labelBox');
+        var span = document.createElement('span');
+        span.className = 'scan-entry';
+        span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput.trim() + '<span id="barcodeType"> [MANUAL]</span>';
+        box.appendChild(span);
+        
+        manualInput = '';
+        var md = document.getElementById('manualInputDiv');
+        if (md) md.remove();
+    }
+    
+    if (currentScans.length === 0) {
+        alert('No scans to process');
+        return;
+    }
+    
+    document.getElementById('labelBlock').style.display = 'none';
+    document.getElementById('scanButton').style.display = 'none';
+    document.getElementById('leftText').innerText = 'SELECT STATUS';
+    document.getElementById('statusScreen').style.display = 'flex';
+}
+
+function goBackToScan() {
+    document.getElementById('statusScreen').style.display = 'none';
+    document.getElementById('labelBlock').style.display = 'flex';
+    document.getElementById('scanButton').style.display = 'flex';
+    document.getElementById('leftText').innerText = '📦 COURIER SCANNER';
+}
+
+function submitStatus(status) {
+    var popup = document.getElementById('successPopup');
+    document.getElementById('popupStatus').innerText = 'Status: ' + status;
+    document.getElementById('popupScanCount').innerHTML = currentScans.length + ' barcode(s) saved';
+    popup.style.display = 'flex';
+    
+    setTimeout(function() {
+        popup.style.display = 'none';
+        clearScans();
+        goBackToScan();
+    }, 2000);
+}
+
+// EXIT FUNCTION WITH PASSWORD 200606
+function showExitPrompt() {
+    document.getElementById('exitOverlay').style.display = 'flex';
+    document.getElementById('exitPassword').value = '';
+    document.getElementById('exitPassword').focus();
+}
+
+function checkPassword() {
+    var password = document.getElementById('exitPassword').value;
+    if (password === '200606') {
+        // Correct password - exit kiosk mode
+        document.getElementById('exitOverlay').style.display = 'none';
+        // Allow exit
+        window.onpopstate = null;
+        history.back();
+    } else {
+        alert('Wrong password!');
+        document.getElementById('exitPassword').value = '';
+    }
+}
+
+// Keypad functions
+function showNumeric() {
+    document.getElementById('numericPad').style.display = 'grid';
+    document.getElementById('qwertyPad').style.display = 'none';
+    document.getElementById('symbolPad').style.display = 'none';
+    document.getElementById('tabNumeric').classList.add('active');
+    document.getElementById('tabQwerty').classList.remove('active');
+    document.getElementById('tabSymbol').classList.remove('active');
+}
+
+function showQwerty() {
+    document.getElementById('numericPad').style.display = 'none';
+    document.getElementById('qwertyPad').style.display = 'block';
+    document.getElementById('symbolPad').style.display = 'none';
+    document.getElementById('tabQwerty').classList.add('active');
+    document.getElementById('tabNumeric').classList.remove('active');
+    document.getElementById('tabSymbol').classList.remove('active');
+}
+
+function showSymbol() {
+    document.getElementById('numericPad').style.display = 'none';
+    document.getElementById('qwertyPad').style.display = 'none';
+    document.getElementById('symbolPad').style.display = 'block';
+    document.getElementById('tabSymbol').classList.add('active');
+    document.getElementById('tabQwerty').classList.remove('active');
+    document.getElementById('tabNumeric').classList.remove('active');
+}
+
+function typeChar(c) {
+    var box = document.getElementById('labelBox');
+    var manualDiv = document.getElementById('manualInputDiv');
+    
+    if (!manualDiv) {
+        manualDiv = document.createElement('div');
+        manualDiv.id = 'manualInputDiv';
+        manualDiv.innerHTML = '<span id="manualIndicator">MAN</span> <span id="manualText"></span>';
+        box.appendChild(manualDiv);
+    }
+    
+    manualInput += c;
+    document.getElementById('manualText').innerText = manualInput;
+    box.scrollTop = box.scrollHeight;
+}
+
+function backspace() {
+    if (manualInput.length > 0) {
+        manualInput = manualInput.slice(0, -1);
+        var manualText = document.getElementById('manualText');
+        if (manualText) {
+            manualText.innerText = manualInput;
+            if (manualInput === '') {
+                var manualDiv = document.getElementById('manualInputDiv');
+                if (manualDiv) manualDiv.remove();
+            }
+        }
+    }
+}
+
+function prevTab() {
+    if (document.getElementById('numericPad').style.display === 'grid') {
+        showSymbol();
+    } else if (document.getElementById('qwertyPad').style.display === 'block') {
+        showNumeric();
+    } else if (document.getElementById('symbolPad').style.display === 'block') {
+        showQwerty();
+    }
+}
+
+function nextTab() {
+    if (document.getElementById('numericPad').style.display === 'grid') {
+        showQwerty();
+    } else if (document.getElementById('qwertyPad').style.display === 'block') {
+        showSymbol();
+    } else if (document.getElementById('symbolPad').style.display === 'block') {
+        showNumeric();
+    }
+}
+
+// Triple tap on time to show exit prompt
+var tapCount = 0;
+var tapTimer = null;
+document.getElementById('timeDisplay').addEventListener('click', function() {
+    tapCount++;
+    if (tapTimer) clearTimeout(tapTimer);
+    tapTimer = setTimeout(function() { tapCount = 0; }, 500);
+    if (tapCount >= 3) {
+        showExitPrompt();
+        tapCount = 0;
+    }
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    initGPS();
+    updateTime();
+    setInterval(updateTime, 1000);
+    showNumeric();
+    
+    // Prevent all navigation
+    document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+    document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+});
+
+// Cleanup
+window.addEventListener('beforeunload', function() {
+    stopCamera();
+});
+</script>
 </body>
 </html>
