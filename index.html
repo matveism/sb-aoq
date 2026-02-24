@@ -24,7 +24,7 @@ body {
     font-weight: bold;
     margin-bottom: 15px;
 }
-.scan-btn {
+.btn {
     background: #3a3f4a;
     border: 2px solid #6a6f7a;
     color: white;
@@ -117,6 +117,27 @@ video {
     border: 2px solid #f00;
     color: #f00;
 }
+.warning {
+    background: #4d4d00;
+    border: 2px solid #ff0;
+    color: #ff0;
+}
+.manual-section {
+    background: #2a2f3a;
+    border: 2px solid #6a8abe;
+    padding: 15px;
+    margin: 10px 0;
+}
+.manual-input {
+    width: 100%;
+    padding: 15px;
+    font-size: 24px;
+    background: #1b1f2a;
+    color: #0f0;
+    border: 2px solid #6a8abe;
+    text-align: center;
+    box-sizing: border-box;
+}
 </style>
 </head>
 <body>
@@ -127,13 +148,15 @@ video {
     </div>
 
     <!-- SCAN BUTTON -->
-    <div class="scan-btn" id="scanButton">START SCANNER</div>
+    <div class="btn" id="scanButton">START SCANNER</div>
 
     <!-- CAMERA SECTION -->
     <div id="scanner">
         <video id="video" autoplay></video>
         <div style="text-align:center; padding:10px;">
-            <button onclick="stopScanner()" style="padding:10px 20px;">STOP</button>
+            <button onclick="stopScanner()" style="padding:10px 20px; margin:5px;">STOP</button>
+            <button onclick="tryBackCamera()" style="padding:10px 20px; margin:5px;">TRY BACK CAMERA</button>
+            <button onclick="tryFrontCamera()" style="padding:10px 20px; margin:5px;">TRY FRONT CAMERA</button>
         </div>
     </div>
 
@@ -145,6 +168,13 @@ video {
         <input type="text" maxlength="1" id="c4" class="digit">
         <input type="text" maxlength="1" id="c5" class="digit">
         <input type="text" maxlength="1" id="c6" class="digit">
+    </div>
+
+    <!-- MANUAL ENTRY SECTION (FALLBACK) -->
+    <div class="manual-section">
+        <div style="color:#aaccff; font-size:20px; margin-bottom:10px;">MANUAL ENTRY (CAMERA NOT WORKING?)</div>
+        <input type="text" class="manual-input" id="manualBarcode" maxlength="6" placeholder="ENTER 6 DIGITS">
+        <div class="btn" id="manualBtn" style="font-size:24px; padding:10px;">ENTER BARCODE</div>
     </div>
 
     <!-- MESSAGE AREA -->
@@ -261,52 +291,127 @@ function fillGrid(barcode) {
     for (var i = 1; i <= 6; i++) {
         if (i <= barcode.length) {
             document.getElementById('c' + i).value = barcode.charAt(i-1);
+        } else {
+            document.getElementById('c' + i).value = '';
         }
     }
     checkGridFilled();
 }
 
-// ==================== CAMERA FUNCTIONS ====================
+// ==================== CAMERA FUNCTIONS - FIXED VERSION ====================
 document.getElementById('scanButton').onclick = function() {
+    // First check if browser supports getUserMedia
+    if (!navigator.getUserMedia && !navigator.webkitGetUserMedia && !navigator.mozGetUserMedia) {
+        showMessage('Camera not supported on this browser', 'error');
+        return;
+    }
     startCamera();
 };
 
 function startCamera() {
-    // Stop any existing scanner
     stopScanner();
-    
-    // Show scanner section
     document.getElementById('scanner').style.display = 'block';
     
-    // Get camera
-    navigator.getUserMedia = navigator.getUserMedia || 
-                            navigator.webkitGetUserMedia || 
-                            navigator.mozGetUserMedia;
+    // Get the correct getUserMedia function
+    var getUserMedia = navigator.getUserMedia || 
+                      navigator.webkitGetUserMedia || 
+                      navigator.mozGetUserMedia;
     
-    if (navigator.getUserMedia) {
-        navigator.getUserMedia(
-            { video: true },
-            function(s) {
-                stream = s;
-                video.srcObject = s;
+    if (!getUserMedia) {
+        showMessage('Camera API not available', 'error');
+        return;
+    }
+    
+    showMessage('Requesting camera access...', 'warning');
+    
+    // Try with basic video first (no facing mode)
+    getUserMedia.call(navigator, 
+        { video: true },
+        function(s) {
+            stream = s;
+            video.srcObject = s;
+            video.onloadedmetadata = function() {
                 video.play();
                 scannerActive = true;
-                startScanning();
-            },
-            function(err) {
-                alert('Camera error: ' + err);
-                document.getElementById('scanner').style.display = 'none';
-            }
-        );
-    } else {
-        alert('Camera not supported');
-        document.getElementById('scanner').style.display = 'none';
-    }
+                showMessage('Camera started! Point at QR code', 'success');
+                startQRScan();
+            };
+        },
+        function(err) {
+            var errorMsg = 'Camera error: ';
+            if (err.name) errorMsg += err.name;
+            if (err.message) errorMsg += ' - ' + err.message;
+            showMessage(errorMsg, 'error');
+            document.getElementById('scanner').style.display = 'none';
+        }
+    );
+}
+
+// Try back camera specifically
+function tryBackCamera() {
+    stopScanner();
+    document.getElementById('scanner').style.display = 'block';
+    
+    var getUserMedia = navigator.getUserMedia || 
+                      navigator.webkitGetUserMedia || 
+                      navigator.mozGetUserMedia;
+    
+    if (!getUserMedia) return;
+    
+    // Try with environment facing (back camera)
+    getUserMedia.call(navigator, 
+        { video: { facingMode: { exact: "environment" } } },
+        function(s) {
+            stream = s;
+            video.srcObject = s;
+            video.onloadedmetadata = function() {
+                video.play();
+                scannerActive = true;
+                showMessage('Back camera started!', 'success');
+                startQRScan();
+            };
+        },
+        function(err) {
+            showMessage('Back camera failed, trying default...', 'warning');
+            startCamera(); // Fall back to default camera
+        }
+    );
+}
+
+// Try front camera
+function tryFrontCamera() {
+    stopScanner();
+    document.getElementById('scanner').style.display = 'block';
+    
+    var getUserMedia = navigator.getUserMedia || 
+                      navigator.webkitGetUserMedia || 
+                      navigator.mozGetUserMedia;
+    
+    if (!getUserMedia) return;
+    
+    getUserMedia.call(navigator, 
+        { video: { facingMode: "user" } },
+        function(s) {
+            stream = s;
+            video.srcObject = s;
+            video.onloadedmetadata = function() {
+                video.play();
+                scannerActive = true;
+                showMessage('Front camera started!', 'success');
+                startQRScan();
+            };
+        },
+        function(err) {
+            showMessage('Front camera failed', 'error');
+        }
+    );
 }
 
 function stopScanner() {
     if (stream) {
-        stream.getTracks().forEach(function(t) { t.stop(); });
+        try {
+            stream.getTracks().forEach(function(t) { t.stop(); });
+        } catch(e) {}
         video.srcObject = null;
     }
     document.getElementById('scanner').style.display = 'none';
@@ -318,44 +423,69 @@ function stopScanner() {
 }
 
 // ==================== QR SCANNING ====================
-function startScanning() {
+function startQRScan() {
     if (!scannerActive) return;
     
-    // Load QR scanner library
+    // Load QR scanner if not loaded
     if (!window.jsQR) {
         var script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
         script.onload = function() { 
-            if (scannerActive) startQRScan();
+            if (scannerActive) initScanning();
+        };
+        script.onerror = function() {
+            showMessage('Failed to load QR scanner', 'error');
         };
         document.head.appendChild(script);
     } else {
-        startQRScan();
+        initScanning();
     }
 }
 
-function startQRScan() {
+function initScanning() {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     
     scanTimer = setInterval(function() {
         if (!scannerActive || video.readyState !== 4) return;
         
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0);
-        
         try {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            if (canvas.width === 0 || canvas.height === 0) return;
+            
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             var code = jsQR(imageData.data, imageData.width, imageData.height);
             
-            if (code) {
+            if (code && code.data) {
                 fillGrid(code.data);
                 stopScanner();
+                showMessage('QR Code detected!', 'success');
             }
-        } catch(e) {}
+        } catch(e) {
+            // Silent fail for scanning errors
+        }
     }, 500);
 }
+
+// ==================== MANUAL ENTRY ====================
+document.getElementById('manualBtn').onclick = function() {
+    var manual = document.getElementById('manualBarcode');
+    var barcode = manual.value.trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    if (barcode.length > 0) {
+        fillGrid(barcode);
+        manual.value = '';
+        showMessage('Barcode entered manually', 'success');
+    }
+};
+
+document.getElementById('manualBarcode').onkeypress = function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('manualBtn').click();
+    }
+};
 
 // ==================== API FUNCTIONS ====================
 function showMessage(text, type) {
@@ -378,19 +508,25 @@ function sendToApi(barcode, status) {
         eta: ''
     };
     
+    showMessage('Sending data...', 'warning');
+    
     var xhr = new XMLHttpRequest();
     xhr.open('POST', API_URL, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
-            if (xhr.status === 200 || xhr.status === 201) {
-                showMessage('✓ SENT OK', 'success');
+            if (xhr.status >= 200 && xhr.status < 300) {
+                showMessage('✓ Data sent successfully!', 'success');
                 addToList(barcode, status);
             } else {
-                showMessage('✗ FAILED', 'error');
+                showMessage('✗ Failed to send: ' + xhr.status, 'error');
             }
         }
+    };
+    
+    xhr.onerror = function() {
+        showMessage('✗ Network error - check connection', 'error');
     };
     
     xhr.send(JSON.stringify(data));
@@ -435,8 +571,13 @@ document.getElementById('statusSelect').onchange = function() {
     }
 };
 
-// ==================== FOCUS FIRST ====================
+// ==================== INIT ====================
 document.getElementById('c1').focus();
+
+// Check camera support on load
+if (!navigator.getUserMedia && !navigator.webkitGetUserMedia && !navigator.mozGetUserMedia) {
+    showMessage('Camera not supported. Use manual entry.', 'warning');
+}
 </script>
 </body>
 </html>
