@@ -55,7 +55,11 @@ body {
 }
 #leftText { color: #fff; } 
 #rightArea { color: #fff; font-size: 16px; display: flex; align-items: center; gap: 12px; }
-#gpsIndicator { color: #ff4444; font-size: 18px; }
+#gpsIndicator { 
+    color: #ffaa00;  /* Yellow when searching/fixed */
+    font-size: 18px; 
+    transition: color 0.3s;
+}
 #timeDisplay { color: #ffcc00; font-size: 16px; }
 #scanButton { 
     width: calc(100% - 24px); 
@@ -648,7 +652,6 @@ var manualInput = '';
 var currentLocation = null;
 var scanning = false;
 var stream = null;
-var scanTimeout = null;
 var flashlightTrack = null;
 var flashlightActive = false;
 
@@ -685,24 +688,34 @@ function updateTime() {
     document.getElementById('timeDisplay2').innerText = timeStr;
 }
 
-// GPS
+// GPS with YELLOW indicator - continuous tracking
 function initGPS() {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
+        // Watch position for continuous updates
+        navigator.geolocation.watchPosition(
             function(pos) {
                 currentLocation = {
                     lat: pos.coords.latitude,
                     lng: pos.coords.longitude
                 };
+                // Yellow when active
                 document.getElementById('gpsIndicator').innerHTML = '📍';
-                document.getElementById('gpsIndicator').style.color = '#4CAF50';
+                document.getElementById('gpsIndicator').style.color = '#ffaa00';
             },
             function(err) {
+                // Grey when error
                 document.getElementById('gpsIndicator').innerHTML = '🌐';
-                document.getElementById('gpsIndicator').style.color = '#ff4444';
+                document.getElementById('gpsIndicator').style.color = '#888888';
             },
-            { timeout: 10000, enableHighAccuracy: true }
+            { 
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000
+            }
         );
+    } else {
+        document.getElementById('gpsIndicator').innerHTML = '🚫';
+        document.getElementById('gpsIndicator').style.color = '#ff4444';
     }
 }
 
@@ -745,13 +758,9 @@ function toggleFlashlight() {
     }
 }
 
-// CAMERA FUNCTIONS - FORCED BACK CAMERA ONLY
+// CAMERA FUNCTIONS - FORCED BACK CAMERA ONLY, NO DUMMY DATA
 function stopCamera() {
     scanning = false;
-    if (scanTimeout) {
-        clearTimeout(scanTimeout);
-        scanTimeout = null;
-    }
     if (stream) {
         try {
             stream.getTracks().forEach(function(t) { 
@@ -796,14 +805,8 @@ function startScan() {
             // Store video track for flashlight
             flashlightTrack = stream.getVideoTracks()[0];
             
-            // Simulate barcode detection after 3 seconds
-            scanTimeout = setTimeout(function() {
-                if (scanning) {
-                    var fakeCodes = ['5901234123457', '9780201379624', '036000291452', '4012345012345'];
-                    var fakeCode = fakeCodes[Math.floor(Math.random() * fakeCodes.length)];
-                    addScannedCode(fakeCode, 'EAN-13');
-                }
-            }, 3000);
+            // NO DUMMY DATA - we're just showing camera, actual scanning would be implemented with a real barcode library
+            
         })
         .catch(function(err) {
             // Try without facingMode constraint
@@ -815,11 +818,8 @@ function startScan() {
                 
                 flashlightTrack = stream.getVideoTracks()[0];
                 
-                scanTimeout = setTimeout(function() {
-                    if (scanning) {
-                        addScannedCode('5901234123457', 'EAN-13');
-                    }
-                }, 3000);
+                // NO DUMMY DATA - just camera feed
+                
             })
             .catch(function(err) {
                 // Try deprecated API
@@ -835,11 +835,7 @@ function startScan() {
                                 
                                 flashlightTrack = stream.getVideoTracks()[0];
                                 
-                                scanTimeout = setTimeout(function() {
-                                    if (scanning) {
-                                        addScannedCode('5901234123457', 'EAN-13');
-                                    }
-                                }, 3000);
+                                // NO DUMMY DATA
                             },
                             function(err) {
                                 alert('Camera failed. Please check permissions.');
@@ -866,19 +862,10 @@ function startScan() {
     }
 }
 
+// MANUAL CODE ENTRY - only way to add codes (no dummy scanning)
 function addScannedCode(code, type) {
-    scanning = false;
-    stopCamera();
-    
-    // Beep sound
-    try {
-        var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        var osc = audioCtx.createOscillator();
-        osc.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.1);
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-    } catch(e) {}
+    // This function is now only called from manual entry or external integration
+    // No dummy data generation
     
     scanCount++;
     currentScans.push({
@@ -902,6 +889,13 @@ function addScannedCode(code, type) {
     box.scrollTop = box.scrollHeight;
 }
 
+// Add manual entry from keyboard
+function submitManualEntry() {
+    if (manualInput.trim() !== '') {
+        addScannedCode(manualInput.trim(), 'MANUAL');
+    }
+}
+
 function clearScans() {
     scanCount = 0;
     currentScans = [];
@@ -914,22 +908,7 @@ function clearScans() {
 function goToStatus() {
     // Add manual text if present
     if (manualInput.trim() !== '') {
-        scanCount++;
-        currentScans.push({
-            number: scanCount,
-            code: manualInput.trim(),
-            type: 'MANUAL'
-        });
-        
-        var box = document.getElementById('labelBox');
-        var span = document.createElement('span');
-        span.className = 'scan-entry';
-        span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + manualInput.trim() + '<span id="barcodeType"> [MANUAL]</span>';
-        box.appendChild(span);
-        
-        manualInput = '';
-        var md = document.getElementById('manualInputDiv');
-        if (md) md.remove();
+        addScannedCode(manualInput.trim(), 'MANUAL');
     }
     
     if (currentScans.length === 0) {
@@ -955,6 +934,16 @@ function submitStatus(status) {
     document.getElementById('popupStatus').innerText = 'Status: ' + status;
     document.getElementById('popupScanCount').innerHTML = currentScans.length + ' barcode(s) saved';
     popup.style.display = 'flex';
+    
+    // Beep sound on success
+    try {
+        var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        var osc = audioCtx.createOscillator();
+        osc.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch(e) {}
     
     setTimeout(function() {
         popup.style.display = 'none';
@@ -1085,6 +1074,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Prevent all navigation
     document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
     document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+    
+    // Add manual submission on Enter key (for external keyboard)
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && manualInput.trim() !== '') {
+            submitManualEntry();
+        }
+    });
 });
 
 // Cleanup
