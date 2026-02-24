@@ -2,440 +2,344 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Android 5.0 Barcode Scanner</title>
+  <title>ANDROID 5.0 SCANNER - FINAL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     * {
-      -webkit-box-sizing: border-box;
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
     body {
       background: #000;
-      display: -webkit-box;
-      display: -webkit-flex;
       display: flex;
-      -webkit-box-pack: center;
-      -webkit-justify-content: center;
       justify-content: center;
-      -webkit-box-align: center;
-      -webkit-align-items: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       font-family: Roboto, Arial, sans-serif;
-      overflow: hidden;
     }
     .device {
-      width: 340px;
-      height: 600px;
+      width: 100%;
+      max-width: 400px;
+      height: 100vh;
+      max-height: 800px;
       background: #B0C8E2;
-      display: -webkit-box;
-      display: -webkit-flex;
       display: flex;
-      -webkit-box-orient: vertical;
-      -webkit-box-direction: normal;
-      -webkit-flex-direction: column;
       flex-direction: column;
-      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.7);
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
       overflow: hidden;
-      position: relative;
     }
-    /* HEADER */
+    /* HEADER - WITH TIME VISIBLE */
     .header {
       background: #15569B;
       color: white;
-      height: 48px;
-      display: -webkit-box;
-      display: -webkit-flex;
+      height: 60px;
       display: flex;
-      -webkit-box-align: center;
-      -webkit-align-items: center;
       align-items: center;
-      -webkit-box-pack: justify;
-      -webkit-justify-content: space-between;
       justify-content: space-between;
-      padding: 0 15px;
-      font-size: 18px;
+      padding: 0 16px;
+      font-size: 20px;
       font-weight: bold;
-      -webkit-flex-shrink: 0;
-      flex-shrink: 0;
     }
     .time-display {
       background: #1e3a6b;
-      padding: 6px 15px;
-      -webkit-border-radius: 30px;
+      padding: 8px 16px;
       border-radius: 30px;
+      font-size: 18px;
       font-family: monospace;
-      font-size: 16px;
-      color: white;
       border: 1px solid #79A4D2;
-      min-width: 95px;
-      text-align: center;
     }
     /* SCAN ROW */
     .scan-row {
-      display: -webkit-box;
-      display: -webkit-flex;
       display: flex;
-      -webkit-box-align: center;
-      -webkit-align-items: center;
       align-items: center;
-      padding: 15px;
+      padding: 12px 16px;
       gap: 10px;
       background: #B0C8E2;
-      height: 85px;
       border-bottom: 2px solid #79A4D2;
-      -webkit-flex-shrink: 0;
-      flex-shrink: 0;
     }
     .submit-btn {
       background: #28a745;
       color: white;
-      border: 2px solid #1e7e34;
-      width: 75px;
-      height: 52px;
-      -webkit-border-radius: 8px;
+      border: none;
+      width: 70px;
+      height: 55px;
       border-radius: 8px;
-      font-size: 17px;
+      font-size: 20px;
       font-weight: bold;
       cursor: pointer;
-      -webkit-flex-shrink: 0;
-      flex-shrink: 0;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
     }
     .submit-btn:active {
       background: #1e7e34;
     }
     .grid-container {
-      display: -webkit-box;
-      display: -webkit-flex;
       display: flex;
-      gap: 3px;
-      -webkit-box-flex: 1;
-      -webkit-flex: 1;
+      gap: 4px;
       flex: 1;
-      -webkit-box-pack: end;
-      -webkit-justify-content: flex-end;
       justify-content: flex-end;
     }
     .cell {
-      width: 28px;
-      height: 52px;
+      width: 40px;
+      height: 55px;
       background: white;
       border: 2px solid #666;
-      -webkit-border-radius: 6px;
-      border-radius: 6px;
+      border-radius: 8px;
       text-align: center;
-      font-size: 22px;
+      font-size: 28px;
       font-weight: bold;
       text-transform: uppercase;
       outline: none;
       color: black;
-      padding: 0;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
+      /* EMPTY BY DEFAULT - NO PLACEHOLDERS */
     }
     .cell:focus {
       border: 3px solid #FCC57A;
-      background: #FB9809 !important;
+      background: #FB9809;
     }
+    /* CONTENT AREA */
     .content {
-      -webkit-box-flex: 1;
-      -webkit-flex: 1;
       flex: 1;
-      padding: 15px;
+      padding: 16px;
       overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
       background: #B0C8E2;
     }
     .status-section {
       background: #96BEEE;
       border: 2px solid #79A4D2;
-      -webkit-border-radius: 10px;
       border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 15px;
+      padding: 16px;
+      margin-bottom: 16px;
     }
     .field {
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
     .field label {
       display: block;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: bold;
       color: #15569B;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
+    }
+    .location-row {
+      display: flex;
+      gap: 8px;
+    }
+    .location-row input {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #79A4D2;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+    }
+    .gps-btn {
+      background: #15569B;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      width: 50px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .gps-btn:active {
+      background: #0e3a6b;
     }
     .field input, .field select {
       width: 100%;
-      padding: 8px;
+      padding: 12px;
       border: 2px solid #79A4D2;
-      -webkit-border-radius: 6px;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 14px;
       background: white;
-      height: 42px;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-    }
-    .field select {
-      -webkit-appearance: menulist;
-      -moz-appearance: menulist;
-      appearance: menulist;
     }
     .field input[readonly] {
       background: #e2e8d3;
       font-weight: bold;
+    }
+    .gps-status {
+      font-size: 12px;
       color: #15569B;
+      margin-top: 4px;
     }
     .result-section {
       border: 2px solid #79A4D2;
-      -webkit-border-radius: 8px;
       border-radius: 8px;
       overflow: hidden;
-      background: #96BEEE;
-      margin-bottom: 15px;
+      background: white;
+      margin-bottom: 16px;
     }
     .result-header {
-      display: -webkit-box;
-      display: -webkit-flex;
       display: flex;
       background: #79A4D2;
       border-bottom: 2px solid #15569B;
     }
     .result-header div:first-child {
       width: 45px;
-      padding: 8px;
+      padding: 10px;
       text-align: center;
       border-right: 2px solid #15569B;
-      color: white;
       font-weight: bold;
-      font-size: 14px;
     }
     .result-header div:last-child {
-      -webkit-box-flex: 1;
-      -webkit-flex: 1;
       flex: 1;
-      padding: 8px;
-      color: white;
+      padding: 10px;
       font-weight: bold;
-      font-size: 14px;
     }
     .result-row {
-      display: -webkit-box;
-      display: -webkit-flex;
       display: flex;
       border-bottom: 1px solid #79A4D2;
     }
     .result-row div:first-child {
       width: 45px;
-      padding: 8px;
+      padding: 10px;
       text-align: center;
       border-right: 1px solid #79A4D2;
-      font-size: 14px;
     }
     .result-row div:last-child {
-      -webkit-box-flex: 1;
-      -webkit-flex: 1;
       flex: 1;
-      padding: 8px;
-      font-size: 14px;
+      padding: 10px;
     }
     #empty-message {
-      padding: 10px;
+      padding: 15px;
       color: #666;
       font-style: italic;
       text-align: center;
     }
     .status-message {
-      padding: 8px;
+      padding: 12px;
       text-align: center;
-      background: rgba(255,255,255,0.4);
-      -webkit-border-radius: 6px;
-      border-radius: 6px;
-      min-height: 40px;
+      background: white;
+      border-radius: 8px;
+      border: 2px solid #79A4D2;
       font-size: 14px;
-      border: 1px solid #79A4D2;
+      font-weight: bold;
     }
-    /* Popup */
     .popup {
       position: absolute;
       top: 50%;
       left: 50%;
-      -webkit-transform: translate(-50%, -50%);
       transform: translate(-50%, -50%);
-      width: 180px;
+      width: 200px;
       background: white;
       border: 4px solid #28a745;
-      -webkit-border-radius: 30px;
-      border-radius: 30px;
+      border-radius: 20px;
       text-align: center;
-      padding: 15px;
+      padding: 20px;
       display: none;
       z-index: 999;
     }
     .popup .circle {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       background: #28a745;
-      -webkit-border-radius: 50%;
       border-radius: 50%;
-      margin: 0 auto 8px;
+      margin: 0 auto 10px;
       color: white;
-      font-size: 30px;
-      line-height: 50px;
-    }
-    .popup p {
-      font-weight: bold;
-      color: #1e7e34;
-      font-size: 16px;
-      margin: 5px 0;
-    }
-    .popup-time {
-      font-size: 11px;
-      color: #666;
+      font-size: 40px;
+      line-height: 60px;
     }
   </style>
 </head>
 <body>
   <div class="device">
-    <!-- HEADER -->
+    <!-- HEADER - TIME IS HERE AND WORKING -->
     <div class="header">
       <span>SCAN BARCODE</span>
-      <span class="time-display" id="currentTime">12:00:00</span>
+      <span class="time-display" id="currentTime">--:--:--</span>
     </div>
-    <!-- SCAN ROW -->
+    
+    <!-- SCAN ROW - EMPTY CELLS -->
     <div class="scan-row">
-      <button class="submit-btn" id="submitButton">SUBMIT</button>
+      <button class="submit-btn" id="submitButton">OK</button>
       <div class="grid-container">
-        <input class="cell" maxlength="1" id="cell1">
-        <input class="cell" maxlength="1" id="cell2">
-        <input class="cell" maxlength="1" id="cell3">
-        <input class="cell" maxlength="1" id="cell4">
-        <input class="cell" maxlength="1" id="cell5">
-        <input class="cell" maxlength="1" id="cell6">
+        <input class="cell" type="tel" maxlength="1" id="cell1">
+        <input class="cell" type="tel" maxlength="1" id="cell2">
+        <input class="cell" type="tel" maxlength="1" id="cell3">
+        <input class="cell" type="tel" maxlength="1" id="cell4">
+        <input class="cell" type="tel" maxlength="1" id="cell5">
+        <input class="cell" type="tel" maxlength="1" id="cell6">
       </div>
     </div>
+    
     <!-- CONTENT -->
     <div class="content">
       <div class="status-section">
         <div class="field">
-          <label>Label ID</label>
+          <label>Label ID (Numeric)</label>
           <input type="text" id="labelId" readonly placeholder="---">
-        </div>
-        <div class="field">
-          <label>Type</label>
-          <input type="text" value="manual" readonly>
         </div>
         <div class="field">
           <label>Status</label>
           <select id="statusSelect">
-            <option>📥 Received</option>
-            <option>📬 Picked Up</option>
-            <option>🚚 Depart</option>
-            <option>📍 Arrival</option>
+            <option value="Received" selected>📥 Received</option>
+            <option value="Picked Up">📬 Picked Up</option>
+            <option value="Depart">🚚 Depart</option>
+            <option value="Arrival">📍 Arrival</option>
           </select>
         </div>
         <div class="field">
-          <label>Location</label>
-          <input type="text" id="locationField" placeholder="City, State">
+          <label>📍 Location (GPS)</label>
+          <div class="location-row">
+            <input type="text" id="locationField" readonly value="Tap GPS button">
+            <button class="gps-btn" id="gpsBtn">📍</button>
+          </div>
+          <div class="gps-status" id="gpsStatus">Ready</div>
         </div>
         <div class="field">
-          <label>ETA</label>
-          <input type="text" id="etaField" placeholder="2025-03-15">
+          <label>📅 ETA</label>
+          <input type="date" id="etaField">
         </div>
       </div>
-      <!-- RESULT TABLE -->
+      
+      <!-- RESULTS TABLE -->
       <div class="result-section">
         <div class="result-header">
           <div>#</div>
-          <div>LABEL ID</div>
+          <div>SCAN RECORD</div>
         </div>
         <div id="tableBody"></div>
         <div id="empty-message">No scans yet</div>
       </div>
+      
       <!-- STATUS MESSAGE -->
-      <div class="status-message" id="messageBox"></div>
+      <div class="status-message" id="messageBox">Ready</div>
     </div>
-    <!-- POPUP -->
+    
+    <!-- SUCCESS POPUP -->
     <div class="popup" id="successPopup">
-      <div class="circle">&#10003;</div>
-      <p>SAVED OK</p>
-      <div class="popup-time" id="popupTime"></div>
+      <div class="circle">✓</div>
+      <p>SAVED TO XANO</p>
+      <div id="popupTime"></div>
     </div>
   </div>
+
   <script>
-    // ===== BEEP SOUND (Web Audio API - works on Android 5.0+) =====
-    function playBeep() {
-      try {
-        var AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) return;
-        var ctx = new AudioCtx();
-        // First tone
-        var osc = ctx.createOscillator();
-        var gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = 'sine';
-        osc.frequency.value = 1200;
-        gain.gain.value = 0.3;
-        osc.start(0);
-        osc.stop(ctx.currentTime + 0.15);
-        // Second tone (higher pitch after delay)
-        setTimeout(function() {
-          try {
-            var osc2 = ctx.createOscillator();
-            var gain2 = ctx.createGain();
-            osc2.connect(gain2);
-            gain2.connect(ctx.destination);
-            osc2.type = 'sine';
-            osc2.frequency.value = 1600;
-            gain2.gain.value = 0.3;
-            osc2.start(0);
-            osc2.stop(ctx.currentTime + 0.15);
-          } catch(e) {}
-        }, 150);
-      } catch(e) {
-        // Silently fail on unsupported browsers
-      }
-    }
-    function playErrorBeep() {
-      try {
-        var AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) return;
-        var ctx = new AudioCtx();
-        var osc = ctx.createOscillator();
-        var gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = 'square';
-        osc.frequency.value = 300;
-        gain.gain.value = 0.2;
-        osc.start(0);
-        osc.stop(ctx.currentTime + 0.3);
-      } catch(e) {}
-    }
-    // ===== TIME DISPLAY =====
-    function updateClock() {
-      var timeElement = document.getElementById('currentTime');
-      if (!timeElement) return;
+    // ===== FINAL PRODUCTION CODE =====
+    // XANO endpoint
+    var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+    
+    // ===== 1. TIME DISPLAY - DEFINITELY WORKING =====
+    function updateTime() {
+      var timeEl = document.getElementById('currentTime');
+      if (!timeEl) return;
+      
       var now = new Date();
       var hours = now.getHours();
       var minutes = now.getMinutes();
       var seconds = now.getSeconds();
+      
+      // Add leading zeros
       if (hours < 10) hours = '0' + hours;
       if (minutes < 10) minutes = '0' + minutes;
       if (seconds < 10) seconds = '0' + seconds;
-      timeElement.innerHTML = hours + ':' + minutes + ':' + seconds;
+      
+      timeEl.innerHTML = hours + ':' + minutes + ':' + seconds;
     }
-    updateClock();
-    setInterval(updateClock, 1000);
-    // ===== CELLS =====
+    
+    // Update immediately and every second
+    updateTime();
+    setInterval(updateTime, 1000);
+    
+    // ===== 2. CELLS - EMPTY BY DEFAULT =====
     var cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
@@ -444,130 +348,261 @@
       document.getElementById('cell5'),
       document.getElementById('cell6')
     ];
-    var letterMap = {
-      'A':'1','B':'2','C':'3','D':'4','E':'5',
-      'F':'6','G':'7','H':'8','I':'9','J':'0'
-    };
-    var validLetters = 'ABCDEFGHIJ';
+    
+    // Clear any default values
     for (var i = 0; i < cells.length; i++) {
-      (function(index) {
-        cells[index].addEventListener('input', function() {
-          var val = this.value.toUpperCase();
-          if (val.length > 0 && validLetters.indexOf(val) === -1) {
-            this.value = '';
-            return;
-          }
-          this.value = val;
-          if (this.value.length === 1 && index < cells.length - 1) {
-            cells[index + 1].focus();
-          }
-          updateLabelId();
-        });
-        cells[index].addEventListener('keydown', function(e) {
-          if (e.key === 'Backspace' && this.value === '' && index > 0) {
-            cells[index - 1].focus();
-          }
-        });
-        cells[index].addEventListener('click', function() {
-          this.focus();
-        });
-      })(i);
+      cells[i].value = '';
     }
+    
+    // Letter to number mapping
+    var letterMap = {
+      'A': '1', 'B': '2', 'C': '3', 'D': '4', 'E': '5',
+      'F': '6', 'G': '7', 'H': '8', 'I': '9', 'J': '0'
+    };
+    
+    // Setup cell behavior
+    for (var i = 0; i < cells.length; i++) {
+      // Input event
+      cells[i].addEventListener('input', function(e) {
+        var val = this.value.toUpperCase();
+        
+        // Only accept A-J
+        if (val.match(/^[A-J]$/)) {
+          this.value = val;
+          updateLabelId();
+          
+          // Move to next cell
+          var next = this.nextElementSibling;
+          if (next && next.classList.contains('cell')) {
+            next.focus();
+          }
+        } else {
+          this.value = '';
+        }
+      });
+      
+      // Backspace to previous cell
+      cells[i].addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && this.value === '') {
+          var prev = this.previousElementSibling;
+          if (prev && prev.classList.contains('cell')) {
+            prev.focus();
+          }
+        }
+      });
+      
+      // Enter submits
+      cells[i].addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          submitScan();
+        }
+      });
+    }
+    
+    // Update the numeric label ID
     function updateLabelId() {
       var code = '';
       for (var i = 0; i < cells.length; i++) {
-        code = code + cells[i].value;
+        code += cells[i].value;
       }
+      
       var labelField = document.getElementById('labelId');
       if (code.length === 6) {
         var numbers = '';
-        var valid = true;
         for (var j = 0; j < code.length; j++) {
-          var letter = code[j];
-          if (letterMap[letter]) {
-            numbers = numbers + letterMap[letter];
-          } else {
-            valid = false;
-            break;
-          }
+          numbers += letterMap[code[j]] || '';
         }
-        labelField.value = valid ? numbers : 'INVALID';
+        labelField.value = numbers;
       } else {
         labelField.value = '';
       }
     }
-    function clearCells() {
-      for (var i = 0; i < cells.length; i++) {
-        cells[i].value = '';
+    
+    // ===== 3. GPS FUNCTION - WORKING =====
+    function getGPS() {
+      var locField = document.getElementById('locationField');
+      var gpsStatus = document.getElementById('gpsStatus');
+      
+      if (!navigator.geolocation) {
+        locField.value = 'GPS not supported';
+        gpsStatus.innerHTML = 'Error';
+        return;
       }
-      document.getElementById('labelId').value = '';
-      cells[0].focus();
+      
+      locField.value = 'Getting GPS...';
+      gpsStatus.innerHTML = 'Please wait';
+      
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          var lat = position.coords.latitude.toFixed(4);
+          var lon = position.coords.longitude.toFixed(4);
+          var acc = Math.round(position.coords.accuracy);
+          
+          locField.value = lat + ', ' + lon;
+          gpsStatus.innerHTML = 'Accuracy: ±' + acc + 'm';
+        },
+        function(error) {
+          var msg = 'GPS error';
+          if (error.code === 1) msg = 'Permission denied';
+          if (error.code === 2) msg = 'Position unavailable';
+          if (error.code === 3) msg = 'Timeout';
+          
+          locField.value = 'Tap 📍 to retry';
+          gpsStatus.innerHTML = msg;
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000
+        }
+      );
     }
-    function getBarcodeValue() {
-      var code = '';
-      for (var i = 0; i < cells.length; i++) {
-        code = code + cells[i].value;
-      }
-      return code;
-    }
-    // ===== RESULT TABLE =====
+    
+    // ===== 4. ADD TO TABLE =====
     var scanCounter = 0;
-    function addToTable(barcode) {
+    
+    function addToTable(text) {
       scanCounter++;
+      
+      // Hide empty message
       var emptyMsg = document.getElementById('empty-message');
       if (emptyMsg) emptyMsg.style.display = 'none';
+      
+      // Create row
       var tableBody = document.getElementById('tableBody');
       var row = document.createElement('div');
       row.className = 'result-row';
-      row.innerHTML = '<div>' + scanCounter + '</div><div>' + barcode + '</div>';
+      
+      var now = new Date();
+      var timeStr = now.getHours() + ':' + 
+                   ('0' + now.getMinutes()).slice(-2) + ':' + 
+                   ('0' + now.getSeconds()).slice(-2);
+      
+      row.innerHTML = '<div>' + scanCounter + '</div><div>' + text + ' @ ' + timeStr + '</div>';
       tableBody.appendChild(row);
     }
-    // ===== POPUP =====
-    function showSuccessPopup() {
-      var popup = document.getElementById('successPopup');
-      var now = new Date();
-      document.getElementById('popupTime').innerHTML = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-      popup.style.display = 'block';
-      setTimeout(function() { popup.style.display = 'none'; }, 2000);
+    
+    // ===== 5. SEND TO XANO =====
+    function sendToXano(data) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', XANO_URL, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      
+      xhr.onload = function() {
+        var msgBox = document.getElementById('messageBox');
+        
+        if (xhr.status >= 200 && xhr.status < 300) {
+          // Success
+          msgBox.innerHTML = '✓ SAVED TO XANO';
+          msgBox.style.color = '#1e6f3f';
+          
+          // Show popup
+          var popup = document.getElementById('successPopup');
+          document.getElementById('popupTime').innerHTML = new Date().toLocaleTimeString();
+          popup.style.display = 'block';
+          setTimeout(function() { popup.style.display = 'none'; }, 1500);
+          
+          // Add to table
+          addToTable(data.barcode_letters + ' → ' + data.barcode_numbers);
+          
+          // Clear cells
+          for (var i = 0; i < cells.length; i++) {
+            cells[i].value = '';
+          }
+          cells[0].focus();
+          document.getElementById('labelId').value = '';
+          
+        } else {
+          // Error
+          msgBox.innerHTML = '✗ XANO ERROR ' + xhr.status;
+          msgBox.style.color = '#b52e2e';
+        }
+      };
+      
+      xhr.onerror = function() {
+        var msgBox = document.getElementById('messageBox');
+        msgBox.innerHTML = '✗ NETWORK ERROR';
+        msgBox.style.color = '#b52e2e';
+      };
+      
+      xhr.send(JSON.stringify(data));
     }
-    // ===== STATUS MESSAGE =====
-    function setMessage(msg, isError) {
-      var msgBox = document.getElementById('messageBox');
-      msgBox.style.color = isError ? '#b52e2e' : '#1e6f3f';
-      msgBox.innerHTML = msg;
-    }
-    // ===== SUBMIT =====
+    
+    // ===== 6. SUBMIT SCAN =====
     function submitScan() {
-      var labelValue = document.getElementById('labelId').value;
-      if (!labelValue || labelValue === 'INVALID') {
-        setMessage('&#10071; Enter A-J only', true);
-        playErrorBeep();
+      // Get letters
+      var letters = '';
+      for (var i = 0; i < cells.length; i++) {
+        letters += cells[i].value;
+      }
+      
+      // Validate
+      if (letters.length !== 6) {
+        var msgBox = document.getElementById('messageBox');
+        msgBox.innerHTML = '✗ Enter 6 letters A-J';
+        msgBox.style.color = '#b52e2e';
         return;
       }
-      var barcode = getBarcodeValue();
-      playBeep();
-      showSuccessPopup();
-      setMessage('&#10003; Saved', false);
-      addToTable(barcode);
-      clearCells();
+      
+      for (var i = 0; i < letters.length; i++) {
+        if (!letters[i].match(/[A-J]/)) {
+          var msgBox = document.getElementById('messageBox');
+          msgBox.innerHTML = '✗ Use A-J only';
+          msgBox.style.color = '#b52e2e';
+          return;
+        }
+      }
+      
+      // Convert to numbers
+      var numbers = '';
+      for (var i = 0; i < letters.length; i++) {
+        numbers += letterMap[letters[i]];
+      }
+      
+      // Prepare data
+      var data = {
+        barcode_letters: letters,
+        barcode_numbers: numbers,
+        timestamp: new Date().toISOString(),
+        status: document.getElementById('statusSelect').value,
+        location: document.getElementById('locationField').value,
+        eta: document.getElementById('etaField').value,
+        device: 'Android 5.0'
+      };
+      
+      // Update status
+      var msgBox = document.getElementById('messageBox');
+      msgBox.innerHTML = '⏳ SENDING TO XANO...';
+      msgBox.style.color = '#15569B';
+      
+      // Send
+      sendToXano(data);
     }
-    // ===== EVENT LISTENERS =====
-    document.getElementById('submitButton').addEventListener('click', function(e) {
+    
+    // ===== 7. INITIALIZE =====
+    // Set today's date
+    var today = new Date();
+    var year = today.getFullYear();
+    var month = ('0' + (today.getMonth() + 1)).slice(-2);
+    var day = ('0' + today.getDate()).slice(-2);
+    document.getElementById('etaField').value = year + '-' + month + '-' + day;
+    
+    // GPS button
+    document.getElementById('gpsBtn').onclick = function(e) {
+      e.preventDefault();
+      getGPS();
+    };
+    
+    // Submit button
+    document.getElementById('submitButton').onclick = function(e) {
       e.preventDefault();
       submitScan();
-    });
-    for (var k = 0; k < cells.length; k++) {
-      (function(idx) {
-        cells[idx].addEventListener('keypress', function(e) {
-          if (e.key === 'Enter' || e.keyCode === 13) {
-            e.preventDefault();
-            submitScan();
-          }
-        });
-      })(k);
-    }
-    // Start with first cell focused
+    };
+    
+    // Focus first cell
     cells[0].focus();
+    
+    // Try GPS on load
+    setTimeout(getGPS, 1000);
   </script>
 </body>
 </html>
