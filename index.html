@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>U-BARCODE · Alcatel Fix</title>
+<title>U-BARCODE · Fixed XANO Send</title>
 <style>
 /* EXTREME LEGACY RESET – works on Android 4+ */
 * {
@@ -862,46 +862,39 @@ body {
     }, 3500);
   }
   
-  // Submission function
+  function showError(message) {
+    alert('Error: ' + message);
+    isSubmitting = false;
+  }
+  
+  // FIXED: Improved submission function with better error handling and timestamp
   function submitToXano(status) {
     if (isSubmitting) return;
     if (currentScans.length === 0) {
-      alert('No scans');
+      alert('No scans to submit');
       return;
     }
     
     isSubmitting = true;
     
-    // GPS fallback
-    if (!currentLocation && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function(pos) {
-          currentLocation = { 
-            lat: pos.coords.latitude, 
-            lng: pos.coords.longitude,
-            accuracy: pos.coords.accuracy
-          };
-          getCityStateFromCoords(pos.coords.latitude, pos.coords.longitude, function(addr) {
-            currentLocation.address = addr;
-            proceedXano(status);
-          });
-        },
-        function() {
-          proceedXano(status);
-        },
-        { timeout: 7000 }
-      );
-    } else {
-      proceedXano(status);
+    // Show loading indicator
+    var statusScreen = document.getElementById('statusScreen');
+    if (statusScreen) {
+      var statusBtns = statusScreen.querySelectorAll('.statusBtn');
+      for (var i = 0; i < statusBtns.length; i++) {
+        statusBtns[i].style.opacity = '0.5';
+        statusBtns[i].style.pointerEvents = 'none';
+      }
     }
-  }
-  
-  function proceedXano(status) {
-    var sentCount = 0;
-    var total = currentScans.length;
-    var now = new Date();
-    var etaDate = new Date(now.getTime());
     
+    // Get fresh timestamp for all submissions
+    var now = new Date();
+    var timestamp = now.toISOString();
+    var timeString = now.toLocaleTimeString();
+    var dateString = now.toLocaleDateString();
+    
+    // Calculate ETA based on status
+    var etaDate = new Date(now.getTime());
     switch(status) {
       case 'Data Received': etaDate.setDate(now.getDate() + 7); break;
       case 'Picked Up': etaDate.setDate(now.getDate() - 1); break;
@@ -909,6 +902,7 @@ body {
       case 'Arrival Scan': etaDate.setHours(now.getHours() - 12); break;
       case 'Local Scan': etaDate.setHours(now.getHours() - 36); break;
       case 'Out For Delivery': etaDate.setDate(now.getDate() - 2); break;
+      case 'Delivered': etaDate = new Date(now.getTime()); break;
       default: etaDate.setDate(now.getDate() + 7);
     }
     
@@ -923,53 +917,141 @@ body {
     
     var etaStr = etaMonth + '/' + etaDay + ' ' + etaHour12 + ':' + etaMins + ' ' + etaAmpm;
     
-    var locationString = 'Warehouse';
-    if (currentLocation && currentLocation.address) {
-      locationString = (currentLocation.address.city || '') + ', ' + (currentLocation.address.state || '');
-    } else if (currentLocation) {
-      locationString = currentLocation.lat + ',' + currentLocation.lng;
+    // Function to get GPS with callback
+    function getGPSAndSubmit() {
+      if (currentLocation && currentLocation.address) {
+        // We already have GPS with address
+        sendAllScans(currentLocation, status, timestamp, timeString, dateString, etaStr);
+      } else if (currentLocation) {
+        // We have coordinates but no address
+        getCityStateFromCoords(currentLocation.lat, currentLocation.lng, function(addr) {
+          currentLocation.address = addr;
+          sendAllScans(currentLocation, status, timestamp, timeString, dateString, etaStr);
+        });
+      } else if (navigator.geolocation) {
+        // Try to get GPS now
+        navigator.geolocation.getCurrentPosition(
+          function(pos) {
+            currentLocation = { 
+              lat: pos.coords.latitude, 
+              lng: pos.coords.longitude,
+              accuracy: pos.coords.accuracy
+            };
+            getCityStateFromCoords(pos.coords.latitude, pos.coords.longitude, function(addr) {
+              currentLocation.address = addr;
+              sendAllScans(currentLocation, status, timestamp, timeString, dateString, etaStr);
+            });
+          },
+          function() {
+            // GPS failed, send without location
+            sendAllScans(null, status, timestamp, timeString, dateString, etaStr);
+          },
+          { timeout: 7000 }
+        );
+      } else {
+        // No GPS available
+        sendAllScans(null, status, timestamp, timeString, dateString, etaStr);
+      }
     }
     
-    function postOne(index) {
+    // Start the process
+    getGPSAndSubmit();
+  }
+  
+  // FIXED: Send all scans to XANO
+  function sendAllScans(location, status, timestamp, timeString, dateString, etaStr) {
+    var sentCount = 0;
+    var total = currentScans.length;
+    
+    // Prepare location string
+    var locationString = 'Warehouse';
+    if (location && location.address) {
+      locationString = (location.address.city || '') + ', ' + (location.address.state || '');
+    } else if (location) {
+      locationString = location.lat + ',' + location.lng;
+    }
+    
+    // Send each scan sequentially
+    function sendNext(index) {
       if (index >= currentScans.length) {
+        // All done
         showSuccess(status, total, sentCount);
+        
+        // Re-enable status buttons
+        var statusScreen = document.getElementById('statusScreen');
+        if (statusScreen) {
+          var statusBtns = statusScreen.querySelectorAll('.statusBtn');
+          for (var i = 0; i < statusBtns.length; i++) {
+            statusBtns[i].style.opacity = '1';
+            statusBtns[i].style.pointerEvents = 'auto';
+          }
+        }
         return;
       }
       
       var scan = currentScans[index];
-      var data = JSON.stringify({
+      
+      // Create data object with proper timestamp
+      var data = {
         label_id: scan.code,
         barcode_type: scan.type,
-        time: now.toLocaleTimeString(),
-        date: now.toLocaleDateString(),
+        time: timeString,
+        date: dateString,
         status: status,
         location: locationString,
         eta: etaStr,
-        timestamp: now.toISOString(),
-        scan_number: scan.number
-      });
+        timestamp: timestamp, // Use the same timestamp for all scans in this batch
+        scan_number: scan.number,
+        device: 'Alcatel Scanner'
+      };
+      
+      console.log('Sending to XANO:', data);
       
       var xhr = new XMLHttpRequest();
       xhr.open('POST', XANO_URL, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Accept', 'application/json');
       
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
+          console.log('XANO response:', xhr.status, xhr.responseText);
+          
           if (xhr.status >= 200 && xhr.status < 300) {
+            // Success
             sentCount++;
+            console.log('Scan ' + (index + 1) + ' sent successfully');
+          } else {
+            // Error but continue with next
+            console.error('Failed to send scan ' + (index + 1) + ':', xhr.status, xhr.responseText);
           }
-          postOne(index + 1);
+          
+          // Send next scan
+          sendNext(index + 1);
         }
       };
       
       xhr.onerror = function() {
-        postOne(index + 1);
+        console.error('Network error sending scan ' + (index + 1));
+        sendNext(index + 1);
       };
       
-      xhr.send(data);
+      xhr.ontimeout = function() {
+        console.error('Timeout sending scan ' + (index + 1));
+        sendNext(index + 1);
+      };
+      
+      xhr.timeout = 10000; // 10 second timeout
+      
+      try {
+        xhr.send(JSON.stringify(data));
+      } catch (e) {
+        console.error('Error sending request:', e);
+        sendNext(index + 1);
+      }
     }
     
-    postOne(0);
+    // Start sending from first scan
+    sendNext(0);
   }
   
   // Tab switching functions
