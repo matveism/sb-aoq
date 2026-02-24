@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>U-BARCODE · XANO READY</title>
+<title>U-BARCODE · XANO FIXED</title>
 <style>
 /* EXTREME LEGACY RESET – works on Android 4+ */
 * {
@@ -366,7 +366,7 @@ body {
 
 #labelBox { -webkit-overflow-scrolling: touch; overflow-y: auto; }
 #debugPanel {
-  display: none;
+  display: block;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -376,10 +376,19 @@ body {
   font-family: monospace;
   font-size: 10px;
   padding: 5px;
-  max-height: 100px;
+  max-height: 150px;
   overflow-y: auto;
   z-index: 2000;
-  border-top: 2px solid #ff0;
+  border-top: 3px solid #ff0;
+}
+.test-btn {
+  background: #ffaa00;
+  color: #000;
+  padding: 5px;
+  margin: 2px;
+  border-radius: 3px;
+  font-size: 10px;
+  cursor: pointer;
 }
 </style>
 <!-- Use Instascan which works great on older Android and scans ALL barcode types -->
@@ -455,6 +464,10 @@ body {
   </div>
   
   <div id="statusScreen">
+    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+      <span class="test-btn" onclick="testXanoConnection()">TEST XANO</span>
+      <span class="test-btn" onclick="window.location.reload()">RELOAD</span>
+    </div>
     <div class="statusBtn" data-status="Data Received">Data Received (+7 days)</div>
     <div class="statusBtn" data-status="Picked Up">Picked Up (-1 day)</div>
     <div class="statusBtn" data-status="Depart Post Office">Depart Post Office (-2 days)</div>
@@ -476,7 +489,9 @@ body {
 </div>
 
 <!-- Debug panel -->
-<div id="debugPanel"></div>
+<div id="debugPanel">
+  <span style="color:#ff0;">DEBUG PANEL</span><br>
+</div>
 
 <script>
 (function() {
@@ -504,10 +519,48 @@ body {
     console.log('DEBUG:', msg);
     var panel = document.getElementById('debugPanel');
     if (panel) {
-      panel.innerHTML = new Date().toLocaleTimeString() + ': ' + msg + '<br>' + panel.innerHTML;
-      panel.style.display = 'block';
+      var time = new Date().toLocaleTimeString();
+      panel.innerHTML = time + ': ' + msg + '<br>' + panel.innerHTML;
+      // Limit lines
+      var lines = panel.innerHTML.split('<br>');
+      if (lines.length > 8) {
+        panel.innerHTML = lines.slice(0, 8).join('<br>');
+      }
     }
   }
+  
+  // TEST XANO CONNECTION
+  window.testXanoConnection = function() {
+    debug('Testing XANO connection...');
+    
+    // Try a simple GET request first
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', XANO_URL + '?limit=1', true);
+    xhr.setRequestHeader('Accept', 'application/json');
+    
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          debug('✅ XANO reachable! HTTP ' + xhr.status);
+        } else if (xhr.status === 0) {
+          debug('❌ XANO not reachable - CORS or network issue');
+          debug('   This is why scans are failing (HTTP 0)');
+        } else {
+          debug('⚠️ XANO responded with HTTP ' + xhr.status);
+        }
+      }
+    };
+    
+    xhr.onerror = function() {
+      debug('❌ XANO connection failed - CORS error');
+    };
+    
+    try {
+      xhr.send();
+    } catch (e) {
+      debug('❌ XANO test exception: ' + e.message);
+    }
+  };
   
   // GPS functions
   function getCityStateFromCoords(lat, lng, callback) {
@@ -673,7 +726,7 @@ body {
           audio.play().catch(function(e) {});
         } catch(e) {}
         
-        // Determine barcode type (simplified)
+        // Determine barcode type
         var barcodeType = 'SCAN';
         if (content.length > 50) {
           barcodeType = 'QR_CODE';
@@ -920,7 +973,7 @@ body {
     }, 4000);
   }
   
-  // FIXED: Submit to XANO with EXACT table fields
+  // FIXED: Submit to XANO with JSONP fallback for CORS issues
   function submitToXano(status) {
     if (isSubmitting) {
       debug('Already submitting, please wait');
@@ -1014,19 +1067,19 @@ body {
     }
   }
   
-  // FIXED: Send to XANO with EXACT field names from your table
+  // FIXED: Try multiple methods to send to XANO
   function sendToXano(location, status, etaStr, now) {
     var sentCount = 0;
     var errorCount = 0;
     var total = currentScans.length;
     
-    // Format date and time EXACTLY as your table expects
+    // Format date and time
     var dateString = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
     var timeString = now.getHours() + ':' + 
                      (now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes()) + ':' + 
                      (now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds());
     
-    // Location string - make sure it's never empty
+    // Location string
     var locationString = 'Unknown';
     if (location && location.address) {
       locationString = (location.address.city || '') + ', ' + (location.address.state || '');
@@ -1042,7 +1095,7 @@ body {
     debug('Location: ' + locationString);
     debug('Date: ' + dateString + ', Time: ' + timeString);
     
-    // Send each scan
+    // Send each scan using multiple methods
     function sendNext(index) {
       if (index >= currentScans.length) {
         // All done
@@ -1063,7 +1116,7 @@ body {
       
       var scan = currentScans[index];
       
-      // Create data object with EXACT field names from your table
+      // Create data object with EXACT field names
       var data = {
         label_id: scan.code,
         barcode_type: scan.type,
@@ -1078,10 +1131,12 @@ body {
       debug('Sending scan ' + (index + 1) + ': ' + scan.code);
       console.log('XANO payload:', JSON.stringify(data));
       
+      // METHOD 1: Standard XHR with CORS
       var xhr = new XMLHttpRequest();
       xhr.open('POST', XANO_URL, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.setRequestHeader('Accept', 'application/json');
+      xhr.withCredentials = false; // Important for CORS
       
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
@@ -1090,49 +1145,129 @@ body {
           
           if (xhr.status >= 200 && xhr.status < 300) {
             sentCount++;
-            debug('Scan ' + (index + 1) + ' sent successfully (HTTP ' + xhr.status + ')');
+            debug('✅ Scan ' + (index + 1) + ' sent (HTTP ' + xhr.status + ')');
+            
+            // Send next scan
+            setTimeout(function() {
+              sendNext(index + 1);
+            }, 500);
           } else {
-            errorCount++;
-            debug('Scan ' + (index + 1) + ' failed: HTTP ' + xhr.status + ' - ' + xhr.responseText);
+            // If CORS fails (HTTP 0), try METHOD 2
+            if (xhr.status === 0) {
+              debug('⚠️ HTTP 0 - CORS issue, trying fallback...');
+              tryFallbackMethod(index, scan, data, function(success) {
+                if (success) {
+                  sentCount++;
+                } else {
+                  errorCount++;
+                }
+                setTimeout(function() {
+                  sendNext(index + 1);
+                }, 500);
+              });
+            } else {
+              errorCount++;
+              debug('❌ Scan ' + (index + 1) + ' failed: HTTP ' + xhr.status);
+              setTimeout(function() {
+                sendNext(index + 1);
+              }, 500);
+            }
           }
-          
-          // Send next scan after a small delay
-          setTimeout(function() {
-            sendNext(index + 1);
-          }, 500);
         }
       };
       
       xhr.onerror = function() {
-        errorCount++;
-        debug('Scan ' + (index + 1) + ' network error');
-        console.log('XANO network error');
-        
-        setTimeout(function() {
-          sendNext(index + 1);
-        }, 500);
+        debug('❌ Network error - trying fallback...');
+        tryFallbackMethod(index, scan, data, function(success) {
+          if (success) {
+            sentCount++;
+          } else {
+            errorCount++;
+          }
+          setTimeout(function() {
+            sendNext(index + 1);
+          }, 500);
+        });
       };
       
       xhr.ontimeout = function() {
-        errorCount++;
-        debug('Scan ' + (index + 1) + ' timeout');
-        
-        setTimeout(function() {
-          sendNext(index + 1);
-        }, 500);
+        debug('❌ Timeout - trying fallback...');
+        tryFallbackMethod(index, scan, data, function(success) {
+          if (success) {
+            sentCount++;
+          } else {
+            errorCount++;
+          }
+          setTimeout(function() {
+            sendNext(index + 1);
+          }, 500);
+        });
       };
       
-      xhr.timeout = 15000; // 15 second timeout
+      xhr.timeout = 10000;
       
       try {
         xhr.send(JSON.stringify(data));
       } catch (e) {
-        errorCount++;
-        debug('Send exception: ' + e.message);
-        setTimeout(function() {
-          sendNext(index + 1);
-        }, 500);
+        debug('❌ Send exception: ' + e.message);
+        tryFallbackMethod(index, scan, data, function(success) {
+          if (success) {
+            sentCount++;
+          } else {
+            errorCount++;
+          }
+          setTimeout(function() {
+            sendNext(index + 1);
+          }, 500);
+        });
       }
+    }
+    
+    // METHOD 2: Fallback using dynamic script tag (JSONP)
+    function tryFallbackMethod(index, scan, data, callback) {
+      debug('Trying fallback for scan ' + (index + 1));
+      
+      // Create a random callback name
+      var callbackName = 'xano_callback_' + Math.random().toString(36).substr(2, 9);
+      
+      // Convert data to URL params
+      var params = [];
+      for (var key in data) {
+        params.push(key + '=' + encodeURIComponent(data[key]));
+      }
+      var queryString = params.join('&');
+      
+      // Create script tag
+      var script = document.createElement('script');
+      var url = XANO_URL + '?callback=' + callbackName + '&' + queryString;
+      
+      // Define callback function
+      window[callbackName] = function(response) {
+        debug('✅ Fallback success for scan ' + (index + 1));
+        delete window[callbackName];
+        document.body.removeChild(script);
+        callback(true);
+      };
+      
+      script.src = url;
+      script.onerror = function() {
+        debug('❌ Fallback failed for scan ' + (index + 1));
+        delete window[callbackName];
+        document.body.removeChild(script);
+        callback(false);
+      };
+      
+      // Timeout for fallback
+      setTimeout(function() {
+        if (window[callbackName]) {
+          debug('❌ Fallback timeout for scan ' + (index + 1));
+          delete window[callbackName];
+          document.body.removeChild(script);
+          callback(false);
+        }
+      }, 10000);
+      
+      document.body.appendChild(script);
     }
     
     // Start sending
@@ -1200,7 +1335,7 @@ body {
   
   // Initialize
   function init() {
-    alert('📱 SCANNER READY\n• Scans 1D & 2D barcodes\n• Debug panel at bottom');
+    alert('📱 SCANNER READY\n• Click TEST XANO button first');
     
     initGPS();
     updateTime();
@@ -1232,7 +1367,7 @@ body {
       })(statusBtns[i]);
     }
     
-    debug('App initialized - Ready to scan');
+    debug('App initialized - Click TEST XANO button');
   }
   
   if (document.addEventListener) {
