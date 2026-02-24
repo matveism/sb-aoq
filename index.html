@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Frame</title>
+<title>Grid</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style type="text/css">
+<style>
 body {
     margin:0;
     padding:0;
@@ -15,105 +15,120 @@ body {
 #device {
     width:100%;
     max-width:720px;
-    height:1280px;
     margin:0 auto;
     background:#fff;
     border:2px solid #444;
 }
 
-/* HEADER BAR */
+/* HEADER */
 #header {
     width:100%;
     height:45px;
     background:#405e87;
-    border-bottom:1px solid #2a3f5c;
-    font-size:18px;
-    line-height:45px;
-    overflow:hidden;
-}
-
-/* FLOATS */
-.left {
-    float:left;
-    padding-left:10px;
-    color:#ffffff;
+    color:#fff;
     font-weight:bold;
-}
-
-.right {
-    float:right;
+    line-height:45px;
+    padding-left:10px;
     padding-right:10px;
-    color:#ffffff;
 }
 
-/* UNDER HEADER FULL BACKGROUND */
+#header .right {
+    float:right;
+}
+
 #under {
     width:100%;
     height:50px;
     background:#a2c2de;
-    border-bottom:1px solid #8eaac7;
-    font-size:18px;
     line-height:50px;
-    overflow:hidden;
-}
-
-/* TEXT INSIDE UNDER HEADER */
-#undertext {
-    float:left;
-    padding-left:10px;
-    color:#000000;
+    font-size:18px;
     font-weight:bold;
+    padding-left:10px;
+    color:#000;
 }
 
-.clear { clear:both; }
+/* GRID TABLE */
+#gridtable {
+    border-collapse:collapse;
+    margin:10px;
+}
 
-#content {
-    width:100%;
-    height:1185px;
+#gridtable td {
+    width:25px;
+    height:25px;
+    border:1px solid #000;
     background:#ffffff;
 }
+
+/* COLORS */
+.orange { background:#d97a1e; }
+.gray { background:#b5b5b5; }
 </style>
 </head>
 
 <body>
 <div id="device">
 
-    <!-- HEADER -->
     <div id="header">
-        <div class="left">Scan Barcode</div>
-        <div class="right" id="clock">--:-- --</div>
-        <div class="clear"></div>
+        <span>Scan Barcode</span>
+        <span class="right" id="clock">--:-- --</span>
     </div>
 
-    <!-- UNDER HEADER FULL COLOR -->
     <div id="under">
-        <div id="undertext">Scan/Key-in Barcode:</div>
-        <div class="clear"></div>
+        Scan/Key-in Barcode:
+        <input type="text" id="pos" style="width:40px;">
     </div>
 
-    <div id="content">
-        <!-- blank -->
-    </div>
+    <!-- GRID -->
+    <table id="gridtable">
+        <tbody id="gridbody"></tbody>
+    </table>
 
 </div>
 
-<script type="text/javascript">
+<script>
+// CLOCK
 function updateClock() {
-    var d = new Date();
-    var h = d.getHours();
-    var m = d.getMinutes();
-    var ampm = "AM";
+    var d=new Date(),h=d.getHours(),m=d.getMinutes(),ampm="AM";
+    if(h>=12) ampm="PM";
+    if(h>12) h=h-12;
+    if(h==0) h=12;
+    if(m<10) m="0"+m;
+    document.getElementById("clock").innerHTML=h+":"+m+" "+ampm;
+}
+setInterval(updateClock,1000); updateClock();
 
-    if (h >= 12) ampm = "PM";
-    if (h > 12) h = h - 12;
-    if (h == 0) h = 12;
-    if (m < 10) m = "0" + m;
+// BUILD GRID (2 rows × 20 columns)
+var rows=2, cols=20;
+var grid=document.getElementById("gridbody");
 
-    document.getElementById("clock").innerHTML = h + ":" + m + " " + ampm;
+for(var r=0;r<rows;r++){
+    var tr=document.createElement("tr");
+    for(var c=0;c<cols;c++){
+        var td=document.createElement("td");
+        td.id="cell_"+(r*cols+c+1);
+        tr.appendChild(td);
+    }
+    grid.appendChild(tr);
 }
 
-setInterval(updateClock, 1000);
-updateClock();
+// INITIAL COLORS
+document.getElementById("cell_1").className="orange"; // dark orange
+for(var i=31;i<=40;i++){
+    document.getElementById("cell_"+i).className="gray"; // last 10 gray
+}
+
+// MOVE ORANGE WHEN TYPING
+document.getElementById("pos").onkeyup=function(){
+    var n=parseInt(this.value);
+    if(n>=1 && n<=40){
+        // clear old orange
+        var old=document.getElementsByClassName("orange");
+        if(old.length>0) old[0].className="";
+        // set new orange
+        document.getElementById("cell_"+n).className="orange";
+    }
+};
 </script>
 
 </body>
