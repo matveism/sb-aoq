@@ -1,352 +1,399 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Android 5.0 Screen</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Android 5.0 · dynamic ETA from status</title>
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      background: #000;
+    }
+
+    body {
+      background: #111;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      font-family: Roboto, Arial, sans-serif;
+      min-height: 100vh;
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 10px;
     }
 
     .device {
       width: 360px;
-      height: 640px;
-      background: #B0C8E2;
-      color: black;
+      max-width: 100%;
+      height: 700px;
+      background: #b0c8e2;
+      border-radius: 32px 32px 20px 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 30px rgba(0,0,0,0.8), inset 0 0 0 2px #2f5575;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
-      overflow: hidden;
       position: relative;
     }
 
     .header {
-      background: #15569B;
-      color: #D0D7DC;
-      height: 25px;
+      background: #15569b;
+      color: white;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
+      padding: 0 14px;
+      font-size: 15px;
+      font-weight: 500;
+      border-bottom: 2px solid #0d3f6b;
+    }
+
+    .header-time {
+      background: #0d3f6b;
+      padding: 2px 12px;
+      border-radius: 30px;
+      font-family: monospace;
       font-size: 14px;
+      min-width: 76px;
+      text-align: center;
     }
 
     .scan-row {
       display: flex;
-      flex-direction: row;
       align-items: center;
-      padding: 10px 8px;
-      gap: 6px;
-      background: #B0C8E2;
+      gap: 8px;
+      padding: 10px 12px;
+      background: #b0c8e2;
     }
 
-    .submit-btn {
-      background: #28a745;
+    .scan-btn {
+      background: #2a6d2c;
       border: none;
-      padding: 8px 16px;
-      font-weight: bold;
+      border-bottom: 4px solid #1a451b;
       color: white;
-      border-radius: 4px;
-      font-size: 16px;
-      height: 36px;
-      display: flex;
-      align-items: center;
+      font-weight: 800;
+      font-size: 18px;
+      padding: 8px 20px;
+      border-radius: 8px;
       cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      border: 1px solid #1e7e34;
+      transition: 0.05s linear;
+      box-shadow: 0 4px 0 #1a451b;
+      white-space: nowrap;
+      letter-spacing: 0.5px;
     }
 
-    .submit-btn:active {
-      background: #218838;
-      transform: translateY(1px);
+    .scan-btn:active {
+      transform: translateY(4px);
+      box-shadow: none;
+      border-bottom-width: 2px;
     }
 
     .mini-grid {
       display: flex;
-      flex-direction: row;
-      gap: 2px;
-      height: 28px;
-      align-items: center;
       flex: 1;
+      gap: 4px;
+      justify-content: flex-end;
     }
 
     .mini-cell {
-      width: 33px;
-      height: 25px;
-      background: #E2E8D3;
-      border: 1px solid #999;
-      border-radius: 2px;
+      width: 38px;
+      height: 44px;
+      background: #f2f5e0;
+      border: 2px solid #3d6090;
+      border-radius: 10px;
       text-align: center;
-      font-size: 16px;
-      font-weight: bold;
-      color: black;
+      font-size: 26px;
+      font-weight: 800;
+      color: #102b44;
       outline: none;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+      caret-color: #cf7b1a;
+      padding: 0;
+    }
+
+    .mini-cell:focus {
+      border-color: #f9a825;
+      background: #fff2ce;
     }
 
     .content {
       flex: 1;
-      padding: 8px;
       overflow-y: auto;
+      padding: 12px 12px;
+      background: #b0c8e2;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
-    #preview {
-      width: 100%;
-      height: 200px;
-      background: #000;
-      display: none;
-      object-fit: cover;
-    }
+    #preview { display: none; }
 
-    /* STATUS FIELDS */
     .status-fields {
-      margin: 10px 0;
-      padding: 8px;
-      background: #96BEEE;
-      border-radius: 4px;
-      border: 2px solid #79A4D2;
+      background: #d1e0f5;
+      border: 3px solid #15569b;
+      border-radius: 20px;
+      padding: 14px 12px;
     }
 
     .field-row {
-      margin-bottom: 8px;
+      margin-bottom: 14px;
     }
 
     .field-row label {
       display: block;
-      font-size: 12px;
-      font-weight: bold;
-      color: #15569B;
-      margin-bottom: 2px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #103a62;
+      margin-bottom: 4px;
     }
 
-    .field-row select,
-    .field-row input {
+    .field-row input,
+    .field-row select {
       width: 100%;
-      padding: 6px;
-      border: 1px solid #79A4D2;
-      border-radius: 3px;
-      font-size: 14px;
+      padding: 11px 14px;
+      border: 2px solid #7fa3d0;
+      border-radius: 50px;
+      font-size: 15px;
       background: white;
-      box-sizing: border-box;
+      font-weight: 500;
     }
 
     .field-row input:focus,
     .field-row select:focus {
-      outline: 2px solid #FCC57A;
-      border-color: #FCC57A;
+      border-color: #f9a825;
+      outline: none;
     }
 
     .field-row input[readonly] {
-      background: #e2e8d3;
-      font-weight: bold;
+      background: #edf2da;
+      font-weight: 700;
+      color: #0d2e50;
     }
 
-    /* RESULT BOX */
-    .result-box {
-      margin-top: 10px;
-      border: 2px solid #79A4D2;
-      border-radius: 4px;
-      overflow: hidden;
-      font-size: 16px;
-      font-weight: bold;
-    }
-
-    .result-header,
-    .result-row {
-      display: grid;
-      grid-template-columns: 40px 1fr;
+    .location-row {
+      display: flex;
       align-items: center;
+      gap: 6px;
+    }
+    .location-row input {
+      flex: 1;
+    }
+    .gps-badge {
+      background: #3d6090;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 6px 8px;
+      border-radius: 30px;
+      white-space: nowrap;
+      cursor: pointer;
+      border: 1px solid #1e3a5f;
+    }
+    .gps-badge:active {
+      background: #1e3a5f;
+    }
+
+    .result-box {
+      border: 3px solid #15569b;
+      border-radius: 18px;
+      overflow: hidden;
     }
 
     .result-header {
-      background: #79A4D2;
-      color: black;
+      display: grid;
+      grid-template-columns: 45px 1fr;
+      background: #15569b;
+      color: white;
+      font-weight: 700;
     }
 
+    .result-header div {
+      padding: 8px 10px;
+      border-right: 1px solid #4982c1;
+    }
+
+    .result-header div:last-child { border-right: none; }
+
     .result-row {
-      background: #96BEEE;
-      color: black;
+      display: grid;
+      grid-template-columns: 45px 1fr;
+      background: #dae6f8;
+      border-top: 1px solid #89afdf;
     }
 
     .result-cell {
-      padding: 6px 10px;
+      padding: 8px 10px;
     }
 
-    .result-cell-value {
+    .result-cell:first-child {
       font-weight: bold;
+      color: #103a62;
+      border-right: 2px solid #a0bfe6;
     }
 
-    /* POPUP */
+    #emptyRow .result-cell {
+      color: #5878a8;
+      font-style: italic;
+    }
+
+    #statusBox {
+      font-size: 15px;
+      font-weight: 600;
+      min-height: 26px;
+      padding: 2px 0;
+    }
+
+    .error-detail {
+      font-size: 12px;
+      background: #ffdbdb;
+      color: #b11f1f;
+      padding: 6px 12px;
+      border-radius: 40px;
+      word-break: break-word;
+    }
+
     #popup {
       position: absolute;
-      top: 50%;
+      top: 35%;
       left: 50%;
-      width: 180px;
-      margin-left: -90px;
-      margin-top: -80px;
-      background: #ffffff;
-      border: 4px solid #28a745;
-      border-radius: 30px;
+      transform: translate(-50%, -50%);
+      width: 190px;
+      background: white;
+      border: 5px solid #2e7d32;
+      border-radius: 40px;
       text-align: center;
-      padding: 20px 10px 15px 10px;
+      padding: 22px 8px 18px;
       display: none;
-      z-index: 9999;
+      z-index: 999;
       box-shadow: 0 20px 30px black;
     }
 
     #popup .circle {
-      width: 60px;
-      height: 60px;
+      width: 64px;
+      height: 64px;
+      background: #2e7d32;
       border-radius: 50%;
-      background: #28a745;
-      margin: 0 auto 12px auto;
-      color: #fff;
+      margin: 0 auto 12px;
+      color: white;
       font-size: 40px;
       font-weight: bold;
-      line-height: 64px;
+      line-height: 70px;
     }
 
     #popup p {
-      margin: 0;
+      margin: 8px 0 0;
+      font-weight: 800;
+      color: #1b5e20;
       font-size: 18px;
-      font-weight: 600;
-      color: #1e7e34;
     }
 
     #popup-time {
       font-size: 12px;
+      color: #444;
       margin-top: 8px;
-      color: #666;
-    }
-
-    #statusBox {
-      margin-top: 8px;
-      font-size: 14px;
-      text-align: center;
-      min-height: 20px;
-      font-weight: 500;
-    }
-
-    .error-detail {
-      font-size: 11px;
-      color: #b52e2e;
-      margin-top: 2px;
-      word-break: break-word;
     }
   </style>
 </head>
 <body>
-  <div class="device">
-
-    <div class="header">
-      <div class="header-title">Scan Barcode</div>
-      <div class="header-time" id="deviceTime">--:--</div>
-    </div>
-
-    <div class="scan-row">
-      <button class="submit-btn" id="submitBtn">SUBMIT</button>
-
-      <div class="mini-grid">
-        <input class="mini-cell" maxlength="1" id="cell1">
-        <input class="mini-cell" maxlength="1" id="cell2">
-        <input class="mini-cell" maxlength="1" id="cell3">
-        <input class="mini-cell" maxlength="1" id="cell4">
-        <input class="mini-cell" maxlength="1" id="cell5">
-        <input class="mini-cell" maxlength="1" id="cell6">
-      </div>
-    </div>
-
-    <div class="content">
-      <video id="preview" autoplay muted playsinline></video>
-
-      <!-- STATUS FIELDS -->
-      <div class="status-fields">
-        <div class="field-row">
-          <label>Decoded Label ID</label>
-          <input type="text" id="decoded" readonly>
-        </div>
-        
-        <div class="field-row">
-          <label>Entry Type</label>
-          <input type="text" id="barcode_type" value="manual" readonly>
-        </div>
-
-        <div class="field-row">
-          <label>Status</label>
-          <select id="status">
-            <option value="Data Received">📥 Data Received</option>
-            <option value="Picked Up">📬 Picked Up</option>
-            <option value="Depart Post Office">🚚 Depart Post Office</option>
-            <option value="Arrival Scan">📍 Arrival Scan</option>
-            <option value="Local Scan">🏙️ Local Scan</option>
-            <option value="Out For Delivery">🛵 Out For Delivery</option>
-            <option value="Delivered">✅ Delivered</option>
-          </select>
-        </div>
-
-        <div class="field-row">
-          <label>Location</label>
-          <input type="text" id="location" placeholder="City, State">
-        </div>
-
-        <div class="field-row">
-          <label>ETA</label>
-          <input type="text" id="eta" placeholder="e.g., 2025-03-15">
-        </div>
-      </div>
-
-      <!-- RESULT BOX -->
-      <div class="result-box">
-        <div class="result-header">
-          <div class="result-cell">#</div>
-          <div class="result-cell">LABEL ID</div>
-        </div>
-
-        <div id="emptyRow" class="result-row">
-          <div class="result-cell"></div>
-          <div class="result-cell"></div>
-        </div>
-
-        <div id="resultTable"></div>
-      </div>
-
-      <!-- STATUS MESSAGE -->
-      <div id="statusBox"></div>
-      <div id="errorDetail" class="error-detail"></div>
-    </div>
-
-    <!-- SUCCESS POPUP -->
-    <div id="popup">
-      <div class="circle">✓</div>
-      <p>SAVED OK</p>
-      <p id="popup-time"></p>
-    </div>
-
+<div class="device">
+  <!-- Header with REAL device time -->
+  <div class="header">
+    <span>Scan Barcode</span>
+    <span class="header-time" id="deviceTime">--:--:--</span>
   </div>
 
-  <script src="https://unpkg.com/@zxing/library@0.18.6"></script>
+  <!-- SCAN button + 6 cells -->
+  <div class="scan-row">
+    <button class="scan-btn" id="scanBtn">SCAN</button>
+    <div class="mini-grid">
+      <input class="mini-cell" maxlength="1" id="cell1">
+      <input class="mini-cell" maxlength="1" id="cell2">
+      <input class="mini-cell" maxlength="1" id="cell3">
+      <input class="mini-cell" maxlength="1" id="cell4">
+      <input class="mini-cell" maxlength="1" id="cell5">
+      <input class="mini-cell" maxlength="1" id="cell6">
+    </div>
+  </div>
 
-  <script>
-    /* ========== SIMPLE DEVICE TIME - NO BULLSHIT ========== */
+  <div class="content">
+    <video id="preview" autoplay muted playsinline style="display:none;"></video>
+
+    <!-- Status fields: Decoded Label ID + status + GPS -->
+    <div class="status-fields">
+      <div class="field-row">
+        <label>Decoded Label ID</label>
+        <input type="text" id="decoded" readonly placeholder="6 digits">
+      </div>
+      
+      <!-- Status dropdown from screenshot with day offsets (for ETA calculation) -->
+      <div class="field-row">
+        <label>Status</label>
+        <select id="status">
+          <option value="Item Booked" data-offset="7" selected>📘 Item Booked (+7 days)</option>
+          <option value="Item Received" data-offset="-1">📦 Item Received (-1 day)</option>
+          <option value="Item Bagged" data-offset="-2">👜 Item Bagged (-2 days)</option>
+          <option value="Item Dispatched" data-offset="-2">🚚 Item Dispatched (-2 days)</option>
+          <option value="In Transit" data-offset="-1">🔄 In Transit (-1 day)</option>
+          <option value="Out for Delivery" data-offset="-1">🛵 Out for Delivery (-1 day)</option>
+          <option value="Item Delivered" data-offset="0">✅ Item Delivered (0 days)</option>
+        </select>
+      </div>
+
+      <!-- Location with GPS auto-detect -->
+      <div class="field-row">
+        <label>Location (auto GPS)</label>
+        <div class="location-row">
+          <input type="text" id="location" placeholder="Detecting..." readonly>
+          <span class="gps-badge" id="gpsButton">📍 GPS</span>
+        </div>
+        <div style="font-size:11px; color:#2f4f7f; margin-top:4px;" id="gpsHint"></div>
+      </div>
+    </div>
+
+    <!-- Hidden barcode_type field -->
+    <input type="hidden" id="barcode_type" value="manual">
+
+    <!-- LABEL ID table -->
+    <div class="result-box">
+      <div class="result-header">
+        <div>#</div>
+        <div>LABEL ID</div>
+      </div>
+      <div id="emptyRow" class="result-row">
+        <div class="result-cell">—</div>
+        <div class="result-cell">(empty)</div>
+      </div>
+      <div id="resultTable"></div>
+    </div>
+
+    <div id="statusBox"></div>
+    <div id="errorDetail" class="error-detail"></div>
+  </div>
+
+  <!-- Success popup -->
+  <div id="popup">
+    <div class="circle">✓</div>
+    <p>SAVED OK</p>
+    <p id="popup-time"></p>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@zxing/library@0.18.6"></script>
+<script>
+  (function() {
+    // ---------- REAL DEVICE TIME ----------
+    const timeEl = document.getElementById('deviceTime');
     function updateDeviceTime() {
-      var now = new Date();
-      var hours = String(now.getHours()).padStart(2, '0');
-      var minutes = String(now.getMinutes()).padStart(2, '0');
-      var seconds = String(now.getSeconds()).padStart(2, '0');
-      document.getElementById('deviceTime').textContent = hours + ':' + minutes + ':' + seconds;
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      const ss = String(d.getSeconds()).padStart(2, '0');
+      timeEl.textContent = `${hh}:${mm}:${ss}`;
     }
-    
     updateDeviceTime();
-    setInterval(updateDeviceTime, 1000);
+    setInterval(updateDeviceTime, 500);
 
-    /* ========== CELLS ========== */
-    var cells = [
+    // ---------- CELLS ----------
+    const cells = [
       document.getElementById('cell1'),
       document.getElementById('cell2'),
       document.getElementById('cell3'),
@@ -354,164 +401,258 @@
       document.getElementById('cell5'),
       document.getElementById('cell6')
     ];
+    cells.forEach(c => c.placeholder = '');
 
     for (let i = 0; i < cells.length; i++) {
-      cells[i].oninput = function() {
-        this.style.background = "#FB9809";
+      cells[i].addEventListener('input', function(e) {
+        this.style.background = '#fff0c0';
         if (this.value.length === 1 && i < cells.length - 1) {
           cells[i + 1].focus();
         }
-        checkManualEntry();
-      };
+        assembleFromCells();
+      });
 
-      cells[i].onkeydown = function(e) {
-        if (e.keyCode === 8 && this.value === "" && i > 0) {
+      cells[i].addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && this.value === '' && i > 0) {
           cells[i - 1].focus();
         }
-      };
+      });
+
+      cells[i].addEventListener('blur', function() {
+        if (this.value === '') this.style.background = '#f2f5e0';
+      });
     }
 
-    function checkManualEntry() {
-      let code = "";
-      for (let i = 0; i < cells.length; i++) {
-        code += cells[i].value;
+    // Decode A=1 ... J=0
+    function decodeLetters(encoded) {
+      const map = {A:'1',B:'2',C:'3',D:'4',E:'5',F:'6',G:'7',H:'8',I:'9',J:'0'};
+      let res = '';
+      const upper = encoded.toUpperCase();
+      for (let ch of upper) {
+        if (!map[ch]) return null;
+        res += map[ch];
       }
-      if (code.length === 6) {
-        var decoded = decodeLetters(code);
+      return res;
+    }
+
+    function assembleFromCells() {
+      let raw = '';
+      for (let c of cells) raw += c.value;
+      if (raw.length === 6) {
+        const decoded = decodeLetters(raw);
         if (decoded) {
           document.getElementById('decoded').value = decoded;
-          addRow(code);
+          document.getElementById('statusBox').innerHTML = '';
         } else {
-          alert('Invalid letters. Use A-J only');
+          document.getElementById('statusBox').innerHTML = '❗ A–J only';
+          document.getElementById('statusBox').style.color = '#b11f1f';
         }
       }
     }
 
-    function decodeLetters(encoded) {
-      var map = {
-        'A': '1','B': '2','C': '3','D': '4','E': '5',
-        'F': '6','G': '7','H': '8','I': '9','J': '0'
-      };
-      var result = '';
-      var upper = encoded.toUpperCase();
-      for (var i = 0; i < upper.length; i++) {
-        var ch = upper.charAt(i);
-        if (!map[ch]) return null;
-        result += map[ch];
+    // ---------- RESULT TABLE ----------
+    let rowCounter = 0;
+    function addResultRowOnce(value) {
+      rowCounter++;
+      const emptyDiv = document.getElementById('emptyRow');
+      if (emptyDiv.style.display !== 'none') emptyDiv.style.display = 'none';
+
+      const container = document.getElementById('resultTable');
+      const row = document.createElement('div');
+      row.className = 'result-row';
+      row.innerHTML = `<div class="result-cell">${rowCounter}</div><div class="result-cell result-cell-value">${value}</div>`;
+      container.appendChild(row);
+    }
+
+    // ---------- BEEP ----------
+    function beep() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.15);
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+      } catch (e) {}
+    }
+
+    // ---------- GPS AUTO DETECT ----------
+    const locationInput = document.getElementById('location');
+    const gpsHint = document.getElementById('gpsHint');
+
+    function updateLocationFromGPS() {
+      if (!navigator.geolocation) {
+        locationInput.value = 'GPS not supported';
+        gpsHint.innerText = 'manual entry disabled';
+        return;
       }
-      return result;
+      gpsHint.innerText = '📍 acquiring...';
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`)
+            .then(res => res.json())
+            .then(data => {
+              const addr = data.address;
+              const city = addr.city || addr.town || addr.village || addr.county || '';
+              const state = addr.state || '';
+              let locationString = '';
+              if (city && state) locationString = `${city}, ${state}`;
+              else if (city) locationString = city;
+              else if (state) locationString = state;
+              else locationString = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+              locationInput.value = locationString;
+              gpsHint.innerText = '✓ GPS updated';
+            })
+            .catch(() => {
+              locationInput.value = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+              gpsHint.innerText = 'coarse location (no city)';
+            });
+        },
+        (error) => {
+          locationInput.value = 'GPS denied';
+          gpsHint.innerText = 'tap GPS to retry';
+        },
+        { timeout: 10000, enableHighAccuracy: false }
+      );
     }
 
-    /* ========== RESULT TABLE ========== */
-    let scanIndex = 0;
+    window.addEventListener('load', () => {
+      cells[0].focus();
+      updateLocationFromGPS();
+    });
 
-    function addRow(value) {
-      scanIndex++;
-      document.getElementById("emptyRow").style.display = "none";
-      let row = `
-        <div class="result-row">
-          <div class="result-cell">${scanIndex}</div>
-          <div class="result-cell result-cell-value">${value}</div>
-        </div>
-      `;
-      document.getElementById("resultTable").insertAdjacentHTML("beforeend", row);
-    }
+    document.getElementById('gpsButton').addEventListener('click', (e) => {
+      e.preventDefault();
+      updateLocationFromGPS();
+    });
 
-    function showPopup() {
-      var p = document.getElementById('popup');
-      var now = new Date();
-      var dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-      document.getElementById('popup-time').innerHTML = dateStr;
-      p.style.display = 'block';
-      setTimeout(function() {
-        p.style.display = 'none';
-      }, 2000);
-    }
-
-    function setStatus(msg, isError) {
-      var box = document.getElementById('statusBox');
-      box.style.color = isError ? '#b52e2e' : '#1e6f3f';
-      box.innerHTML = msg || ' ';
-    }
-
-    function showErrorDetail(detail) {
-      document.getElementById('errorDetail').innerHTML = detail;
-    }
-
-    /* ========== SEND TO XANO (DEVICE TIME) ========== */
-    function sendToXano() {
-      var labelId = document.getElementById('decoded').value;
+    // ---------- FUNCTION TO CALCULATE ETA BASED ON STATUS ----------
+    function calculateEtaFromStatus() {
+      const statusSelect = document.getElementById('status');
+      const selectedOption = statusSelect.options[statusSelect.selectedIndex];
+      const offsetDays = parseInt(selectedOption.getAttribute('data-offset') || '0');
       
+      const now = new Date();
+      const etaDate = new Date(now);
+      etaDate.setDate(etaDate.getDate() + offsetDays);
+      
+      const year = etaDate.getFullYear();
+      const month = String(etaDate.getMonth() + 1).padStart(2, '0');
+      const day = String(etaDate.getDate()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    }
+
+    // ---------- SEND TO XANO (with ALL required params + dynamic ETA) ----------
+    function sendToXano() {
+      const decodedInput = document.getElementById('decoded');
+      const labelId = decodedInput.value.trim();
+
       if (!labelId) {
-        setStatus('❗ Enter a valid barcode first', true);
+        setStatus('❗ Type 6 letters A–J first', true);
+        beep();
         return;
       }
 
-      var now = new Date();
+      beep();
+
+      const now = new Date();
       
-      // Payload with ALL required fields
-      var payload = {
+      // Get hidden barcode_type value
+      const barcodeType = document.getElementById('barcode_type').value; // "manual"
+      
+      // Format date as YYYY-MM-DD
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      
+      // Format time as HH:MM:SS
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}:${seconds}`;
+      
+      // ETA - calculated dynamically based on selected status
+      const etaValue = calculateEtaFromStatus();
+      
+      // TIMESTAMP - Unix timestamp (seconds since epoch)
+      const timestamp = Math.floor(now.getTime() / 1000);
+      
+      // Prepare payload with ALL required parameters
+      const payload = {
         label_id: labelId,
-        barcode_type: "manual",
+        barcode_type: barcodeType,
+        date: formattedDate,
+        time: formattedTime,
+        eta: etaValue,                  // 👈 DYNAMIC based on status
+        timestamp: timestamp,
         status: document.getElementById('status').value,
-        timestamp: Math.floor(now.getTime() / 1000),  // seconds
-        time: now.getTime(),                           // milliseconds
-        date: now.toISOString().split('T')[0],
-        location: document.getElementById('location').value || '',
-        eta: document.getElementById('eta').value || ''
+        location: locationInput.value || 'unknown'
       };
 
-      console.log('📤 SENDING:', JSON.stringify(payload, null, 2));
-      
-      showErrorDetail('');
+      console.log('SENDING with dynamic ETA:', payload);
+      document.getElementById('errorDetail').innerText = '';
 
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans');
       xhr.setRequestHeader('Content-Type', 'application/json');
 
-      xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-          console.log('📥 RESPONSE:', xhr.status, xhr.responseText);
-          
-          if (xhr.status >= 200 && xhr.status < 300) {
-            showPopup();
-            setStatus('✓ Saved successfully', false);
-            
-            // Clear cells
-            for (var i = 0; i < cells.length; i++) {
-              cells[i].value = '';
-              cells[i].style.background = '#E2E8D3';
-            }
-            document.getElementById('decoded').value = '';
-            cells[0].focus();
-          } else {
-            setStatus('Error ' + xhr.status, true);
-            try {
-              var err = JSON.parse(xhr.responseText);
-              showErrorDetail(JSON.stringify(err));
-            } catch(e) {
-              showErrorDetail(xhr.responseText);
-            }
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState !== 4) return;
+        if (xhr.status >= 200 && xhr.status < 300) {
+          addResultRowOnce(labelId);
+          showPopupWithTime();
+          setStatus('✓ SAVED OK', false);
+
+          for (let c of cells) {
+            c.value = '';
+            c.style.background = '#f2f5e0';
           }
+          decodedInput.value = '';
+          cells[0].focus();
+        } else {
+          setStatus(`Error ${xhr.status}`, true);
+          let detail = xhr.responseText || 'no response';
+          try { detail = JSON.stringify(JSON.parse(detail)).slice(0, 180); } catch {}
+          document.getElementById('errorDetail').innerText = detail;
         }
       };
 
-      xhr.onerror = function() {
+      xhr.onerror = () => {
         setStatus('Network error', true);
-        showErrorDetail('Check internet connection');
+        document.getElementById('errorDetail').innerText = 'check connection';
       };
 
       xhr.send(JSON.stringify(payload));
     }
 
-    /* ========== EVENT LISTENERS ========== */
-    document.getElementById('submitBtn').addEventListener('click', function(e) {
+    function setStatus(msg, isError) {
+      const box = document.getElementById('statusBox');
+      box.style.color = isError ? '#b11f1f' : '#1f6d1f';
+      box.innerText = msg;
+    }
+
+    function showPopupWithTime() {
+      const pop = document.getElementById('popup');
+      const d = new Date();
+      document.getElementById('popup-time').innerText = d.toLocaleTimeString() + ' ' + d.toLocaleDateString();
+      pop.style.display = 'block';
+      setTimeout(() => pop.style.display = 'none', 2000);
+    }
+
+    document.getElementById('scanBtn').addEventListener('click', (e) => {
       e.preventDefault();
       sendToXano();
     });
 
     cells.forEach(cell => {
-      cell.addEventListener('keypress', function(e) {
+      cell.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           sendToXano();
@@ -519,11 +660,11 @@
       });
     });
 
-    window.addEventListener('load', function() {
-      cells[0].focus();
-      console.log('✅ Using device time - no forced dates');
-    });
+    for (let cell of cells) {
+      cell.addEventListener('input', assembleFromCells);
+    }
 
-  </script>
+  })();
+</script>
 </body>
 </html>
