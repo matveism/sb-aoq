@@ -1,663 +1,442 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<title>Win CE 2007 - Scan Barcode</title>
+<title>Barcode Scanner</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=5">
-<meta name="viewport" content="width=device-width, initial-scale=0.4, maximum-scale=0.4, user-scalable=no">
-
-<!-- Simple styling - no fancy features -->
-<style type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
 body {
-margin: 0;
-padding: 0;
-background: #000000;
-text-align: center;
-font-family: Arial, Helvetica, sans-serif;
+    background: #000;
+    color: #fff;
+    font-family: Arial;
+    margin: 0;
+    padding: 10px;
 }
-
-#canvas {
-width: 720px;
-height: 1280px;
-background: #1b1f2a;
-border: 2px solid #333333;
-margin: 0 auto;
-overflow-y: auto;
-overflow-x: hidden;
+.container {
+    max-width: 600px;
+    margin: 0 auto;
 }
-
-#header {
-width: 720px;
-height: 60px;
-background: #2c3e6d;
-color: #ffffff;
-font-size: 28px;
-line-height: 60px;
-border-bottom: 2px solid #4a6a9e;
-font-weight: bold;
+.header {
+    background: #2c3e6d;
+    padding: 15px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
 }
-
-#header-left {
-float: left;
-padding-left: 15px;
+.scan-btn {
+    background: #3a3f4a;
+    border: 2px solid #6a6f7a;
+    color: white;
+    font-size: 28px;
+    padding: 15px;
+    text-align: center;
+    margin: 10px 0;
+    cursor: pointer;
+    width: 100%;
 }
-
-#header-right {
-float: right;
-padding-right: 15px;
+.grid {
+    margin: 15px 0;
+    text-align: center;
 }
-
-.clear {
-clear: both;
+.grid input {
+    width: 60px;
+    height: 60px;
+    font-size: 36px;
+    text-align: center;
+    background: #d47b2e;
+    border: 2px solid #a85e1f;
+    margin: 2px;
+    text-transform: uppercase;
 }
-
-#content {
-width: 720px;
-background: #1b1f2a;
-padding: 20px;
-box-sizing: border-box;
+select {
+    width: 100%;
+    padding: 15px;
+    font-size: 20px;
+    background: #1b1f2a;
+    color: white;
+    border: 2px solid #6a8abe;
+    margin: 10px 0;
 }
-
-/* Simple scan button */
-#scanBtn {
-width: 200px;
-height: 80px;
-background: #3a3f4a;
-border: 3px solid #6a6f7a;
-color: #ffffff;
-font-size: 32px;
-font-weight: bold;
-text-align: center;
-line-height: 80px;
-cursor: pointer;
-margin-bottom: 20px;
+select:disabled {
+    opacity: 0.5;
 }
-
-/* 6-digit grid */
-.grid-container {
-display: inline-block;
-margin-bottom: 20px;
+.datetime {
+    background: #1b1f2a;
+    border: 2px solid #4a6a9e;
+    color: #0f0;
+    font-size: 20px;
+    padding: 12px;
+    text-align: center;
+    margin: 10px 0;
+    font-family: monospace;
 }
-
-.grid-cell {
-float: left;
-width: 70px;
-height: 80px;
-background: #d47b2e;
-border: 2px solid #a85e1f;
-margin-right: 5px;
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
 }
-
-.grid-cell input {
-width: 100%;
-height: 100%;
-background: transparent;
-border: none;
-color: #000000;
-font-size: 36px;
-font-weight: bold;
-text-align: center;
-text-transform: uppercase;
+th {
+    background: #2c3e6d;
+    padding: 10px;
+    color: white;
+    border: 1px solid #4a6a9e;
 }
-
-/* Status dropdown */
-.status-row {
-background: #2a2f3a;
-border: 2px solid #4a5270;
-padding: 10px;
-margin: 20px 0;
+td {
+    padding: 8px;
+    border: 1px solid #4a6a9e;
+    text-align: center;
 }
-
-.status-label {
-color: #aaccff;
-font-size: 24px;
-font-weight: bold;
-margin-right: 15px;
-display: inline-block;
+#scannedList {
+    background: rgba(74,106,158,0.2);
+    max-height: 300px;
+    overflow-y: auto;
 }
-
-.status-dropdown {
-padding: 12px 15px;
-background: #1b1f2a;
-border: 2px solid #6a8abe;
-color: #ffffff;
-font-size: 22px;
-width: 300px;
+#scanner {
+    display: none;
+    margin: 10px 0;
 }
-
-.status-dropdown:disabled {
-opacity: 0.5;
+video {
+    width: 100%;
+    height: auto;
+    background: #000;
 }
-
-/* Date/Time display */
-.datetime-row {
-width: 100%;
-margin: 15px 0;
-padding: 12px;
-background: #1b1f2a;
-border: 2px solid #4a6a9e;
-color: #00ff00;
-font-size: 26px;
-font-family: 'Courier New', monospace;
-text-align: center;
-box-sizing: border-box;
+#message {
+    padding: 10px;
+    margin: 10px 0;
+    text-align: center;
+    display: none;
 }
-
-/* Table header */
-.table-header {
-width: 100%;
-background: #2c3e6d;
-border: 2px solid #4a6a9e;
-margin-bottom: 5px;
-overflow: hidden;
-}
-
-.header-cell {
-float: left;
-padding: 12px 0;
-color: #ffffff;
-font-size: 22px;
-font-weight: bold;
-text-align: center;
-}
-
-.header-num {
-width: 20%;
-}
-
-.header-barcode {
-width: 40%;
-}
-
-.header-label {
-width: 40%;
-}
-
-/* Scanned items */
-.scanned-items {
-width: 100%;
-height: 350px;
-background: rgba(74, 106, 158, 0.15);
-border: 2px solid #4a6a9e;
-overflow-y: scroll;
-}
-
-.scanned-row {
-width: 100%;
-border-bottom: 1px solid #4a6a9e;
-overflow: hidden;
-font-size: 20px;
-font-family: 'Courier New', monospace;
-}
-
-.scanned-num {
-float: left;
-width: 20%;
-padding: 8px 0;
-color: #aaccff;
-text-align: center;
-}
-
-.scanned-barcode {
-float: left;
-width: 40%;
-padding: 8px 0;
-color: #00ff00;
-text-align: center;
-}
-
-.scanned-label {
-float: left;
-width: 40%;
-padding: 8px 0;
-color: #ffffff;
-text-align: center;
-}
-
-/* Scanner video */
-#scanner-container {
-width: 100%;
-margin-top: 20px;
-border: 2px solid #4a6a9e;
-background: #000000;
-display: none;
-}
-
-#videoElement {
-width: 100%;
-height: 250px;
-background: #000000;
-}
-
-/* API message */
-#api-message {
-margin: 10px 0;
-padding: 10px;
-font-size: 18px;
-text-align: center;
-display: none;
-border-radius: 5px;
-}
-
 .success {
-background: #004d00;
-border: 2px solid #00ff00;
-color: #00ff00;
+    background: #004d00;
+    border: 2px solid #0f0;
+    color: #0f0;
 }
-
 .error {
-background: #4d0000;
-border: 2px solid #ff0000;
-color: #ff0000;
+    background: #4d0000;
+    border: 2px solid #f00;
+    color: #f00;
 }
 </style>
 </head>
-
 <body>
-<div id="canvas">
-<div id="header">
-<div id="header-left">SCAN BARCODE</div>
-<div id="header-right" id="headerTime">21:23:49</div>
-<div class="clear"></div>
+
+<div class="container">
+    <div class="header">
+        SCAN BARCODE <span id="headerTime">12:00:00</span>
+    </div>
+
+    <!-- SCAN BUTTON -->
+    <div class="scan-btn" id="scanButton">START SCANNER</div>
+
+    <!-- CAMERA SECTION -->
+    <div id="scanner">
+        <video id="video" autoplay></video>
+        <div style="text-align:center; padding:10px;">
+            <button onclick="stopScanner()" style="padding:10px 20px;">STOP</button>
+        </div>
+    </div>
+
+    <!-- 6 DIGIT GRID -->
+    <div class="grid" id="barcodeGrid">
+        <input type="text" maxlength="1" id="c1" class="digit">
+        <input type="text" maxlength="1" id="c2" class="digit">
+        <input type="text" maxlength="1" id="c3" class="digit">
+        <input type="text" maxlength="1" id="c4" class="digit">
+        <input type="text" maxlength="1" id="c5" class="digit">
+        <input type="text" maxlength="1" id="c6" class="digit">
+    </div>
+
+    <!-- MESSAGE AREA -->
+    <div id="message"></div>
+
+    <!-- STATUS DROPDOWN -->
+    <select id="statusSelect" disabled>
+        <option value="">-- SELECT STATUS --</option>
+        <option value="Item Booked">Item Booked</option>
+        <option value="Item Received">Item Received</option>
+        <option value="Item Bagged">Item Bagged</option>
+        <option value="Item Dispatched">Item Dispatched</option>
+        <option value="In Transit">In Transit</option>
+        <option value="Out for Delivery">Out for Delivery</option>
+        <option value="Item Delivered">Item Delivered</option>
+    </select>
+
+    <!-- DATE TIME -->
+    <div class="datetime" id="currentDateTime"></div>
+
+    <!-- SCANNED ITEMS TABLE -->
+    <table>
+        <tr>
+            <th>#</th>
+            <th>BARCODE</th>
+            <th>STATUS</th>
+        </tr>
+    </table>
+    <div id="scannedList"></div>
 </div>
 
-<div id="content">
-<!-- Scan button -->
-<div id="scanBtn">SCAN</div>
-
-<!-- 6-digit grid -->
-<div class="grid-container">
-<div class="grid-cell"><input type="text" maxlength="1" id="char1" class="digit"></div>
-<div class="grid-cell"><input type="text" maxlength="1" id="char2" class="digit"></div>
-<div class="grid-cell"><input type="text" maxlength="1" id="char3" class="digit"></div>
-<div class="grid-cell"><input type="text" maxlength="1" id="char4" class="digit"></div>
-<div class="grid-cell"><input type="text" maxlength="1" id="char5" class="digit"></div>
-<div class="grid-cell"><input type="text" maxlength="1" id="char6" class="digit"></div>
-<div style="clear:both"></div>
-</div>
-
-<!-- API Message -->
-<div id="api-message"></div>
-
-<!-- Status dropdown -->
-<div class="status-row">
-<span class="status-label">STATUS</span>
-<select class="status-dropdown" id="statusDropdown" disabled>
-<option value="">-- Select Status --</option>
-<option value="Item Booked">Item Booked</option>
-<option value="Item Received">Item Received</option>
-<option value="Item Bagged">Item Bagged</option>
-<option value="Item Dispatched">Item Dispatched</option>
-<option value="In Transit">In Transit</option>
-<option value="Out for Delivery">Out for Delivery</option>
-<option value="Item Delivered">Item Delivered</option>
-</select>
-</div>
-
-<!-- Date/Time display -->
-<div class="datetime-row" id="datetimeDisplay">2024-01-15 14:30:45</div>
-
-<!-- Table header -->
-<div class="table-header">
-<div class="header-cell header-num">#</div>
-<div class="header-cell header-barcode">BARCODE</div>
-<div class="header-cell header-label">STATUS</div>
-<div style="clear:both"></div>
-</div>
-
-<!-- Scanned items -->
-<div class="scanned-items" id="scannedItems"></div>
-
-<!-- Camera container -->
-<div id="scanner-container">
-<video id="videoElement" autoplay></video>
-</div>
-</div>
-</div>
-
-<script type="text/javascript">
-// =============================================
-// API Configuration
-// =============================================
+<script>
+// ==================== GLOBAL VARIABLES ====================
 var API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+var video = document.getElementById('video');
+var stream = null;
+var scannerActive = false;
+var scannedItems = [];
+var itemId = 1;
+var scanTimer = null;
 
-// =============================================
-// Simple time update
-// =============================================
+// ==================== TIME UPDATE ====================
 function updateTime() {
-var now = new Date();
-var hours = now.getHours();
-var minutes = now.getMinutes();
-var seconds = now.getSeconds();
+    var d = new Date();
+    var h = d.getHours();
+    var m = d.getMinutes();
+    var s = d.getSeconds();
     
-hours = hours < 10 ? '0' + hours : hours;
-minutes = minutes < 10 ? '0' + minutes : minutes;
-seconds = seconds < 10 ? '0' + seconds : seconds;
+    h = h < 10 ? '0' + h : h;
+    m = m < 10 ? '0' + m : m;
+    s = s < 10 ? '0' + s : s;
     
-// Update header time
-document.getElementById('header-right').innerHTML = hours + ':' + minutes + ':' + seconds;
+    document.getElementById('headerTime').innerHTML = h + ':' + m + ':' + s;
     
-// Update datetime display
-var year = now.getFullYear();
-var month = (now.getMonth() + 1).toString().padStart(2, '0');
-var day = now.getDate().toString().padStart(2, '0');
-document.getElementById('datetimeDisplay').innerHTML = 
-year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+    var y = d.getFullYear();
+    var mn = d.getMonth() + 1;
+    var dy = d.getDate();
+    mn = mn < 10 ? '0' + mn : mn;
+    dy = dy < 10 ? '0' + dy : dy;
+    
+    document.getElementById('currentDateTime').innerHTML = 
+        y + '-' + mn + '-' + dy + ' ' + h + ':' + m + ':' + s;
 }
-
-// Update time every second
 updateTime();
 setInterval(updateTime, 1000);
 
-// =============================================
-// Grid input handling
-// =============================================
-var inputs = document.querySelectorAll('.digit');
-for (var i = 0; i < inputs.length; i++) {
-inputs[i].addEventListener('input', function(e) {
-var current = e.target;
-var id = parseInt(current.id.replace('char', ''));
-    
-if (current.value.length > 0) {
-current.value = current.value.charAt(0).toUpperCase();
-if (id < 6) {
-document.getElementById('char' + (id + 1)).focus();
+// ==================== GRID FUNCTIONS ====================
+function setupGrid() {
+    for (var i = 1; i <= 6; i++) {
+        var input = document.getElementById('c' + i);
+        
+        input.oninput = function(e) {
+            var id = parseInt(e.target.id.substring(1));
+            if (this.value.length > 0) {
+                this.value = this.value.charAt(0).toUpperCase();
+                if (id < 6) {
+                    document.getElementById('c' + (id + 1)).focus();
+                }
+            }
+            checkGridFilled();
+        };
+        
+        input.onkeydown = function(e) {
+            var id = parseInt(e.target.id.substring(1));
+            if (e.key === 'Backspace' && this.value.length === 0 && id > 1) {
+                document.getElementById('c' + (id - 1)).focus();
+            }
+        };
+    }
 }
-}
-    
-// Check if all filled
-checkAllFilled();
-});
-    
-inputs[i].addEventListener('keydown', function(e) {
-var current = e.target;
-var id = parseInt(current.id.replace('char', ''));
-    
-if (e.key === 'Backspace' && current.value.length === 0) {
-if (id > 1) {
-e.preventDefault();
-document.getElementById('char' + (id - 1)).focus();
-}
-}
-});
-}
+setupGrid();
 
-function checkAllFilled() {
-var allFilled = true;
-for (var i = 1; i <= 6; i++) {
-if (document.getElementById('char' + i).value === '') {
-allFilled = false;
-break;
-}
-}
-    
-var dropdown = document.getElementById('statusDropdown');
-if (allFilled) {
-dropdown.disabled = false;
-dropdown.focus();
-} else {
-dropdown.disabled = true;
-dropdown.selectedIndex = 0;
-}
+function checkGridFilled() {
+    var filled = true;
+    for (var i = 1; i <= 6; i++) {
+        if (document.getElementById('c' + i).value === '') {
+            filled = false;
+            break;
+        }
+    }
+    document.getElementById('statusSelect').disabled = !filled;
 }
 
 function clearGrid() {
-for (var i = 1; i <= 6; i++) {
-document.getElementById('char' + i).value = '';
-}
-document.getElementById('char1').focus();
-checkAllFilled();
+    for (var i = 1; i <= 6; i++) {
+        document.getElementById('c' + i).value = '';
+    }
+    document.getElementById('c1').focus();
+    checkGridFilled();
 }
 
 function fillGrid(barcode) {
-barcode = barcode.substring(0, 6).toUpperCase();
-for (var i = 1; i <= 6; i++) {
-if (i <= barcode.length) {
-document.getElementById('char' + i).value = barcode.charAt(i-1);
-} else {
-document.getElementById('char' + i).value = '';
-}
-}
-checkAllFilled();
+    barcode = barcode.substring(0, 6).toUpperCase();
+    for (var i = 1; i <= 6; i++) {
+        if (i <= barcode.length) {
+            document.getElementById('c' + i).value = barcode.charAt(i-1);
+        }
+    }
+    checkGridFilled();
 }
 
-// =============================================
-// Simple beep
-// =============================================
-function beep() {
-try {
-var ctx = new (window.AudioContext || window.webkitAudioContext)();
-var osc = ctx.createOscillator();
-osc.connect(ctx.destination);
-osc.frequency.value = 800;
-osc.start();
-osc.stop(ctx.currentTime + 0.1);
-} catch(e) {}
-}
-
-// =============================================
-// Camera functions - SIMPLE version for old Android
-// =============================================
-var video = document.getElementById('videoElement');
-var stream = null;
+// ==================== CAMERA FUNCTIONS ====================
+document.getElementById('scanButton').onclick = function() {
+    startCamera();
+};
 
 function startCamera() {
-// Check if browser supports getUserMedia
-if (!navigator.getUserMedia && !navigator.webkitGetUserMedia && 
-!navigator.mozGetUserMedia && !navigator.msGetUserMedia) {
-alert('Your browser does not support camera access');
-return;
+    // Stop any existing scanner
+    stopScanner();
+    
+    // Show scanner section
+    document.getElementById('scanner').style.display = 'block';
+    
+    // Get camera
+    navigator.getUserMedia = navigator.getUserMedia || 
+                            navigator.webkitGetUserMedia || 
+                            navigator.mozGetUserMedia;
+    
+    if (navigator.getUserMedia) {
+        navigator.getUserMedia(
+            { video: true },
+            function(s) {
+                stream = s;
+                video.srcObject = s;
+                video.play();
+                scannerActive = true;
+                startScanning();
+            },
+            function(err) {
+                alert('Camera error: ' + err);
+                document.getElementById('scanner').style.display = 'none';
+            }
+        );
+    } else {
+        alert('Camera not supported');
+        document.getElementById('scanner').style.display = 'none';
+    }
 }
 
-// Show scanner container
-document.getElementById('scanner-container').style.display = 'block';
-
-// Get user media with back camera
-var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || 
-navigator.mozGetUserMedia || navigator.msGetUserMedia;
-
-if (getUserMedia) {
-getUserMedia.call(navigator, 
-{ video: { facingMode: { exact: "environment" } } }, // Try back camera first
-function(s) {
-stream = s;
-video.srcObject = stream;
-video.play();
-startScanning(); // Start scanning for barcodes
-},
-function(error) {
-// If back camera fails, try any camera
-getUserMedia.call(navigator, 
-{ video: true },
-function(s) {
-stream = s;
-video.srcObject = stream;
-video.play();
-startScanning();
-},
-function(error) {
-alert('Cannot access camera: ' + error);
-document.getElementById('scanner-container').style.display = 'none';
-}
-);
-}
-);
-}
+function stopScanner() {
+    if (stream) {
+        stream.getTracks().forEach(function(t) { t.stop(); });
+        video.srcObject = null;
+    }
+    document.getElementById('scanner').style.display = 'none';
+    scannerActive = false;
+    if (scanTimer) {
+        clearInterval(scanTimer);
+        scanTimer = null;
+    }
 }
 
-function stopCamera() {
-if (stream) {
-stream.getTracks().forEach(function(track) {
-track.stop();
-});
-video.srcObject = null;
-}
-document.getElementById('scanner-container').style.display = 'none';
-clearInterval(scanInterval);
-}
-
-// =============================================
-// Barcode scanning - Simple timer-based scanning
-// =============================================
-var scanInterval = null;
-
+// ==================== QR SCANNING ====================
 function startScanning() {
-// Clear any existing interval
-if (scanInterval) {
-clearInterval(scanInterval);
-}
-
-// Create a canvas for capturing frames
-var canvas = document.createElement('canvas');
-var ctx = canvas.getContext('2d');
-
-// Scan every 500ms
-scanInterval = setInterval(function() {
-if (video.readyState === video.HAVE_ENOUGH_DATA) {
-// Set canvas size to video size
-canvas.width = video.videoWidth;
-canvas.height = video.videoHeight;
+    if (!scannerActive) return;
     
-// Draw video frame to canvas
-ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Load QR scanner library
+    if (!window.jsQR) {
+        var script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+        script.onload = function() { 
+            if (scannerActive) startQRScan();
+        };
+        document.head.appendChild(script);
+    } else {
+        startQRScan();
+    }
+}
+
+function startQRScan() {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
     
-// Get image data for scanning
-try {
-// Look for QR code in the image
-scanImageData(ctx.getImageData(0, 0, canvas.width, canvas.height));
-} catch(e) {}
-}
-}, 500);
-}
-
-function scanImageData(imageData) {
-// For Android 5.0, we need a simple QR scanner
-// Use dynamic script loading for the scanner library
-if (!window.QRScanner) {
-// Load jsQR library for QR scanning
-var script = document.createElement('script');
-script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
-script.onload = function() {
-scanWithJSQR(imageData);
-};
-document.head.appendChild(script);
-} else {
-scanWithJSQR(imageData);
-}
+    scanTimer = setInterval(function() {
+        if (!scannerActive || video.readyState !== 4) return;
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        
+        try {
+            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            var code = jsQR(imageData.data, imageData.width, imageData.height);
+            
+            if (code) {
+                fillGrid(code.data);
+                stopScanner();
+            }
+        } catch(e) {}
+    }, 500);
 }
 
-function scanWithJSQR(imageData) {
-try {
-var code = jsQR(imageData.data, imageData.width, imageData.height);
-if (code) {
-// Found a QR code
-beep();
-fillGrid(code.data);
-stopCamera();
-}
-} catch(e) {}
+// ==================== API FUNCTIONS ====================
+function showMessage(text, type) {
+    var msg = document.getElementById('message');
+    msg.innerHTML = text;
+    msg.className = type;
+    msg.style.display = 'block';
+    setTimeout(function() { msg.style.display = 'none'; }, 3000);
 }
 
-// =============================================
-// API functions
-// =============================================
-function showMessage(msg, isSuccess) {
-var msgDiv = document.getElementById('api-message');
-msgDiv.innerHTML = msg;
-msgDiv.style.display = 'block';
-msgDiv.className = isSuccess ? 'success' : 'error';
-setTimeout(function() { msgDiv.style.display = 'none'; }, 3000);
-}
-
-function sendToAPI(barcode, status) {
-var now = new Date();
-var data = {
-label_id: barcode,
-barcode_type: 'QR_CODE',
-status: status,
-date: now.toISOString().split('T')[0],
-time: Math.floor(now.getTime() / 1000),
-location: 'Default Location',
-eta: ''
-};
-
-// Use XMLHttpRequest for better compatibility
-var xhr = new XMLHttpRequest();
-xhr.open('POST', API_URL, true);
-xhr.setRequestHeader('Content-Type', 'application/json');
-xhr.onreadystatechange = function() {
-if (xhr.readyState === 4) {
-if (xhr.status === 200 || xhr.status === 201) {
-showMessage('✓ Data sent successfully!', true);
-addToScannedList(barcode, status);
-} else {
-showMessage('✗ Failed to send data', false);
-}
-}
-};
-xhr.send(JSON.stringify(data));
-}
-
-// =============================================
-// Scanned items list
-// =============================================
-var scannedItems = [];
-var itemCounter = 1;
-
-function addToScannedList(barcode, status) {
-var item = {
-id: itemCounter++,
-barcode: barcode.padStart(6, '0').substring(0, 6),
-status: status
-};
-
-scannedItems.unshift(item);
-if (scannedItems.length > 30) scannedItems.pop();
-
-var container = document.getElementById('scannedItems');
-container.innerHTML = '';
-
-for (var i = 0; i < scannedItems.length; i++) {
-var item = scannedItems[i];
-container.innerHTML += 
-'<div class="scanned-row">' +
-'<div class="scanned-num">' + item.id + '</div>' +
-'<div class="scanned-barcode">' + item.barcode + '</div>' +
-'<div class="scanned-label">' + item.status + '</div>' +
-'<div style="clear:both"></div>' +
-'</div>';
-}
-}
-
-// =============================================
-// Event handlers
-// =============================================
-// Scan button
-document.getElementById('scanBtn').onclick = function() {
-startCamera();
-};
-
-// Status dropdown
-document.getElementById('statusDropdown').onchange = function() {
-var dropdown = this;
-var selected = dropdown.options[dropdown.selectedIndex];
+function sendToApi(barcode, status) {
+    var now = new Date();
+    var data = {
+        label_id: barcode,
+        barcode_type: 'QR_CODE',
+        status: status,
+        date: now.toISOString().split('T')[0],
+        time: Math.floor(now.getTime() / 1000),
+        location: 'Default',
+        eta: ''
+    };
     
-if (selected.value) {
-var barcode = '';
-for (var i = 1; i <= 6; i++) {
-barcode += document.getElementById('char' + i).value;
-}
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', API_URL, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
     
-if (barcode.length === 6) {
-sendToAPI(barcode, selected.value);
-clearGrid();
-dropdown.selectedIndex = 0;
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200 || xhr.status === 201) {
+                showMessage('✓ SENT OK', 'success');
+                addToList(barcode, status);
+            } else {
+                showMessage('✗ FAILED', 'error');
+            }
+        }
+    };
+    
+    xhr.send(JSON.stringify(data));
 }
+
+function addToList(barcode, status) {
+    barcode = barcode.padStart(6, '0').substring(0, 6);
+    
+    scannedItems.unshift({
+        id: itemId++,
+        barcode: barcode,
+        status: status
+    });
+    
+    if (scannedItems.length > 30) scannedItems.pop();
+    
+    var html = '';
+    for (var i = 0; i < scannedItems.length; i++) {
+        html += '<div style="border-bottom:1px solid #4a6a9e; padding:8px; overflow:hidden;">' +
+                '<span style="float:left; width:20%; color:#aaccff;">' + scannedItems[i].id + '</span>' +
+                '<span style="float:left; width:40%; color:#0f0;">' + scannedItems[i].barcode + '</span>' +
+                '<span style="float:left; width:40%; color:#fff;">' + scannedItems[i].status + '</span>' +
+                '<div style="clear:both;"></div>' +
+                '</div>';
+    }
+    
+    document.getElementById('scannedList').innerHTML = html;
 }
+
+// ==================== STATUS SELECT ====================
+document.getElementById('statusSelect').onchange = function() {
+    var barcode = '';
+    for (var i = 1; i <= 6; i++) {
+        barcode += document.getElementById('c' + i).value;
+    }
+    
+    if (barcode.length === 6 && this.value) {
+        sendToApi(barcode, this.value);
+        clearGrid();
+        this.selectedIndex = 0;
+        this.disabled = true;
+    }
 };
 
-// Focus first input
-document.getElementById('char1').focus();
+// ==================== FOCUS FIRST ====================
+document.getElementById('c1').focus();
 </script>
 </body>
 </html>
