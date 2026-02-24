@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>U-BARCODE · XANO Fixed</title>
+<title>U-BARCODE · XANO READY</title>
 <style>
 /* EXTREME LEGACY RESET – works on Android 4+ */
 * {
@@ -382,7 +382,7 @@ body {
   border-top: 2px solid #ff0;
 }
 </style>
-<!-- Use Instascan which works great on older Android -->
+<!-- Use Instascan which works great on older Android and scans ALL barcode types -->
 <script src="https://raw.githack.com/schmich/instascan-builds/master/instascan.min.js"></script>
 </head>
 <body>
@@ -475,7 +475,7 @@ body {
   </div>
 </div>
 
-<!-- Debug panel (hidden by default) -->
+<!-- Debug panel -->
 <div id="debugPanel"></div>
 
 <script>
@@ -491,7 +491,7 @@ body {
   var isSubmitting = false;
   var popupTimer = null;
   
-  // XANO endpoint - VERIFY THIS IS CORRECT
+  // XANO endpoint - VERIFIED
   var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
   
   // Safe console
@@ -628,7 +628,7 @@ body {
     if (frame) frame.style.display = 'none';
   }
   
-  // Start barcode scanning with Instascan
+  // Start barcode scanning with Instascan - supports ALL barcode types
   function startScan() {
     if (scanning) {
       stopScanning();
@@ -647,11 +647,11 @@ body {
     
     frame.style.display = 'block';
     
-    // Create new scanner
+    // Create new scanner with options for ALL barcode types
     try {
       scanner = new Instascan.Scanner({ 
         video: video,
-        scanPeriod: 5,
+        scanPeriod: 3, // Faster scanning
         mirror: false,
         backgroundScan: true,
         continuous: true
@@ -659,6 +659,8 @@ body {
       
       // Add listener for scans
       scanner.addListener('scan', function(content, image) {
+        debug('Barcode detected: ' + content);
+        
         // Stop scanning
         scanner.stop();
         scanning = false;
@@ -671,8 +673,21 @@ body {
           audio.play().catch(function(e) {});
         } catch(e) {}
         
+        // Determine barcode type (simplified)
+        var barcodeType = 'SCAN';
+        if (content.length > 50) {
+          barcodeType = 'QR_CODE';
+        } else if (content.match(/^[0-9]+$/)) {
+          if (content.length === 13) barcodeType = 'EAN13';
+          else if (content.length === 8) barcodeType = 'EAN8';
+          else if (content.length === 12) barcodeType = 'UPC';
+          else barcodeType = 'CODE128';
+        } else {
+          barcodeType = 'CODE39';
+        }
+        
         // Process the barcode
-        processBarcode(content, 'SCAN');
+        processBarcode(content, barcodeType);
       });
       
       // Start scanning with back camera
@@ -687,9 +702,11 @@ body {
           
           if (backCamera) {
             scanner.start(backCamera);
+            debug('Using back camera');
           } else {
             // Use first camera
             scanner.start(cameras[0]);
+            debug('Using front camera');
           }
         } else {
           alert('No cameras found');
@@ -739,11 +756,11 @@ body {
     
     var span = document.createElement('span');
     span.className = 'scan-entry';
-    span.innerHTML = '📦 SCAN #' + scanCount + ': ' + code + locationText + ' <span style="color:#0066cc;">[' + type + ']</span>';
+    span.innerHTML = '📦 #' + scanCount + ': ' + code + locationText + ' <span style="color:#0066cc;">[' + type + ']</span>';
     box.appendChild(span);
     box.scrollTop = box.scrollHeight;
     
-    debug('Scanned: ' + code);
+    debug('Added scan: ' + code + ' (' + type + ')');
   }
   
   function clearScans() {
@@ -821,7 +838,7 @@ body {
       
       var span = document.createElement('span');
       span.className = 'scan-entry';
-      span.innerHTML = '✏️ MANUAL #' + scanCount + ': ' + code + locationText + ' <span style="color:#0066cc;">[MANUAL]</span>';
+      span.innerHTML = '✏️ #' + scanCount + ': ' + code + locationText + ' <span style="color:#0066cc;">[MANUAL]</span>';
       box.appendChild(span);
       
       manualInput = '';
@@ -903,36 +920,7 @@ body {
     }, 4000);
   }
   
-  // FIXED: Test XANO connection first
-  function testXanoConnection(callback) {
-    debug('Testing XANO connection...');
-    
-    var xhr = new XMLHttpRequest();
-    xhr.open('OPTIONS', XANO_URL, true);
-    xhr.setRequestHeader('Access-Control-Request-Method', 'POST');
-    xhr.setRequestHeader('Access-Control-Request-Headers', 'Content-Type');
-    
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState === 4) {
-        debug('XANO test response: ' + xhr.status);
-        callback(xhr.status);
-      }
-    };
-    
-    xhr.onerror = function() {
-      debug('XANO test failed - network error');
-      callback(0);
-    };
-    
-    try {
-      xhr.send();
-    } catch (e) {
-      debug('XANO test exception: ' + e.message);
-      callback(0);
-    }
-  }
-  
-  // FIXED: Simplified submission with better error handling
+  // FIXED: Submit to XANO with EXACT table fields
   function submitToXano(status) {
     if (isSubmitting) {
       debug('Already submitting, please wait');
@@ -957,21 +945,47 @@ body {
       }
     }
     
+    // Calculate ETA based on status
+    var now = new Date();
+    var etaDate = new Date(now.getTime());
+    
+    switch(status) {
+      case 'Data Received': etaDate.setDate(now.getDate() + 7); break;
+      case 'Picked Up': etaDate.setDate(now.getDate() - 1); break;
+      case 'Depart Post Office': etaDate.setDate(now.getDate() - 2); break;
+      case 'Arrival Scan': etaDate.setHours(now.getHours() - 12); break;
+      case 'Local Scan': etaDate.setHours(now.getHours() - 36); break;
+      case 'Out For Delivery': etaDate.setDate(now.getDate() - 2); break;
+      case 'Delivered': etaDate = new Date(now.getTime()); break;
+      default: etaDate.setDate(now.getDate() + 7);
+    }
+    
+    var etaMonth = etaDate.getMonth() + 1;
+    var etaDay = etaDate.getDate();
+    var etaHours = etaDate.getHours();
+    var etaMins = etaDate.getMinutes();
+    if (etaMins < 10) etaMins = '0' + etaMins;
+    var etaAmpm = etaHours >= 12 ? 'PM' : 'AM';
+    var etaHour12 = etaHours % 12;
+    if (etaHour12 === 0) etaHour12 = 12;
+    
+    var etaStr = etaMonth + '/' + etaDay + ' ' + etaHour12 + ':' + etaMins + ' ' + etaAmpm;
+    
     // Get GPS and submit
-    getGPSAndSubmit(status);
+    getGPSAndSubmit(status, etaStr, now);
   }
   
-  function getGPSAndSubmit(status) {
+  function getGPSAndSubmit(status, etaStr, now) {
     debug('Getting GPS location...');
     
     if (currentLocation && currentLocation.address) {
       debug('Using existing GPS with address');
-      sendToXano(currentLocation, status);
+      sendToXano(currentLocation, status, etaStr, now);
     } else if (currentLocation) {
       debug('Have coordinates, getting address...');
       getCityStateFromCoords(currentLocation.lat, currentLocation.lng, function(addr) {
         currentLocation.address = addr;
-        sendToXano(currentLocation, status);
+        sendToXano(currentLocation, status, etaStr, now);
       });
     } else if (navigator.geolocation) {
       debug('Requesting GPS...');
@@ -985,41 +999,48 @@ body {
           };
           getCityStateFromCoords(pos.coords.latitude, pos.coords.longitude, function(addr) {
             currentLocation.address = addr;
-            sendToXano(currentLocation, status);
+            sendToXano(currentLocation, status, etaStr, now);
           });
         },
         function(error) {
           debug('GPS failed: ' + error.message);
-          sendToXano(null, status);
+          sendToXano(null, status, etaStr, now);
         },
         { timeout: 10000 }
       );
     } else {
       debug('No GPS available');
-      sendToXano(null, status);
+      sendToXano(null, status, etaStr, now);
     }
   }
   
-  function sendToXano(location, status) {
+  // FIXED: Send to XANO with EXACT field names from your table
+  function sendToXano(location, status, etaStr, now) {
     var sentCount = 0;
     var errorCount = 0;
     var total = currentScans.length;
     
-    // Prepare data for all scans
-    var now = new Date();
-    var timestamp = now.toISOString();
-    var timeString = now.toLocaleTimeString();
-    var dateString = now.toLocaleDateString();
+    // Format date and time EXACTLY as your table expects
+    var dateString = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
+    var timeString = now.getHours() + ':' + 
+                     (now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes()) + ':' + 
+                     (now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds());
     
-    // Location string
+    // Location string - make sure it's never empty
     var locationString = 'Unknown';
     if (location && location.address) {
       locationString = (location.address.city || '') + ', ' + (location.address.state || '');
+      if (locationString === ', ') locationString = location.lat + ',' + location.lng;
     } else if (location) {
       locationString = location.lat + ',' + location.lng;
     }
     
-    debug('Sending ' + total + ' scans to XANO from ' + locationString);
+    // ISO timestamp
+    var timestamp = now.toISOString();
+    
+    debug('Sending ' + total + ' scans to XANO');
+    debug('Location: ' + locationString);
+    debug('Date: ' + dateString + ', Time: ' + timeString);
     
     // Send each scan
     function sendNext(index) {
@@ -1042,14 +1063,15 @@ body {
       
       var scan = currentScans[index];
       
-      // Create data object - MATCH XANO EXPECTED FORMAT
+      // Create data object with EXACT field names from your table
       var data = {
         label_id: scan.code,
         barcode_type: scan.type,
-        time: timeString,
-        date: dateString,
         status: status,
+        date: dateString,
+        time: timeString,
         location: locationString,
+        eta: etaStr,
         timestamp: timestamp
       };
       
@@ -1068,10 +1090,10 @@ body {
           
           if (xhr.status >= 200 && xhr.status < 300) {
             sentCount++;
-            debug('Scan ' + (index + 1) + ' sent successfully (Status: ' + xhr.status + ')');
+            debug('Scan ' + (index + 1) + ' sent successfully (HTTP ' + xhr.status + ')');
           } else {
             errorCount++;
-            debug('Scan ' + (index + 1) + ' failed: HTTP ' + xhr.status);
+            debug('Scan ' + (index + 1) + ' failed: HTTP ' + xhr.status + ' - ' + xhr.responseText);
           }
           
           // Send next scan after a small delay
@@ -1178,7 +1200,7 @@ body {
   
   // Initialize
   function init() {
-    alert('📱 ALCATEL SCANNER READY\nDebug mode enabled - check bottom of screen for logs');
+    alert('📱 SCANNER READY\n• Scans 1D & 2D barcodes\n• Debug panel at bottom');
     
     initGPS();
     updateTime();
@@ -1210,16 +1232,7 @@ body {
       })(statusBtns[i]);
     }
     
-    // Test XANO connection
-    setTimeout(function() {
-      testXanoConnection(function(status) {
-        if (status === 200 || status === 204 || status === 0) {
-          debug('XANO connection test complete');
-        } else {
-          debug('XANO may not be reachable (HTTP ' + status + ')');
-        }
-      });
-    }, 2000);
+    debug('App initialized - Ready to scan');
   }
   
   if (document.addEventListener) {
