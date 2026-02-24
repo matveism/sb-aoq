@@ -36,6 +36,7 @@ body {
     float:right;
 }
 
+/* UNDER HEADER */
 #under {
     width:100%;
     height:50px;
@@ -47,7 +48,7 @@ body {
     color:#000;
 }
 
-/* GRID TABLE */
+/* GRID */
 #gridtable {
     border-collapse:collapse;
     margin:10px;
@@ -69,11 +70,13 @@ body {
 <body>
 <div id="device">
 
+    <!-- HEADER -->
     <div id="header">
         <span>Scan Barcode</span>
         <span class="right" id="clock">--:-- --</span>
     </div>
 
+    <!-- UNDER HEADER -->
     <div id="under">
         Scan/Key-in Barcode:
         <input type="text" id="pos" style="width:40px;">
@@ -98,8 +101,8 @@ function updateClock() {
 }
 setInterval(updateClock,1000); updateClock();
 
-// BUILD GRID (2 rows × 20 columns)
-var rows=2, cols=20;
+// BUILD GRID (3 rows × 15 columns = 45 cells)
+var rows=3, cols=15;
 var grid=document.getElementById("gridbody");
 
 for(var r=0;r<rows;r++){
@@ -114,14 +117,17 @@ for(var r=0;r<rows;r++){
 
 // INITIAL COLORS
 document.getElementById("cell_1").className="orange"; // dark orange
-for(var i=31;i<=40;i++){
-    document.getElementById("cell_"+i).className="gray"; // last 10 gray
+
+// last row = row 3 → cells 31 to 45
+// last 11 gray → cells 35 to 45
+for(var i=35;i<=45;i++){
+    document.getElementById("cell_"+i).className="gray";
 }
 
 // MOVE ORANGE WHEN TYPING
 document.getElementById("pos").onkeyup=function(){
     var n=parseInt(this.value);
-    if(n>=1 && n<=40){
+    if(n>=1 && n<=45){
         // clear old orange
         var old=document.getElementsByClassName("orange");
         if(old.length>0) old[0].className="";
