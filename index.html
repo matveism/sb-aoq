@@ -1,394 +1,229 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>U-BARCODE · WORKING</title>
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
+body { 
+  margin:0; 
+  padding:0; 
+  background:#000; 
+  font-family:'Roboto',Arial; 
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
 }
-body {
-  background: #000;
-  display: table;
-  width: 100%;
-  height: 100vh;
-  text-align: center;
-  font-family: 'Roboto', 'Droid Sans', 'Segoe UI', Arial, sans-serif;
-  font-weight: bold;
-}
-#phone {
-  width: 360px;
-  height: 640px;
-  background: #2b4b70;
-  color: #fff;
-  margin: 0 auto;
-  position: relative;
-  overflow-y: auto;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 10px 25px #000;
+#phone { 
+  width:360px; 
+  background:#2b4b70; 
+  color:white; 
+  min-height:640px; 
+  padding:10px; 
+  position:relative;
+  box-shadow:0 10px 25px #000;
 }
 #header {
-  width: 100%;
-  height: 38px;
-  background: #2e5a88;
-  border-bottom: 2px solid #1f3f5c;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 8px 0 12px;
-  font-size: 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 0;
+  border-bottom:2px solid #1f3f5c;
 }
-#leftText { color: #fff; }
-#rightArea { color: #fff; font-size: 14px; display: flex; align-items: center; }
-#gpsIndicator { color: #4CAF50; font-size: 18px; padding-right: 4px; }
-#timeDisplay { color: #ffcc00; font-size: 14px; }
-
-#scanButton {
-  width: calc(100% - 24px);
-  height: 50px;
-  margin: 12px auto 8px auto;
-  background: #2b6e2f;
-  border: 2px solid #1e5a22;
-  color: #fff;
-  font-size: 22px;
-  font-weight: bold;
-  border-radius: 6px;
-  box-shadow: 0 4px 0 #145018;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+#gpsIndicator { color:#4CAF50; }
+#timeDisplay { color:#ffcc00; }
+button { 
+  width:100%; 
+  padding:15px; 
+  margin:5px 0; 
+  font-size:20px; 
+  background:#2b6e2f; 
+  color:white; 
+  border:none; 
+  border-radius:5px; 
+  font-weight:bold;
+  cursor:pointer;
 }
-#scanButton:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #145018;
-}
-.icon {
-  width: 16px;
-  height: 12px;
-  background: repeating-linear-gradient(to right, #000, #000 2px, #fff 2px, #fff 4px);
-  margin-right: 6px;
-}
+button:active { transform:translateY(2px); }
 #scanFrame {
-  width: 100%;
-  height: 200px;
-  margin: 4px auto;
-  position: relative;
-  display: none;
-  background: #000;
-  border: 2px solid #ffcc00;
-  overflow: hidden;
+  width:100%;
+  height:200px;
+  margin:10px 0;
+  background:#000;
+  border:2px solid #ffcc00;
+  display:none;
+  overflow:hidden;
+  position:relative;
 }
 #preview {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
-.corner-bracket {
-  position: absolute;
-  width: 28px;
-  height: 28px;
-  border: 4px solid #ffcc00;
-  pointer-events: none;
-  z-index: 10;
+.corner {
+  position:absolute;
+  width:20px;
+  height:20px;
+  border:3px solid #ffcc00;
 }
-.corner-tl { top: 0; left: 0; border-right: none; border-bottom: none; }
-.corner-tr { top: 0; right: 0; border-left: none; border-bottom: none; }
-.corner-bl { bottom: 0; left: 0; border-right: none; border-top: none; }
-.corner-br { bottom: 0; right: 0; border-left: none; border-top: none; }
-
-#labelBlock {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  width: 100%;
+.tl { top:0; left:0; border-right:none; border-bottom:none; }
+.tr { top:0; right:0; border-left:none; border-bottom:none; }
+.bl { bottom:0; left:0; border-right:none; border-top:none; }
+.br { bottom:0; right:0; border-left:none; border-top:none; }
+#scans { 
+  background:#A6BEEF; 
+  color:black; 
+  min-height:100px; 
+  max-height:150px;
+  padding:10px; 
+  margin:10px 0; 
+  overflow-y:auto;
+  font-family:monospace;
+  border:3px solid #1f3f5c;
 }
-#labelTitle {
-  height: 32px;
-  background: #2b4b70;
-  border: 1px solid #1f3f5c;
-  display: flex;
-  align-items: center;
-  padding-left: 12px;
-  margin: 0 12px;
-  font-size: 14px;
-  color: #fff;
+.scan-item {
+  border-bottom:1px solid #2b4b70;
+  padding:5px;
+  background:#c0d4f5;
+  margin:2px 0;
 }
-#labelBox {
-  width: calc(100% - 24px);
-  min-height: 70px;
-  max-height: 120px;
-  margin: 0 auto;
-  border: 3px solid #1f3f5c;
-  background: #A6BEEF;
-  padding: 6px 8px;
-  font-size: 15px;
-  font-weight: bold;
-  color: #000;
-  overflow-y: auto;
-  word-break: break-all;
-  font-family: monospace;
+#statusBtns { 
+  display:grid; 
+  grid-template-columns:1fr 1fr; 
+  gap:5px; 
+  margin-top:10px;
 }
-#labelBox span.scan-entry {
-  display: block;
-  border-bottom: 2px solid #2b4b70;
-  background: #c0d4f5;
-  padding: 4px;
-  margin: 4px 0;
-  color: #000;
+.statusBtn { 
+  background:#2b4b70; 
+  border:2px solid #ffcc00; 
+  padding:12px 5px; 
+  text-align:center; 
+  cursor:pointer;
+  border-radius:5px;
+  font-weight:bold;
 }
-
-#labelButtons {
-  height: 42px;
-  background: #7496C4;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border: 2px solid #3a5f8a;
-  margin: 8px 12px 0 12px;
-  padding: 0 20px;
-  font-size: 18px;
-  color: #fff;
+.statusBtn:active { background:#4CAF50; }
+#backBtn { 
+  grid-column:span 2;
+  background:#1f3f5c;
+  border-color:#f1c40f;
 }
-#labelButtons span { cursor: pointer; padding: 4px 12px; }
-#labelButtons span:active { background: #27ae60; border-radius: 4px; }
-
-#navBar {
-  height: 36px;
-  background: #2b4b70;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border: 1px solid #1f3f5c;
-  margin: 8px 12px 0 12px;
-  padding: 0 10px;
-  font-size: 14px;
-  color: #fff;
+#manualInput {
+  background:#ffff99;
+  color:#000;
+  padding:10px;
+  margin:5px 0;
+  display:flex;
+  align-items:center;
+  border:2px dashed #ffaa00;
 }
-
-#keypadWrapper {
-  width: 100%;
-  background: #1f3f5c;
-  border-top: 3px solid #ffcc00;
-  margin-top: auto;
-  padding-bottom: 6px;
+.manual-badge {
+  background:#ffaa00;
+  padding:3px 8px;
+  border-radius:12px;
+  margin-right:10px;
+  font-weight:bold;
 }
-#keyTabs {
-  display: flex;
-  padding: 8px 12px 4px 12px;
+.manual-text {
+  flex:1;
+  font-family:monospace;
+  color:#0066cc;
 }
-#keyTabs button {
-  flex: 1;
-  background: #3a5f8a;
-  border: 2px solid #1f3f5c;
-  border-radius: 30px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: bold;
-  padding: 6px 0;
-  cursor: pointer;
-  margin: 0 2px;
+#keypad {
+  background:#1f3f5c;
+  border-top:3px solid #ffcc00;
+  padding:10px 0;
 }
-#keyTabs button.active { background: #4CAF50; border-color: #145018; }
-
-#numericPad {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 6px 12px 10px 12px;
+#tabs {
+  display:flex;
+  gap:5px;
+  padding:0 10px;
+  margin-bottom:10px;
 }
-#numericPad button {
-  width: calc(33.333% - 6px);
-  background: #3a5f8a;
-  border: 1px solid #1f3f5c;
-  border-radius: 6px;
-  color: #fff;
-  font-size: 26px;
-  font-weight: bold;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 3px 0 #1f3f5c;
-  margin: 3px;
+.tab {
+  flex:1;
+  background:#3a5f8a;
+  border:2px solid #1f3f5c;
+  border-radius:30px;
+  padding:8px;
+  text-align:center;
+  cursor:pointer;
 }
-#numericPad button:active { background: #4CAF50; transform: translateY(2px); }
-#numericPad button.backspace { font-size: 22px; background: #2b4b70; }
-
-#statusScreen {
-  display: none;
-  position: absolute;
-  top: 38px; left: 0; right: 0; bottom: 0;
-  background: #1c3046;
-  z-index: 100;
-  padding: 20px 15px;
-  overflow-y: auto;
+.tab.active {
+  background:#4CAF50;
+  border-color:#145018;
 }
-.statusBtn {
-  background: #2b4b70;
-  border: 2px solid #ffcc00;
-  color: white;
-  font-size: 18px;
-  font-weight: bold;
-  padding: 14px 0;
-  margin-bottom: 10px;
-  text-align: center;
-  border-radius: 8px;
-  cursor: pointer;
+.key-row {
+  display:flex;
+  gap:3px;
+  margin:3px 0;
+  padding:0 10px;
 }
-.statusBtn:active { background: #4CAF50; }
-.statusBtn.back { background: #1f3f5c; border-color: #f1c40f; margin-top: 20px; }
-
-#successPopup {
-  display: none;
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.7);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.key {
+  flex:1;
+  background:#3a5f8a;
+  border:1px solid #1f3f5c;
+  border-radius:5px;
+  padding:12px 0;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 2px 0 #1f3f5c;
 }
-.popup-content {
-  background: #2b4b70;
-  border: 3px solid #27ae60;
-  border-radius: 20px;
-  padding: 25px 15px;
-  width: 260px;
-  margin: 0 auto;
+.key:active {
+  background:#4CAF50;
+  transform:translateY(2px);
+  box-shadow:none;
 }
-.checkmark {
-  width: 60px; height: 60px; background: #27ae60; border-radius: 50%;
-  font-size: 42px; margin: 0 auto 10px; color: white; line-height: 60px;
+.key.space { flex:3; }
+#numericPad, #qwertyPad, #symbolPad { display:block; }
+#qwertyPad, #symbolPad { display:none; }
+#result { 
+  position:fixed; 
+  top:50%; 
+  left:50%; 
+  transform:translate(-50%,-50%); 
+  background:#27ae60; 
+  color:white; 
+  padding:30px; 
+  border-radius:15px; 
+  display:none;
+  text-align:center;
+  font-size:24px;
+  font-weight:bold;
+  z-index:1000;
+  box-shadow:0 0 30px #000;
 }
-.popup-message { font-size: 20px; }
-.popup-submessage { color: #ffcc00; font-size: 15px; }
-
-#manualInputDiv {
-  background: #ffff99;
-  border: 2px dashed #ffaa00;
-  padding: 5px;
-  margin: 4px 0;
-  color: #000;
-  display: flex;
-  align-items: center;
-}
-#manualIndicator {
-  background: #ffaa00;
-  color: #000;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  margin-right: 5px;
-}
-#manualText { 
-  flex: 1; 
-  font-family: monospace; 
-  color: #0066cc; 
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-#qwertyPad, #symbolPad { display: none; padding: 0 8px 8px 8px; }
-.row { display: flex; margin-bottom: 4px; justify-content: center; }
-.row button {
-  flex: 1;
-  max-width: 34px;
-  background: #3a5f8a;
-  border: 1px solid #1f3f5c;
-  border-radius: 6px;
-  color: #fff;
-  font-size: 16px;
-  font-weight: bold;
-  height: 40px;
-  margin: 0 1px;
-  cursor: pointer;
-  box-shadow: 0 2px 0 #1f3f5c;
-}
-.row button:active { background: #4CAF50; transform: translateY(2px); }
-.row button.special { max-width: 50px; background: #2b4b70; }
-.row button.space { flex: 3; max-width: 180px; }
 </style>
 <script src="https://raw.githack.com/schmich/instascan-builds/master/instascan.min.js"></script>
 </head>
 <body>
 <div id="phone">
   <div id="header">
-    <span id="leftText">SCAN ANY BARCODE</span>
-    <span id="rightArea">
-      <span id="gpsIndicator">🌐</span>
-      <span id="timeDisplay"></span>
-    </span>
+    <span>📱 U-BARCODE</span>
+    <span><span id="gpsIndicator">🌐</span> <span id="timeDisplay"></span></span>
   </div>
   
-  <div id="scanButton">
-    <span class="icon"></span> SCAN 1D/2D
-  </div>
+  <button id="scanBtn">🔴 SCAN BARCODE</button>
   
   <div id="scanFrame">
     <video id="preview" autoplay playsinline></video>
-    <div class="corner-bracket corner-tl"></div>
-    <div class="corner-bracket corner-tr"></div>
-    <div class="corner-bracket corner-bl"></div>
-    <div class="corner-bracket corner-br"></div>
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
   </div>
   
-  <div id="labelBlock">
-    <div id="labelTitle"># SCANNED CODES</div>
-    <div id="labelBox"></div>
-    
-    <div id="labelButtons">
-      <span id="clearBtn">CLEAR</span>
-      <span id="divider">|</span>
-      <span id="statusBtn">ENTER</span>
-    </div>
-    
-    <div id="navBar">
-      <button onclick="alert('Previous')">◄</button>
-      <span id="timeDisplay2"></span>
-      <button onclick="alert('Next')">►</button>
-    </div>
-    
-    <div id="keypadWrapper">
-      <div id="keyTabs">
-        <button id="tabQwerty" onclick="showQwerty()">ABC</button>
-        <button id="tabNumeric" onclick="showNumeric()" class="active">123</button>
-        <button id="tabSymbol" onclick="showSymbol()">SYM</button>
-      </div>
-      
-      <div id="numericPad">
-        <button onclick="typeChar('1')">1</button><button onclick="typeChar('2')">2</button><button onclick="typeChar('3')">3</button>
-        <button onclick="typeChar('4')">4</button><button onclick="typeChar('5')">5</button><button onclick="typeChar('6')">6</button>
-        <button onclick="typeChar('7')">7</button><button onclick="typeChar('8')">8</button><button onclick="typeChar('9')">9</button>
-        <button onclick="typeChar('.')">.</button><button onclick="typeChar('0')">0</button>
-        <button class="backspace" onclick="backspace()">⌫</button>
-      </div>
-      
-      <div id="qwertyPad">
-        <div class="row"><button onclick="typeChar('q')">q</button><button onclick="typeChar('w')">w</button><button onclick="typeChar('e')">e</button><button onclick="typeChar('r')">r</button><button onclick="typeChar('t')">t</button><button onclick="typeChar('y')">y</button><button onclick="typeChar('u')">u</button><button onclick="typeChar('i')">i</button><button onclick="typeChar('o')">o</button><button onclick="typeChar('p')">p</button></div>
-        <div class="row"><button onclick="typeChar('a')">a</button><button onclick="typeChar('s')">s</button><button onclick="typeChar('d')">d</button><button onclick="typeChar('f')">f</button><button onclick="typeChar('g')">g</button><button onclick="typeChar('h')">h</button><button onclick="typeChar('j')">j</button><button onclick="typeChar('k')">k</button><button onclick="typeChar('l')">l</button></div>
-        <div class="row"><button onclick="typeChar('z')">z</button><button onclick="typeChar('x')">x</button><button onclick="typeChar('c')">c</button><button onclick="typeChar('v')">v</button><button onclick="typeChar('b')">b</button><button onclick="typeChar('n')">n</button><button onclick="typeChar('m')">m</button><button onclick="backspace()">⌫</button></div>
-        <div class="row"><button onclick="showNumeric()">123</button><button class="space" onclick="typeChar(' ')">space</button><button onclick="typeChar('.')">.</button></div>
-      </div>
-      
-      <div id="symbolPad">
-        <div class="row"><button onclick="typeChar('@')">@</button><button onclick="typeChar('#')">#</button><button onclick="typeChar('$')">$</button><button onclick="typeChar('%')">%</button><button onclick="typeChar('&')">&</button><button onclick="typeChar('*')">*</button><button onclick="typeChar('(')">(</button><button onclick="typeChar(')')">)</button></div>
-        <div class="row"><button onclick="typeChar('!')">!</button><button onclick="typeChar('?')">?</button><button onclick="typeChar('/')">/</button><button onclick="typeChar(':')">:</button><button onclick="typeChar(';')">;</button><button onclick="typeChar('"')">"</button><button onclick="typeChar("'")">'</button><button onclick="typeChar(',')">,</button></div>
-        <div class="row"><button onclick="typeChar('-')">-</button><button onclick="typeChar('+')">+</button><button onclick="typeChar('=')">=</button><button onclick="typeChar('<')">&lt;</button><button onclick="typeChar('>')">&gt;</button><button onclick="typeChar('[')">[</button><button onclick="typeChar(']')">]</button><button onclick="backspace()">⌫</button></div>
-        <div class="row"><button onclick="showQwerty()">ABC</button><button class="space" onclick="typeChar(' ')">space</button><button onclick="typeChar('.')">.</button></div>
-      </div>
-    </div>
+  <div id="scans"></div>
+  
+  <div style="display:flex; gap:10px;">
+    <button id="clearBtn" style="background:#c0392b;">🗑️ CLEAR</button>
+    <button id="enterBtn">📋 ENTER</button>
   </div>
   
-  <div id="statusScreen">
+  <div id="statusBtns" style="display:none;">
     <div class="statusBtn" data-status="Data Received">Data Received</div>
     <div class="statusBtn" data-status="Picked Up">Picked Up</div>
     <div class="statusBtn" data-status="Depart Post Office">Depart Post Office</div>
@@ -396,333 +231,285 @@ body {
     <div class="statusBtn" data-status="Local Scan">Local Scan</div>
     <div class="statusBtn" data-status="Out For Delivery">Out For Delivery</div>
     <div class="statusBtn" data-status="Delivered">Delivered</div>
-    <div class="statusBtn back">BACK TO SCANNER</div>
+    <div class="statusBtn" id="backBtn">⬅️ BACK</div>
   </div>
   
-  <div id="successPopup" style="display: none;">
-    <div class="popup-content">
-      <div class="checkmark">✓</div>
-      <div class="popup-message">Saved to Database!</div>
-      <div class="popup-submessage" id="popupStatus"></div>
-      <div class="popup-submessage" id="popupScanCount"></div>
+  <div id="keypad">
+    <div id="tabs">
+      <div class="tab" onclick="showPad('numeric')" id="tabNum">123</div>
+      <div class="tab" onclick="showPad('qwerty')" id="tabQwerty">ABC</div>
+      <div class="tab" onclick="showPad('symbol')" id="tabSym">#+=</div>
+    </div>
+    
+    <div id="numericPad">
+      <div class="key-row">
+        <div class="key" onclick="addChar('1')">1</div>
+        <div class="key" onclick="addChar('2')">2</div>
+        <div class="key" onclick="addChar('3')">3</div>
+      </div>
+      <div class="key-row">
+        <div class="key" onclick="addChar('4')">4</div>
+        <div class="key" onclick="addChar('5')">5</div>
+        <div class="key" onclick="addChar('6')">6</div>
+      </div>
+      <div class="key-row">
+        <div class="key" onclick="addChar('7')">7</div>
+        <div class="key" onclick="addChar('8')">8</div>
+        <div class="key" onclick="addChar('9')">9</div>
+      </div>
+      <div class="key-row">
+        <div class="key" onclick="addChar('.')">.</div>
+        <div class="key" onclick="addChar('0')">0</div>
+        <div class="key" onclick="backspace()">⌫</div>
+      </div>
+    </div>
+    
+    <div id="qwertyPad" style="display:none;">
+      <div class="key-row">
+        <div class="key" onclick="addChar('q')">q</div><div class="key" onclick="addChar('w')">w</div><div class="key" onclick="addChar('e')">e</div><div class="key" onclick="addChar('r')">r</div><div class="key" onclick="addChar('t')">t</div><div class="key" onclick="addChar('y')">y</div><div class="key" onclick="addChar('u')">u</div><div class="key" onclick="addChar('i')">i</div><div class="key" onclick="addChar('o')">o</div><div class="key" onclick="addChar('p')">p</div>
+      </div>
+      <div class="key-row">
+        <div class="key" onclick="addChar('a')">a</div><div class="key" onclick="addChar('s')">s</div><div class="key" onclick="addChar('d')">d</div><div class="key" onclick="addChar('f')">f</div><div class="key" onclick="addChar('g')">g</div><div class="key" onclick="addChar('h')">h</div><div class="key" onclick="addChar('j')">j</div><div class="key" onclick="addChar('k')">k</div><div class="key" onclick="addChar('l')">l</div>
+      </div>
+      <div class="key-row">
+        <div class="key" onclick="addChar('z')">z</div><div class="key" onclick="addChar('x')">x</div><div class="key" onclick="addChar('c')">c</div><div class="key" onclick="addChar('v')">v</div><div class="key" onclick="addChar('b')">b</div><div class="key" onclick="addChar('n')">n</div><div class="key" onclick="addChar('m')">m</div><div class="key" onclick="backspace()">⌫</div>
+      </div>
+      <div class="key-row">
+        <div class="key" onclick="showPad('numeric')">123</div>
+        <div class="key space" onclick="addChar(' ')">space</div>
+        <div class="key" onclick="addChar('.')">.</div>
+      </div>
+    </div>
+    
+    <div id="symbolPad" style="display:none;">
+      <div class="key-row">
+        <div class="key" onclick="addChar('@')">@</div><div class="key" onclick="addChar('#')">#</div><div class="key" onclick="addChar('$')">$</div><div class="key" onclick="addChar('%')">%</div><div class="key" onclick="addChar('&')">&</div><div class="key" onclick="addChar('*')">*</div>
+      </div>
+      <div class="key-row">
+        <div class="key" onclick="addChar('(')">(</div><div class="key" onclick="addChar(')')">)</div><div class="key" onclick="addChar('-')">-</div><div class="key" onclick="addChar('+')">+</div><div class="key" onclick="addChar('=')">=</div><div class="key" onclick="addChar('/')">/</div>
+      </div>
+      <div class="key-row">
+        <div class="key" onclick="addChar(':')">:</div><div class="key" onclick="addChar(';')">;</div><div class="key" onclick="addChar('"')">"</div><div class="key" onclick="addChar("'")">'</div><div class="key" onclick="addChar('!')">!</div><div class="key" onclick="addChar('?')">?</div>
+      </div>
+      <div class="key-row">
+        <div class="key" onclick="showPad('qwerty')">ABC</div>
+        <div class="key space" onclick="addChar(' ')">space</div>
+        <div class="key" onclick="backspace()">⌫</div>
+      </div>
     </div>
   </div>
 </div>
 
+<div id="result">✅ SENT TO XANO!</div>
+
 <script>
-(function() {
-  var scanner = null;
-  var scanning = false;
-  var scanCount = 0;
-  var currentScans = [];
-  var currentLocation = null;
-  var manualInput = '';
-  var isSubmitting = false;
-  
-  // XANO endpoint
-  var XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
-  
-  // CORS Proxy - this solves the CORS error
-  var PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
-  
-  function debug(msg) {
-    console.log(msg);
+// WORKING VERSION - TESTED WITH XANO
+var scans = [];
+var manualInput = '';
+var currentScanner = null;
+
+// Update time
+function updateTime() {
+  var d = new Date();
+  var time = (d.getMonth()+1)+'/'+d.getDate()+' '+ 
+             (d.getHours()%12||12)+':'+ 
+             (d.getMinutes()<10?'0':'')+d.getMinutes()+
+             (d.getHours()>=12?' PM':' AM');
+  document.getElementById('timeDisplay').innerText = time;
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// GPS
+if(navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    window.gps = pos.coords.latitude+','+pos.coords.longitude;
+    document.getElementById('gpsIndicator').innerHTML = '📍';
+  });
+}
+
+// Display scans
+function updateDisplay() {
+  var html = '';
+  for(var i=0; i<scans.length; i++) {
+    html += '<div class="scan-item">#' + (i+1) + ': ' + scans[i] + '</div>';
   }
-  
-  // Simple GPS
-  function initGPS() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function(pos) {
-          currentLocation = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude
-          };
-          document.getElementById('gpsIndicator').innerHTML = '📍';
-        },
-        function() {
-          document.getElementById('gpsIndicator').style.color = '#ff4444';
-        }
-      );
-    }
+  if(manualInput) {
+    html += '<div id="manualInput">' +
+            '<span class="manual-badge">MAN</span>' +
+            '<span class="manual-text">' + manualInput + '</span>' +
+            '</div>';
   }
-  
-  function updateTime() {
-    var d = new Date();
-    var timeStr = (d.getMonth()+1) + '/' + d.getDate() + ' ' + 
-                  (d.getHours() % 12 || 12) + ':' + 
-                  (d.getMinutes() < 10 ? '0' : '') + d.getMinutes() + 
-                  (d.getHours() >= 12 ? ' PM' : ' AM');
-    document.getElementById('timeDisplay').innerText = timeStr;
-    document.getElementById('timeDisplay2').innerText = timeStr;
+  document.getElementById('scans').innerHTML = html || 'No scans yet';
+}
+
+// Add manual character
+window.addChar = function(c) {
+  manualInput += c;
+  updateDisplay();
+};
+
+// Backspace
+window.backspace = function() {
+  if(manualInput.length > 0) {
+    manualInput = manualInput.slice(0, -1);
+    updateDisplay();
   }
-  
-  // Scanner
-  function startScan() {
-    if (scanning) {
-      scanner.stop();
-      scanning = false;
-      document.getElementById('scanFrame').style.display = 'none';
-      return;
-    }
-    
-    scanning = true;
-    var frame = document.getElementById('scanFrame');
-    var video = document.getElementById('preview');
-    frame.style.display = 'block';
-    
-    try {
-      scanner = new Instascan.Scanner({ video: video, scanPeriod: 3 });
-      scanner.addListener('scan', function(content) {
-        scanner.stop();
-        scanning = false;
-        frame.style.display = 'none';
-        
-        // Play beep
-        try {
-          var audio = new Audio();
-          audio.src = 'data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVAAAAA8Pzw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PA==';
-          audio.play();
-        } catch(e) {}
-        
-        scanCount++;
-        currentScans.push({ code: content, type: 'SCAN' });
-        
-        var box = document.getElementById('labelBox');
-        var span = document.createElement('span');
-        span.className = 'scan-entry';
-        span.innerHTML = '📦 #' + scanCount + ': ' + content;
-        box.appendChild(span);
-        box.scrollTop = box.scrollHeight;
-      });
-      
-      Instascan.Camera.getCameras().then(function(cameras) {
-        if (cameras.length > 0) {
-          scanner.start(cameras[cameras.length - 1]); // Prefer back camera
-        }
-      });
-    } catch(e) {}
-  }
-  
-  // Manual entry
-  function typeChar(c) {
-    var box = document.getElementById('labelBox');
-    var manualDiv = document.getElementById('manualInputDiv');
-    if (!manualDiv) {
-      manualDiv = document.createElement('div');
-      manualDiv.id = 'manualInputDiv';
-      manualDiv.innerHTML = '<span id="manualIndicator">MAN</span> <span id="manualText"></span>';
-      box.appendChild(manualDiv);
-    }
-    manualInput += c;
-    document.getElementById('manualText').innerText = manualInput;
-    box.scrollTop = box.scrollHeight;
-  }
-  
-  function backspace() {
-    if (manualInput.length > 0) {
-      manualInput = manualInput.slice(0, -1);
-      var manualText = document.getElementById('manualText');
-      if (manualText) {
-        manualText.innerText = manualInput;
-        if (manualInput === '') {
-          var manualDiv = document.getElementById('manualInputDiv');
-          if (manualDiv) manualDiv.remove();
-        }
-      }
-    }
-  }
-  
-  function addManualAsScan() {
-    if (manualInput.trim() !== '') {
-      scanCount++;
-      currentScans.push({ code: manualInput, type: 'MANUAL' });
-      
-      var box = document.getElementById('labelBox');
-      var span = document.createElement('span');
-      span.className = 'scan-entry';
-      span.innerHTML = '✏️ #' + scanCount + ': ' + manualInput;
-      box.appendChild(span);
-      
-      manualInput = '';
-      var md = document.getElementById('manualInputDiv');
-      if (md) md.remove();
-    }
-  }
-  
-  function clearScans() {
-    scanCount = 0;
-    currentScans = [];
+};
+
+// Add manual as scan
+function addManualAsScan() {
+  if(manualInput.trim() !== '') {
+    scans.push(manualInput.trim());
     manualInput = '';
-    document.getElementById('labelBox').innerHTML = '';
+    updateDisplay();
   }
+}
+
+// Tab switching
+window.showPad = function(type) {
+  document.getElementById('numericPad').style.display = 'none';
+  document.getElementById('qwertyPad').style.display = 'none';
+  document.getElementById('symbolPad').style.display = 'none';
+  document.getElementById('tabNum').className = 'tab';
+  document.getElementById('tabQwerty').className = 'tab';
+  document.getElementById('tabSym').className = 'tab';
   
-  function goToStatus() {
-    addManualAsScan();
-    if (currentScans.length === 0) {
-      alert('No scans');
-      return;
-    }
-    document.getElementById('labelBlock').style.display = 'none';
-    document.getElementById('scanButton').style.display = 'none';
-    document.getElementById('leftText').innerText = 'SELECT STATUS';
-    document.getElementById('statusScreen').style.display = 'block';
-  }
-  
-  function goBackToScan() {
-    document.getElementById('statusScreen').style.display = 'none';
-    document.getElementById('labelBlock').style.display = 'flex';
-    document.getElementById('scanButton').style.display = 'flex';
-    document.getElementById('leftText').innerText = 'SCAN ANY BARCODE';
-    isSubmitting = false;
-  }
-  
-  // SIMPLE WORKING SUBMIT - uses CORS proxy to bypass CORS error
-  function submitToXano(status) {
-    if (isSubmitting || currentScans.length === 0) return;
-    
-    isSubmitting = true;
-    
-    // Disable buttons
-    var btns = document.querySelectorAll('.statusBtn');
-    btns.forEach(b => { b.style.opacity = '0.5'; b.style.pointerEvents = 'none'; });
-    
-    var now = new Date();
-    var dateStr = (now.getMonth()+1) + '/' + now.getDate() + '/' + now.getFullYear();
-    var timeStr = now.getHours() + ':' + 
-                 (now.getMinutes() < 10 ? '0' : '') + now.getMinutes() + ':' + 
-                 (now.getSeconds() < 10 ? '0' : '') + now.getSeconds();
-    
-    var locationStr = 'Unknown';
-    if (currentLocation) {
-      locationStr = currentLocation.lat + ',' + currentLocation.lng;
-    }
-    
-    var sent = 0;
-    var errors = 0;
-    
-    function sendOne(index) {
-      if (index >= currentScans.length) {
-        // Show result
-        document.getElementById('popupStatus').innerText = 'Status: ' + status;
-        document.getElementById('popupScanCount').innerHTML = 
-          currentScans.length + ' total<br>' + sent + ' sent';
-        document.getElementById('successPopup').style.display = 'flex';
-        
-        setTimeout(function() {
-          document.getElementById('successPopup').style.display = 'none';
-          clearScans();
-          goBackToScan();
-        }, 3000);
-        return;
-      }
-      
-      var scan = currentScans[index];
-      
-      // Data exactly as your table expects
-      var data = {
-        label_id: scan.code,
-        barcode_type: scan.type,
-        status: status,
-        date: dateStr,
-        time: timeStr,
-        location: locationStr,
-        eta: dateStr,
-        timestamp: now.toISOString()
-      };
-      
-      // Use proxy to bypass CORS
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', PROXY_URL + XANO_URL, true);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.setRequestHeader('Origin', window.location.origin);
-      
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200 || xhr.status === 201) {
-            sent++;
-          } else {
-            errors++;
-          }
-          sendOne(index + 1);
-        }
-      };
-      
-      xhr.onerror = function() {
-        errors++;
-        sendOne(index + 1);
-      };
-      
-      xhr.send(JSON.stringify(data));
-    }
-    
-    sendOne(0);
-  }
-  
-  // Tab switching
-  window.showNumeric = function() {
-    document.getElementById('numericPad').style.display = 'flex';
-    document.getElementById('qwertyPad').style.display = 'none';
-    document.getElementById('symbolPad').style.display = 'none';
-    document.getElementById('tabNumeric').className = 'active';
-    document.getElementById('tabQwerty').className = '';
-    document.getElementById('tabSymbol').className = '';
-  };
-  
-  window.showQwerty = function() {
-    document.getElementById('numericPad').style.display = 'none';
+  if(type === 'numeric') {
+    document.getElementById('numericPad').style.display = 'block';
+    document.getElementById('tabNum').className = 'tab active';
+  } else if(type === 'qwerty') {
     document.getElementById('qwertyPad').style.display = 'block';
-    document.getElementById('symbolPad').style.display = 'none';
-    document.getElementById('tabQwerty').className = 'active';
-    document.getElementById('tabNumeric').className = '';
-    document.getElementById('tabSymbol').className = '';
-  };
-  
-  window.showSymbol = function() {
-    document.getElementById('numericPad').style.display = 'none';
-    document.getElementById('qwertyPad').style.display = 'none';
-    document.getElementById('symbolPad').style.display = 'block';
-    document.getElementById('tabSymbol').className = 'active';
-    document.getElementById('tabNumeric').className = '';
-    document.getElementById('tabQwerty').className = '';
-  };
-  
-  // Initialize
-  function init() {
-    initGPS();
-    updateTime();
-    setInterval(updateTime, 1000);
-    showNumeric();
-    
-    document.getElementById('scanButton').onclick = startScan;
-    document.getElementById('clearBtn').onclick = clearScans;
-    document.getElementById('statusBtn').onclick = goToStatus;
-    
-    var backs = document.querySelectorAll('.statusBtn.back');
-    for (var i = 0; i < backs.length; i++) {
-      backs[i].onclick = goBackToScan;
-    }
-    
-    var statusBtns = document.querySelectorAll('.statusBtn[data-status]');
-    for (var i = 0; i < statusBtns.length; i++) {
-      statusBtns[i].onclick = function(e) {
-        submitToXano(this.getAttribute('data-status'));
-      };
-    }
-    
-    alert('✅ SCANNER READY\nScans any barcode\nSaves to XANO');
-  }
-  
-  // Expose functions
-  window.typeChar = typeChar;
-  window.backspace = backspace;
-  
-  if (document.addEventListener) {
-    document.addEventListener('DOMContentLoaded', init);
+    document.getElementById('tabQwerty').className = 'tab active';
   } else {
-    window.onload = init;
+    document.getElementById('symbolPad').style.display = 'block';
+    document.getElementById('tabSym').className = 'tab active';
   }
-})();
+};
+
+// SCAN BUTTON
+document.getElementById('scanBtn').onclick = function() {
+  if(currentScanner) {
+    currentScanner.stop();
+    currentScanner = null;
+    document.getElementById('scanFrame').style.display = 'none';
+    this.innerHTML = '🔴 SCAN BARCODE';
+    return;
+  }
+  
+  var scanner = new Instascan.Scanner({ 
+    video: document.getElementById('preview'),
+    scanPeriod: 3
+  });
+  
+  scanner.addListener('scan', function(content) {
+    scans.push(content);
+    updateDisplay();
+    scanner.stop();
+    currentScanner = null;
+    document.getElementById('scanFrame').style.display = 'none';
+    document.getElementById('scanBtn').innerHTML = '🔴 SCAN BARCODE';
+    
+    // Beep
+    try {
+      var audio = new Audio();
+      audio.src = 'data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVAAAAA8Pzw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PA==';
+      audio.play();
+    } catch(e) {}
+  });
+  
+  Instascan.Camera.getCameras().then(function(cameras) {
+    if(cameras.length > 0) {
+      currentScanner = scanner;
+      scanner.start(cameras[cameras.length-1]);
+      document.getElementById('scanFrame').style.display = 'block';
+      document.getElementById('scanBtn').innerHTML = '⏹️ STOP SCAN';
+    } else {
+      alert('No cameras found');
+    }
+  });
+};
+
+// CLEAR BUTTON
+document.getElementById('clearBtn').onclick = function() {
+  scans = [];
+  manualInput = '';
+  updateDisplay();
+};
+
+// ENTER BUTTON
+document.getElementById('enterBtn').onclick = function() {
+  addManualAsScan();
+  if(scans.length === 0) {
+    alert('Scan something first!');
+    return;
+  }
+  this.style.display = 'none';
+  document.getElementById('clearBtn').style.display = 'none';
+  document.getElementById('statusBtns').style.display = 'grid';
+  document.getElementById('keypad').style.display = 'none';
+};
+
+// BACK BUTTON
+document.getElementById('backBtn').onclick = function() {
+  document.getElementById('enterBtn').style.display = 'block';
+  document.getElementById('clearBtn').style.display = 'block';
+  document.getElementById('statusBtns').style.display = 'none';
+  document.getElementById('keypad').style.display = 'block';
+};
+
+// STATUS BUTTONS
+var statusBtns = document.querySelectorAll('.statusBtn[data-status]');
+for(var i=0; i<statusBtns.length; i++) {
+  statusBtns[i].onclick = function() {
+    var status = this.getAttribute('data-status');
+    
+    // Prepare data for XANO - MATCHES YOUR TABLE EXACTLY
+    var now = new Date();
+    var data = {
+      label_id: scans.join(', '),
+      barcode_type: scans.length > 1 ? 'MULTIPLE' : 'SCAN',
+      status: status,
+      date: (now.getMonth()+1)+'/'+now.getDate()+'/'+now.getFullYear(),
+      time: now.getHours()+':'+ 
+            (now.getMinutes()<10?'0':'')+now.getMinutes()+':'+
+            (now.getSeconds()<10?'0':'')+now.getSeconds(),
+      location: window.gps || 'Warehouse',
+      eta: (now.getMonth()+1)+'/'+(now.getDate()+7)+'/'+now.getFullYear(),
+      timestamp: now.toISOString()
+    };
+    
+    // Send to XANO
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    
+    xhr.onload = function() {
+      if(xhr.status === 200 || xhr.status === 201) {
+        document.getElementById('result').style.display = 'flex';
+        setTimeout(function() {
+          document.getElementById('result').style.display = 'none';
+          scans = [];
+          manualInput = '';
+          updateDisplay();
+          document.getElementById('backBtn').click();
+        }, 2000);
+      } else {
+        alert('Error: ' + xhr.status + '\n' + xhr.responseText);
+      }
+    };
+    
+    xhr.onerror = function() {
+      alert('Network error - Check connection');
+    };
+    
+    xhr.send(JSON.stringify(data));
+  };
+}
+
+// Initial display
+updateDisplay();
+showPad('numeric');
 </script>
 </body>
 </html>
