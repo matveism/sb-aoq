@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>📦 COURIER SCANNER · LOCKED</title>
+<title>📦 COURIER SCANNER · QR FIXED</title>
 <style>
 * { 
     box-sizing: border-box; 
@@ -38,6 +38,7 @@ body {
     flex-direction: column; 
     box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
     margin: auto;
+    transform: scale(0.95); /* Zoom out slightly */
 }
 #header { 
     width: 100%; 
@@ -56,7 +57,7 @@ body {
 #leftText { color: #fff; } 
 #rightArea { color: #fff; font-size: 16px; display: flex; align-items: center; gap: 12px; }
 #gpsIndicator { 
-    color: #ffaa00;  /* Yellow when searching/fixed */
+    color: #ffaa00;
     font-size: 18px; 
     transition: color 0.3s;
 }
@@ -133,10 +134,12 @@ body {
     justify-content: center;
     cursor: pointer;
     z-index: 20;
+    transition: all 0.2s;
 }
 #flashlightBtn.active {
     background: #ffcc00;
     color: #000;
+    border-color: #fff;
 }
 
 #labelBlock { 
@@ -425,7 +428,7 @@ body {
 }
 #barcodeType { font-size: 12px; color: #ffcc00; margin-left: 8px; }
 
-/* Exit button - hidden but can be triggered with password */
+/* Exit overlay */
 #exitOverlay {
     position: absolute;
     top: 0;
@@ -468,7 +471,24 @@ body {
 #exitButton:active {
     background: #3d9c42;
 }
+
+/* Loading indicator */
+#scanLoading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ffcc00;
+    font-size: 14px;
+    background: rgba(0,0,0,0.7);
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: none;
+    z-index: 25;
+}
 </style>
+<!-- Include Instascan QR scanner library -->
+<script src="https://cdn.jsdelivr.net/npm/instascan@1.0.0/dist/instascan.min.js"></script>
 </head>
 <body>
 <div id="phone">
@@ -481,7 +501,7 @@ body {
         </span>
     </div>
     
-    <div id="scanButton" onclick="startScan()">
+    <div id="scanButton" onclick="toggleScanner()">
         <div class="scan-button">
             <div class="icon"></div>
             <div>SCAN 1D / 2D CODE</div>
@@ -495,6 +515,7 @@ body {
         <div class="corner-bracket corner-bl"></div>
         <div class="corner-bracket corner-br"></div>
         <div id="flashlightBtn" onclick="toggleFlashlight()">🔦</div>
+        <div id="scanLoading">Scanning...</div>
     </div>
     
     <div id="labelBlock">
@@ -650,10 +671,10 @@ var scanCount = 0;
 var currentScans = [];
 var manualInput = '';
 var currentLocation = null;
-var scanning = false;
-var stream = null;
-var flashlightTrack = null;
+var scannerActive = false;
+var scanner = null;
 var flashlightActive = false;
+var currentStream = null;
 
 // PREVENT ALL NAVIGATION AND BACK BUTTONS
 history.pushState(null, null, location.href);
@@ -688,22 +709,19 @@ function updateTime() {
     document.getElementById('timeDisplay2').innerText = timeStr;
 }
 
-// GPS with YELLOW indicator - continuous tracking
+// GPS with YELLOW indicator
 function initGPS() {
     if (navigator.geolocation) {
-        // Watch position for continuous updates
         navigator.geolocation.watchPosition(
             function(pos) {
                 currentLocation = {
                     lat: pos.coords.latitude,
                     lng: pos.coords.longitude
                 };
-                // Yellow when active
                 document.getElementById('gpsIndicator').innerHTML = '📍';
                 document.getElementById('gpsIndicator').style.color = '#ffaa00';
             },
             function(err) {
-                // Grey when error
                 document.getElementById('gpsIndicator').innerHTML = '🌐';
                 document.getElementById('gpsIndicator').style.color = '#888888';
             },
@@ -719,154 +737,156 @@ function initGPS() {
     }
 }
 
-// FLASHLIGHT FUNCTION
+// FLASHLIGHT FUNCTION - FIXED
 function toggleFlashlight() {
-    if (!flashlightTrack) {
+    if (!scanner || !scanner.isScanning) {
         alert('Please start camera first');
         return;
     }
     
     try {
-        var btn = document.getElementById('flashlightBtn');
         if (!flashlightActive) {
-            // Turn on flashlight
-            flashlightTrack.applyConstraints({
-                advanced: [{ torch: true }]
-            }).then(function() {
+            scanner.flashOn(function() {
                 flashlightActive = true;
-                btn.classList.add('active');
-                btn.innerHTML = '🔆';
-            }).catch(function(e) {
-                alert('Flashlight not available');
+                document.getElementById('flashlightBtn').classList.add('active');
+                document.getElementById('flashlightBtn').innerHTML = '🔆';
             });
         } else {
-            // Turn off flashlight
-            flashlightTrack.applyConstraints({
-                advanced: [{ torch: false }]
-            }).then(function() {
+            scanner.flashOff(function() {
                 flashlightActive = false;
-                btn.classList.remove('active');
-                btn.innerHTML = '🔦';
-            }).catch(function(e) {
-                flashlightActive = false;
-                btn.classList.remove('active');
-                btn.innerHTML = '🔦';
+                document.getElementById('flashlightBtn').classList.remove('active');
+                document.getElementById('flashlightBtn').innerHTML = '🔦';
             });
         }
     } catch(e) {
-        alert('Flashlight error: ' + e.message);
-    }
-}
-
-// CAMERA FUNCTIONS - FORCED BACK CAMERA ONLY, NO DUMMY DATA
-function stopCamera() {
-    scanning = false;
-    if (stream) {
-        try {
-            stream.getTracks().forEach(function(t) { 
-                t.stop(); 
-            });
-        } catch(e) {}
-        stream = null;
-        flashlightTrack = null;
-        flashlightActive = false;
-        document.getElementById('flashlightBtn').innerHTML = '🔦';
-        document.getElementById('flashlightBtn').classList.remove('active');
-    }
-    document.getElementById('scanFrame').style.display = 'none';
-}
-
-function startScan() {
-    if (scanning) {
-        stopCamera();
-        return;
-    }
-    
-    scanning = true;
-    var frame = document.getElementById('scanFrame');
-    frame.style.display = 'block';
-    var videoElement = document.getElementById('preview');
-    
-    // Try multiple methods to get BACK camera only
-    var constraints = {
-        video: {
-            facingMode: { exact: "environment" }  // Force back camera
-        }
-    };
-    
-    // Method 1: Modern API
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia(constraints)
-        .then(function(s) {
-            stream = s;
-            videoElement.srcObject = stream;
-            videoElement.play().catch(function(e){});
-            
-            // Store video track for flashlight
-            flashlightTrack = stream.getVideoTracks()[0];
-            
-            // NO DUMMY DATA - we're just showing camera, actual scanning would be implemented with a real barcode library
-            
-        })
-        .catch(function(err) {
-            // Try without facingMode constraint
-            navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(s) {
-                stream = s;
-                videoElement.srcObject = stream;
-                videoElement.play().catch(function(e){});
-                
-                flashlightTrack = stream.getVideoTracks()[0];
-                
-                // NO DUMMY DATA - just camera feed
-                
-            })
-            .catch(function(err) {
-                // Try deprecated API
-                try {
-                    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
-                    if (navigator.getUserMedia) {
-                        navigator.getUserMedia(
-                            { video: true },
-                            function(s) {
-                                stream = s;
-                                videoElement.src = window.URL.createObjectURL(s);
-                                videoElement.play().catch(function(e){});
-                                
-                                flashlightTrack = stream.getVideoTracks()[0];
-                                
-                                // NO DUMMY DATA
-                            },
-                            function(err) {
-                                alert('Camera failed. Please check permissions.');
-                                scanning = false;
-                                frame.style.display = 'none';
-                            }
-                        );
-                    } else {
-                        alert('No camera support');
-                        scanning = false;
-                        frame.style.display = 'none';
-                    }
-                } catch(e) {
-                    alert('Camera error: ' + e.message);
-                    scanning = false;
-                    frame.style.display = 'none';
+        console.log('Flashlight error:', e);
+        // Try alternative method
+        if (currentStream) {
+            const track = currentStream.getVideoTracks()[0];
+            if (track && track.applyConstraints) {
+                if (!flashlightActive) {
+                    track.applyConstraints({ advanced: [{ torch: true }] })
+                        .then(() => {
+                            flashlightActive = true;
+                            document.getElementById('flashlightBtn').classList.add('active');
+                            document.getElementById('flashlightBtn').innerHTML = '🔆';
+                        })
+                        .catch(() => alert('Flashlight not available'));
+                } else {
+                    track.applyConstraints({ advanced: [{ torch: false }] })
+                        .then(() => {
+                            flashlightActive = false;
+                            document.getElementById('flashlightBtn').classList.remove('active');
+                            document.getElementById('flashlightBtn').innerHTML = '🔦';
+                        })
+                        .catch(() => {});
                 }
-            });
-        });
-    } else {
-        alert('Camera not supported on this device');
-        scanning = false;
-        frame.style.display = 'none';
+            }
+        }
     }
 }
 
-// MANUAL CODE ENTRY - only way to add codes (no dummy scanning)
-function addScannedCode(code, type) {
-    // This function is now only called from manual entry or external integration
-    // No dummy data generation
+// SCANNER FUNCTIONS - WITH QR CODE SUPPORT
+function toggleScanner() {
+    if (scannerActive) {
+        stopScanner();
+    } else {
+        startScanner();
+    }
+}
+
+function startScanner() {
+    var frame = document.getElementById('scanFrame');
+    var videoElement = document.getElementById('preview');
+    var loading = document.getElementById('scanLoading');
     
+    frame.style.display = 'block';
+    loading.style.display = 'block';
+    
+    // Initialize Instascan scanner
+    scanner = new Instascan.Scanner({
+        video: videoElement,
+        mirror: false,
+        backgroundScan: true,
+        continuous: true,
+        refractoryPeriod: 1000, // Prevent double scans
+        scanPeriod: 1
+    });
+    
+    // Add scan event listener
+    scanner.addListener('scan', function(content, image) {
+        // Success - stop scanning and add code
+        scannerActive = false;
+        scanner.stop();
+        loading.style.display = 'none';
+        
+        // Beep sound
+        try {
+            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            var osc = audioCtx.createOscillator();
+            osc.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        } catch(e) {}
+        
+        // Determine if it's QR or 1D
+        var type = content.includes('://') || content.length > 20 ? 'QR Code' : 'CODE-128';
+        if (/^\d+$/.test(content) && content.length >= 8) type = 'EAN-13';
+        
+        addScannedCode(content, type);
+        frame.style.display = 'none';
+    });
+    
+    // Start scanning with back camera only
+    Instascan.Camera.getCameras().then(function(cameras) {
+        if (cameras.length > 0) {
+            // Find back camera
+            var backCamera = cameras.find(c => c.name.toLowerCase().includes('back') || 
+                                               c.name.toLowerCase().includes('rear') ||
+                                               c.name.toLowerCase().includes('environment'));
+            
+            // Use back camera if found, otherwise first camera
+            var cameraToUse = backCamera || cameras[0];
+            
+            scanner.start(cameraToUse).then(function(stream) {
+                currentStream = stream;
+                scannerActive = true;
+                loading.style.display = 'none';
+                flashlightActive = false;
+                document.getElementById('flashlightBtn').innerHTML = '🔦';
+                document.getElementById('flashlightBtn').classList.remove('active');
+            }).catch(function(e) {
+                alert('Failed to start camera: ' + e.message);
+                loading.style.display = 'none';
+                scannerActive = false;
+            });
+        } else {
+            alert('No cameras found');
+            loading.style.display = 'none';
+        }
+    }).catch(function(e) {
+        alert('Camera access denied: ' + e.message);
+        loading.style.display = 'none';
+    });
+}
+
+function stopScanner() {
+    if (scanner && scanner.isScanning) {
+        scanner.stop();
+    }
+    if (currentStream) {
+        currentStream.getTracks().forEach(t => t.stop());
+        currentStream = null;
+    }
+    scannerActive = false;
+    flashlightActive = false;
+    document.getElementById('scanFrame').style.display = 'none';
+    document.getElementById('flashlightBtn').innerHTML = '🔦';
+    document.getElementById('flashlightBtn').classList.remove('active');
+}
+
+function addScannedCode(code, type) {
     scanCount++;
     currentScans.push({
         number: scanCount,
@@ -916,6 +936,11 @@ function goToStatus() {
         return;
     }
     
+    // Stop scanner if active
+    if (scannerActive) {
+        stopScanner();
+    }
+    
     document.getElementById('labelBlock').style.display = 'none';
     document.getElementById('scanButton').style.display = 'none';
     document.getElementById('leftText').innerText = 'SELECT STATUS';
@@ -962,9 +987,9 @@ function showExitPrompt() {
 function checkPassword() {
     var password = document.getElementById('exitPassword').value;
     if (password === '200606') {
-        // Correct password - exit kiosk mode
         document.getElementById('exitOverlay').style.display = 'none';
-        // Allow exit
+        // Stop scanner before exit
+        if (scannerActive) stopScanner();
         window.onpopstate = null;
         history.back();
     } else {
@@ -1075,7 +1100,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
     document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
     
-    // Add manual submission on Enter key (for external keyboard)
+    // Add manual submission on Enter key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && manualInput.trim() !== '') {
             submitManualEntry();
@@ -1085,7 +1110,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Cleanup
 window.addEventListener('beforeunload', function() {
-    stopCamera();
+    if (scannerActive) stopScanner();
 });
 </script>
 </body>
