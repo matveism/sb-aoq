@@ -21,18 +21,18 @@ body {
     border:2px solid #444;
 }
 
-/* HEADER */
+/* HEADER BAR */
 #header {
     width:100%;
     height:45px;
-    background:#405e87; /* your color */
+    background:#405e87;
     border-bottom:1px solid #2a3f5c;
     font-size:18px;
     line-height:45px;
     overflow:hidden;
 }
 
-/* TEXT LEFT + RIGHT */
+/* FLOATS */
 .left {
     float:left;
     padding-left:10px;
@@ -46,18 +46,30 @@ body {
     color:#ffffff;
 }
 
-/* UNDER HEADER AREA */
+/* UNDER HEADER FULL BACKGROUND */
 #under {
     width:100%;
-    height:60px;
-    background:#a2c2de; /* your color */
+    height:50px;
+    background:#a2c2de;
+    border-bottom:1px solid #8eaac7;
+    font-size:18px;
+    line-height:50px;
+    overflow:hidden;
+}
+
+/* TEXT INSIDE UNDER HEADER */
+#undertext {
+    float:left;
+    padding-left:10px;
+    color:#000000;
+    font-weight:bold;
 }
 
 .clear { clear:both; }
 
 #content {
     width:100%;
-    height:1175px;
+    height:1185px;
     background:#ffffff;
 }
 </style>
@@ -66,13 +78,18 @@ body {
 <body>
 <div id="device">
 
+    <!-- HEADER -->
     <div id="header">
         <div class="left">Scan Barcode</div>
         <div class="right" id="clock">--:-- --</div>
         <div class="clear"></div>
     </div>
 
-    <div id="under"></div>
+    <!-- UNDER HEADER FULL COLOR -->
+    <div id="under">
+        <div id="undertext">Scan/Key-in Barcode:</div>
+        <div class="clear"></div>
+    </div>
 
     <div id="content">
         <!-- blank -->
