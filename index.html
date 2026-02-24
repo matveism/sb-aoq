@@ -337,6 +337,86 @@ text-align: center;
 font-family: 'Courier New', monospace;
 display: none;
 }
+
+/* Opera Mini warning and manual input section */
+#opera-warning {
+width: 100%;
+margin: 20px 0;
+padding: 15px;
+background: #332200;
+border: 2px solid #ffaa00;
+color: #ffaa00;
+font-size: 22px;
+text-align: center;
+display: none;
+}
+
+#manual-input-section {
+width: 100%;
+margin: 15px 0;
+padding: 20px;
+background: #2a2f3a;
+border: 2px solid #6a8abe;
+box-sizing: border-box;
+display: none;
+}
+
+.manual-input-title {
+color: #aaccff;
+font-size: 24px;
+margin-bottom: 15px;
+text-align: center;
+}
+
+.manual-barcode-input {
+width: 100%;
+padding: 15px;
+background: #1b1f2a;
+border: 2px solid #6a8abe;
+color: #00ff00;
+font-size: 32px;
+font-family: 'Courier New', monospace;
+text-align: center;
+letter-spacing: 5px;
+margin-bottom: 15px;
+box-sizing: border-box;
+}
+
+.manual-barcode-input:focus {
+outline: none;
+border-color: #aaccff;
+}
+
+.manual-scan-btn {
+width: 100%;
+padding: 20px;
+background: #3a3f4a;
+border: 3px solid #6a6f7a;
+color: #ffffff;
+font-size: 28px;
+font-weight: bold;
+text-align: center;
+cursor: pointer;
+box-shadow: 3px 3px 5px #0a0a0a;
+text-shadow: 2px 2px 2px #1a1a1a;
+margin-top: 10px;
+}
+
+.manual-scan-btn:hover {
+background: #4a4f5a;
+border-color: #8a8f9a;
+}
+
+.browser-badge {
+display: inline-block;
+padding: 5px 15px;
+background: #ffaa00;
+color: #000000;
+font-size: 18px;
+font-weight: bold;
+border-radius: 5px;
+margin-left: 10px;
+}
 </style>
 </head>
 
@@ -351,6 +431,12 @@ display: none;
 </div>
 
 <div id="content">
+<!-- Opera Mini Warning -->
+<div id="opera-warning">
+⚠️ Opera Mini Detected - Camera Not Available
+<span class="browser-badge">Mini</span>
+</div>
+
 <!-- SCAN button and 6-character grid side by side -->
 <div class="scan-row">
 <div class="scan-button" id="scanBtn">SCAN</div>
@@ -362,6 +448,13 @@ display: none;
 <div class="grid-cell"><input type="text" maxlength="1" class="char-input" id="char5"></div>
 <div class="grid-cell"><input type="text" maxlength="1" class="char-input" id="char6"></div>
 </div>
+</div>
+
+<!-- Manual Input Section for Opera Mini -->
+<div id="manual-input-section">
+<div class="manual-input-title">MANUAL BARCODE ENTRY</div>
+<input type="text" class="manual-barcode-input" id="manualBarcode" maxlength="6" placeholder="ENTER 6 DIGITS">
+<div class="manual-scan-btn" id="manualScanBtn">ENTER BARCODE</div>
 </div>
 
 <!-- Status dropdown row - initially disabled -->
@@ -413,6 +506,19 @@ Point camera at barcode
 </div>
 
 <script type="text/javascript">
+// =============================================
+// BROWSER DETECTION
+// =============================================
+function detectOperaMini() {
+var ua = navigator.userAgent;
+return (ua.indexOf('Opera Mini') > -1) || 
+       (ua.indexOf('OPiOS') > -1) || 
+       (ua.indexOf('Opera Mobi') > -1) ||
+       (window.operamini && window.operamini.name === 'Opera Mini');
+}
+
+var isOperaMini = detectOperaMini();
+
 // =============================================
 // BEEP SOUND FUNCTION
 // =============================================
@@ -561,6 +667,22 @@ document.getElementById('char1').focus();
 checkGridFilled();
 }
 
+// Fill grid with barcode
+function fillGridWithBarcode(barcode) {
+for (var i = 1; i <= 6; i++) {
+var charInput = document.getElementById('char' + i);
+if (charInput) {
+if (i <= barcode.length) {
+charInput.value = barcode.charAt(i-1).toUpperCase();
+} else {
+charInput.value = '';
+}
+}
+}
+playBeep();
+checkGridFilled();
+}
+
 // =============================================
 // SCANNED ITEMS LIST
 // =============================================
@@ -630,7 +752,7 @@ container.scrollTop = 0;
 }
 
 // =============================================
-// BARCODE SCANNER
+// BARCODE SCANNER (for modern browsers)
 // =============================================
 
 var html5QrCode = null;
@@ -663,26 +785,8 @@ html5QrCode.start(
 config,
 // Success callback
 function(decodedText, decodedResult) {
-// Get the scanned barcode
-var barcode = decodedText.trim();
-
 // Fill grid cells with barcode
-for (var i = 1; i <= 6; i++) {
-var charInput = document.getElementById('char' + i);
-if (charInput) {
-if (i <= barcode.length) {
-charInput.value = barcode.charAt(i-1).toUpperCase();
-} else {
-charInput.value = '';
-}
-}
-}
-
-// Beep when scanned
-playBeep();
-
-// Check if grid is filled
-checkGridFilled();
+fillGridWithBarcode(decodedText.trim());
 
 // Hide scanner
 setTimeout(function() {
@@ -709,6 +813,24 @@ if (html5QrCode && isScanning) {
 html5QrCode.stop().then(function() {
 isScanning = false;
 }).catch(function(err) {});
+}
+}
+
+// =============================================
+// MANUAL BARCODE INPUT (for Opera Mini)
+// =============================================
+
+function handleManualBarcode() {
+var manualInput = document.getElementById('manualBarcode');
+var barcode = manualInput.value.trim();
+
+// Remove non-alphanumeric characters and convert to uppercase
+barcode = barcode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+
+if (barcode.length > 0) {
+// Fill grid with barcode
+fillGridWithBarcode(barcode);
+manualInput.value = '';
 }
 }
 
@@ -751,12 +873,37 @@ window.onload = function() {
 updateTime();
 setInterval(updateTime, 1000);
 setupInputFields();
+
+if (isOperaMini) {
+// Show Opera Mini warning and manual input
+document.getElementById('opera-warning').style.display = 'block';
+document.getElementById('manual-input-section').style.display = 'block';
+document.getElementById('scanBtn').style.opacity = '0.5';
+document.getElementById('scanBtn').style.cursor = 'not-allowed';
+document.getElementById('scanBtn').title = 'Camera not available in Opera Mini';
+} else {
+// Normal behavior for other browsers
 createScanner();
+}
 
 // SCAN button click
 document.getElementById('scanBtn').onclick = function(e) {
 e.preventDefault();
+if (!isOperaMini) {
 startCamera();
+}
+};
+
+// Manual scan button click
+document.getElementById('manualScanBtn').onclick = function() {
+handleManualBarcode();
+};
+
+// Manual input enter key
+document.getElementById('manualBarcode').onkeypress = function(e) {
+if (e.key === 'Enter') {
+handleManualBarcode();
+}
 };
 
 // Status dropdown change
