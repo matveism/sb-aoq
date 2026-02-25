@@ -116,6 +116,12 @@ background: #4a4f5a;
 border-color: #8a8f9a;
 }
 
+.scan-button.disabled {
+opacity: 0.5;
+cursor: not-allowed;
+pointer-events: none;
+}
+
 /* 6-character input grid container */
 .grid-container {
 display: flex;
@@ -319,13 +325,59 @@ margin-top: 20px;
 border: 2px solid #4a6a9e;
 background: #000000;
 display: none;
+position: relative;
 }
 
 /* Scanner element */
 #reader {
 width: 100%;
-height: 250px;
+height: 300px;
 background: #000000;
+overflow: hidden;
+}
+
+#reader video {
+width: 100% !important;
+height: auto !important;
+object-fit: cover;
+}
+
+#reader__dashboard_section {
+background: #1b1f2a !important;
+color: #ffffff !important;
+}
+
+#reader__dashboard_section button {
+background: #3a3f4a !important;
+color: #ffffff !important;
+border: 2px solid #6a6f7a !important;
+font-size: 18px !important;
+padding: 10px 20px !important;
+margin: 10px !important;
+}
+
+/* Close scanner button */
+.close-scanner {
+position: absolute;
+top: 10px;
+right: 10px;
+background: #ff4444;
+color: white;
+border: none;
+font-size: 20px;
+width: 40px;
+height: 40px;
+border-radius: 50%;
+cursor: pointer;
+z-index: 1000;
+display: flex;
+align-items: center;
+justify-content: center;
+font-weight: bold;
+}
+
+.close-scanner:hover {
+background: #ff6666;
 }
 
 /* Simple instruction */
@@ -402,6 +454,17 @@ font-size: 20px;
 display: none;
 z-index: 10000;
 }
+
+/* Camera error message */
+.camera-error {
+color: #ff4444;
+font-size: 18px;
+text-align: center;
+padding: 20px;
+background: #1b1f2a;
+margin-top: 10px;
+display: none;
+}
 </style>
 </head>
 
@@ -463,8 +526,14 @@ z-index: 10000;
 <!-- Items will be added here when scanned -->
 </div>
 
+<!-- Camera error message -->
+<div class="camera-error" id="cameraError">
+Camera not available or permission denied
+</div>
+
 <!-- Visible scanner container -->
 <div id="scanner-container">
+<button class="close-scanner" id="closeScanner">×</button>
 <div id="reader"></div>
 </div>
 
@@ -809,39 +878,106 @@ container.scrollTop = 0;
 }
 
 // =============================================
-// BARCODE SCANNER
+// BARCODE SCANNER - FIXED VERSION
 // =============================================
 
 var html5QrCode = null;
 var isScanning = false;
+var scannerInitialized = false;
 
 function createScanner() {
 try {
+// Check if Html5Qrcode is available
+if (typeof Html5Qrcode === 'undefined') {
+console.error("Html5Qrcode library not loaded");
+showError("Scanner library not loaded. Please refresh.");
+return false;
+}
+
+// Get the reader element
+var readerElement = document.getElementById('reader');
+if (!readerElement) {
+console.error("Reader element not found");
+return false;
+}
+
+// Clear any existing scanner
+if (html5QrCode) {
+try {
+html5QrCode.clear();
+} catch (e) {}
+}
+
+// Create new scanner
 html5QrCode = new Html5Qrcode("reader");
+scannerInitialized = true;
+console.log("Scanner created successfully");
+return true;
 } catch (err) {
-console.log("Scanner error: " + err.message);
+console.error("Scanner creation error:", err);
+showError("Failed to initialize scanner: " + err.message);
+return false;
+}
+}
+
+function stopCamera() {
+if (html5QrCode && isScanning) {
+html5QrCode.stop().then(function() {
+isScanning = false;
+document.getElementById('scanner-container').style.display = 'none';
+document.getElementById('scanInstruction').style.display = 'none';
+document.getElementById('cameraError').style.display = 'none';
+console.log("Camera stopped");
+}).catch(function(err) {
+console.error("Error stopping camera:", err);
+});
+} else {
+document.getElementById('scanner-container').style.display = 'none';
+document.getElementById('scanInstruction').style.display = 'none';
 }
 }
 
 function startCamera() {
-if (!html5QrCode) {
-createScanner();
+// Hide any previous errors
+document.getElementById('cameraError').style.display = 'none';
+
+// Check if camera is supported
+if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+document.getElementById('cameraError').innerHTML = 'Camera not supported on this device/browser';
+document.getElementById('cameraError').style.display = 'block';
+showError('Camera not supported on this device');
+return;
 }
 
+// Create scanner if not initialized
+if (!scannerInitialized) {
+var created = createScanner();
+if (!created) {
+return;
+}
+}
+
+// Show scanner container
 document.getElementById('scanner-container').style.display = 'block';
 document.getElementById('scanInstruction').style.display = 'block';
 
+// Scanner configuration
 var config = {
 fps: 10,
 qrbox: { width: 250, height: 150 },
-aspectRatio: 1.7777
+aspectRatio: 1.7777,
+rememberLastUsedCamera: true,
+showTorchButtonIfSupported: true
 };
 
+// Start scanning
 html5QrCode.start(
 { facingMode: "environment" },
 config,
 // Success callback
 function(decodedText, decodedResult) {
+console.log("Scan success:", decodedText);
+            
 // Get the scanned barcode
 var barcode = decodedText.trim();
 
@@ -863,32 +999,25 @@ playBeep();
 // Check if grid is filled
 checkGridFilled();
 
-// Hide scanner
-setTimeout(function() {
+// Stop camera and hide scanner
 stopCamera();
-document.getElementById('scanner-container').style.display = 'none';
-document.getElementById('scanInstruction').style.display = 'none';
-}, 500);
 },
 // Error callback
 function(errorMessage) {
-// Silent
+// Only log errors, don't show to user
+console.log("Scan error:", errorMessage);
 }
 ).then(function() {
 isScanning = true;
+console.log("Camera started successfully");
 }).catch(function(err) {
-console.log("Camera error: " + err.message);
+console.error("Camera start error:", err);
 document.getElementById('scanner-container').style.display = 'none';
 document.getElementById('scanInstruction').style.display = 'none';
+document.getElementById('cameraError').innerHTML = 'Failed to start camera: ' + (err.message || 'Unknown error');
+document.getElementById('cameraError').style.display = 'block';
+showError('Failed to start camera. Please check permissions.');
 });
-}
-
-function stopCamera() {
-if (html5QrCode && isScanning) {
-html5QrCode.stop().then(function() {
-isScanning = false;
-}).catch(function(err) {});
-}
 }
 
 // =============================================
@@ -935,15 +1064,26 @@ showError('Failed to save to XANO. Please try again.');
 // INITIALIZATION
 // =============================================
 window.onload = function() {
+console.log("Page loaded, initializing...");
+    
 updateTime();
 setInterval(updateTime, 1000);
 setupInputFields();
+
+// Initialize scanner
 createScanner();
 
 // SCAN button click
 document.getElementById('scanBtn').onclick = function(e) {
 e.preventDefault();
+console.log("SCAN button clicked");
 startCamera();
+};
+
+// Close scanner button
+document.getElementById('closeScanner').onclick = function(e) {
+e.preventDefault();
+stopCamera();
 };
 
 // Status dropdown change
