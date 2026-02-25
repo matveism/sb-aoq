@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>mobile scanner · live sheets</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
   <style>
     * {
       box-sizing: border-box;
@@ -900,56 +901,70 @@
     if (scannedBarcodes.length === 0) return;
     
     const now = new Date();
+    const epochTime = Math.floor(now.getTime() / 1000); // epoch seconds
     const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
-    const timeStr = now.toTimeString().split(' ')[0]; // HH:MM:SS
-    const timestamp = Math.floor(now.getTime() / 1000); // epoch seconds
-    const location = `${currentCity || ''}, ${currentState || ''} ${currentZip || ''}`.trim() || 'Unknown';
-    const eta = ''; // Can be calculated or left empty
+    const location = [currentCity, currentState, currentZip].filter(Boolean).join(', ') || 'Unknown location';
     
-    const records = scannedBarcodes.map(barcode => ({
-      created_at: timestamp,
-      label_id: barcode,
-      barcode_type: 'CODE128', // Default type, can be detected
-      status: status,
-      date: dateStr,
-      time: timestamp,
-      location: location,
-      eta: eta,
-      timestamp: timestamp
-    }));
-
     const originalBtnText = enterBtn.innerText;
     enterBtn.innerText = 'SENDING...';
     enterBtn.disabled = true;
 
     try {
-      // Send each record individually to Xano
-      const promises = records.map(record => 
-        fetch(XANO_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(record)
-        })
-      );
-
-      const responses = await Promise.all(promises);
-      const allOk = responses.every(r => r.ok);
+      // Send each record individually to Xano and collect results
+      const results = [];
+      const errors = [];
       
-      if (allOk) {
-        alert(`✅ SUCCESS!\n${records.length} records sent to Xano`);
+      for (const barcode of scannedBarcodes) {
+        const record = {
+          created_at: epochTime,
+          label_id: barcode,
+          barcode_type: 'CODE128',
+          status: status,
+          date: dateStr,
+          time: epochTime,
+          location: location,
+          eta: '',
+          timestamp: epochTime
+        };
+
+        try {
+          const response = await fetch(XANO_URL, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(record)
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            results.push(data);
+          } else {
+            const errorText = await response.text();
+            errors.push(`Failed for ${barcode}: ${response.status} - ${errorText}`);
+          }
+        } catch (err) {
+          errors.push(`Network error for ${barcode}: ${err.message}`);
+        }
+      }
+
+      if (errors.length === 0) {
+        alert(`✅ SUCCESS!\n${results.length} records sent to Xano`);
         scannedBarcodes = [];
         renderScannedList();
         batchStatusBlock.style.display = 'none';
         batchStatusSelect.value = '';
         currentSignatureText = '';
       } else {
-        throw new Error('Some records failed');
+        alert(`⚠️ Partial success: ${results.length} sent, ${errors.length} failed\nCheck console for details`);
+        console.error('Errors:', errors);
+        console.log('Successful records:', results);
       }
       
     } catch (error) {
       alert('❌ Error sending to Xano. Check console.');
       console.error('Xano error:', error);
-      console.log('BACKUP DATA:', JSON.stringify(records, null, 2));
     } finally {
       enterBtn.innerText = originalBtnText;
       enterBtn.disabled = false;
