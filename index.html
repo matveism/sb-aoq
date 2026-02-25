@@ -557,9 +557,9 @@
 <script>
 (function() {
   // ============================================
-  // CONFIGURATION - REPLACE WITH YOUR SHEETDB URL
+  // XANO CONFIGURATION
   // ============================================
-  const SHEETDB_URL = 'https://sheetdb.io/api/v1/zw5qp6e3pdvsf'; // Replace with your actual URL
+  const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
   
   // BEEP sound
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -696,10 +696,8 @@
       const val = input.value.trim();
       if (val !== '') addBarcodeToList(val);
     } else if (key === 'esc') {
-      // optional clear field?
       input.value = '';
     } else if (key === 'abc' || key === 'sym' || key === '123') {
-      // these are mode toggles, handled separately
       return;
     } else {
       input.value += key;
@@ -743,7 +741,6 @@
   mode123.addEventListener('click', () => setActiveMode('num'));
   modeSYM.addEventListener('click', () => setActiveMode('sym'));
 
-  // also handle any "ABC" or "SYM" keys inside numeric keypad (they toggle mode)
   document.addEventListener('click', (e) => {
     const target = e.target;
     if (target.classList.contains('key-btn') && target.dataset.key === 'abc') {
@@ -874,7 +871,7 @@
     signaturePopup.style.display = 'none';
     
     const selectedStatus = batchStatusSelect.options[batchStatusSelect.selectedIndex]?.text;
-    if (selectedStatus) sendBatchToSheets(selectedStatus);
+    if (selectedStatus) sendBatchToXano(selectedStatus);
   });
 
   // STATUS CHANGE
@@ -893,29 +890,32 @@
         return;
       }
     }
-    sendBatchToSheets(selectedStatus);
+    sendBatchToXano(selectedStatus);
   });
 
   // ============================================
-  // SEND TO SHEETDB
+  // SEND TO XANO (matching table structure)
   // ============================================
-  async function sendBatchToSheets(status) {
+  async function sendBatchToXano(status) {
     if (scannedBarcodes.length === 0) return;
     
-    const timestamp = new Date().toISOString().slice(0,19).replace('T',' ');
-    const batchId = 'BATCH-' + Date.now().toString(36).toUpperCase();
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const timeStr = now.toTimeString().split(' ')[0]; // HH:MM:SS
+    const timestamp = Math.floor(now.getTime() / 1000); // epoch seconds
+    const location = `${currentCity || ''}, ${currentState || ''} ${currentZip || ''}`.trim() || 'Unknown';
+    const eta = ''; // Can be calculated or left empty
     
     const records = scannedBarcodes.map(barcode => ({
-      tracking_id: barcode,
+      created_at: timestamp,
+      label_id: barcode,
+      barcode_type: 'CODE128', // Default type, can be detected
       status: status,
-      timestamp: timestamp,
-      latitude: currentLat || '',
-      longitude: currentLon || '',
-      city: currentCity || '',
-      state: currentState || '',
-      zip_code: currentZip || '',
-      signature_text: (status === 'UEXS DELIVERED' && currentSignatureText) ? currentSignatureText : '',
-      batch_id: batchId
+      date: dateStr,
+      time: timestamp,
+      location: location,
+      eta: eta,
+      timestamp: timestamp
     }));
 
     const originalBtnText = enterBtn.innerText;
@@ -923,29 +923,32 @@
     enterBtn.disabled = true;
 
     try {
-      const response = await fetch(SHEETDB_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(records)
-      });
+      // Send each record individually to Xano
+      const promises = records.map(record => 
+        fetch(XANO_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(record)
+        })
+      );
 
-      const result = await response.json();
+      const responses = await Promise.all(promises);
+      const allOk = responses.every(r => r.ok);
       
-      if (response.ok) {
-        alert(`✅ SUCCESS!\n${records.length} records sent to Google Sheets\nBatch ID: ${batchId}`);
+      if (allOk) {
+        alert(`✅ SUCCESS!\n${records.length} records sent to Xano`);
         scannedBarcodes = [];
         renderScannedList();
         batchStatusBlock.style.display = 'none';
         batchStatusSelect.value = '';
         currentSignatureText = '';
-        console.log('SheetDB response:', result);
       } else {
-        throw new Error('Failed to send');
+        throw new Error('Some records failed');
       }
       
     } catch (error) {
-      alert('❌ Error sending to database. Check console.');
-      console.error('SheetDB error:', error);
+      alert('❌ Error sending to Xano. Check console.');
+      console.error('Xano error:', error);
       console.log('BACKUP DATA:', JSON.stringify(records, null, 2));
     } finally {
       enterBtn.innerText = originalBtnText;
@@ -956,7 +959,6 @@
   // INIT
   renderScannedList();
   setupCanvas();
-  // default mode ABC active
   setActiveMode('abc');
 })();
 </script>
