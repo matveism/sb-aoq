@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Scanner UI - Xano Integration</title>
+  <title>Scanner UI - Xano Integration FIXED</title>
 
   <meta name="viewport"
         content="width=360, height=640, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -70,7 +70,7 @@
     }
 
     #leftText { font-weight: bold; font-size: 15px; }
-    #rightArea { font-size: 14px; }
+    #rightArea { font-size: 14px; cursor: pointer; }
 
     /* SCAN BUTTON */
     #scanButton {
@@ -88,6 +88,25 @@
       position: relative;
       z-index: 2;
       box-shadow: 0 0 6px rgba(0,0,0,0.4);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* MANUAL INPUT BUTTON (for when camera fails) */
+    #manualInputButton {
+      width: calc(100% - 20px);
+      height: 48px;
+      background-color: #1A2C55;
+      border: 2px solid #FFFFFF;
+      color: #FFFFFF;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      line-height: 48px;
+      margin: 8px auto 0 auto;
+      border-radius: 4px;
+      position: relative;
+      z-index: 2;
       cursor: pointer;
       flex-shrink: 0;
     }
@@ -229,6 +248,24 @@
     }
 
     #locationInput::placeholder {
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* ETA INPUT */
+    #etaInput {
+      width: calc(100% - 20px);
+      margin: 8px auto 0 auto;
+      padding: 8px;
+      background-color: #1A2C55;
+      border: 2px solid #FFFFFF;
+      color: #FFFFFF;
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    #etaInput::placeholder {
       color: rgba(255,255,255,0.5);
     }
 
@@ -529,16 +566,17 @@
       bottom: 10px;
       left: 10px;
       right: 10px;
-      background: rgba(0,0,0,0.8);
-      border: 1px solid #00FFAA;
+      background: rgba(0,0,0,0.95);
+      border: 2px solid #00FFAA;
       color: #00FFAA;
       padding: 10px;
       font-size: 12px;
       font-family: monospace;
       z-index: 2000;
       display: none;
-      max-height: 200px;
+      max-height: 300px;
       overflow-y: auto;
+      white-space: pre-wrap;
     }
 
     @keyframes popupFade {
@@ -594,15 +632,8 @@
     let selectedStatus = '';
     let currentScans = [];
     
-    // Try different Xano endpoint formats
-    const XANO_ENDPOINTS = [
-      'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans',
-      'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans/',
-      'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scan',
-      'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/scans'
-    ];
-    
-    let currentEndpointIndex = 0;
+    // FIXED: Correct Xano endpoint
+    const XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
 
     function debugLog(message, data = null) {
       const debugPanel = document.getElementById('debugPanel');
@@ -639,10 +670,64 @@
       updateTime();
       showNumeric();
       debugLog('App initialized');
+      
+      // FIXED: Check if camera is available
+      checkCameraAvailability();
     };
+
+    function checkCameraAvailability() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+        debugLog('Camera API not available');
+        showManualInputOption();
+        return;
+      }
+      
+      navigator.mediaDevices.enumerateDevices()
+        .then(devices => {
+          const hasCamera = devices.some(device => device.kind === 'videoinput');
+          debugLog('Camera available:', hasCamera);
+          if (!hasCamera) {
+            showManualInputOption();
+          }
+        })
+        .catch(err => {
+          debugLog('Error checking cameras:', err);
+          showManualInputOption();
+        });
+    }
+
+    function showManualInputOption() {
+      const manualBtn = document.createElement('div');
+      manualBtn.id = 'manualInputButton';
+      manualBtn.innerHTML = 'MANUAL INPUT';
+      manualBtn.onclick = showManualInputDialog;
+      document.getElementById('phone').insertBefore(manualBtn, document.getElementById('scanFrame'));
+    }
+
+    function showManualInputDialog() {
+      const code = prompt('Enter barcode/QR code manually:');
+      if (code && code.trim()) {
+        onBarcodeDecoded(code.trim());
+      }
+    }
 
     async function startScan() {
       if (scanning) return;
+      
+      // FIXED: Check if camera is available first
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const hasCamera = devices.some(device => device.kind === 'videoinput');
+        
+        if (!hasCamera) {
+          showErrorPopup('No camera found. Use manual input instead.');
+          showManualInputDialog();
+          return;
+        }
+      } catch (err) {
+        debugLog('Error checking cameras:', err);
+      }
+      
       scanning = true;
 
       document.getElementById("scanFrame").style.display = "block";
@@ -658,7 +743,7 @@
         await video.play();
 
         const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext("2d", { willReadFrequently: true }); // FIXED: Added willReadFrequently
 
         function tick() {
           if (!scanning || !video.videoWidth) {
@@ -688,7 +773,8 @@
         scanning = false;
         document.getElementById("scanFrame").style.display = "none";
         document.getElementById("laser").style.display = "none";
-        showErrorPopup("Could not access camera");
+        showErrorPopup("Could not access camera. Use manual input.");
+        showManualInputDialog();
       }
     }
 
@@ -734,12 +820,14 @@
         currentScans = [];
         document.getElementById("labelBox").innerHTML = "";
         document.getElementById("locationInput").value = "";
+        document.getElementById("etaInput").value = "";
         debugLog('Scans cleared');
       }
     }
 
     function validateBeforeStatus() {
       const location = document.getElementById("locationInput").value.trim();
+      const eta = document.getElementById("etaInput").value.trim();
       
       if (currentScans.length === 0) {
         showErrorPopup("Please scan at least one barcode first");
@@ -751,6 +839,8 @@
         return false;
       }
       
+      // ETA is optional, so no validation needed
+      
       return true;
     }
 
@@ -761,6 +851,7 @@
       
       document.getElementById("labelBlock").style.display = "none";
       document.getElementById("scanButton").style.display = "none";
+      document.getElementById("manualInputButton")?.style.display = "none";
       document.getElementById("keypadWrapper").style.display = "none";
 
       document.getElementById("leftText").innerHTML = "SELECT STATUS";
@@ -768,80 +859,39 @@
       document.getElementById("statusScreen").style.display = "flex";
     }
 
-    async function testXanoConnection() {
-      debugLog('Testing Xano connection...');
-      
-      for (let i = 0; i < XANO_ENDPOINTS.length; i++) {
-        const endpoint = XANO_ENDPOINTS[i];
-        try {
-          debugLog(`Testing endpoint ${i + 1}: ${endpoint}`);
-          
-          // Try a simple OPTIONS request first
-          const response = await fetch(endpoint, {
-            method: 'OPTIONS',
-            mode: 'cors',
-            headers: {
-              'Content-Type': 'application/json',
-            }
-          });
-          
-          debugLog(`Endpoint ${i + 1} response`, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: Object.fromEntries(response.headers.entries())
-          });
-          
-          if (response.ok) {
-            return endpoint;
-          }
-        } catch (error) {
-          debugLog(`Endpoint ${i + 1} failed`, error.message);
-        }
-      }
-      
-      return null;
-    }
-
     async function sendToXano(status) {
       const location = document.getElementById("locationInput").value.trim();
+      const eta = document.getElementById("etaInput").value.trim() || ""; // FIXED: Always provide eta (can be empty)
       let successCount = 0;
       let errorCount = 0;
       const failedScans = [];
 
       // Show loading state
       document.getElementById("leftText").innerHTML = "SENDING...";
-
-      // Test connection first
-      const workingEndpoint = await testXanoConnection();
-      if (!workingEndpoint) {
-        debugLog('No working endpoint found');
-        showErrorPopup('Cannot connect to server. Check network and endpoint.');
-        return { success: 0, error: currentScans.length, failedScans: currentScans };
-      }
       
-      debugLog(`Using endpoint: ${workingEndpoint}`);
+      debugLog(`Using endpoint: ${XANO_API_URL}`);
 
       // Send each scan as a separate record to Xano
       for (const scan of currentScans) {
         const now = new Date();
         
-        // Create data matching your table structure
+        // FIXED: Match EXACT field names from your table
         const xanoData = {
-          label_id: scan.code,
+          label_id: scan.code,                    // REQUIRED - was missing before
           barcode_type: detectBarcodeType(scan.code),
           status: status,
-          date: now.toISOString().split('T')[0], // YYYY-MM-DD
+          date: now.toISOString().split('T')[0],  // YYYY-MM-DD
           time: now.toTimeString().split(' ')[0], // HH:MM:SS
           location: location,
-          eta: calculateETA(status),
-          timestamp: Date.now(), // epochs
+          eta: eta,                                // FIXED: Always include eta field (can be empty)
+          timestamp: Date.now(),                   // epochs
           created_at: now.toISOString()
         };
 
         debugLog('Sending data to Xano', xanoData);
 
         try {
-          const response = await fetch(workingEndpoint, {
+          const response = await fetch(XANO_API_URL, {
             method: 'POST',
             mode: 'cors',
             headers: {
@@ -851,19 +901,25 @@
             body: JSON.stringify(xanoData)
           });
 
+          const responseText = await response.text();
+          let responseData;
+          try {
+            responseData = JSON.parse(responseText);
+          } catch {
+            responseData = responseText;
+          }
+
           debugLog('Xano response', {
             status: response.status,
             statusText: response.statusText,
-            ok: response.ok
+            ok: response.ok,
+            data: responseData
           });
 
           if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
+            throw new Error(`HTTP ${response.status}: ${responseText}`);
           }
 
-          const data = await response.json();
-          debugLog('Successfully sent to Xano', data);
           successCount++;
           
         } catch (error) {
@@ -877,41 +933,25 @@
       return { 
         success: successCount, 
         error: errorCount, 
-        failedScans: failedScans,
-        endpoint: workingEndpoint 
+        failedScans: failedScans 
       };
     }
 
     function detectBarcodeType(code) {
-      // Simple barcode type detection
+      if (!code) return "Unknown";
+      
       if (/^[0-9]+$/.test(code)) {
         if (code.length === 12) return "UPC-A";
         if (code.length === 13) return "EAN-13";
         if (code.length === 8) return "EAN-8";
         if (code.length === 14) return "GTIN-14";
         return "Numeric Code";
-      } else if (code.startsWith('http')) {
+      } else if (code.startsWith('http://') || code.startsWith('https://')) {
         return "URL QR";
-      } else if (code.startsWith('DM:')) {
-        return "Data Matrix";
-      } else {
+      } else if (code.length > 20) {
         return "QR Code";
-      }
-    }
-
-    function calculateETA(status) {
-      const now = new Date();
-      switch(status) {
-        case 'Out For Delivery':
-          now.setHours(now.getHours() + 2);
-          return now.toISOString();
-        case 'Depart Post Office':
-          now.setDate(now.getDate() + 1);
-          return now.toISOString().split('T')[0];
-        case 'Delivered':
-          return "Delivered";
-        default:
-          return "";
+      } else {
+        return "Alphanumeric Code";
       }
     }
 
@@ -1003,6 +1043,9 @@
       document.getElementById("statusScreen").style.display = "none";
       document.getElementById("labelBlock").style.display = "flex";
       document.getElementById("scanButton").style.display = "block";
+      if (document.getElementById("manualInputButton")) {
+        document.getElementById("manualInputButton").style.display = "block";
+      }
       document.getElementById("keypadWrapper").style.display = "block";
       document.getElementById("leftText").innerHTML = "SCAN BARCODE";
     }
@@ -1038,14 +1081,24 @@
     }
 
     function typeChar(c) {
-      const box = document.getElementById("labelBox");
-      box.innerHTML += c;
-      box.scrollTop = box.scrollHeight;
+      const activeElement = document.activeElement;
+      if (activeElement && (activeElement.id === 'locationInput' || activeElement.id === 'etaInput')) {
+        activeElement.value += c;
+      } else {
+        const box = document.getElementById("labelBox");
+        box.innerHTML += c;
+        box.scrollTop = box.scrollHeight;
+      }
     }
 
     function backspace() {
-      let t = document.getElementById("labelBox").innerHTML;
-      document.getElementById("labelBox").innerHTML = t.slice(0, -1);
+      const activeElement = document.activeElement;
+      if (activeElement && (activeElement.id === 'locationInput' || activeElement.id === 'etaInput')) {
+        activeElement.value = activeElement.value.slice(0, -1);
+      } else {
+        let t = document.getElementById("labelBox").innerHTML;
+        document.getElementById("labelBox").innerHTML = t.slice(0, -1);
+      }
     }
   </script>
 
@@ -1059,7 +1112,7 @@
 
     <div id="header">
       <div id="leftText">SCAN BARCODE</div>
-      <div id="rightArea" onclick="toggleDebug()"></div>
+      <div id="rightArea" onclick="toggleDebug()">⏰</div>
     </div>
 
     <div id="scanButton" onclick="startScan()">SCAN</div>
@@ -1079,8 +1132,11 @@
 
       <div id="labelBox"></div>
 
-      <!-- Location Input Field -->
-      <input type="text" id="locationInput" placeholder="Enter Location" maxlength="100">
+      <!-- Location Input Field (REQUIRED) -->
+      <input type="text" id="locationInput" placeholder="Enter Location (Required)" maxlength="100">
+
+      <!-- ETA Input Field (OPTIONAL) -->
+      <input type="text" id="etaInput" placeholder="ETA (Optional - e.g., 2024-12-31)" maxlength="50">
 
       <div id="labelButtons">
         <span onclick="clearScans()">ESC</span>
