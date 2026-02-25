@@ -1,200 +1,137 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Simple Barcode Scanner</title>
+    <title>Simple Scanner</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Simple QR scanner library -->
-    <script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/1.2.4/html5-qrcode.min.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
         body {
-            background: #000;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            padding: 10px;
+            background: black;
+            color: white;
+            font-family: Arial;
+            padding: 5px;
+            margin: 0;
         }
-        
         .container {
-            max-width: 500px;
-            width: 100%;
-            background: #1a1a1a;
-            border: 2px solid #333;
-            padding: 20px;
+            max-width: 400px;
+            margin: 0 auto;
         }
-        
         h1 {
             color: #00ff00;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        
-        .time-display {
-            color: #00ff00;
-            text-align: center;
             font-size: 20px;
-            margin-bottom: 20px;
+            text-align: center;
+            margin: 5px 0;
+        }
+        .time {
+            color: #00ff00;
+            font-size: 16px;
+            text-align: center;
+            margin: 5px 0;
             font-family: monospace;
         }
-        
-        .scan-button {
-            width: 100%;
-            padding: 20px;
-            font-size: 32px;
-            background: #333;
-            color: white;
-            border: 3px solid #666;
-            cursor: pointer;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-        
-        .scan-button:hover {
-            background: #444;
-        }
-        
-        .barcode-grid {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-        }
-        
-        .grid-cell {
-            flex: 1;
-            height: 70px;
-            background: #ff9900;
-            border: 2px solid #cc7700;
-        }
-        
-        .grid-cell input {
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            border: none;
-            text-align: center;
-            font-size: 36px;
-            font-weight: bold;
-            color: black;
-            text-transform: uppercase;
-        }
-        
-        .status-section {
-            margin-bottom: 20px;
-        }
-        
-        .status-label {
-            color: #00ff00;
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-        
-        select {
+        button {
             width: 100%;
             padding: 15px;
-            font-size: 18px;
+            font-size: 20px;
             background: #333;
             color: white;
             border: 2px solid #666;
+            margin: 5px 0;
         }
-        
+        .grid {
+            display: flex;
+            gap: 3px;
+            margin: 5px 0;
+            width: 100%;
+        }
+        .grid input {
+            width: 16.66%; /* Exactly 1/6th of the width */
+            height: 50px;
+            text-align: center;
+            font-size: 28px;
+            background: orange;
+            border: 2px solid darkorange;
+            text-transform: uppercase;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background: #333;
+            color: white;
+            border: 2px solid #666;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
         select:disabled {
             opacity: 0.5;
         }
-        
-        .scanner-container {
+        #scanner {
             width: 100%;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        #reader {
-            width: 100%;
-            height: 300px;
-            background: #000;
-        }
-        
-        .scanned-list {
+            height: 250px;
+            background: black;
             border: 2px solid #333;
-            max-height: 300px;
-            overflow-y: auto;
+            margin: 5px 0;
+            display: none;
+            box-sizing: border-box;
         }
-        
+        .list {
+            border: 2px solid #333;
+            margin-top: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
         .list-header {
             display: flex;
             background: #333;
-            padding: 10px;
-            color: white;
-            font-weight: bold;
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
         }
-        
-        .header-num { width: 20%; }
-        .header-code { width: 40%; }
-        .header-status { width: 40%; }
-        
+        .list-header div {
+            width: 33.33%;
+            text-align: center;
+            font-size: 14px;
+        }
         .list-item {
             display: flex;
-            padding: 8px;
+            padding: 6px;
             border-bottom: 1px solid #333;
             color: #00ff00;
             font-family: monospace;
-        }
-        
-        .item-num { width: 20%; }
-        .item-code { width: 40%; }
-        .item-status { width: 40%; }
-        
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px 30px;
-            border-radius: 5px;
-            display: none;
-            z-index: 9999;
-        }
-        
-        .toast.success {
-            background: #00C851;
-            color: white;
-        }
-        
-        .toast.error {
-            background: #ff4444;
-            color: white;
-        }
-        
-        .loading {
-            position: fixed;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 24px;
-            z-index: 9998;
+            box-sizing: border-box;
         }
-        
-        .close-scanner {
-            width: 100%;
+        .list-item div {
+            width: 33.33%;
+            text-align: center;
+            font-size: 14px;
+        }
+        .message {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            background: red;
+            color: white;
             padding: 10px;
-            background: #ff4444;
-            color: white;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 10px;
+            text-align: center;
+            display: none;
+            border-radius: 5px;
+            z-index: 9999;
+            font-size: 14px;
+        }
+        .message.success {
+            background: green;
+        }
+        /* Make sure everything fits */
+        * {
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -202,273 +139,284 @@
     <div class="container">
         <h1>SCAN BARCODE</h1>
         
-        <div class="time-display" id="timeDisplay"></div>
+        <div class="time" id="time"></div>
         
-        <button class="scan-button" id="scanBtn">SCAN</button>
+        <button id="scanBtn">📷 SCAN</button>
         
-        <div class="barcode-grid">
-            <div class="grid-cell"><input type="text" maxlength="1" id="char1"></div>
-            <div class="grid-cell"><input type="text" maxlength="1" id="char2"></div>
-            <div class="grid-cell"><input type="text" maxlength="1" id="char3"></div>
-            <div class="grid-cell"><input type="text" maxlength="1" id="char4"></div>
-            <div class="grid-cell"><input type="text" maxlength="1" id="char5"></div>
-            <div class="grid-cell"><input type="text" maxlength="1" id="char6"></div>
+        <div class="grid" id="grid">
+            <input type="text" maxlength="1" id="c1" placeholder="0">
+            <input type="text" maxlength="1" id="c2" placeholder="0">
+            <input type="text" maxlength="1" id="c3" placeholder="0">
+            <input type="text" maxlength="1" id="c4" placeholder="0">
+            <input type="text" maxlength="1" id="c5" placeholder="0">
+            <input type="text" maxlength="1" id="c6" placeholder="0">
         </div>
         
-        <div class="status-section">
-            <div class="status-label">STATUS</div>
-            <select id="statusSelect" disabled>
-                <option value="">Select Status</option>
-                <option value="Item Booked">Item Booked</option>
-                <option value="Item Received">Item Received</option>
-                <option value="Item Bagged">Item Bagged</option>
-                <option value="Item Dispatched">Item Dispatched</option>
-                <option value="In Transit">In Transit</option>
-                <option value="Out for Delivery">Out for Delivery</option>
-                <option value="Item Delivered">Item Delivered</option>
-            </select>
-        </div>
+        <select id="status" disabled>
+            <option value="">-- SELECT STATUS --</option>
+            <option value="Item Booked">Item Booked</option>
+            <option value="Item Received">Item Received</option>
+            <option value="Item Bagged">Item Bagged</option>
+            <option value="Item Dispatched">Item Dispatched</option>
+            <option value="In Transit">In Transit</option>
+            <option value="Out for Delivery">Out for Delivery</option>
+            <option value="Item Delivered">Item Delivered</option>
+        </select>
         
-        <div class="scanner-container" id="scannerContainer">
-            <div id="reader"></div>
-            <button class="close-scanner" id="closeScanner">Close Camera</button>
-        </div>
+        <div id="scanner"></div>
         
-        <div class="scanned-list">
+        <div class="list">
             <div class="list-header">
-                <div class="header-num">#</div>
-                <div class="header-code">CODE</div>
-                <div class="header-status">STATUS</div>
+                <div>#</div>
+                <div>CODE</div>
+                <div>STATUS</div>
             </div>
-            <div id="scannedItems"></div>
+            <div id="listItems"></div>
         </div>
     </div>
     
-    <div class="loading" id="loading">Sending to database...</div>
-    <div class="toast success" id="successToast">Success!</div>
-    <div class="toast error" id="errorToast">Error!</div>
+    <div class="message" id="message"></div>
 
     <script>
-        // XANO API
-        const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+        // Simple variables
+        var scanner = null;
+        var isScanning = false;
+        var items = [];
+        var itemCount = 1;
         
-        // State
-        let scanner = null;
-        let isScanning = false;
-        let scannedItems = [];
-        let itemId = 1;
+        // Get elements
+        var scanBtn = document.getElementById('scanBtn');
+        var scannerDiv = document.getElementById('scanner');
+        var statusSelect = document.getElementById('status');
+        var messageBox = document.getElementById('message');
+        var timeDiv = document.getElementById('time');
+        var listDiv = document.getElementById('listItems');
         
-        // DOM elements
-        const scanBtn = document.getElementById('scanBtn');
-        const closeScanner = document.getElementById('closeScanner');
-        const scannerContainer = document.getElementById('scannerContainer');
-        const statusSelect = document.getElementById('statusSelect');
-        const loading = document.getElementById('loading');
-        const successToast = document.getElementById('successToast');
-        const errorToast = document.getElementById('errorToast');
+        // Input fields
+        var c1 = document.getElementById('c1');
+        var c2 = document.getElementById('c2');
+        var c3 = document.getElementById('c3');
+        var c4 = document.getElementById('c4');
+        var c5 = document.getElementById('c5');
+        var c6 = document.getElementById('c6');
+        var inputs = [c1, c2, c3, c4, c5, c6];
         
         // Time update
         function updateTime() {
-            const now = new Date();
-            const time = now.toLocaleTimeString();
-            document.getElementById('timeDisplay').textContent = time;
+            var d = new Date();
+            var h = d.getHours();
+            var m = d.getMinutes();
+            var s = d.getSeconds();
+            if (h < 10) h = '0' + h;
+            if (m < 10) m = '0' + m;
+            if (s < 10) s = '0' + s;
+            timeDiv.innerHTML = h + ':' + m + ':' + s;
         }
         setInterval(updateTime, 1000);
         updateTime();
         
         // Grid input handling
-        const inputs = [1,2,3,4,5,6].map(i => document.getElementById('char' + i));
-        
-        inputs.forEach((input, index) => {
-            input.addEventListener('input', function(e) {
-                this.value = this.value.toUpperCase().slice(0,1);
-                if (this.value && index < 5) {
-                    inputs[index + 1].focus();
-                }
-                checkGridFilled();
-            });
+        for (var i = 0; i < inputs.length; i++) {
+            inputs[i].oninput = function(index) {
+                return function() {
+                    this.value = this.value.toUpperCase().substring(0,1);
+                    if (this.value && index < 5) {
+                        inputs[index + 1].focus();
+                    }
+                    checkGrid();
+                };
+            }(i);
             
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Backspace' && !this.value && index > 0) {
-                    inputs[index - 1].focus();
-                    inputs[index - 1].value = '';
-                }
-                checkGridFilled();
-            });
-        });
+            inputs[i].onkeydown = function(index) {
+                return function(e) {
+                    if (e.key === 'Backspace' && !this.value && index > 0) {
+                        inputs[index - 1].focus();
+                        inputs[index - 1].value = '';
+                        checkGrid();
+                    }
+                };
+            }(i);
+        }
         
-        function checkGridFilled() {
-            const allFilled = inputs.every(input => input.value);
+        function checkGrid() {
+            var allFilled = true;
+            for (var i = 0; i < inputs.length; i++) {
+                if (!inputs[i].value) {
+                    allFilled = false;
+                    break;
+                }
+            }
             statusSelect.disabled = !allFilled;
         }
         
         function clearGrid() {
-            inputs.forEach(input => input.value = '');
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].value = '';
+            }
             inputs[0].focus();
             statusSelect.disabled = true;
-            statusSelect.value = '';
         }
         
-        // Scanner functions
+        // Scanner
         function startScanner() {
-            try {
-                if (!scanner) {
-                    scanner = new Html5Qrcode("reader");
+            if (!scanner) {
+                try {
+                    scanner = new Html5Qrcode("scanner");
+                } catch(e) {
+                    showMessage('Scanner failed: ' + e.message);
+                    return;
                 }
-                
-                scannerContainer.style.display = 'block';
-                
-                scanner.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: 250 },
-                    (decodedText) => {
-                        // Success
-                        console.log('Scanned:', decodedText);
-                        
-                        // Fill grid
-                        const barcode = decodedText.slice(0,6);
-                        for (let i = 0; i < 6; i++) {
-                            if (inputs[i]) {
-                                inputs[i].value = barcode[i]?.toUpperCase() || '';
-                            }
-                        }
-                        
-                        // Stop scanner
-                        stopScanner();
-                        
-                        // Check grid
-                        checkGridFilled();
-                        
-                        // Beep
-                        try {
-                            const audio = new AudioContext();
-                            const osc = audio.createOscillator();
-                            osc.connect(audio.destination);
-                            osc.frequency.value = 800;
-                            osc.start();
-                            osc.stop(0.1);
-                        } catch(e) {}
-                    },
-                    (error) => {
-                        // Ignore errors
-                    }
-                ).then(() => {
-                    isScanning = true;
-                }).catch((err) => {
-                    console.log('Camera error:', err);
-                    scannerContainer.style.display = 'none';
-                    showError('Cannot access camera');
-                });
-            } catch(err) {
-                console.log('Scanner error:', err);
-                showError('Scanner failed to start');
             }
+            
+            scannerDiv.style.display = 'block';
+            
+            var config = {
+                fps: 10,
+                qrbox: 200
+            };
+            
+            scanner.start(
+                { facingMode: "environment" },
+                config,
+                function(text) {
+                    showMessage('Scanned: ' + text, 'success');
+                    
+                    // Fill grid
+                    for (var i = 0; i < 6; i++) {
+                        if (inputs[i]) {
+                            inputs[i].value = (text[i] || '').toUpperCase();
+                        }
+                    }
+                    
+                    stopScanner();
+                    checkGrid();
+                },
+                function(error) {
+                    // Ignore errors
+                }
+            ).then(function() {
+                isScanning = true;
+            }).catch(function(err) {
+                showMessage('Camera error: ' + err.message);
+                scannerDiv.style.display = 'none';
+            });
         }
         
         function stopScanner() {
             if (scanner && isScanning) {
-                scanner.stop().then(() => {
+                scanner.stop().then(function() {
                     isScanning = false;
-                    scannerContainer.style.display = 'none';
-                }).catch(() => {});
+                    scannerDiv.style.display = 'none';
+                }).catch(function() {});
             } else {
-                scannerContainer.style.display = 'none';
+                scannerDiv.style.display = 'none';
             }
         }
         
-        // API function
-        async function sendToXano(barcode, status) {
-            loading.style.display = 'flex';
+        function showMessage(msg, type) {
+            messageBox.innerHTML = msg;
+            messageBox.className = 'message' + (type === 'success' ? ' success' : '');
+            messageBox.style.display = 'block';
+            setTimeout(function() {
+                messageBox.style.display = 'none';
+            }, 2000);
+        }
+        
+        // Send to XANO
+        function sendToXano(barcode, status, callback) {
+            showMessage('Sending...', 'success');
             
-            try {
-                const now = new Date();
-                const data = {
-                    created_at: now.getTime(),
-                    epochs: now.getTime(),
-                    label_id: barcode,
-                    text: status,
-                    barcode_type: 'QR_CODE',
-                    status: status,
-                    date: now.toISOString().split('T')[0],
-                    time: now.toTimeString().split(' ')[0],
-                    location: 'Default',
-                    eta: 'N/A',
-                    timestamp: now.getTime()
-                };
-                
-                console.log('Sending:', data);
-                
-                const response = await fetch(XANO_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                
-                if (!response.ok) throw new Error('Failed');
-                
-                loading.style.display = 'none';
-                successToast.style.display = 'block';
-                setTimeout(() => successToast.style.display = 'none', 2000);
-                
-                return true;
-                
-            } catch(err) {
-                loading.style.display = 'none';
-                showError('Failed to send to database');
-                return false;
-            }
-        }
-        
-        function showError(msg) {
-            errorToast.textContent = msg;
-            errorToast.style.display = 'block';
-            setTimeout(() => errorToast.style.display = 'none', 3000);
+            var now = new Date();
+            var data = {
+                created_at: now.getTime(),
+                epochs: now.getTime(),
+                label_id: barcode,
+                text: status,
+                barcode_type: 'QR_CODE',
+                status: status,
+                date: now.toISOString().split('T')[0],
+                time: now.toTimeString().split(' ')[0],
+                location: 'Default',
+                eta: 'N/A',
+                timestamp: now.getTime()
+            };
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        showMessage('Saved!', 'success');
+                        if (callback) callback(true);
+                    } else {
+                        showMessage('Failed: ' + xhr.status);
+                        if (callback) callback(false);
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                showMessage('Network error');
+                if (callback) callback(false);
+            };
+            
+            xhr.send(JSON.stringify(data));
         }
         
         function addToList(barcode, status) {
-            const item = {
-                id: itemId++,
-                barcode: barcode.padStart(6,'0').slice(0,6),
+            var b = barcode;
+            while (b.length < 6) b = '0' + b;
+            b = b.substring(0, 6);
+            
+            items.unshift({
+                id: itemCount++,
+                code: b,
                 status: status
-            };
+            });
             
-            scannedItems.unshift(item);
-            if (scannedItems.length > 20) scannedItems.pop();
+            if (items.length > 20) items.pop();
             
-            const container = document.getElementById('scannedItems');
-            container.innerHTML = scannedItems.map(i => `
-                <div class="list-item">
-                    <div class="item-num">${i.id}</div>
-                    <div class="item-code">${i.barcode}</div>
-                    <div class="item-status">${i.status}</div>
-                </div>
-            `).join('');
+            var html = '';
+            for (var i = 0; i < items.length; i++) {
+                html += '<div class="list-item">' +
+                        '<div>' + items[i].id + '</div>' +
+                        '<div>' + items[i].code + '</div>' +
+                        '<div>' + items[i].status + '</div>' +
+                        '</div>';
+            }
+            listDiv.innerHTML = html;
         }
         
         // Event listeners
-        scanBtn.onclick = (e) => {
+        scanBtn.onclick = function(e) {
             e.preventDefault();
             startScanner();
         };
         
-        closeScanner.onclick = () => stopScanner();
-        
-        statusSelect.onchange = async () => {
-            const barcode = inputs.map(i => i.value).join('');
-            const status = statusSelect.value;
+        statusSelect.onchange = function() {
+            var barcode = '';
+            for (var i = 0; i < inputs.length; i++) {
+                barcode += inputs[i].value;
+            }
+            
+            var status = statusSelect.value;
             
             if (barcode.length === 6 && status) {
-                const sent = await sendToXano(barcode, status);
-                if (sent) {
-                    addToList(barcode, status);
-                    clearGrid();
-                    statusSelect.value = '';
-                }
+                sendToXano(barcode, status, function(success) {
+                    if (success) {
+                        addToList(barcode, status);
+                        clearGrid();
+                        statusSelect.value = '';
+                    }
+                });
             }
         };
         
-        // Start
+        // Focus first input
         inputs[0].focus();
+        
         console.log('Ready');
     </script>
 </body>
