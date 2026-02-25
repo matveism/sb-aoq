@@ -523,6 +523,24 @@
       animation: checkmarkSpin 0.5s ease;
     }
 
+    /* DEBUG PANEL */
+    #debugPanel {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.8);
+      border: 1px solid #00FFAA;
+      color: #00FFAA;
+      padding: 10px;
+      font-size: 12px;
+      font-family: monospace;
+      z-index: 2000;
+      display: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
     @keyframes popupFade {
       from { opacity: 0; transform: scale(0.8); }
       to { opacity: 1; transform: scale(1); }
@@ -575,7 +593,33 @@
     let animationFrame = null;
     let selectedStatus = '';
     let currentScans = [];
-    const XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
+    
+    // Try different Xano endpoint formats
+    const XANO_ENDPOINTS = [
+      'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans',
+      'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans/',
+      'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scan',
+      'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/scans'
+    ];
+    
+    let currentEndpointIndex = 0;
+
+    function debugLog(message, data = null) {
+      const debugPanel = document.getElementById('debugPanel');
+      const timestamp = new Date().toLocaleTimeString();
+      let logMessage = `[${timestamp}] ${message}`;
+      if (data) {
+        logMessage += `\n${JSON.stringify(data, null, 2)}`;
+      }
+      debugPanel.innerHTML += logMessage + '\n---\n';
+      debugPanel.scrollTop = debugPanel.scrollHeight;
+      console.log(message, data);
+    }
+
+    function toggleDebug() {
+      const panel = document.getElementById('debugPanel');
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
 
     function playBeep() {
       const beep = document.getElementById('beep');
@@ -594,6 +638,7 @@
     window.onload = function() {
       updateTime();
       showNumeric();
+      debugLog('App initialized');
     };
 
     async function startScan() {
@@ -679,6 +724,8 @@
       const box = document.getElementById("labelBox");
       box.innerHTML += line + "\n";
       box.scrollTop = box.scrollHeight;
+      
+      debugLog('Barcode scanned', { code: code, scanCount: scanCount });
     }
 
     function clearScans() {
@@ -687,6 +734,7 @@
         currentScans = [];
         document.getElementById("labelBox").innerHTML = "";
         document.getElementById("locationInput").value = "";
+        debugLog('Scans cleared');
       }
     }
 
@@ -720,54 +768,118 @@
       document.getElementById("statusScreen").style.display = "flex";
     }
 
+    async function testXanoConnection() {
+      debugLog('Testing Xano connection...');
+      
+      for (let i = 0; i < XANO_ENDPOINTS.length; i++) {
+        const endpoint = XANO_ENDPOINTS[i];
+        try {
+          debugLog(`Testing endpoint ${i + 1}: ${endpoint}`);
+          
+          // Try a simple OPTIONS request first
+          const response = await fetch(endpoint, {
+            method: 'OPTIONS',
+            mode: 'cors',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+          
+          debugLog(`Endpoint ${i + 1} response`, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries())
+          });
+          
+          if (response.ok) {
+            return endpoint;
+          }
+        } catch (error) {
+          debugLog(`Endpoint ${i + 1} failed`, error.message);
+        }
+      }
+      
+      return null;
+    }
+
     async function sendToXano(status) {
       const location = document.getElementById("locationInput").value.trim();
       let successCount = 0;
       let errorCount = 0;
+      const failedScans = [];
 
       // Show loading state
       document.getElementById("leftText").innerHTML = "SENDING...";
+
+      // Test connection first
+      const workingEndpoint = await testXanoConnection();
+      if (!workingEndpoint) {
+        debugLog('No working endpoint found');
+        showErrorPopup('Cannot connect to server. Check network and endpoint.');
+        return { success: 0, error: currentScans.length, failedScans: currentScans };
+      }
+      
+      debugLog(`Using endpoint: ${workingEndpoint}`);
 
       // Send each scan as a separate record to Xano
       for (const scan of currentScans) {
         const now = new Date();
         
+        // Create data matching your table structure
         const xanoData = {
-          created_at: now.toISOString(),
           label_id: scan.code,
           barcode_type: detectBarcodeType(scan.code),
           status: status,
           date: now.toISOString().split('T')[0], // YYYY-MM-DD
           time: now.toTimeString().split(' ')[0], // HH:MM:SS
           location: location,
-          eta: calculateETA(status), // Optional: you can implement logic for ETA
-          timestamp: Date.now() // epochs in milliseconds
+          eta: calculateETA(status),
+          timestamp: Date.now(), // epochs
+          created_at: now.toISOString()
         };
 
+        debugLog('Sending data to Xano', xanoData);
+
         try {
-          const response = await fetch(XANO_API_URL, {
+          const response = await fetch(workingEndpoint, {
             method: 'POST',
+            mode: 'cors',
             headers: {
               'Content-Type': 'application/json',
+              'Accept': 'application/json'
             },
             body: JSON.stringify(xanoData)
           });
 
+          debugLog('Xano response', {
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok
+          });
+
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
           }
 
           const data = await response.json();
-          console.log('Successfully sent to Xano:', data);
+          debugLog('Successfully sent to Xano', data);
           successCount++;
           
         } catch (error) {
           console.error('Error sending to Xano:', error);
+          debugLog('Error sending to Xano', error.message);
           errorCount++;
+          failedScans.push(scan);
         }
       }
 
-      return { success: successCount, error: errorCount };
+      return { 
+        success: successCount, 
+        error: errorCount, 
+        failedScans: failedScans,
+        endpoint: workingEndpoint 
+      };
     }
 
     function detectBarcodeType(code) {
@@ -776,37 +888,46 @@
         if (code.length === 12) return "UPC-A";
         if (code.length === 13) return "EAN-13";
         if (code.length === 8) return "EAN-8";
+        if (code.length === 14) return "GTIN-14";
         return "Numeric Code";
       } else if (code.startsWith('http')) {
         return "URL QR";
+      } else if (code.startsWith('DM:')) {
+        return "Data Matrix";
       } else {
         return "QR Code";
       }
     }
 
     function calculateETA(status) {
-      // Simple ETA calculation based on status
       const now = new Date();
       switch(status) {
         case 'Out For Delivery':
           now.setHours(now.getHours() + 2);
-          break;
+          return now.toISOString();
         case 'Depart Post Office':
           now.setDate(now.getDate() + 1);
-          break;
+          return now.toISOString().split('T')[0];
         case 'Delivered':
           return "Delivered";
         default:
           return "";
       }
-      return now.toLocaleTimeString();
     }
 
     async function chooseStatus(status) {
       selectedStatus = status;
       
-      // Show loading popup or disable buttons
+      // Disable buttons to prevent double submission
+      const buttons = document.querySelectorAll('.statusBtn');
+      buttons.forEach(btn => btn.style.pointerEvents = 'none');
+      
       const result = await sendToXano(status);
+      
+      // Re-enable buttons
+      buttons.forEach(btn => btn.style.pointerEvents = 'auto');
+      
+      debugLog('Send result', result);
       
       if (result.error === 0) {
         // All successful
@@ -819,15 +940,27 @@
       } else if (result.success > 0) {
         // Partial success
         showSuccessPopup(status, result.success, true);
-        showErrorPopup(`${result.error} scan(s) failed to send`);
+        showErrorPopup(`${result.error} scan(s) failed to send. Check debug panel.`);
         
-        // Keep scans for retry
+        // Keep failed scans for retry
+        if (result.failedScans && result.failedScans.length > 0) {
+          currentScans = result.failedScans;
+          scanCount = currentScans.length;
+          
+          // Update display to show only failed scans
+          const box = document.getElementById("labelBox");
+          box.innerHTML = "";
+          currentScans.forEach((scan, index) => {
+            box.innerHTML += (index + 1) + " " + scan.code + "\n";
+          });
+        }
+        
         setTimeout(() => {
           goBackToScan();
         }, 3000);
       } else {
         // Complete failure
-        showErrorPopup("Failed to send data to server. Please try again.");
+        showErrorPopup("Failed to send data to server. Check debug panel.");
         goBackToScan();
       }
     }
@@ -863,7 +996,7 @@
       
       setTimeout(() => {
         popup.style.display = 'none';
-      }, 2000);
+      }, 3000);
     }
 
     function goBackToScan() {
@@ -926,7 +1059,7 @@
 
     <div id="header">
       <div id="leftText">SCAN BARCODE</div>
-      <div id="rightArea"></div>
+      <div id="rightArea" onclick="toggleDebug()"></div>
     </div>
 
     <div id="scanButton" onclick="startScan()">SCAN</div>
@@ -1106,6 +1239,9 @@
         <div class="popup-submessage" id="errorMessage"></div>
       </div>
     </div>
+
+    <!-- DEBUG PANEL (click time to show) -->
+    <div id="debugPanel" style="display: none;"></div>
 
     <!-- BEEP -->
     <audio id="beep" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=" preload="auto"></audio>
