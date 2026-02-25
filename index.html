@@ -1,1308 +1,969 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>Scanner UI - Xano Integration FIXED</title>
-
-  <meta name="viewport"
-        content="width=360, height=640, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    #phone {
-      width: 360px;
-      height: 640px;
-      background-color: #0B173B;
-      font-family: "Courier New", monospace;
-      color: #FFFFFF;
-      overflow-y: auto;
-      overflow-x: hidden;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* GLASSY MESH */
-    #pattern {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      background-image:
-        linear-gradient(to bottom,
-          rgba(255,255,255,0.08) 0%,
-          rgba(255,255,255,0.00) 40%,
-          rgba(255,255,255,0.06) 60%,
-          rgba(255,255,255,0.00) 100%
-        ),
-        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.00) 60%);
-      background-size: 100% 100%, 32px 32px, 32px 32px, 100% 100%;
-      opacity: 0.35;
-      z-index: 1;
-    }
-
-    /* HEADER */
-    #header {
-      width: 100%;
-      height: 32px;
-      background-color: #1A2C55;
-      border-bottom: 1px solid #000;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 10px;
-      box-sizing: border-box;
-      position: relative;
-      z-index: 2;
-      flex-shrink: 0;
-    }
-
-    #leftText { font-weight: bold; font-size: 15px; }
-    #rightArea { font-size: 14px; cursor: pointer; }
-
-    /* SCAN BUTTON */
-    #scanButton {
-      width: calc(100% - 20px);
-      height: 48px;
-      background-color: #0A8A2A;
-      border: 2px solid #0F5F1C;
-      color: #FFFFFF;
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
-      line-height: 48px;
-      margin: 12px auto 0 auto;
-      border-radius: 4px;
-      position: relative;
-      z-index: 2;
-      box-shadow: 0 0 6px rgba(0,0,0,0.4);
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    /* MANUAL INPUT BUTTON (for when camera fails) */
-    #manualInputButton {
-      width: calc(100% - 20px);
-      height: 48px;
-      background-color: #1A2C55;
-      border: 2px solid #FFFFFF;
-      color: #FFFFFF;
-      font-size: 18px;
-      font-weight: bold;
-      text-align: center;
-      line-height: 48px;
-      margin: 8px auto 0 auto;
-      border-radius: 4px;
-      position: relative;
-      z-index: 2;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    /* SCAN FRAME */
-    #scanFrame {
-      width: 280px;
-      height: 160px;
-      border: 2px solid rgba(255,255,255,0.4);
-      margin: 20px auto 0 auto;
-      position: relative;
-      display: none;
-      z-index: 3;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    /* video preview inside frame */
-    #preview {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: scaleX(-1);
-    }
-
-    /* LASER */
-    #laser {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: rgba(255,0,0,0.8);
-      box-shadow: 0 0 6px red;
-      animation: laserMove 2s linear infinite;
-      display: none;
-      z-index: 5;
-    }
-
-    @keyframes laserMove {
-      0%   { top: 0; }
-      50%  { top: 158px; }
-      100% { top: 0; }
-    }
-
-    /* Corner angles */
-    .corner {
-      width: 20px;
-      height: 20px;
-      border: 3px solid #00FFAA;
-      position: absolute;
-      pointer-events: none;
-    }
-    .tl { top: -3px; left: -3px; border-right: none; border-bottom: none; }
-    .tr { top: -3px; right: -3px; border-left: none; border-bottom: none; }
-    .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
-    .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
-
-    /* LABEL BLOCK */
-    #labelBlock {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      background-color: transparent;
-      flex: 1;
-      position: relative;
-      z-index: 2;
-    }
-
-    #labelTitle {
-      height: 32px;
-      display: flex;
-      align-items: center;
-      padding-left: 10px;
-      font-weight: bold;
-      font-size: 15px;
-      background-color: #1A2C55;
-      border-top: 1px solid #000;
-      border-bottom: 1px solid #000;
-      flex-shrink: 0;
-    }
-
-    #labelBox {
-      width: calc(100% - 20px);
-      min-height: 40px;
-      max-height: 100px;
-      margin: 8px auto 0 auto;
-      border: 2px solid #FFFFFF;
-      background-color: rgba(0,0,0,0.3);
-      padding: 6px 10px;
-      font-size: 16px;
-      font-weight: bold;
-      white-space: pre-line;
-      overflow-y: auto;
-      word-wrap: break-word;
-      flex-shrink: 0;
-      backdrop-filter: blur(2px);
-    }
-
-    /* ESC | ENTER BAR */
-    #labelButtons {
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background-color: #111d33;
-      border-top: 1px solid #000;
-      border-bottom: 1px solid #000;
-      margin-top: 8px;
-      padding: 0 25px;
-      font-weight: bold;
-      font-size: 15px;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.6);
-      flex-shrink: 0;
-    }
-
-    #labelButtons span {
-      cursor: pointer;
-    }
-
-    #divider {
-      flex: 1;
-      text-align: center;
-      opacity: 0.6;
-    }
-
-    /* LOCATION INPUT */
-    #locationInput {
-      width: calc(100% - 20px);
-      margin: 8px auto 0 auto;
-      padding: 8px;
-      background-color: #1A2C55;
-      border: 2px solid #FFFFFF;
-      color: #FFFFFF;
-      font-family: "Courier New", monospace;
-      font-size: 14px;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-
-    #locationInput::placeholder {
-      color: rgba(255,255,255,0.5);
-    }
-
-    /* ETA INPUT */
-    #etaInput {
-      width: calc(100% - 20px);
-      margin: 8px auto 0 auto;
-      padding: 8px;
-      background-color: #1A2C55;
-      border: 2px solid #FFFFFF;
-      color: #FFFFFF;
-      font-family: "Courier New", monospace;
-      font-size: 14px;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-
-    #etaInput::placeholder {
-      color: rgba(255,255,255,0.5);
-    }
-
-    /* KEYPAD WRAPPER */
-    #keypadWrapper {
-      width: 100%;
-      background-color: transparent;
-      margin-top: auto;
-      padding-top: 10px;
-      padding-bottom: 0;
-      position: relative;
-      z-index: 2;
-    }
-
-    /* KEYPAD TABS */
-    #keyTabs {
-      display: flex;
-      justify-content: space-around;
-      margin: 0 10px 10px 10px;
-    }
-
-    #keyTabs button {
-      flex: 1;
-      margin: 0 4px;
-      padding: 8px 0;
-      background-color: #1A2C55;
-      border: 1px solid #FFFFFF;
-      border-radius: 4px;
-      color: #FFFFFF;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      font-family: "Courier New", monospace;
-    }
-
-    #keyTabs button.active {
-      background-color: #0A8A2A;
-      border-color: #0F5F1C;
-    }
-
-    /* NUMERIC KEYPAD */
-    #numericPad {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      padding: 0 15px 15px 15px;
-    }
-
-    #numericPad button {
-      background-color: #1A2C55;
-      border: 1px solid #FFFFFF;
-      border-radius: 4px;
-      color: #FFFFFF;
-      font-size: 20px;
-      font-weight: bold;
-      padding: 12px 0;
-      height: 48px;
-      text-align: center;
-      cursor: pointer;
-      font-family: "Courier New", monospace;
-      box-shadow: 0 2px 0 #0B0F1A;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #numericPad button:active {
-      transform: translateY(1px);
-      box-shadow: 0 1px 0 #0B0F1A;
-      background-color: #0A8A2A;
-    }
-
-    #numericPad button.backspace {
-      background-color: #111d33;
-      font-size: 18px;
-    }
-
-    /* QWERTY KEYPAD */
-    #qwertyPad {
-      display: none;
-      padding: 0 10px 15px 10px;
-    }
-
-    .row {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 4px;
-    }
-
-    .row button {
-      flex: 1;
-      background-color: #1A2C55;
-      border: 1px solid #FFFFFF;
-      border-radius: 4px;
-      color: #FFFFFF;
-      font-size: 16px;
-      font-weight: bold;
-      padding: 12px 0;
-      height: 48px;
-      text-align: center;
-      cursor: pointer;
-      font-family: "Courier New", monospace;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 0 #0B0F1A;
-    }
-
-    .row button:active {
-      transform: translateY(1px);
-      box-shadow: 0 1px 0 #0B0F1A;
-      background-color: #0A8A2A;
-    }
-
-    .row button.special {
-      background-color: #111d33;
-    }
-
-    .row button.space {
-      flex: 3;
-    }
-
-    /* SYMBOL KEYPAD */
-    #symbolPad {
-      display: none;
-      padding: 0 10px 15px 10px;
-    }
-
-    #symbolPad .row button {
-      flex: 1;
-      background-color: #1A2C55;
-      border: 1px solid #FFFFFF;
-      border-radius: 4px;
-      color: #FFFFFF;
-      font-size: 16px;
-      font-weight: bold;
-      padding: 12px 0;
-      height: 48px;
-      text-align: center;
-      cursor: pointer;
-      font-family: "Courier New", monospace;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 0 #0B0F1A;
-    }
-
-    #symbolPad .row button:active {
-      transform: translateY(1px);
-      box-shadow: 0 1px 0 #0B0F1A;
-      background-color: #0A8A2A;
-    }
-
-    #symbolPad .row button.special {
-      background-color: #111d33;
-    }
-
-    #symbolPad .row button.space {
-      flex: 3;
-    }
-
-    /* STATUS SCREEN */
-    #statusScreen {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 20px;
-      margin-bottom: 0;
-      gap: 8px;
-      padding: 0 20px 20px 20px;
-      flex: 1;
-      overflow-y: auto;
-      position: relative;
-      z-index: 2;
-    }
-
-    .statusBtn {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #FFFFFF;
-      background: rgba(26,44,85,0.8);
-      color: #FFFFFF;
-      font-size: 16px;
-      text-align: center;
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: "Courier New", monospace;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      backdrop-filter: blur(2px);
-    }
-
-    .statusBtn:active {
-      background-color: #0A8A2A;
-    }
-
-    .statusBtn.back {
-      background-color: #111d33;
-      margin-top: 10px;
-    }
-
-    /* SUCCESS POPUP */
-    #successPopup {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(11,23,59,0.9);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-      backdrop-filter: blur(4px);
-    }
-
-    .popup-content {
-      background-color: #1A2C55;
-      border: 2px solid #0A8A2A;
-      border-radius: 10px;
-      padding: 30px;
-      text-align: center;
-      animation: popupFade 0.3s ease;
-    }
-
-    .checkmark {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 20px auto;
-      background-color: #0A8A2A;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 50px;
-      color: white;
-      animation: checkmarkSpin 0.5s ease;
-    }
-
-    .popup-message {
-      color: #FFFFFF;
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-      font-family: "Courier New", monospace;
-    }
-
-    .popup-submessage {
-      color: #00FFAA;
-      font-size: 14px;
-      font-family: "Courier New", monospace;
-    }
-
-    /* ERROR POPUP */
-    #errorPopup {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(11,23,59,0.9);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-      backdrop-filter: blur(4px);
-    }
-
-    .error-content {
-      background-color: #1A2C55;
-      border: 2px solid #FF3333;
-      border-radius: 10px;
-      padding: 30px;
-      text-align: center;
-      animation: popupFade 0.3s ease;
-    }
-
-    .error-mark {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 20px auto;
-      background-color: #FF3333;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 50px;
-      color: white;
-      animation: checkmarkSpin 0.5s ease;
-    }
-
-    /* DEBUG PANEL */
-    #debugPanel {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      right: 10px;
-      background: rgba(0,0,0,0.95);
-      border: 2px solid #00FFAA;
-      color: #00FFAA;
-      padding: 10px;
-      font-size: 12px;
-      font-family: monospace;
-      z-index: 2000;
-      display: none;
-      max-height: 300px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-    }
-
-    @keyframes popupFade {
-      from { opacity: 0; transform: scale(0.8); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    @keyframes checkmarkSpin {
-      0% { transform: rotate(0deg) scale(0); }
-      50% { transform: rotate(180deg) scale(1.2); }
-      100% { transform: rotate(360deg) scale(1); }
-    }
-
-    /* Scrollbar styling */
-    #phone::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    #phone::-webkit-scrollbar-track {
-      background: #0B173B;
-    }
-
-    #phone::-webkit-scrollbar-thumb {
-      background: #1A2C55;
-    }
-
-    #labelBox::-webkit-scrollbar {
-      width: 2px;
-    }
-
-    #labelBox::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    #labelBox::-webkit-scrollbar-thumb {
-      background: #1A2C55;
-    }
-
-    button {
-      -webkit-tap-highlight-color: transparent;
-      outline: none;
-    }
-  </style>
-
-  <!-- jsQR -->
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-
-  <script>
-    let stream = null;
-    let scanning = false;
-    let scanCount = 0;
-    let animationFrame = null;
-    let selectedStatus = '';
-    let currentScans = [];
-    
-    // FIXED: Correct Xano endpoint
-    const XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
-
-    function debugLog(message, data = null) {
-      const debugPanel = document.getElementById('debugPanel');
-      const timestamp = new Date().toLocaleTimeString();
-      let logMessage = `[${timestamp}] ${message}`;
-      if (data) {
-        logMessage += `\n${JSON.stringify(data, null, 2)}`;
-      }
-      debugPanel.innerHTML += logMessage + '\n---\n';
-      debugPanel.scrollTop = debugPanel.scrollHeight;
-      console.log(message, data);
-    }
-
-    function toggleDebug() {
-      const panel = document.getElementById('debugPanel');
-      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function playBeep() {
-      const beep = document.getElementById('beep');
-      beep.currentTime = 0;
-      beep.play().catch(e => console.log('Beep failed:', e));
-    }
-
-    function updateTime() {
-      const now = new Date();
-      const h = now.getHours().toString().padStart(2, '0');
-      const m = now.getMinutes().toString().padStart(2, '0');
-      document.getElementById("rightArea").innerHTML = h + ":" + m;
-    }
-    setInterval(updateTime, 1000);
-
-    window.onload = function() {
-      updateTime();
-      showNumeric();
-      debugLog('App initialized');
-      
-      // FIXED: Check if camera is available
-      checkCameraAvailability();
-    };
-
-    function checkCameraAvailability() {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-        debugLog('Camera API not available');
-        showManualInputOption();
-        return;
-      }
-      
-      navigator.mediaDevices.enumerateDevices()
-        .then(devices => {
-          const hasCamera = devices.some(device => device.kind === 'videoinput');
-          debugLog('Camera available:', hasCamera);
-          if (!hasCamera) {
-            showManualInputOption();
-          }
-        })
-        .catch(err => {
-          debugLog('Error checking cameras:', err);
-          showManualInputOption();
-        });
-    }
-
-    function showManualInputOption() {
-      const manualBtn = document.createElement('div');
-      manualBtn.id = 'manualInputButton';
-      manualBtn.innerHTML = 'MANUAL INPUT';
-      manualBtn.onclick = showManualInputDialog;
-      document.getElementById('phone').insertBefore(manualBtn, document.getElementById('scanFrame'));
-    }
-
-    function showManualInputDialog() {
-      const code = prompt('Enter barcode/QR code manually:');
-      if (code && code.trim()) {
-        onBarcodeDecoded(code.trim());
-      }
-    }
-
-    async function startScan() {
-      if (scanning) return;
-      
-      // FIXED: Check if camera is available first
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const hasCamera = devices.some(device => device.kind === 'videoinput');
-        
-        if (!hasCamera) {
-          showErrorPopup('No camera found. Use manual input instead.');
-          showManualInputDialog();
-          return;
-        }
-      } catch (err) {
-        debugLog('Error checking cameras:', err);
-      }
-      
-      scanning = true;
-
-      document.getElementById("scanFrame").style.display = "block";
-      document.getElementById("laser").style.display = "block";
-
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" }
-        });
-
-        const video = document.getElementById("preview");
-        video.srcObject = stream;
-        await video.play();
-
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d", { willReadFrequently: true }); // FIXED: Added willReadFrequently
-
-        function tick() {
-          if (!scanning || !video.videoWidth) {
-            animationFrame = requestAnimationFrame(tick);
-            return;
-          }
-
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const qr = jsQR(imageData.data, canvas.width, canvas.height);
-
-          if (qr) {
-            onBarcodeDecoded(qr.data);
-            return;
-          }
-
-          animationFrame = requestAnimationFrame(tick);
-        }
-
-        tick();
-      } catch (err) {
-        console.error("Camera error:", err);
-        scanning = false;
-        document.getElementById("scanFrame").style.display = "none";
-        document.getElementById("laser").style.display = "none";
-        showErrorPopup("Could not access camera. Use manual input.");
-        showManualInputDialog();
-      }
-    }
-
-    function stopCamera() {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-        animationFrame = null;
-      }
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-        stream = null;
-      }
-    }
-
-    function onBarcodeDecoded(code) {
-      scanning = false;
-      stopCamera();
-
-      document.getElementById("scanFrame").style.display = "none";
-      document.getElementById("laser").style.display = "none";
-
-      playBeep();
-
-      scanCount++;
-      const line = scanCount + " " + code;
-
-      currentScans.push({
-        number: scanCount,
-        code: code,
-        timestamp: new Date().toISOString()
-      });
-
-      const box = document.getElementById("labelBox");
-      box.innerHTML += line + "\n";
-      box.scrollTop = box.scrollHeight;
-      
-      debugLog('Barcode scanned', { code: code, scanCount: scanCount });
-    }
-
-    function clearScans() {
-      if (confirm('Clear all scans?')) {
-        scanCount = 0;
-        currentScans = [];
-        document.getElementById("labelBox").innerHTML = "";
-        document.getElementById("locationInput").value = "";
-        document.getElementById("etaInput").value = "";
-        debugLog('Scans cleared');
-      }
-    }
-
-    function validateBeforeStatus() {
-      const location = document.getElementById("locationInput").value.trim();
-      const eta = document.getElementById("etaInput").value.trim();
-      
-      if (currentScans.length === 0) {
-        showErrorPopup("Please scan at least one barcode first");
-        return false;
-      }
-      
-      if (!location) {
-        showErrorPopup("Please enter a location");
-        return false;
-      }
-      
-      // ETA is optional, so no validation needed
-      
-      return true;
-    }
-
-    function goToStatus() {
-      if (!validateBeforeStatus()) {
-        return;
-      }
-      
-      document.getElementById("labelBlock").style.display = "none";
-      document.getElementById("scanButton").style.display = "none";
-      document.getElementById("manualInputButton")?.style.display = "none";
-      document.getElementById("keypadWrapper").style.display = "none";
-
-      document.getElementById("leftText").innerHTML = "SELECT STATUS";
-
-      document.getElementById("statusScreen").style.display = "flex";
-    }
-
-    async function sendToXano(status) {
-      const location = document.getElementById("locationInput").value.trim();
-      const eta = document.getElementById("etaInput").value.trim() || ""; // FIXED: Always provide eta (can be empty)
-      let successCount = 0;
-      let errorCount = 0;
-      const failedScans = [];
-
-      // Show loading state
-      document.getElementById("leftText").innerHTML = "SENDING...";
-      
-      debugLog(`Using endpoint: ${XANO_API_URL}`);
-
-      // Send each scan as a separate record to Xano
-      for (const scan of currentScans) {
-        const now = new Date();
-        
-        // FIXED: Match EXACT field names from your table
-        const xanoData = {
-          label_id: scan.code,                    // REQUIRED - was missing before
-          barcode_type: detectBarcodeType(scan.code),
-          status: status,
-          date: now.toISOString().split('T')[0],  // YYYY-MM-DD
-          time: now.toTimeString().split(' ')[0], // HH:MM:SS
-          location: location,
-          eta: eta,                                // FIXED: Always include eta field (can be empty)
-          timestamp: Date.now(),                   // epochs
-          created_at: now.toISOString()
-        };
-
-        debugLog('Sending data to Xano', xanoData);
-
-        try {
-          const response = await fetch(XANO_API_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify(xanoData)
-          });
-
-          const responseText = await response.text();
-          let responseData;
-          try {
-            responseData = JSON.parse(responseText);
-          } catch {
-            responseData = responseText;
-          }
-
-          debugLog('Xano response', {
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.ok,
-            data: responseData
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${responseText}`);
-          }
-
-          successCount++;
-          
-        } catch (error) {
-          console.error('Error sending to Xano:', error);
-          debugLog('Error sending to Xano', error.message);
-          errorCount++;
-          failedScans.push(scan);
-        }
-      }
-
-      return { 
-        success: successCount, 
-        error: errorCount, 
-        failedScans: failedScans 
-      };
-    }
-
-    function detectBarcodeType(code) {
-      if (!code) return "Unknown";
-      
-      if (/^[0-9]+$/.test(code)) {
-        if (code.length === 12) return "UPC-A";
-        if (code.length === 13) return "EAN-13";
-        if (code.length === 8) return "EAN-8";
-        if (code.length === 14) return "GTIN-14";
-        return "Numeric Code";
-      } else if (code.startsWith('http://') || code.startsWith('https://')) {
-        return "URL QR";
-      } else if (code.length > 20) {
-        return "QR Code";
-      } else {
-        return "Alphanumeric Code";
-      }
-    }
-
-    async function chooseStatus(status) {
-      selectedStatus = status;
-      
-      // Disable buttons to prevent double submission
-      const buttons = document.querySelectorAll('.statusBtn');
-      buttons.forEach(btn => btn.style.pointerEvents = 'none');
-      
-      const result = await sendToXano(status);
-      
-      // Re-enable buttons
-      buttons.forEach(btn => btn.style.pointerEvents = 'auto');
-      
-      debugLog('Send result', result);
-      
-      if (result.error === 0) {
-        // All successful
-        showSuccessPopup(status, result.success);
-        
-        setTimeout(() => {
-          clearScans();
-          goBackToScan();
-        }, 2000);
-      } else if (result.success > 0) {
-        // Partial success
-        showSuccessPopup(status, result.success, true);
-        showErrorPopup(`${result.error} scan(s) failed to send. Check debug panel.`);
-        
-        // Keep failed scans for retry
-        if (result.failedScans && result.failedScans.length > 0) {
-          currentScans = result.failedScans;
-          scanCount = currentScans.length;
-          
-          // Update display to show only failed scans
-          const box = document.getElementById("labelBox");
-          box.innerHTML = "";
-          currentScans.forEach((scan, index) => {
-            box.innerHTML += (index + 1) + " " + scan.code + "\n";
-          });
-        }
-        
-        setTimeout(() => {
-          goBackToScan();
-        }, 3000);
-      } else {
-        // Complete failure
-        showErrorPopup("Failed to send data to server. Check debug panel.");
-        goBackToScan();
-      }
-    }
-
-    function showSuccessPopup(status, count, partial = false) {
-      const popup = document.getElementById('successPopup');
-      const statusMsg = document.getElementById('popupStatus');
-      const scanCountMsg = document.getElementById('popupScanCount');
-      const messageEl = document.querySelector('.popup-message');
-      
-      statusMsg.textContent = status;
-      scanCountMsg.textContent = count + ' scan' + (count !== 1 ? 's' : '') + ' recorded';
-      
-      if (partial) {
-        messageEl.textContent = 'Partially Recorded!';
-      } else {
-        messageEl.textContent = 'Package Recorded!';
-      }
-      
-      popup.style.display = 'flex';
-      
-      setTimeout(() => {
-        popup.style.display = 'none';
-      }, 2000);
-    }
-
-    function showErrorPopup(message) {
-      const popup = document.getElementById('errorPopup');
-      const errorMsg = document.getElementById('errorMessage');
-      
-      errorMsg.textContent = message;
-      popup.style.display = 'flex';
-      
-      setTimeout(() => {
-        popup.style.display = 'none';
-      }, 3000);
-    }
-
-    function goBackToScan() {
-      document.getElementById("statusScreen").style.display = "none";
-      document.getElementById("labelBlock").style.display = "flex";
-      document.getElementById("scanButton").style.display = "block";
-      if (document.getElementById("manualInputButton")) {
-        document.getElementById("manualInputButton").style.display = "block";
-      }
-      document.getElementById("keypadWrapper").style.display = "block";
-      document.getElementById("leftText").innerHTML = "SCAN BARCODE";
-    }
-
-    function showNumeric() {
-      document.getElementById("numericPad").style.display = "grid";
-      document.getElementById("qwertyPad").style.display = "none";
-      document.getElementById("symbolPad").style.display = "none";
-      
-      document.getElementById("tabNumeric").classList.add("active");
-      document.getElementById("tabQwerty").classList.remove("active");
-      document.getElementById("tabSymbol").classList.remove("active");
-    }
-
-    function showQwerty() {
-      document.getElementById("numericPad").style.display = "none";
-      document.getElementById("qwertyPad").style.display = "block";
-      document.getElementById("symbolPad").style.display = "none";
-      
-      document.getElementById("tabQwerty").classList.add("active");
-      document.getElementById("tabNumeric").classList.remove("active");
-      document.getElementById("tabSymbol").classList.remove("active");
-    }
-
-    function showSymbol() {
-      document.getElementById("numericPad").style.display = "none";
-      document.getElementById("qwertyPad").style.display = "none";
-      document.getElementById("symbolPad").style.display = "block";
-      
-      document.getElementById("tabSymbol").classList.add("active");
-      document.getElementById("tabQwerty").classList.remove("active");
-      document.getElementById("tabNumeric").classList.remove("active");
-    }
-
-    function typeChar(c) {
-      const activeElement = document.activeElement;
-      if (activeElement && (activeElement.id === 'locationInput' || activeElement.id === 'etaInput')) {
-        activeElement.value += c;
-      } else {
-        const box = document.getElementById("labelBox");
-        box.innerHTML += c;
-        box.scrollTop = box.scrollHeight;
-      }
-    }
-
-    function backspace() {
-      const activeElement = document.activeElement;
-      if (activeElement && (activeElement.id === 'locationInput' || activeElement.id === 'etaInput')) {
-        activeElement.value = activeElement.value.slice(0, -1);
-      } else {
-        let t = document.getElementById("labelBox").innerHTML;
-        document.getElementById("labelBox").innerHTML = t.slice(0, -1);
-      }
-    }
-  </script>
-
+<title>Win CE 2007 - Scan Barcode</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<!-- Very old school meta tags for compatibility -->
+<meta http-equiv="X-UA-Compatible" content="IE=5">
+<meta name="viewport" content="width=device-width, initial-scale=0.4, maximum-scale=0.4, user-scalable=no">
+
+<!-- HTML5 QR Code Scanner Library - Compatible with Android 5.0+ -->
+<script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
+
+<style type="text/css">
+body {
+margin: 0;
+padding: 0;
+background: #000000;
+text-align: center;
+font-family: 'Arial', Helvetica, sans-serif;
+}
+
+/* Center the fixed canvas */
+#wrapper {
+width: 100%;
+text-align: center;
+margin-top: 20px;
+}
+
+/* FIXED CANVAS — EXACT 720×1280 */
+#canvas {
+width: 720px;
+height: 1280px;
+background: #1b1f2a;
+border: 2px solid #333333;
+margin: 0 auto;
+overflow-y: auto;
+overflow-x: hidden;
+-webkit-box-shadow: 0px 0px 20px #000000;
+-moz-box-shadow: 0px 0px 20px #000000;
+box-shadow: 0px 0px 20px #000000;
+}
+
+/* Win CE 2007 style header */
+#header {
+width: 720px;
+height: 60px;
+background: #2c3e6d;
+color: #ffffff;
+font-size: 28px;
+line-height: 60px;
+border-bottom: 2px solid #4a6a9e;
+position: relative;
+font-weight: bold;
+text-shadow: 2px 2px 2px #1a1a1a;
+}
+
+#header-left {
+float: left;
+padding-left: 15px;
+font-weight: bold;
+color: #ffffff;
+}
+
+#header-right {
+float: right;
+padding-right: 15px;
+font-size: 28px;
+font-weight: bold;
+color: #ffffff;
+}
+
+.clear {
+clear: both;
+}
+
+/* Content area */
+#content {
+width: 720px;
+background: #1b1f2a;
+padding: 20px;
+box-sizing: border-box;
+min-height: 1220px;
+}
+
+/* Container for button and grid side by side */
+.scan-row {
+width: 100%;
+display: flex;
+flex-direction: row;
+gap: 20px;
+margin-bottom: 20px;
+}
+
+/* Old style gray border SCAN button */
+.scan-button {
+width: 200px;
+height: 80px;
+background: #3a3f4a;
+border: 3px solid #6a6f7a;
+color: #ffffff;
+font-size: 32px;
+font-weight: bold;
+text-align: center;
+line-height: 80px;
+text-transform: uppercase;
+cursor: pointer;
+box-shadow: 3px 3px 5px #0a0a0a;
+text-shadow: 2px 2px 2px #1a1a1a;
+flex-shrink: 0;
+}
+
+.scan-button:hover {
+background: #4a4f5a;
+border-color: #8a8f9a;
+}
+
+/* 6-character input grid container */
+.grid-container {
+display: flex;
+flex-direction: row;
+gap: 5px;
+height: 80px;
+flex-grow: 1;
+}
+
+/* Individual grid cells */
+.grid-cell {
+width: 70px;
+height: 80px;
+background: #d47b2e;
+border: 2px solid #a85e1f;
+position: relative;
+}
+
+/* Style for the input fields inside cells */
+.grid-cell input {
+width: 100%;
+height: 100%;
+background: transparent;
+border: none;
+color: #000000;
+font-size: 36px;
+font-weight: bold;
+text-align: center;
+padding: 0;
+margin: 0;
+outline: none;
+font-family: 'Arial', Helvetica, sans-serif;
+text-transform: uppercase;
+}
+
+.grid-cell input:focus {
+background: #e58c3f;
+}
+
+/* Status row container */
+.status-row {
+width: 100%;
+display: flex;
+flex-direction: row;
+align-items: center;
+gap: 15px;
+margin: 25px 0 20px 0;
+padding: 10px;
+background: #2a2f3a;
+border: 2px solid #4a5270;
+box-sizing: border-box;
+}
+
+/* Status label */
+.status-label {
+color: #aaccff;
+font-size: 24px;
+font-weight: bold;
+text-transform: uppercase;
+white-space: nowrap;
+}
+
+/* Dropdown container */
+.dropdown-container {
+position: relative;
+flex-grow: 1;
+}
+
+/* Old school dropdown - disabled by default */
+.status-dropdown {
+width: 100%;
+padding: 12px 15px;
+background: #1b1f2a;
+border: 2px solid #6a8abe;
+color: #ffffff;
+font-size: 22px;
+font-family: 'Arial', Helvetica, sans-serif;
+cursor: pointer;
+appearance: none;
+-webkit-appearance: none;
+-moz-appearance: none;
+background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%236a8abe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>');
+background-repeat: no-repeat;
+background-position: right 15px center;
+background-size: 20px;
+}
+
+.status-dropdown:disabled {
+opacity: 0.5;
+cursor: not-allowed;
+background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%233a4258" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>');
+}
+
+.status-dropdown option {
+background: #1b1f2a;
+color: #ffffff;
+font-size: 20px;
+padding: 10px;
+}
+
+/* Date/Time read-only display */
+.datetime-row {
+width: 100%;
+margin: 15px 0 20px 0;
+padding: 12px 15px;
+background: #1b1f2a;
+border: 2px solid #4a6a9e;
+color: #00ff00;
+font-size: 26px;
+font-family: 'Courier New', monospace;
+text-align: center;
+box-sizing: border-box;
+letter-spacing: 2px;
+}
+
+/* Table header - darker light blue */
+.table-header {
+width: 100%;
+display: flex;
+flex-direction: row;
+background: #2c3e6d; /* Darker light blue */
+border: 2px solid #4a6a9e;
+margin-bottom: 5px;
+box-sizing: border-box;
+}
+
+.header-cell {
+padding: 12px 10px;
+color: #ffffff;
+font-size: 22px;
+font-weight: bold;
+text-align: center;
+}
+
+.header-num {
+width: 20%;
+border-right: 2px solid #4a6a9e;
+}
+
+.header-barcode {
+width: 40%;
+border-right: 2px solid #4a6a9e;
+}
+
+.header-label {
+width: 40%;
+}
+
+/* Scanned items container - transparent light blue */
+.scanned-items {
+width: 100%;
+height: 350px;
+background: rgba(74, 106, 158, 0.15); /* Transparent light blue */
+border: 2px solid #4a6a9e;
+overflow-y: auto;
+box-sizing: border-box;
+}
+
+/* Individual scanned item row */
+.scanned-row {
+display: flex;
+flex-direction: row;
+border-bottom: 1px solid #4a6a9e;
+font-size: 20px;
+font-family: 'Courier New', monospace;
+}
+
+.scanned-row:last-child {
+border-bottom: none;
+}
+
+.scanned-num {
+width: 20%;
+padding: 8px;
+color: #aaccff;
+text-align: center;
+border-right: 1px solid #4a6a9e;
+}
+
+.scanned-barcode {
+width: 40%;
+padding: 8px;
+color: #00ff00;
+text-align: center;
+border-right: 1px solid #4a6a9e;
+font-weight: bold;
+letter-spacing: 1px;
+}
+
+.scanned-label {
+width: 40%;
+padding: 8px;
+color: #ffffff;
+text-align: center;
+}
+
+/* Scanner container - visible when scanning */
+#scanner-container {
+width: 100%;
+margin-top: 20px;
+border: 2px solid #4a6a9e;
+background: #000000;
+display: none;
+}
+
+/* Scanner element */
+#reader {
+width: 100%;
+height: 250px;
+background: #000000;
+}
+
+/* Simple instruction */
+.scan-instruction {
+color: #aaccff;
+font-size: 16px;
+margin-top: 10px;
+text-align: center;
+font-family: 'Courier New', monospace;
+display: none;
+}
+
+/* Loading overlay */
+.loading-overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.8);
+display: none;
+justify-content: center;
+align-items: center;
+z-index: 9999;
+}
+
+.loading-spinner {
+color: #ffffff;
+font-size: 24px;
+text-align: center;
+}
+
+.loading-spinner::after {
+content: '';
+display: block;
+width: 50px;
+height: 50px;
+border: 5px solid #ffffff;
+border-top-color: #00ff00;
+border-radius: 50%;
+margin: 20px auto;
+animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+from { transform: rotate(0deg); }
+to { transform: rotate(360deg); }
+}
+
+.error-toast {
+position: fixed;
+bottom: 20px;
+left: 50%;
+transform: translateX(-50%);
+background: #ff4444;
+color: white;
+padding: 15px 30px;
+border-radius: 5px;
+font-size: 20px;
+display: none;
+z-index: 10000;
+}
+
+.success-toast {
+position: fixed;
+bottom: 20px;
+left: 50%;
+transform: translateX(-50%);
+background: #00C851;
+color: white;
+padding: 15px 30px;
+border-radius: 5px;
+font-size: 20px;
+display: none;
+z-index: 10000;
+}
+</style>
 </head>
 
 <body>
+<div id="wrapper">
+<div id="canvas">
 
-  <div id="phone">
-    <!-- GLASSY MESH PATTERN -->
-    <div id="pattern"></div>
+<div id="header">
+<div id="header-left">SCAN BARCODE</div>
+<div id="header-right">12:00:00</div>
+<div class="clear"></div>
+</div>
 
-    <div id="header">
-      <div id="leftText">SCAN BARCODE</div>
-      <div id="rightArea" onclick="toggleDebug()">⏰</div>
-    </div>
+<div id="content">
+<!-- SCAN button and 6-character grid side by side -->
+<div class="scan-row">
+<div class="scan-button" id="scanBtn">SCAN</div>
+<div class="grid-container">
+<div class="grid-cell"><input type="text" maxlength="1" class="char-input" id="char1"></div>
+<div class="grid-cell"><input type="text" maxlength="1" class="char-input" id="char2"></div>
+<div class="grid-cell"><input type="text" maxlength="1" class="char-input" id="char3"></div>
+<div class="grid-cell"><input type="text" maxlength="1" class="char-input" id="char4"></div>
+<div class="grid-cell"><input type="text" maxlength="1" class="char-input" id="char5"></div>
+<div class="grid-cell"><input type="text" maxlength="1" class="char-input" id="char6"></div>
+</div>
+</div>
 
-    <div id="scanButton" onclick="startScan()">SCAN</div>
+<!-- Status dropdown row - initially disabled -->
+<div class="status-row">
+<div class="status-label">STATUS</div>
+<div class="dropdown-container">
+<select class="status-dropdown" id="statusDropdown" disabled>
+<option value="">-- Select Status --</option>
+<option value="Item Booked">Item Booked</option>
+<option value="Item Received">Item Received</option>
+<option value="Item Bagged">Item Bagged</option>
+<option value="Item Dispatched">Item Dispatched</option>
+<option value="In Transit">In Transit</option>
+<option value="Out for Delivery">Out for Delivery</option>
+<option value="Item Delivered">Item Delivered</option>
+</select>
+</div>
+</div>
 
-    <div id="scanFrame">
-      <video id="preview" playsinline></video>
-      <div id="laser"></div>
-      <div class="corner tl"></div>
-      <div class="corner tr"></div>
-      <div class="corner bl"></div>
-      <div class="corner br"></div>
-    </div>
+<!-- Date/Time read-only display -->
+<div class="datetime-row" id="datetimeDisplay">
+2024-01-15 14:30:45
+</div>
 
-    <!-- LABEL BLOCK -->
-    <div id="labelBlock">
-      <div id="labelTitle"># LABEL ID</div>
+<!-- Table header - darker light blue -->
+<div class="table-header">
+<div class="header-cell header-num">#</div>
+<div class="header-cell header-barcode">BARCODE</div>
+<div class="header-cell header-label">STATUS</div>
+</div>
 
-      <div id="labelBox"></div>
+<!-- Scanned items container - transparent light blue -->
+<div class="scanned-items" id="scannedItems">
+<!-- Items will be added here when scanned -->
+</div>
 
-      <!-- Location Input Field (REQUIRED) -->
-      <input type="text" id="locationInput" placeholder="Enter Location (Required)" maxlength="100">
+<!-- Visible scanner container -->
+<div id="scanner-container">
+<div id="reader"></div>
+</div>
 
-      <!-- ETA Input Field (OPTIONAL) -->
-      <input type="text" id="etaInput" placeholder="ETA (Optional - e.g., 2024-12-31)" maxlength="50">
+<!-- Simple instruction -->
+<div class="scan-instruction" id="scanInstruction">
+Point camera at barcode
+</div>
+</div>
 
-      <div id="labelButtons">
-        <span onclick="clearScans()">ESC</span>
-        <span id="divider">|</span>
-        <span onclick="goToStatus()">ENTER</span>
-      </div>
+</div>
+</div>
 
-      <!-- KEYPAD WRAPPER -->
-      <div id="keypadWrapper">
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+<div class="loading-spinner">Sending to XANO...</div>
+</div>
 
-        <!-- KEYPAD TABS -->
-        <div id="keyTabs">
-          <button id="tabQwerty" onclick="showQwerty()">ABC</button>
-          <button id="tabNumeric" onclick="showNumeric()" class="active">123</button>
-          <button id="tabSymbol" onclick="showSymbol()">SYM</button>
-        </div>
+<!-- Toast notifications -->
+<div class="error-toast" id="errorToast"></div>
+<div class="success-toast" id="successToast"></div>
 
-        <!-- NUMERIC KEYPAD -->
-        <div id="numericPad">
-          <button onclick="typeChar('1')">1</button>
-          <button onclick="typeChar('2')">2</button>
-          <button onclick="typeChar('3')">3</button>
-          
-          <button onclick="typeChar('4')">4</button>
-          <button onclick="typeChar('5')">5</button>
-          <button onclick="typeChar('6')">6</button>
-          
-          <button onclick="typeChar('7')">7</button>
-          <button onclick="typeChar('8')">8</button>
-          <button onclick="typeChar('9')">9</button>
-          
-          <button onclick="typeChar('.')">.</button>
-          <button onclick="typeChar('0')">0</button>
-          <button class="backspace" onclick="backspace()">⌫</button>
-        </div>
+<script type="text/javascript">
+// =============================================
+// XANO API CONFIGURATION
+// =============================================
+const XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
 
-        <!-- QWERTY KEYPAD -->
-        <div id="qwertyPad">
-          <div class="row">
-            <button onclick="typeChar('q')">q</button>
-            <button onclick="typeChar('w')">w</button>
-            <button onclick="typeChar('e')">e</button>
-            <button onclick="typeChar('r')">r</button>
-            <button onclick="typeChar('t')">t</button>
-            <button onclick="typeChar('y')">y</button>
-            <button onclick="typeChar('u')">u</button>
-            <button onclick="typeChar('i')">i</button>
-            <button onclick="typeChar('o')">o</button>
-            <button onclick="typeChar('p')">p</button>
-          </div>
-          <div class="row">
-            <button onclick="typeChar('a')">a</button>
-            <button onclick="typeChar('s')">s</button>
-            <button onclick="typeChar('d')">d</button>
-            <button onclick="typeChar('f')">f</button>
-            <button onclick="typeChar('g')">g</button>
-            <button onclick="typeChar('h')">h</button>
-            <button onclick="typeChar('j')">j</button>
-            <button onclick="typeChar('k')">k</button>
-            <button onclick="typeChar('l')">l</button>
-          </div>
-          <div class="row">
-            <button class="special" onclick="typeChar('z')">z</button>
-            <button class="special" onclick="typeChar('x')">x</button>
-            <button class="special" onclick="typeChar('c')">c</button>
-            <button class="special" onclick="typeChar('v')">v</button>
-            <button class="special" onclick="typeChar('b')">b</button>
-            <button class="special" onclick="typeChar('n')">n</button>
-            <button class="special" onclick="typeChar('m')">m</button>
-            <button class="special" onclick="backspace()">⌫</button>
-          </div>
-          <div class="row">
-            <button class="special" onclick="showSymbol()">?123</button>
-            <button class="space" onclick="typeChar(' ')">space</button>
-            <button class="special" onclick="typeChar('.')">.</button>
-          </div>
-        </div>
+// =============================================
+// TOAST NOTIFICATION FUNCTIONS
+// =============================================
+function showError(message) {
+var toast = document.getElementById('errorToast');
+toast.innerHTML = message;
+toast.style.display = 'block';
+setTimeout(function() {
+toast.style.display = 'none';
+}, 3000);
+}
 
-        <!-- SYMBOL KEYPAD -->
-        <div id="symbolPad">
-          <div class="row">
-            <button onclick="typeChar('@')">@</button>
-            <button onclick="typeChar('#')">#</button>
-            <button onclick="typeChar('$')">$</button>
-            <button onclick="typeChar('%')">%</button>
-            <button onclick="typeChar('&')">&</button>
-            <button onclick="typeChar('*')">*</button>
-            <button onclick="typeChar('(')">(</button>
-            <button onclick="typeChar(')')">)</button>
-            <button onclick="typeChar('-')">-</button>
-            <button onclick="typeChar('+')">+</button>
-          </div>
-          <div class="row">
-            <button onclick="typeChar('!')">!</button>
-            <button onclick="typeChar('?')">?</button>
-            <button onclick="typeChar('/')">/</button>
-            <button onclick="typeChar(':')">:</button>
-            <button onclick="typeChar(';')">;</button>
-            <button onclick="typeChar('"')">"</button>
-            <button onclick="typeChar("'")">'</button>
-            <button onclick="typeChar(',')">,</button>
-            <button onclick="typeChar('.')">.</button>
-            <button onclick="typeChar('~')">~</button>
-          </div>
-          <div class="row">
-            <button onclick="typeChar('_')">_</button>
-            <button onclick="typeChar('=')">=</button>
-            <button onclick="typeChar('<')">&lt;</button>
-            <button onclick="typeChar('>')">&gt;</button>
-            <button onclick="typeChar('[')">[</button>
-            <button onclick="typeChar(']')">]</button>
-            <button onclick="typeChar('{')">{</button>
-            <button onclick="typeChar('}')">}</button>
-            <button onclick="typeChar('\\')">\</button>
-            <button onclick="typeChar('|')">|</button>
-          </div>
-          <div class="row">
-            <button class="special" onclick="showQwerty()">ABC</button>
-            <button class="space" onclick="typeChar(' ')">space</button>
-            <button class="special" onclick="backspace()">⌫</button>
-          </div>
-        </div>
+function showSuccess(message) {
+var toast = document.getElementById('successToast');
+toast.innerHTML = message;
+toast.style.display = 'block';
+setTimeout(function() {
+toast.style.display = 'none';
+}, 3000);
+}
 
-      </div> <!-- END KEYPAD WRAPPER -->
+// =============================================
+// LOADING OVERLAY
+// =============================================
+function showLoading() {
+document.getElementById('loadingOverlay').style.display = 'flex';
+}
 
-    </div> <!-- END LABEL BLOCK -->
+function hideLoading() {
+document.getElementById('loadingOverlay').style.display = 'none';
+}
 
-    <!-- STATUS SCREEN -->
-    <div id="statusScreen">
-      <div class="statusBtn" onclick="chooseStatus('Data Received')">Data Received</div>
-      <div class="statusBtn" onclick="chooseStatus('Picked Up')">Picked Up</div>
-      <div class="statusBtn" onclick="chooseStatus('Depart Post Office')">Depart Post Office</div>
-      <div class="statusBtn" onclick="chooseStatus('Arrival Scan')">Arrival Scan</div>
-      <div class="statusBtn" onclick="chooseStatus('Departure Scan')">Departure Scan</div>
-      <div class="statusBtn" onclick="chooseStatus('Local Scan')">Local Scan</div>
-      <div class="statusBtn" onclick="chooseStatus('Out For Delivery')">Out For Delivery</div>
-      <div class="statusBtn" onclick="chooseStatus('Delivered')">Delivered</div>
-      <div class="statusBtn back" onclick="goBackToScan()">BACK TO SCANNER</div>
-    </div>
+// =============================================
+// BEEP SOUND FUNCTION
+// =============================================
+function playBeep() {
+try {
+// Try to use Web Audio API for beep
+var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+var oscillator = audioCtx.createOscillator();
+var gainNode = audioCtx.createGain();
 
-    <!-- SUCCESS POPUP -->
-    <div id="successPopup">
-      <div class="popup-content">
-        <div class="checkmark">✓</div>
-        <div class="popup-message">Package Recorded!</div>
-        <div class="popup-submessage" id="popupStatus"></div>
-        <div class="popup-submessage" id="popupScanCount"></div>
-      </div>
-    </div>
+oscillator.connect(gainNode);
+gainNode.connect(audioCtx.destination);
 
-    <!-- ERROR POPUP -->
-    <div id="errorPopup">
-      <div class="error-content">
-        <div class="error-mark">✗</div>
-        <div class="popup-message">Error</div>
-        <div class="popup-submessage" id="errorMessage"></div>
-      </div>
-    </div>
+oscillator.frequency.value = 800;
+oscillator.type = 'sine';
 
-    <!-- DEBUG PANEL (click time to show) -->
-    <div id="debugPanel" style="display: none;"></div>
+gainNode.gain.value = 0.1;
 
-    <!-- BEEP -->
-    <audio id="beep" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=" preload="auto"></audio>
+oscillator.start();
+oscillator.stop(audioCtx.currentTime + 0.1);
+} catch (e) {
+// Fallback for older browsers - use simple beep
+console.log("Beep sound not supported");
+}
+}
 
-  </div>
+// =============================================
+// SEND DATA TO XANO DATABASE
+// =============================================
+async function sendToXano(barcode, status) {
+try {
+showLoading();
 
+// Get current timestamp in epochs (milliseconds)
+var now = new Date();
+var epochs = Math.floor(now.getTime());
+
+// Format date as YYYY-MM-DD
+var dateStr = now.toISOString().split('T')[0];
+
+// Format time as HH:MM:SS
+var timeStr = now.toTimeString().split(' ')[0];
+
+// Prepare the data according to your table structure
+var data = {
+created_at: epochs,
+epochs: epochs,
+label_id: barcode, // Using barcode as label_id
+text: status,
+barcode_type: "QR_CODE",
+status: status,
+date: dateStr,
+time: timeStr,
+location: "Default Location", // You can modify this as needed
+eta: "N/A",
+timestamp: epochs
+};
+
+console.log("Sending to XANO:", data);
+
+// Send to XANO
+var response = await fetch(XANO_API_URL, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'Accept': 'application/json'
+},
+body: JSON.stringify(data)
+});
+
+if (!response.ok) {
+var errorText = await response.text();
+throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+}
+
+var responseData = await response.json();
+console.log("XANO Response:", responseData);
+
+// Hide loading
+hideLoading();
+
+// Show success message
+showSuccess('Data sent to XANO successfully!');
+
+return true;
+
+} catch (error) {
+console.error("Error sending to XANO:", error);
+hideLoading();
+showError('Failed to send to XANO: ' + error.message);
+return false;
+}
+}
+
+// =============================================
+// TIME DISPLAYS - Real time clock
+// =============================================
+function updateTime() {
+var now = new Date();
+var hours = now.getHours();
+var minutes = now.getMinutes();
+var seconds = now.getSeconds();
+
+hours = hours < 10 ? '0' + hours : hours;
+minutes = minutes < 10 ? '0' + minutes : minutes;
+seconds = seconds < 10 ? '0' + seconds : seconds;
+
+var timeString = hours + ':' + minutes + ':' + seconds;
+
+// Update header time
+var timeElement = document.getElementById('header-right');
+if (timeElement) {
+timeElement.innerHTML = timeString;
+}
+
+// Update full date/time display
+updateDateTimeDisplay();
+}
+
+function updateDateTimeDisplay() {
+var now = new Date();
+var year = now.getFullYear();
+var month = (now.getMonth() + 1).toString().padStart(2, '0');
+var day = now.getDate().toString().padStart(2, '0');
+var hours = now.getHours().toString().padStart(2, '0');
+var minutes = now.getMinutes().toString().padStart(2, '0');
+var seconds = now.getSeconds().toString().padStart(2, '0');
+
+var dateTimeString = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+
+var dateTimeElement = document.getElementById('datetimeDisplay');
+if (dateTimeElement) {
+dateTimeElement.innerHTML = dateTimeString;
+}
+}
+
+// =============================================
+// GRID CELLS - Track when filled
+// =============================================
+
+var gridFilled = false;
+
+function checkGridFilled() {
+var allFilled = true;
+for (var i = 1; i <= 6; i++) {
+var input = document.getElementById('char' + i);
+if (!input || input.value === '') {
+allFilled = false;
+break;
+}
+}
+
+if (allFilled && !gridFilled) {
+// Grid just became filled - enable dropdown
+gridFilled = true;
+document.getElementById('statusDropdown').disabled = false;
+document.getElementById('statusDropdown').focus();
+playBeep(); // Beep when grid is filled
+} else if (!allFilled && gridFilled) {
+// Grid became empty - disable dropdown
+gridFilled = false;
+document.getElementById('statusDropdown').disabled = true;
+}
+
+return allFilled;
+}
+
+function setupInputFields() {
+var inputs = document.querySelectorAll('.char-input');
+
+for (var i = 0; i < inputs.length; i++) {
+inputs[i].addEventListener('input', function(e) {
+var currentInput = e.target;
+var currentValue = currentInput.value;
+var currentId = parseInt(currentInput.id.replace('char', ''));
+
+if (currentValue.length > 0) {
+currentInput.value = currentValue.charAt(0).toUpperCase();
+
+if (currentId < 6) {
+document.getElementById('char' + (currentId + 1)).focus();
+}
+}
+
+// Check if grid is now filled
+checkGridFilled();
+});
+
+inputs[i].addEventListener('keydown', function(e) {
+var currentInput = e.target;
+var currentId = parseInt(currentInput.id.replace('char', ''));
+
+if (e.key === 'Backspace' && currentInput.value.length === 0) {
+if (currentId > 1) {
+e.preventDefault();
+var prevInput = document.getElementById('char' + (currentId - 1));
+prevInput.focus();
+prevInput.value = '';
+
+// Check if grid is now empty
+checkGridFilled();
+}
+}
+});
+}
+}
+
+// Clear grid cells
+function clearGrid() {
+for (var i = 1; i <= 6; i++) {
+document.getElementById('char' + i).value = '';
+}
+document.getElementById('char1').focus();
+checkGridFilled();
+}
+
+// =============================================
+// SCANNED ITEMS LIST
+// =============================================
+
+var scannedItems = [];
+var itemCounter = 1;
+
+// Add scanned item to list
+function addScannedItem(barcode, status) {
+// Format barcode to 6 digits
+var formattedBarcode = barcode.padStart(6, '0').substring(0, 6).toUpperCase();
+
+// Create item object
+var item = {
+id: itemCounter++,
+barcode: formattedBarcode,
+status: status
+};
+
+scannedItems.unshift(item); // Add to beginning (newest first)
+
+// Limit to 30 items
+if (scannedItems.length > 30) {
+scannedItems.pop();
+}
+
+// Refresh display
+renderScannedItems();
+}
+
+// Render scanned items list
+function renderScannedItems() {
+var container = document.getElementById('scannedItems');
+container.innerHTML = '';
+
+if (scannedItems.length === 0) {
+return; // Empty container
+}
+
+for (var i = 0; i < scannedItems.length; i++) {
+var item = scannedItems[i];
+
+var row = document.createElement('div');
+row.className = 'scanned-row';
+
+var numCell = document.createElement('div');
+numCell.className = 'scanned-num';
+numCell.innerHTML = item.id;
+
+var barcodeCell = document.createElement('div');
+barcodeCell.className = 'scanned-barcode';
+barcodeCell.innerHTML = item.barcode;
+
+var statusCell = document.createElement('div');
+statusCell.className = 'scanned-label';
+statusCell.innerHTML = item.status;
+
+row.appendChild(numCell);
+row.appendChild(barcodeCell);
+row.appendChild(statusCell);
+
+container.appendChild(row);
+}
+
+// Scroll to top
+container.scrollTop = 0;
+}
+
+// =============================================
+// BARCODE SCANNER
+// =============================================
+
+var html5QrCode = null;
+var isScanning = false;
+
+function createScanner() {
+try {
+html5QrCode = new Html5Qrcode("reader");
+} catch (err) {
+console.log("Scanner error: " + err.message);
+}
+}
+
+function startCamera() {
+if (!html5QrCode) {
+createScanner();
+}
+
+document.getElementById('scanner-container').style.display = 'block';
+document.getElementById('scanInstruction').style.display = 'block';
+
+var config = {
+fps: 10,
+qrbox: { width: 250, height: 150 },
+aspectRatio: 1.7777
+};
+
+html5QrCode.start(
+{ facingMode: "environment" },
+config,
+// Success callback
+function(decodedText, decodedResult) {
+// Get the scanned barcode
+var barcode = decodedText.trim();
+
+// Fill grid cells with barcode
+for (var i = 1; i <= 6; i++) {
+var charInput = document.getElementById('char' + i);
+if (charInput) {
+if (i <= barcode.length) {
+charInput.value = barcode.charAt(i-1).toUpperCase();
+} else {
+charInput.value = '';
+}
+}
+}
+
+// Beep when scanned
+playBeep();
+
+// Check if grid is filled
+checkGridFilled();
+
+// Hide scanner
+setTimeout(function() {
+stopCamera();
+document.getElementById('scanner-container').style.display = 'none';
+document.getElementById('scanInstruction').style.display = 'none';
+}, 500);
+},
+// Error callback
+function(errorMessage) {
+// Silent
+}
+).then(function() {
+isScanning = true;
+}).catch(function(err) {
+console.log("Camera error: " + err.message);
+document.getElementById('scanner-container').style.display = 'none';
+document.getElementById('scanInstruction').style.display = 'none';
+});
+}
+
+function stopCamera() {
+if (html5QrCode && isScanning) {
+html5QrCode.stop().then(function() {
+isScanning = false;
+}).catch(function(err) {});
+}
+}
+
+// =============================================
+// STATUS DROPDOWN HANDLER - NOW SENDS TO XANO
+// =============================================
+
+async function handleStatusSelected() {
+var dropdown = document.getElementById('statusDropdown');
+var selectedIndex = dropdown.selectedIndex;
+
+if (selectedIndex > 0) { // Not the placeholder
+var selectedStatus = dropdown.options[selectedIndex].text;
+
+// Get barcode from grid
+var barcode = '';
+for (var i = 1; i <= 6; i++) {
+barcode += document.getElementById('char' + i).value;
+}
+
+if (barcode.length === 6) {
+// Send to XANO first
+var sent = await sendToXano(barcode, selectedStatus);
+            
+if (sent) {
+// Add to list only if XANO save was successful
+addScannedItem(barcode, selectedStatus);
+
+// Clear grid and reset dropdown
+clearGrid();
+dropdown.selectedIndex = 0;
+dropdown.disabled = true;
+
+// Beep for confirmation
+playBeep();
+} else {
+// If failed, keep the data for retry
+showError('Failed to save to XANO. Please try again.');
+}
+}
+}
+}
+
+// =============================================
+// INITIALIZATION
+// =============================================
+window.onload = function() {
+updateTime();
+setInterval(updateTime, 1000);
+setupInputFields();
+createScanner();
+
+// SCAN button click
+document.getElementById('scanBtn').onclick = function(e) {
+e.preventDefault();
+startCamera();
+};
+
+// Status dropdown change
+document.getElementById('statusDropdown').onchange = function() {
+handleStatusSelected();
+};
+
+// Focus on first cell
+document.getElementById('char1').focus();
+
+// Test XANO connection on load (optional)
+console.log("Ready to send data to XANO at:", XANO_API_URL);
+};
+
+// Cleanup
+window.onbeforeunload = function() {
+if (html5QrCode && isScanning) {
+html5QrCode.stop();
+}
+};
+</script>
 </body>
 </html>
