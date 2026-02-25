@@ -1,598 +1,790 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>SCANNER - XANO LIVE</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<!-- ZXing library -->
-<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
-body{background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;color:#000}
-.device{width:360px;max-width:100%;height:640px;max-height:100vh;background:#f0f0f0;border:2px solid #333;display:flex;flex-direction:column;overflow:hidden;position:relative}
-.header{background:#036;color:#fff;padding:6px 8px;font-size:14px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-.header-title{font-weight:700;white-space:nowrap}
-.header-time{font-size:12px;white-space:nowrap}
-.gps-status{background:#2f4f4f;color:#fff;padding:4px 10px;font-size:11px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #1a2f2f}
-.gps-led{width:10px;height:10px;border-radius:50%;display:inline-block}
-.gps-green{background:#28a745;box-shadow:0 0 8px #28a745}
-.gps-yellow{background:#ffc107;box-shadow:0 0 8px #ffc107}
-.gps-red{background:#dc3545;box-shadow:0 0 8px #dc3545}
-.gps-gray{background:#6c757d}
-.connection-status{background:#333;color:#fff;padding:4px 10px;font-size:12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #666}
-.connection-led{width:12px;height:12px;border-radius:50%;display:inline-block}
-.led-green{background:#28a745;box-shadow:0 0 8px #28a745}
-.led-red{background:#dc3545;box-shadow:0 0 8px #dc3545}
-.led-yellow{background:#ffc107;box-shadow:0 0 8px #ffc107}
-.tabs{display:flex;background:#d0d0d0;border-bottom:1px solid #999;flex-shrink:0}
-.tab{flex:1;text-align:center;padding:6px 0;font-size:13px;border-right:1px solid #999;background:#e4e4e4}
-.tab:last-child{border-right:none}
-.tab.active{background:#fff;font-weight:700}
-.content{flex:1;display:flex;flex-direction:column;padding:10px 0 0;overflow-y:auto}
-.label{font-size:13px;margin-bottom:4px;padding-left:10px}
-.input-box{border:1px solid #666;background:#fff;height:40px;margin:0 10px 4px;padding:6px;font-size:16px;display:flex;align-items:center;overflow-x:auto}
-.hint{font-size:12px;color:#555;margin-bottom:0;padding-left:10px;font-weight:500}
-.label-id-header{background:#2f4f4f;color:#fff;font-weight:700;font-size:14px;padding:6px 10px;border-top:2px solid #000;border-bottom:2px solid #000}
-.lightblue-stretch{background:rgba(173,216,230,.2);min-height:110px;width:100%;border-top:1px solid rgba(173,216,230,.5);border-bottom:1px solid rgba(173,216,230,.5);padding:8px 10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
-.scan-entry{background:#fff;border:2px solid #000;font-weight:700;font-size:15px;padding:8px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px;width:100%}
-.entry-index{background:#2f4f4f;color:#fff;padding:4px 10px;font-weight:700;font-size:15px;border:1px solid #000}
-.entry-value{font-weight:700;color:#000;word-break:break-all;flex:1;min-width:120px}
-.status-badge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap}
-.status-Data-Received{background:#17a2b8;color:#fff}
-.status-Picked-Up{background:#ffc107;color:#000}
-.status-Depart-Post-Office{background:#fd7e14;color:#fff}
-.status-Arrival-Scan{background:#28a745;color:#fff}
-.status-Local-Scan{background:#6f42c1;color:#fff}
-.status-Out-For-Delivery{background:#dc3545;color:#fff}
-.status-Delivered{background:#28a745;color:#fff}
-.eta-badge{background:#036;color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:auto}
-.sync-indicator{font-size:18px;margin-left:8px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#f0f0f0}
-.sync-success{color:#28a745;background:#e8f5e9}
-.sync-failed{color:#dc3545;background:#ffebee}
-.sync-pending{color:#ffc107;background:#fff3e0}
-.action-bar{display:flex;background:#036;color:#fff;font-size:14px;border-bottom:1px solid #024}
-.action-btn{flex:1;text-align:center;padding:8px 0;border-right:1px solid #024;cursor:pointer}
-.action-btn:last-child{border-right:none}
-.scan-hard-button{background:#006400;color:#fff;font-weight:700;font-size:18px;padding:10px 0;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;border-bottom:2px solid #004d00;border-top:2px solid #004d00;cursor:pointer}
-.keypad-mode-bar{display:flex;border-top:1px solid #999;border-bottom:1px solid #999;background:#d0d0d0}
-.mode-btn{flex:1;text-align:center;padding:6px 0;font-size:12px;border-right:1px solid #999;cursor:pointer}
-.mode-btn:last-child{border-right:none}
-.mode-btn.active{background:#fff;font-weight:700}
-.keypad{background:#c0c0c0;padding:4px;display:none}
-.keypad.active{display:block}
-.key-row{display:flex;margin-bottom:4px}
-.key{flex:1;margin:2px;padding:10px 0;text-align:center;font-size:16px;background:#fff;border:1px solid #666;border-radius:3px;cursor:pointer}
-.key.wide{flex:1.8}
-.key.small{flex:0.8}
-.status-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:2500;display:none;justify-content:center;align-items:center}
-.status-box{background:#fff;width:340px;max-width:95%;border-radius:16px;overflow:hidden;max-height:90vh;overflow-y:auto}
-.status-header{background:#2f4f4f;color:#fff;padding:16px;font-weight:700;font-size:18px;text-align:center}
-.gps-info{background:#e3f2fd;padding:10px;font-size:12px;border-bottom:1px solid #bbdefb}
-.status-option{padding:18px 20px;border-bottom:1px solid #ddd;font-weight:700;font-size:16px;cursor:pointer}
-.status-close{padding:16px;text-align:center;background:#e0e0e0;font-weight:700;cursor:pointer}
-.scanner-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:10000;display:none;flex-direction:column}
-.scanner-video{width:100%;flex:1;object-fit:cover}
-.scanner-close{background:#036;color:#fff;padding:15px;text-align:center;font-weight:700;cursor:pointer}
+  <meta charset="utf-8" />
+  <title>QR Scanner · PRO</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-/* Keyboard layouts - COMPLETE */
-.keyboard-grid{display:flex;flex-wrap:wrap;gap:5px;padding:5px;background:#c0c0c0}
-.key-btn{flex:1 0 30px;padding:12px 0;background:#fff;border:1px solid #666;border-radius:3px;text-align:center;font-size:16px;cursor:pointer}
-</style>
-</head>
-<body>
-<div class="device">
-    <div class="header">
-        <span class="header-title">Scan barcode</span>
-        <span class="header-time" id="currentTime">--:--</span>
-    </div>
-    
-    <!-- GPS Status -->
-    <div class="gps-status" id="gpsStatus">
-        <span class="gps-led gps-green" id="gpsLed"></span>
-        <span id="gpsText">GPS: Active</span>
-        <span style="margin-left:auto;font-size:10px" id="gpsLocation"></span>
-    </div>
-    
-    <!-- Connection Status -->
-    <div class="connection-status">
-        <span class="connection-led led-green" id="connectionLed"></span>
-        <span id="connectionText">READY</span>
-    </div>
-    
-    <!-- Tabs -->
-    <div class="tabs">
-        <div class="tab active">Scan</div>
-        <div class="tab">Lookahead</div>
-    </div>
-    
-    <!-- Main Content -->
-    <div class="content">
-        <div class="label">Scan/key-in barcode:</div>
-        <div id="barcodeInput" class="input-box"></div>
-        <div class="hint"># LABEL ID</div>
-        
-        <div class="label-id-header">
-            <span># LABEL ID</span>
-        </div>
-        
-        <!-- History Container -->
-        <div id="scanHistoryContainer" class="lightblue-stretch">
-            <!-- History will be populated here -->
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="action-bar">
-            <div class="action-btn" id="escBtn">ESC</div>
-            <div class="action-btn" id="enterBtn">ENTER</div>
-        </div>
-        
-        <!-- SCAN BUTTON -->
-        <div class="scan-hard-button" id="scanButton">
-            <span>◰</span> SCAN <span>◰</span>
-        </div>
-        
-        <!-- Keyboard Mode -->
-        <div class="keypad-mode-bar">
-            <div class="mode-btn active" data-mode="qwerty">QWERTY</div>
-            <div class="mode-btn" data-mode="numeric">123</div>
-            <div class="mode-btn" data-mode="sym">SYM</div>
-        </div>
-        
-        <!-- QWERTY Keyboard -->
-        <div id="keypad-qwerty" class="keypad active">
-            <div class="key-row"><div class="key" onclick="addChar('Q')">Q</div><div class="key" onclick="addChar('W')">W</div><div class="key" onclick="addChar('E')">E</div><div class="key" onclick="addChar('R')">R</div><div class="key" onclick="addChar('T')">T</div><div class="key" onclick="addChar('Y')">Y</div><div class="key" onclick="addChar('U')">U</div><div class="key" onclick="addChar('I')">I</div><div class="key" onclick="addChar('O')">O</div><div class="key" onclick="addChar('P')">P</div></div>
-            <div class="key-row"><div class="key" onclick="addChar('A')">A</div><div class="key" onclick="addChar('S')">S</div><div class="key" onclick="addChar('D')">D</div><div class="key" onclick="addChar('F')">F</div><div class="key" onclick="addChar('G')">G</div><div class="key" onclick="addChar('H')">H</div><div class="key" onclick="addChar('J')">J</div><div class="key" onclick="addChar('K')">K</div><div class="key" onclick="addChar('L')">L</div></div>
-            <div class="key-row"><div class="key small">⇧</div><div class="key" onclick="addChar('Z')">Z</div><div class="key" onclick="addChar('X')">X</div><div class="key" onclick="addChar('C')">C</div><div class="key" onclick="addChar('V')">V</div><div class="key" onclick="addChar('B')">B</div><div class="key" onclick="addChar('N')">N</div><div class="key" onclick="addChar('M')">M</div><div class="key small" onclick="backspace()">⌫</div></div>
-            <div class="key-row"><div class="key wide" onclick="addSpace()">SPACE</div><div class="key small" onclick="addChar('-')">-</div><div class="key small" onclick="clearInput()">CLR</div></div>
-        </div>
-        
-        <!-- Numeric Keyboard -->
-        <div id="keypad-numeric" class="keypad">
-            <div class="key-row"><div class="key" onclick="addChar('1')">1</div><div class="key" onclick="addChar('2')">2</div><div class="key" onclick="addChar('3')">3</div></div>
-            <div class="key-row"><div class="key" onclick="addChar('4')">4</div><div class="key" onclick="addChar('5')">5</div><div class="key" onclick="addChar('6')">6</div></div>
-            <div class="key-row"><div class="key" onclick="addChar('7')">7</div><div class="key" onclick="addChar('8')">8</div><div class="key" onclick="addChar('9')">9</div></div>
-            <div class="key-row"><div class="key" onclick="addChar('0')">0</div><div class="key" onclick="addChar('-')">-</div><div class="key" onclick="backspace()">⌫</div></div>
-        </div>
-        
-        <!-- Symbol Keyboard -->
-        <div id="keypad-sym" class="keypad">
-            <div class="key-row"><div class="key" onclick="addChar('#')">#</div><div class="key" onclick="addChar('@')">@</div><div class="key" onclick="addChar('*')">*</div></div>
-            <div class="key-row"><div class="key" onclick="addChar('/')">/</div><div class="key" onclick="addChar('+')">+</div><div class="key" onclick="addChar('=')">=</div></div>
-            <div class="key-row"><div class="key" onclick="addChar('(')">(</div><div class="key" onclick="addChar(')')">)</div><div class="key" onclick="addChar('.')">.</div></div>
-            <div class="key-row"><div class="key" onclick="addSpace()">SPACE</div><div class="key" onclick="backspace()">⌫</div><div class="key" onclick="clearInput()">CLR</div></div>
-        </div>
-    </div>
-</div>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
 
-<!-- Scanner Overlay -->
-<div class="scanner-overlay" id="scannerOverlay">
-    <video class="scanner-video" id="scannerVideo" playsinline></video>
-    <div class="scanner-close" onclick="stopScanner()">CANCEL</div>
-</div>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Roboto', 'Segoe UI', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+    }
 
-<!-- Status Modal -->
-<div id="statusModal" class="status-modal">
-    <div class="status-box">
-        <div class="status-header">SELECT STATUS <span id="modalGpsTime"></span></div>
-        <div class="gps-info" id="modalGpsInfo">📍 Location ready</div>
-        <div class="status-option data-received" data-status="Data Received">📦 Data Received (+7 days)</div>
-        <div class="status-option picked-up" data-status="Picked Up">📋 Picked Up (-1 day)</div>
-        <div class="status-option depart-post-office" data-status="Depart Post Office">🚚 Depart Post Office (-2 days)</div>
-        <div class="status-option arrival-scan" data-status="Arrival Scan">🛬 Arrival Scan (-0.5 days)</div>
-        <div class="status-option local-scan" data-status="Local Scan">🏠 Local Scan (-1.5 days)</div>
-        <div class="status-option out-for-delivery" data-status="Out For Delivery">📤 Out For Delivery (-2 days)</div>
-        <div class="status-option delivered" data-status="Delivered">✅ Delivered (0 days)</div>
-        <div class="status-close" id="closeStatusBtn">⬅️ BACK</div>
-    </div>
-</div>
+    #phone {
+      width: 360px;
+      height: 640px;
+      background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
+      color: #ffffff;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    #header {
+      width: 100%;
+      height: 38px;
+      background: linear-gradient(180deg, #5180b0 0%, #2e5a88 100%);
+      border-bottom: 2px solid #1f3f5c;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 12px;
+      font-weight: 700;
+      font-size: 16px;
+      z-index: 2;
+      flex-shrink: 0;
+      letter-spacing: 0.3px;
+    }
+
+    #leftText { color: #ffffff; }
+    #rightArea { 
+      color: #ffffff;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #gpsIndicator {
+      color: #4CAF50;
+      font-size: 16px;
+    }
+
+    #scanButton {
+      width: calc(100% - 24px);
+      height: 50px;
+      background: linear-gradient(180deg, #4CAF50 0%, #2b6e2f 100%);
+      border: 2px solid #1e5a22;
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 48px;
+      margin: 12px auto 8px auto;
+      border-radius: 6px;
+      z-index: 2;
+      box-shadow: 0 4px 0 #145018;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: 0.5px;
+    }
+    #scanButton:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #145018;
+    }
+
+    #scanFrame {
+      width: 280px;
+      height: 160px;
+      border: 2px solid rgba(255,255,255,0.6);
+      margin: 4px auto 0 auto;
+      position: relative;
+      display: none;
+      z-index: 3;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: rgba(0,0,0,0.4);
+    }
+
+    #preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: none;
+      display: block;
+    }
+
+    #laser {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #ff3333;
+      box-shadow: 0 0 10px #ff0000;
+      animation: laserMove 1.8s linear infinite;
+      display: none;
+      z-index: 5;
+    }
+    @keyframes laserMove {
+      0%   { top: 0; }
+      50%  { top: 158px; }
+      100% { top: 0; }
+    }
+
+    .corner {
+      width: 22px;
+      height: 22px;
+      border: 3px solid #ffcc00;
+      position: absolute;
+      pointer-events: none;
+    }
+    .tl { top: -3px; left: -3px; border-right: none; border-bottom: none; }
+    .tr { top: -3px; right: -3px; border-left: none; border-bottom: none; }
+    .bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
+    .br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
+
+    #labelBlock {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      z-index: 2;
+      margin-top: 4px;
+    }
+
+    #labelTitle {
+      height: 32px;
+      background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
+      border: 1px solid #1f3f5c;
+      display: flex;
+      align-items: center;
+      padding-left: 12px;
+      margin: 0 12px;
+      font-weight: 700;
+      font-size: 14px;
+      color: #ffffff;
+      flex-shrink: 0;
+      letter-spacing: 0.5px;
+    }
+
+    #labelBox {
+      width: calc(100% - 24px);
+      min-height: 80px;
+      max-height: 120px;
+      margin: 0 auto;
+      border: 3px solid #1f3f5c;
+      background: #A6BEEF;
+      padding: 8px 10px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #000000;
+      white-space: pre-line;
+      overflow-y: auto;
+      word-break: break-all;
+      flex-shrink: 0;
+      line-height: 1.5;
+      font-family: 'Roboto', 'Segoe UI', monospace;
+      box-shadow: inset 0 0 0 2px #ffffff;
+    }
+
+    #labelBox span.scan-entry {
+      display: block;
+      border-bottom: 2px solid #2b4b70;
+      background: #c0d4f5;
+      padding: 4px 6px;
+      margin: 4px 0;
+      border-radius: 4px;
+      font-weight: 700;
+      color: #000;
+    }
+    #labelBox span.scan-entry:last-child {
+      border-bottom: none;
+    }
+
+    #labelButtons {
+      height: 42px;
+      background: #7496C4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 4px;
+      border: 2px solid #3a5f8a;
+      margin: 8px 12px 0 12px;
+      padding: 0 20px;
+      font-weight: 700;
+      font-size: 18px;
+      color: #ffffff;
+      flex-shrink: 0;
+      box-shadow: inset 0 -2px 0 #3a5f8a;
+    }
+    #labelButtons span {
+      cursor: pointer;
+      padding: 4px 12px;
+      background: transparent;
+      text-shadow: 1px 1px 0 #1f3f5c;
+    }
+    #labelButtons span:active {
+      background: #27ae60;
+      border-radius: 4px;
+    }
+    #divider {
+      color: rgba(255,255,255,0.7);
+      padding: 0 !important;
+    }
+
+    #navBar {
+      height: 36px;
+      background: linear-gradient(180deg, #4a7aa8 0%, #2b4b70 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 4px;
+      border: 1px solid #1f3f5c;
+      margin: 8px 12px 0 12px;
+      padding: 0 16px;
+      font-weight: 700;
+      font-size: 14px;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+    #navBar button {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    #navBar button:active {
+      color: #4CAF50;
+    }
+
+    #keypadWrapper {
+      width: 100%;
+      background: linear-gradient(180deg, #2b4b70 0%, #1f3f5c 100%);
+      border-top: 3px solid #ffcc00;
+      margin-top: auto;
+      flex-shrink: 0;
+      z-index: 2;
+      padding-bottom: 4px;
+    }
+
+    #keyTabs {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px 4px 12px;
+    }
+    #keyTabs button {
+      flex: 1;
+      background: #3a5f8a;
+      border: 2px solid #1f3f5c;
+      border-radius: 30px;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 8px 0;
+      cursor: pointer;
+    }
+    #keyTabs button.active {
+      background: #4CAF50;
+      border-color: #145018;
+    }
+    #keyTabs button:active {
+      background: #66BB6A;
+    }
+
+    #numericPad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 6px 15px 10px 15px;
+    }
+    #numericPad button {
+      background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
+      border: 1px solid #1f3f5c;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 700;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #1f3f5c;
+    }
+    #numericPad button:active {
+      transform: translateY(2px);
+      background: #4CAF50;
+    }
+    #numericPad button.backspace {
+      background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
+    }
+
+    #qwertyPad, #symbolPad {
+      display: none;
+      padding: 0 8px 12px 8px;
+    }
+    .row {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 4px;
+      justify-content: center;
+    }
+    .row button {
+      flex: 1;
+      max-width: 32px;
+      background: linear-gradient(180deg, #5a7a9a 0%, #3a5f8a 100%);
+      border: 1px solid #1f3f5c;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 0 #1f3f5c;
+    }
+    .row button:active {
+      transform: translateY(2px);
+      background: #4CAF50;
+    }
+    .row button.special {
+      background: linear-gradient(180deg, #3a5f8a 0%, #2b4b70 100%);
+      max-width: 50px;
+    }
+    .row button.space { 
+      flex: 3;
+      max-width: 200px;
+    }
+
+    #statusScreen {
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      top: 38px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(28, 48, 70, 0.98);
+      z-index: 100;
+      padding: 20px 16px;
+      overflow-y: auto;
+      gap: 10px;
+    }
+    .statusBtn {
+      background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
+      border: 2px solid #ffcc00;
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 16px 8px;
+      text-align: center;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .statusBtn:active {
+      background: #4CAF50;
+    }
+    .statusBtn.back {
+      background: linear-gradient(180deg, #3a5f8a 0%, #1f3f5c 100%);
+      border-color: #f1c40f;
+      margin-top: 25px;
+    }
+
+    #successPopup {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .popup-content {
+      background: linear-gradient(180deg, #3f6b9c 0%, #2b4b70 100%);
+      border: 3px solid #27ae60;
+      border-radius: 20px;
+      padding: 30px 20px;
+      text-align: center;
+      width: 280px;
+      animation: fadePop 0.2s;
+    }
+    .checkmark {
+      width: 70px;
+      height: 70px;
+      background: #27ae60;
+      border-radius: 50%;
+      font-size: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px auto;
+      color: white;
+    }
+    .popup-message { font-size: 20px; font-weight: 700; }
+    .popup-submessage { color: #ffcc00; font-size: 15px; margin-top: 5px; }
+    .eta-info { color: #4CAF50; font-size: 14px; margin-top: 10px; border-top: 1px solid #fff; padding-top: 10px; }
+    @keyframes fadePop {
+      0% { opacity: 0; transform: scale(0.7); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    #labelBox::-webkit-scrollbar { width: 4px; }
+    #labelBox::-webkit-scrollbar-thumb { background: #1f3f5c; }
+    
+    #barcodeType {
+      font-size: 10px;
+      color: #ffcc00;
+      margin-left: 5px;
+      font-weight: normal;
+    }
+
+    #errorMessage {
+      color: #ff4444;
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
+      display: none;
+    }
+  </style>
+
+  <!-- Use jsQR which is more compatible with mobile browsers -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
 <script>
-// ==================== XANO CONFIG ====================
-const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
-// ======================================================
+(function() {
+  let stream = null;
+  let scanning = false;
+  let scanCount = 0;
+  let animationFrame = null;
+  let currentScans = [];
+  let currentLocation = null;
+  let gpsWatchId = null;
 
-// Global variables
-var inp = document.getElementById('barcodeInput');
-var hist = document.getElementById('scanHistoryContainer');
-var statusModal = document.getElementById('statusModal');
-var gpsLed = document.getElementById('gpsLed');
-var gpsText = document.getElementById('gpsText');
-var gpsLoc = document.getElementById('gpsLocation');
-var connLed = document.getElementById('connectionLed');
-var connText = document.getElementById('connectionText');
-var counter = 1;
-var pendingBarcode = '';
-var currentLat = '44.9909';
-var currentLng = '-122.7582';
-var scanHistory = [];
+  // Xano API Endpoint
+  const XANO_API_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
 
-// Scanner variables
-var codeReader = null;
-var scannerOverlay = document.getElementById('scannerOverlay');
-var scannerVideo = document.getElementById('scannerVideo');
+  // ---- BEEP ----
+  let audioCtx = null;
+  function playBeep() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume().then(() => createBeep());
+    else createBeep();
+  }
+  function createBeep() {
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine'; osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now); osc.stop(now + 0.15);
+  }
 
-// Initialize GPS
-gpsLed.className = 'gps-led gps-green';
-gpsText.innerHTML = 'GPS: Active';
-gpsLoc.innerHTML = currentLat + ', ' + currentLng;
-
-// Load initial history from localStorage
-function loadHistory() {
-    var saved = localStorage.getItem('scanHistory');
-    if(saved) {
-        scanHistory = JSON.parse(saved);
-        renderHistory();
-    } else {
-        // Add sample data matching screenshot
-        addSampleData();
-    }
-}
-
-function addSampleData() {
-    var now = new Date();
-    var eta1 = new Date(now.getTime() - (24 * 60 * 60 * 1000));
-    var eta2 = new Date(now.getTime() - (36 * 60 * 60 * 1000));
-    
-    scanHistory.push({
-        id: counter++,
-        barcode: 'U900EX34S',
-        status: 'Picked Up',
-        eta: (eta1.getMonth()+1) + '/' + eta1.getDate() + ' ' + eta1.getHours() + ':' + (eta1.getMinutes()<10?'0':'') + eta1.getMinutes(),
-        synced: true
-    });
-    
-    scanHistory.push({
-        id: counter++,
-        barcode: 'U1971EX54S',
-        status: 'Local Scan',
-        eta: (eta2.getMonth()+1) + '/' + eta2.getDate() + ' ' + eta2.getHours() + ':' + (eta2.getMinutes()<10?'0':'') + eta2.getMinutes(),
-        synced: true
-    });
-    
-    renderHistory();
-}
-
-function renderHistory() {
-    if(scanHistory.length === 0) {
-        hist.innerHTML = '<div style="color:#888;font-style:italic;padding:8px;text-align:center">No scans yet</div>';
-        return;
-    }
-    
-    hist.innerHTML = '';
-    scanHistory.slice().reverse().forEach(function(item) {
-        var entry = document.createElement('div');
-        entry.className = 'scan-entry';
-        
-        var idxSpan = document.createElement('span');
-        idxSpan.className = 'entry-index';
-        idxSpan.innerHTML = item.id + ' |';
-        
-        var valSpan = document.createElement('span');
-        valSpan.className = 'entry-value';
-        valSpan.innerHTML = item.barcode;
-        
-        var statusSpan = document.createElement('span');
-        statusSpan.className = 'status-badge status-' + item.status.replace(/ /g, '-');
-        statusSpan.innerHTML = item.status.toUpperCase();
-        
-        var etaSpan = document.createElement('span');
-        etaSpan.className = 'eta-badge';
-        etaSpan.innerHTML = 'ETA: ' + item.eta;
-        
-        var syncSpan = document.createElement('span');
-        syncSpan.className = 'sync-indicator ' + (item.synced ? 'sync-success' : 'sync-pending');
-        syncSpan.innerHTML = item.synced ? '✅' : '⏳';
-        
-        entry.appendChild(idxSpan);
-        entry.appendChild(valSpan);
-        entry.appendChild(statusSpan);
-        entry.appendChild(etaSpan);
-        entry.appendChild(syncSpan);
-        
-        hist.appendChild(entry);
-    });
-}
-
-// ================ GPS FUNCTIONS ================
-function getGPS() {
-    if(!navigator.geolocation) {
-        console.log('GPS not supported, using default');
-        return;
-    }
-    
+  // ---- GPS ----
+  function initGPS() {
+    if (!navigator.geolocation) return updateGPS(false);
     navigator.geolocation.getCurrentPosition(
-        function(position) {
-            currentLat = position.coords.latitude.toFixed(4);
-            currentLng = position.coords.longitude.toFixed(4);
-            
-            gpsLed.className = 'gps-led gps-green';
-            gpsText.innerHTML = 'GPS: Active';
-            gpsLoc.innerHTML = currentLat + ', ' + currentLng;
-            
-            var d = new Date();
-            var timeStr = (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + (d.getMinutes()<10?'0':'') + d.getMinutes();
-            document.getElementById('modalGpsTime').innerHTML = timeStr;
-            document.getElementById('modalGpsInfo').innerHTML = '📍 ' + currentLat + ', ' + currentLng;
-        },
-        function(error) {
-            console.log('GPS error, using defaults');
-            gpsLed.className = 'gps-led gps-green';
-            gpsText.innerHTML = 'GPS: Default';
-            gpsLoc.innerHTML = currentLat + ', ' + currentLng;
-        }
+      pos => { currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; updateGPS(true); },
+      () => updateGPS(false),
+      { enableHighAccuracy:true, timeout:10000 }
     );
-}
+    gpsWatchId = navigator.geolocation.watchPosition(
+      pos => { currentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude }; updateGPS(true); },
+      () => updateGPS(false),
+      { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
+    );
+  }
+  function updateGPS(hasGPS) {
+    const el = document.getElementById('gpsIndicator');
+    if (!el) return;
+    el.innerHTML = hasGPS?'🛰️':'🌐';
+    el.style.color = hasGPS?'#4CAF50':'#ff4444';
+  }
 
-// ================ SCANNER FUNCTIONS ================
-function startScanner() {
-    scannerOverlay.style.display = 'flex';
-    
-    if(!codeReader) {
-        codeReader = new ZXing.BrowserMultiFormatReader();
+  // ---- TIME ----
+  function updateTime() {
+    const d = new Date();
+    const month = (d.getMonth()+1).toString().padStart(2,'0');
+    const day = d.getDate().toString().padStart(2,'0');
+    const hours = d.getHours(); const minutes = d.getMinutes().toString().padStart(2,'0');
+    const ampm = hours>=12?'PM':'AM';
+    const hour12 = hours%12||12;
+    const str = `${month}/${day} ${hour12}:${minutes} ${ampm}`;
+    const el1 = document.getElementById('timeDisplay'); if(el1) el1.innerText=str;
+    const el2 = document.getElementById('timeDisplay2'); if(el2) el2.innerText=str;
+  }
+  setInterval(updateTime, 1000);
+  window.addEventListener('load', updateTime);
+
+  // ---- CAMERA ----
+  function stopCamera() {
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+    animationFrame = null;
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
     }
-    
-    codeReader.decodeFromVideoDevice(null, scannerVideo, function(result, error) {
-        if(result) {
-            var barcodeText = result.getText();
-            inp.innerHTML = barcodeText;
-            pendingBarcode = barcodeText;
-            stopScanner();
-            setTimeout(function() {
-                if(pendingBarcode) statusModal.style.display = 'flex';
-            }, 300);
-        }
-    }).catch(function(error) {
-        alert('Camera error. Please use keyboard.');
-        stopScanner();
-    });
-}
+    scanning = false;
+  }
 
-function stopScanner() {
-    scannerOverlay.style.display = 'none';
-    if(codeReader) {
-        try { codeReader.reset(); } catch(e) {}
-    }
-}
+  async function startScan() {
+    if (scanning) { stopCamera(); return; }
+    scanning = true;
 
-// ================ KEYBOARD FUNCTIONS ================
-window.addChar = function(c) { inp.innerHTML = inp.innerHTML + c; }
-window.backspace = function() { inp.innerHTML = inp.innerHTML.slice(0, -1); }
-window.clearInput = function() { inp.innerHTML = ''; }
-window.addSpace = function() { inp.innerHTML = inp.innerHTML + ' '; }
+    const frame = document.getElementById('scanFrame');
+    const laser = document.getElementById('laser');
+    frame.style.display = 'block';
+    laser.style.display = 'block';
 
-// ================ ETA CALCULATION ================
-function getETA(status) {
-    var d = new Date();
-    if(status == 'Data Received') d.setDate(d.getDate() + 7);
-    else if(status == 'Picked Up') d.setDate(d.getDate() - 1);
-    else if(status == 'Depart Post Office') d.setDate(d.getDate() - 2);
-    else if(status == 'Arrival Scan') d.setTime(d.getTime() - (12 * 60 * 60 * 1000));
-    else if(status == 'Local Scan') d.setTime(d.getTime() - (36 * 60 * 60 * 1000));
-    else if(status == 'Out For Delivery') d.setDate(d.getDate() - 2);
-    return (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + (d.getMinutes()<10?'0':'') + d.getMinutes();
-}
-
-// ================ SEND TO XANO ================
-async function sendToXano(barcode, status, syncSpan, entryId) {
-    connLed.className = 'connection-led led-yellow';
-    connText.innerHTML = 'SENDING...';
-    
-    var now = new Date();
-    var dateStr = now.getFullYear() + '-' + 
-                  String(now.getMonth() + 1).padStart(2, '0') + '-' + 
-                  String(now.getDate()).padStart(2, '0');
-    
-    var timeStr = String(now.getHours()).padStart(2, '0') + ':' + 
-                  String(now.getMinutes()).padStart(2, '0') + ':' + 
-                  String(now.getSeconds()).padStart(2, '0');
-    
-    var timestamp = now.toISOString();
-    var location = currentLat + ', ' + currentLng;
-    var eta = getETA(status);
-    
-    // Detect barcode type
-    var barcodeType = 'CODE_128';
-    if(/^[0-9]+$/.test(barcode)) barcodeType = 'EAN_13';
-    else if(barcode.length == 12) barcodeType = 'UPC_A';
-    else if(barcode.includes('QR')) barcodeType = 'QR_CODE';
-    
-    var scanData = {
-        label_id: barcode,
-        barcode_type: barcodeType,
-        status: status,
-        date: dateStr,
-        time: timeStr,
-        location: location,
-        eta: eta,
-        timestamp: timestamp
-    };
-    
-    console.log('SENDING TO XANO:', JSON.stringify(scanData, null, 2));
-    
     try {
-        const response = await fetch(XANO_URL, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(scanData)
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: 640, height: 480 } });
+      const video = document.getElementById('preview');
+      video.srcObject = stream;
+      await new Promise(resolve => { video.onloadedmetadata = () => video.play().then(resolve); });
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      function scanFrame() {
+        if (!scanning || !video.videoWidth) {
+          animationFrame = requestAnimationFrame(scanFrame);
+          return;
+        }
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video,0,0,canvas.width,canvas.height);
+        const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+        const code = jsQR(imageData.data, canvas.width, canvas.height, { inversionAttempts:"dontInvert" });
+        if (code) { onBarcodeDecoded(code.data, 'QR Code'); return; }
+        animationFrame = requestAnimationFrame(scanFrame);
+      }
+      animationFrame = requestAnimationFrame(scanFrame);
+
+    } catch(err) {
+      console.error('Camera error', err);
+      scanning = false;
+      frame.style.display = 'none';
+      laser.style.display = 'none';
+      alert(err.message || 'Camera not supported');
+    }
+  }
+
+  function onBarcodeDecoded(code, barcodeType) {
+    scanning = false; stopCamera(); playBeep();
+    scanCount++;
+    currentScans.push({ number: scanCount, code, barcodeType, timestamp:new Date().toISOString(), location:currentLocation });
+
+    const box = document.getElementById('labelBox');
+    const span = document.createElement('span');
+    span.className = 'scan-entry';
+    span.innerHTML = `${scanCount} ${code} ${currentLocation?'📍':''} [QR Code]`;
+    box.appendChild(span);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function clearScans() { scanCount=0; currentScans=[]; document.getElementById('labelBox').innerHTML=''; }
+
+  function goToStatus() {
+    if(currentScans.length===0){ alert('Scan first'); return; }
+    document.getElementById('labelBlock').style.display='none';
+    document.getElementById('scanButton').style.display='none';
+    document.getElementById('leftText').innerText='SELECT STATUS';
+    document.getElementById('statusScreen').style.display='flex';
+  }
+
+  function goBackToScan() {
+    document.getElementById('statusScreen').style.display='none';
+    document.getElementById('labelBlock').style.display='flex';
+    document.getElementById('scanButton').style.display='flex';
+    document.getElementById('leftText').innerText='SCAN QR CODE';
+  }
+
+  async function sendToXano(status) {
+    const now = new Date();
+    const payload = currentScans.map(scan=>({
+      label_id: scan.code,
+      barcode_type: scan.barcodeType,
+      status: status,
+      timestamp: now.toISOString(),
+      location: currentLocation ? `${currentLocation.lat},${currentLocation.lng}` : 'GPS Unavailable'
+    }));
+
+    try {
+      await Promise.all(payload.map(scan=>{
+        return fetch(XANO_API_URL, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify(scan)
         });
-        
-        const responseText = await response.text();
-        console.log('XANO response status:', response.status);
-        console.log('XANO response body:', responseText);
-        
-        if(response.ok) {
-            // Success
-            syncSpan.innerHTML = '✅';
-            syncSpan.className = 'sync-indicator sync-success';
-            connLed.className = 'connection-led led-green';
-            connText.innerHTML = 'SENT';
-            
-            // Update history item
-            var item = scanHistory.find(i => i.id === entryId);
-            if(item) {
-                item.synced = true;
-                localStorage.setItem('scanHistory', JSON.stringify(scanHistory));
-            }
-        } else {
-            // Server error
-            syncSpan.innerHTML = '❌';
-            syncSpan.className = 'sync-indicator sync-failed';
-            connLed.className = 'connection-led led-red';
-            connText.innerHTML = 'ERROR ' + response.status;
-            console.error('XANO error:', response.status, responseText);
-        }
-    } catch(error) {
-        // Network error
-        console.error('Fetch error:', error);
-        syncSpan.innerHTML = '❌';
-        syncSpan.className = 'sync-indicator sync-failed';
-        connLed.className = 'connection-led led-red';
-        connText.innerHTML = 'FAILED';
-    }
-}
+      }));
+      console.log('✅ Sent to Xano', payload);
+    } catch(err){ console.error('Xano error',err); }
 
-// ================ ADD SCAN ================
-function addScan(barcode, status) {
-    if(!barcode) return;
-    
-    var eta = getETA(status);
-    var entryId = counter++;
-    
-    // Add to history array
-    scanHistory.push({
-        id: entryId,
-        barcode: barcode,
-        status: status,
-        eta: eta,
-        synced: false
-    });
-    
-    // Save to localStorage
-    localStorage.setItem('scanHistory', JSON.stringify(scanHistory));
-    
-    // Create entry element
-    var entry = document.createElement('div');
-    entry.className = 'scan-entry';
-    
-    var idxSpan = document.createElement('span');
-    idxSpan.className = 'entry-index';
-    idxSpan.innerHTML = entryId + ' |';
-    
-    var valSpan = document.createElement('span');
-    valSpan.className = 'entry-value';
-    valSpan.innerHTML = barcode;
-    
-    var statusSpan = document.createElement('span');
-    statusSpan.className = 'status-badge status-' + status.replace(/ /g, '-');
-    statusSpan.innerHTML = status.toUpperCase();
-    
-    var etaSpan = document.createElement('span');
-    etaSpan.className = 'eta-badge';
-    etaSpan.innerHTML = 'ETA: ' + eta;
-    
-    var syncSpan = document.createElement('span');
-    syncSpan.className = 'sync-indicator sync-pending';
-    syncSpan.innerHTML = '⏳';
-    
-    entry.appendChild(idxSpan);
-    entry.appendChild(valSpan);
-    entry.appendChild(statusSpan);
-    entry.appendChild(etaSpan);
-    entry.appendChild(syncSpan);
-    
-    // Add to DOM
-    if(hist.children.length > 0 && hist.children[0].innerHTML.includes('No scans')) {
-        hist.innerHTML = '';
-    }
-    hist.insertBefore(entry, hist.firstChild);
-    
-    // Send to XANO
-    sendToXano(barcode, status, syncSpan, entryId);
-}
+    return payload;
+  }
 
-// ================ TIME UPDATE ================
-function updateTime() {
-    var d = new Date();
-    document.getElementById('currentTime').innerHTML = 
-        (d.getMonth()+1) + '/' + d.getDate() + ' ' + 
-        d.getHours() + ':' + (d.getMinutes()<10?'0':'') + d.getMinutes();
-}
-updateTime();
-setInterval(updateTime, 60000);
+  async function chooseStatus(status) {
+    const scannedPackages = await sendToXano(status);
+    const etaInfo = scannedPackages.map(pkg=>`Package: ${pkg.label_id.substring(0,8)}... ETA: -`).join('<br>');
+    document.getElementById('popupStatus').innerText=status;
+    document.getElementById('popupScanCount').innerHTML=`${scanCount} QR code(s) recorded<br><div class="eta-info">${etaInfo}</div>`;
+    document.getElementById('successPopup').style.display='flex';
+    setTimeout(()=>{ document.getElementById('successPopup').style.display='none'; clearScans(); goBackToScan(); },4000);
+  }
 
-// ================ EVENT LISTENERS ================
-document.getElementById('scanButton').onclick = startScanner;
+  // ---- Keyboard Tabs ----
+  function showNumeric(){ document.getElementById('numericPad').style.display='grid'; document.getElementById('qwertyPad').style.display='none'; document.getElementById('symbolPad').style.display='none'; }
+  function showQwerty(){ document.getElementById('numericPad').style.display='none'; document.getElementById('qwertyPad').style.display='block'; document.getElementById('symbolPad').style.display='none'; }
+  function showSymbol(){ document.getElementById('numericPad').style.display='none'; document.getElementById('qwertyPad').style.display='none'; document.getElementById('symbolPad').style.display='block'; }
+  function typeChar(c){ const box=document.getElementById('labelBox'); box.innerHTML+=c; box.scrollTop=box.scrollHeight; }
+  function backspace(){ const box=document.getElementById('labelBox'); box.innerHTML=box.innerHTML.slice(0,-1); }
 
-document.getElementById('enterBtn').onclick = function() {
-    var text = inp.innerHTML || '';
-    if(text.trim() !== '') {
-        pendingBarcode = text;
-        statusModal.style.display = 'flex';
-    }
-};
+  // ---- Init ----
+  window.addEventListener('load',()=>{ initGPS(); updateTime(); checkCameraSupport(); });
+  function checkCameraSupport(){ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ alert('Camera not supported'); document.getElementById('scanButton').style.opacity='0.5'; document.getElementById('scanButton').style.pointerEvents='none'; } }
 
-document.getElementById('escBtn').onclick = function() {
-    scanHistory = [];
-    localStorage.removeItem('scanHistory');
-    hist.innerHTML = '<div style="color:#888;font-style:italic;padding:8px;text-align:center">No scans yet</div>';
-    counter = 1;
-    inp.innerHTML = '';
-    addSampleData();
-};
+  window.addEventListener('beforeunload',()=>{ if(gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId); stopCamera(); });
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden&&scanning) stopCamera(); });
 
-// Status modal options
-var statusOptions = document.querySelectorAll('.status-option');
-for(var i = 0; i < statusOptions.length; i++) {
-    statusOptions[i].onclick = function() {
-        var status = this.getAttribute('data-status');
-        if(pendingBarcode) {
-            addScan(pendingBarcode, status);
-            inp.innerHTML = '';
-            pendingBarcode = '';
-            statusModal.style.display = 'none';
-        }
-    };
-}
-
-document.getElementById('closeStatusBtn').onclick = function() {
-    statusModal.style.display = 'none';
-    pendingBarcode = '';
-};
-
-window.onclick = function(e) {
-    if(e.target == statusModal) {
-        statusModal.style.display = 'none';
-        pendingBarcode = '';
-    }
-};
-
-// Keyboard mode switching
-var modeBtns = document.querySelectorAll('.mode-btn');
-var qwerty = document.getElementById('keypad-qwerty');
-var numeric = document.getElementById('keypad-numeric');
-var sym = document.getElementById('keypad-sym');
-
-for(var i = 0; i < modeBtns.length; i++) {
-    modeBtns[i].onclick = function() {
-        var mode = this.getAttribute('data-mode');
-        
-        for(var j = 0; j < modeBtns.length; j++) {
-            modeBtns[j].className = 'mode-btn';
-        }
-        this.className = 'mode-btn active';
-        
-        qwerty.className = (mode === 'qwerty') ? 'keypad active' : 'keypad';
-        numeric.className = (mode === 'numeric') ? 'keypad active' : 'keypad';
-        sym.className = (mode === 'sym') ? 'keypad active' : 'keypad';
-    };
-}
-
-// Initialize
-loadHistory();
-setTimeout(getGPS, 500);
+  // ---- Expose ----
+  window.startScan=startScan;
+  window.clearScans=clearScans;
+  window.goToStatus=goToStatus;
+  window.chooseStatus=chooseStatus;
+  window.goBackToScan=goBackToScan;
+  window.showNumeric=showNumeric;
+  window.showQwerty=showQwerty;
+  window.showSymbol=showSymbol;
+  window.typeChar=typeChar;
+  window.backspace=backspace;
+})();
 </script>
+
+</head>
+<body>
+  <div id="phone">
+    <div id="header">
+      <div id="leftText">SCAN QR CODE</div>
+      <div id="rightArea">
+        <span id="gpsIndicator">🌐</span>
+        <span>📶</span>
+        <span id="timeDisplay"></span>
+      </div>
+    </div>
+
+    <div id="scanButton" onclick="startScan()">
+      <div class="scan-button">
+        <div class="icon"></div>
+        <div>SCAN QR CODE</div>
+      </div>
+    </div>
+
+    <style>
+      .scan-button{
+        display:flex;
+        align-items:center;
+        gap:6px;
+        font-family:Arial;
+        font-size:14px;
+      }
+      .icon{
+        width:16px;
+        height:12px;
+        background:
+          repeating-linear-gradient(
+            to right,
+            black,
+            black 2px,
+            white 2px,
+            white 4px
+          );
+      }
+    </style>
+
+    <div id="scanFrame">
+      <video id="preview" playsinline autoplay></video>
+      <div id="laser"></div>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+    </div>
+
+    <div id="labelBlock">
+      <div id="labelTitle"># QR CODE DATA</div>
+      <div id="labelBox"></div>
+
+      <div id="labelButtons">
+        <span onclick="clearScans()">ESC</span>
+        <span id="divider">|</span>
+        <span onclick="goToStatus()">ENTER</span>
+      </div>
+
+      <div id="navBar">
+        <button>◄</button>
+        <span id="timeDisplay2"></span>
+        <button>►</button>
+      </div>
+
+      <div id="keypadWrapper">
+        <div id="keyTabs">
+          <button id="tabQwerty" onclick="showQwerty()">ABC</button>
+          <button id="tabNumeric" onclick="showNumeric()" class="active">123</button>
+          <button id="tabSymbol" onclick="showSymbol()">SYM</button>
+        </div>
+
+        <div id="numericPad">
+          <button onclick="typeChar('1')">1</button><button onclick="typeChar('2')">2</button><button onclick="typeChar('3')">3</button>
+          <button onclick="typeChar('4')">4</button><button onclick="typeChar('5')">5</button><button onclick="typeChar('6')">6</button>
+          <button onclick="typeChar('7')">7</button><button onclick="typeChar('8')">8</button><button onclick="typeChar('9')">9</button>
+          <button onclick="typeChar('.')">.</button><button onclick="typeChar('0')">0</button>
+          <button class="backspace" onclick="backspace()">⌫</button>
+        </div>
+
+        <div id="qwertyPad">
+          <div class="row"><button onclick="typeChar('q')">q</button><button onclick="typeChar('w')">w</button><button onclick="typeChar('e')">e</button><button onclick="typeChar('r')">r</button><button onclick="typeChar('t')">t</button><button onclick="typeChar('y')">y</button><button onclick="typeChar('u')">u</button><button onclick="typeChar('i')">i</button><button onclick="typeChar('o')">o</button><button onclick="typeChar('p')">p</button></div>
+          <div class="row"><button onclick="typeChar('a')">a</button><button onclick="typeChar('s')">s</button><button onclick="typeChar('d')">d</button><button onclick="typeChar('f')">f</button><button onclick="typeChar('g')">g</button><button onclick="typeChar('h')">h</button><button onclick="typeChar('j')">j</button><button onclick="typeChar('k')">k</button><button onclick="typeChar('l')">l</button></div>
+          <div class="row"><button class="special" onclick="typeChar('z')">z</button><button class="special" onclick="typeChar('x')">x</button><button class="special" onclick="typeChar('c')">c</button><button class="special" onclick="typeChar('v')">v</button><button class="special" onclick="typeChar('b')">b</button><button class="special" onclick="typeChar('n')">n</button><button class="special" onclick="typeChar('m')">m</button><button class="special" onclick="backspace()">⌫</button></div>
+          <div class="row"><button class="special" onclick="showNumeric()">123</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
+        </div>
+
+        <div id="symbolPad">
+          <div class="row"><button onclick="typeChar('@')">@</button><button onclick="typeChar('#')">#</button><button onclick="typeChar('$')">$</button><button onclick="typeChar('%')">%</button><button onclick="typeChar('&')">&</button><button onclick="typeChar('*')">*</button><button onclick="typeChar('(')">(</button><button onclick="typeChar(')')">)</button></div>
+          <div class="row"><button onclick="typeChar('!')">!</button><button onclick="typeChar('?')">?</button><button onclick="typeChar('/')">/</button><button onclick="typeChar(':')">:</button><button onclick="typeChar(';')">;</button><button onclick="typeChar('"')">"</button><button onclick="typeChar("'")">'</button><button onclick="typeChar(',')">,</button></div>
+          <div class="row"><button onclick="typeChar('-')">-</button><button onclick="typeChar('+')">+</button><button onclick="typeChar('=')">=</button><button onclick="typeChar('<')">&lt;</button><button onclick="typeChar('>')">&gt;</button><button onclick="typeChar('[')">[</button><button onclick="typeChar(']')">]</button><button class="special" onclick="backspace()">⌫</button></div>
+          <div class="row"><button class="special" onclick="showQwerty()">ABC</button><button class="space" onclick="typeChar(' ')">space</button><button class="special" onclick="typeChar('.')">.</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="statusScreen">
+      <div class="statusBtn" onclick="chooseStatus('Data Received')">Data Received (+7 days)</div>
+      <div class="statusBtn" onclick="chooseStatus('Picked Up')">Picked Up (-1 day)</div>
+      <div class="statusBtn" onclick="chooseStatus('Depart Post Office')">Depart Post Office (-2 days)</div>
+      <div class="statusBtn" onclick="chooseStatus('Arrival Scan')">Arrival Scan (-0.5 days)</div>
+      <div class="statusBtn" onclick="chooseStatus('Local Scan')">Local Scan (-1.5 days)</div>
+      <div class="statusBtn" onclick="chooseStatus('Out For Delivery')">Out For Delivery (-2 days)</div>
+      <div class="statusBtn" onclick="chooseStatus('Delivered')">Delivered (0 days)</div>
+      <div class="statusBtn back" onclick="goBackToScan()">BACK TO SCANNER</div>
+    </div>
+
+    <div id="successPopup">
+      <div class="popup-content">
+        <div class="checkmark">✓</div>
+        <div class="popup-message">QR Code Recorded!</div>
+        <div class="popup-submessage" id="popupStatus"></div>
+        <div class="popup-submessage" id="popupScanCount"></div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
