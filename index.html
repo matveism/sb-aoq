@@ -1,423 +1,388 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Simple Scanner</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/1.2.4/html5-qrcode.min.js"></script>
-    <style>
-        body {
-            background: black;
-            color: white;
-            font-family: Arial;
-            padding: 5px;
-            margin: 0;
-        }
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #00ff00;
-            font-size: 20px;
-            text-align: center;
-            margin: 5px 0;
-        }
-        .time {
-            color: #00ff00;
-            font-size: 16px;
-            text-align: center;
-            margin: 5px 0;
-            font-family: monospace;
-        }
-        button {
-            width: 100%;
-            padding: 15px;
-            font-size: 20px;
-            background: #333;
-            color: white;
-            border: 2px solid #666;
-            margin: 5px 0;
-        }
-        .grid {
-            display: flex;
-            gap: 3px;
-            margin: 5px 0;
-            width: 100%;
-        }
-        .grid input {
-            width: 16.66%; /* Exactly 1/6th of the width */
-            height: 50px;
-            text-align: center;
-            font-size: 28px;
-            background: orange;
-            border: 2px solid darkorange;
-            text-transform: uppercase;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        select {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            background: #333;
-            color: white;
-            border: 2px solid #666;
-            margin: 5px 0;
-            box-sizing: border-box;
-        }
-        select:disabled {
-            opacity: 0.5;
-        }
-        #scanner {
-            width: 100%;
-            height: 250px;
-            background: black;
-            border: 2px solid #333;
-            margin: 5px 0;
-            display: none;
-            box-sizing: border-box;
-        }
-        .list {
-            border: 2px solid #333;
-            margin-top: 10px;
-            max-height: 250px;
-            overflow-y: auto;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .list-header {
-            display: flex;
-            background: #333;
-            padding: 8px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .list-header div {
-            width: 33.33%;
-            text-align: center;
-            font-size: 14px;
-        }
-        .list-item {
-            display: flex;
-            padding: 6px;
-            border-bottom: 1px solid #333;
-            color: #00ff00;
-            font-family: monospace;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .list-item div {
-            width: 33.33%;
-            text-align: center;
-            font-size: 14px;
-        }
-        .message {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-            background: red;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            display: none;
-            border-radius: 5px;
-            z-index: 9999;
-            font-size: 14px;
-        }
-        .message.success {
-            background: green;
-        }
-        /* Make sure everything fits */
-        * {
-            box-sizing: border-box;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>SCANNER</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
+body{background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;color:#000}
+.device{width:360px;max-width:100%;height:640px;max-height:100vh;background:#f0f0f0;border:2px solid #333;display:flex;flex-direction:column;overflow:hidden}
+.header{background:#036;color:#fff;padding:6px 8px;font-size:14px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.header-title{font-weight:700;white-space:nowrap}
+.header-time{font-size:12px;white-space:nowrap}
+.gps-status{background:#2f4f4f;color:#fff;padding:4px 10px;font-size:11px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #1a2f2f}
+.gps-led{width:10px;height:10px;border-radius:50%;display:inline-block}
+.gps-green{background:#28a745;box-shadow:0 0 8px #28a745;animation:pulse 2s infinite}
+.gps-yellow{background:#ffc107;box-shadow:0 0 8px #ffc107}
+.gps-red{background:#dc3545;box-shadow:0 0 8px #dc3545}
+.gps-gray{background:#6c757d}
+@keyframes pulse{0%{opacity:1}50%{opacity:0.5}100%{opacity:1}}
+.tabs{display:flex;background:#d0d0d0;border-bottom:1px solid #999;flex-shrink:0}
+.tab{flex:1;text-align:center;padding:6px 0;font-size:13px;border-right:1px solid #999;background:#e4e4e4;white-space:nowrap}
+.tab:last-child{border-right:none}
+.tab.active{background:#fff;font-weight:700}
+.content{flex:1;display:flex;flex-direction:column;padding:10px 0 0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.label{font-size:13px;margin-bottom:4px;padding-left:10px;padding-right:10px;flex-shrink:0}
+.input-box{border:1px solid #666;background:#fff;height:40px;margin:0 10px 4px;padding:6px;font-size:16px;letter-spacing:2px;display:flex;align-items:center;flex-shrink:0;word-break:break-all;white-space:pre;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.hint{font-size:12px;color:#555;margin-bottom:0;padding-left:10px;padding-right:10px;font-weight:500;text-transform:uppercase;flex-shrink:0}
+.label-id-header{background:#2f4f4f;color:#fff;font-weight:700;font-size:14px;padding:6px 10px;border-top:2px solid #000;border-bottom:2px solid #000;width:100%;margin:0;letter-spacing:.5px;display:flex;align-items:center;flex-shrink:0}
+.lightblue-stretch{background:rgba(173,216,230,.2);min-height:110px;width:100%;border-top:1px solid rgba(173,216,230,.5);border-bottom:1px solid rgba(173,216,230,.5);margin:0 0 4px;padding:8px 10px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.scan-entry{background:#fff;border:2px solid #000;font-weight:700;font-size:15px;padding:8px 12px;border-radius:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px;color:#000;letter-spacing:.3px;width:100%;box-sizing:border-box;flex-shrink:0;word-break:break-word}
+.entry-index{background:#2f4f4f;color:#fff;padding:4px 10px;font-weight:700;font-size:15px;border:1px solid #000;display:inline-block;line-height:1;white-space:nowrap}
+.entry-value{font-weight:700;color:#000;word-break:break-all;flex:1;min-width:120px}
+.status-badge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;white-space:nowrap}
+.status-Data-Received{background:#17a2b8;color:#fff}
+.status-Picked-Up{background:#ffc107;color:#000}
+.status-Depart-Post-Office{background:#fd7e14;color:#fff}
+.status-Arrival-Scan{background:#28a745;color:#fff}
+.status-Local-Scan{background:#6f42c1;color:#fff}
+.status-Out-For-Delivery{background:#dc3545;color:#fff}
+.status-Delivered{background:#28a745;color:#fff}
+.eta-badge{background:#036;color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;white-space:nowrap;margin-left:auto}
+.sync-indicator{font-size:18px;margin-left:8px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#f0f0f0}
+.sync-success{color:#28a745;background:#e8f5e9}
+.sync-failed{color:#dc3545;background:#ffebee}
+.sync-pending{color:#ffc107;background:#fff3e0}
+.connection-status{background:#333;color:#fff;padding:4px 10px;font-size:12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #666}
+.connection-led{width:12px;height:12px;border-radius:50%;display:inline-block}
+.led-green{background:#28a745;box-shadow:0 0 8px #28a745}
+.led-red{background:#dc3545;box-shadow:0 0 8px #dc3545}
+.led-yellow{background:#ffc107;box-shadow:0 0 8px #ffc107}
+.spacer{flex:1;min-height:4px}
+.action-bar{display:flex;background:#036;color:#fff;font-size:14px;border-bottom:1px solid #024;width:100%;flex-shrink:0}
+.action-btn{flex:1;text-align:center;padding:8px 0;border-right:1px solid #024;cursor:pointer;user-select:none;-webkit-tap-highlight-color:rgba(0,0,0,.2)}
+.action-btn:last-child{border-right:none}
+.scan-hard-button{background:#006400;color:#fff;font-weight:700;font-size:18px;padding:10px 0;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;border-bottom:2px solid #004d00;border-top:2px solid #004d00;cursor:pointer;user-select:none;-webkit-tap-highlight-color:rgba(0,100,0,.5);flex-shrink:0;letter-spacing:1px}
+.keypad-mode-bar{display:flex;border-top:1px solid #999;border-bottom:1px solid #999;background:#d0d0d0;width:100%;flex-shrink:0}
+.mode-btn{flex:1;text-align:center;padding:6px 0;font-size:12px;border-right:1px solid #999;cursor:pointer;user-select:none;-webkit-tap-highlight-color:rgba(0,0,0,.2)}
+.mode-btn:last-child{border-right:none}
+.mode-btn.active{background:#fff;font-weight:700}
+.keypad{background:#c0c0c0;padding:4px;display:none;flex-shrink:0}
+.keypad.active{display:block}
+.key-row{display:flex;margin-bottom:4px}
+.key{flex:1;margin:2px;padding:10px 0;text-align:center;font-size:16px;background:#fff;border:1px solid #666;border-radius:3px;user-select:none;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,.2);touch-action:manipulation}
+.key.wide{flex:1.8}
+.key.small{flex:0.8}
+.status-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:2500;display:none;justify-content:center;align-items:center}
+.status-box{background:#fff;width:340px;max-width:95%;border-radius:16px;overflow:hidden;max-height:90vh;overflow-y:auto}
+.status-header{background:#2f4f4f;color:#fff;padding:16px;font-weight:700;font-size:18px;text-align:center;position:sticky;top:0;z-index:10}
+.gps-info{background:#e3f2fd;padding:10px;font-size:12px;border-bottom:1px solid #bbdefb;display:flex;align-items:center;gap:8px}
+.status-option{padding:18px 20px;border-bottom:1px solid #ddd;font-weight:700;font-size:16px;cursor:pointer;display:flex;align-items:center;gap:12px}
+.data-received{background:#d1ecf1;color:#0c5460}
+.picked-up{background:#fff3cd;color:#856404}
+.depart-post-office{background:#ffe5d0;color:#a86400}
+.arrival-scan{background:#d4edda;color:#155724}
+.local-scan{background:#e2d5f7;color:#563d7c}
+.out-for-delivery{background:#f8d7da;color:#721c24}
+.delivered{background:#d4edda;color:#155724}
+.status-close{padding:16px;text-align:center;background:#e0e0e0;font-weight:700;cursor:pointer;position:sticky;bottom:0;border-top:1px solid #ccc}
+@media (max-height:600px){.key{padding:6px 0;font-size:14px}.lightblue-stretch{min-height:80px}.scan-entry{padding:5px 8px}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>SCAN BARCODE</h1>
-        
-        <div class="time" id="time"></div>
-        
-        <button id="scanBtn">📷 SCAN</button>
-        
-        <div class="grid" id="grid">
-            <input type="text" maxlength="1" id="c1" placeholder="0">
-            <input type="text" maxlength="1" id="c2" placeholder="0">
-            <input type="text" maxlength="1" id="c3" placeholder="0">
-            <input type="text" maxlength="1" id="c4" placeholder="0">
-            <input type="text" maxlength="1" id="c5" placeholder="0">
-            <input type="text" maxlength="1" id="c6" placeholder="0">
-        </div>
-        
-        <select id="status" disabled>
-            <option value="">-- SELECT STATUS --</option>
-            <option value="Item Booked">Item Booked</option>
-            <option value="Item Received">Item Received</option>
-            <option value="Item Bagged">Item Bagged</option>
-            <option value="Item Dispatched">Item Dispatched</option>
-            <option value="In Transit">In Transit</option>
-            <option value="Out for Delivery">Out for Delivery</option>
-            <option value="Item Delivered">Item Delivered</option>
-        </select>
-        
-        <div id="scanner"></div>
-        
-        <div class="list">
-            <div class="list-header">
-                <div>#</div>
-                <div>CODE</div>
-                <div>STATUS</div>
-            </div>
-            <div id="listItems"></div>
-        </div>
-    </div>
-    
-    <div class="message" id="message"></div>
+<div class="device">
+<div class="header"><span class="header-title">Scan barcode</span><span class="header-time" id="currentTime">--:--</span></div>
+<div class="gps-status" id="gpsStatus"><span class="gps-led gps-gray" id="gpsLed"></span><span id="gpsText">GPS ready</span><span style="margin-left:auto;font-size:10px" id="gpsLocation"></span></div>
+<div class="connection-status"><span class="connection-led led-green" id="connectionLed"></span><span id="connectionText">READY</span></div>
+<div class="tabs"><div class="tab active">Scan</div><div class="tab">Lookahead</div></div>
+<div class="content">
+<div class="label">Scan/key-in barcode:</div>
+<div id="barcodeInput" class="input-box"></div>
+<div class="hint"># LABEL ID</div>
+<div class="label-id-header"><span># LABEL ID</span></div>
+<div id="scanHistoryContainer" class="lightblue-stretch"><div style="color:#888;font-style:italic;padding:8px;text-align:center">No scans yet</div></div>
+<div class="spacer"></div>
+<div class="action-bar"><div class="action-btn" id="escBtn">ESC</div><div class="action-btn" id="enterBtn">ENTER</div></div>
 
-    <script>
-        // Simple variables
-        var scanner = null;
-        var isScanning = false;
-        var items = [];
-        var itemCount = 1;
-        
-        // Get elements
-        var scanBtn = document.getElementById('scanBtn');
-        var scannerDiv = document.getElementById('scanner');
-        var statusSelect = document.getElementById('status');
-        var messageBox = document.getElementById('message');
-        var timeDiv = document.getElementById('time');
-        var listDiv = document.getElementById('listItems');
-        
-        // Input fields
-        var c1 = document.getElementById('c1');
-        var c2 = document.getElementById('c2');
-        var c3 = document.getElementById('c3');
-        var c4 = document.getElementById('c4');
-        var c5 = document.getElementById('c5');
-        var c6 = document.getElementById('c6');
-        var inputs = [c1, c2, c3, c4, c5, c6];
-        
-        // Time update
-        function updateTime() {
+<!-- SCAN BUTTON - Fixed with direct onclick -->
+<div class="scan-hard-button" onclick="openScanner()">
+    <span>◰</span> SCAN <span>◰</span>
+</div>
+
+<div class="keypad-mode-bar"><div class="mode-btn active" data-mode="qwerty">QWERTY</div><div class="mode-btn" data-mode="numeric">123</div><div class="mode-btn" data-mode="sym">SYM</div></div>
+<div id="keypad-qwerty" class="keypad active"><div class="key-row"><div class="key" onclick="addChar('Q')">Q</div><div class="key" onclick="addChar('W')">W</div><div class="key" onclick="addChar('E')">E</div><div class="key" onclick="addChar('R')">R</div><div class="key" onclick="addChar('T')">T</div><div class="key" onclick="addChar('Y')">Y</div><div class="key" onclick="addChar('U')">U</div><div class="key" onclick="addChar('I')">I</div><div class="key" onclick="addChar('O')">O</div><div class="key" onclick="addChar('P')">P</div></div><div class="key-row"><div class="key" onclick="addChar('A')">A</div><div class="key" onclick="addChar('S')">S</div><div class="key" onclick="addChar('D')">D</div><div class="key" onclick="addChar('F')">F</div><div class="key" onclick="addChar('G')">G</div><div class="key" onclick="addChar('H')">H</div><div class="key" onclick="addChar('J')">J</div><div class="key" onclick="addChar('K')">K</div><div class="key" onclick="addChar('L')">L</div></div><div class="key-row"><div class="key small">⇧</div><div class="key" onclick="addChar('Z')">Z</div><div class="key" onclick="addChar('X')">X</div><div class="key" onclick="addChar('C')">C</div><div class="key" onclick="addChar('V')">V</div><div class="key" onclick="addChar('B')">B</div><div class="key" onclick="addChar('N')">N</div><div class="key" onclick="addChar('M')">M</div><div class="key small" onclick="backspace()">⌫</div></div><div class="key-row"><div class="key wide" onclick="addSpace()">SPACE</div><div class="key small" onclick="addChar('-')">-</div><div class="key small" onclick="clearInput()">CLR</div></div></div>
+<div id="keypad-numeric" class="keypad"><div class="key-row"><div class="key" onclick="addChar('1')">1</div><div class="key" onclick="addChar('2')">2</div><div class="key" onclick="addChar('3')">3</div></div><div class="key-row"><div class="key" onclick="addChar('4')">4</div><div class="key" onclick="addChar('5')">5</div><div class="key" onclick="addChar('6')">6</div></div><div class="key-row"><div class="key" onclick="addChar('7')">7</div><div class="key" onclick="addChar('8')">8</div><div class="key" onclick="addChar('9')">9</div></div><div class="key-row"><div class="key" onclick="addChar('0')">0</div><div class="key" onclick="addChar('-')">-</div><div class="key" onclick="backspace()">⌫</div></div></div>
+<div id="keypad-sym" class="keypad"><div class="key-row"><div class="key" onclick="addChar('#')">#</div><div class="key" onclick="addChar('@')">@</div><div class="key" onclick="addChar('*')">*</div></div><div class="key-row"><div class="key" onclick="addChar('/')">/</div><div class="key" onclick="addChar('+')">+</div><div class="key" onclick="addChar('=')">=</div></div><div class="key-row"><div class="key" onclick="addChar('(')">(</div><div class="key" onclick="addChar(')')">)</div><div class="key" onclick="addChar('.')">.</div></div><div class="key-row"><div class="key" onclick="addSpace()">SPACE</div><div class="key" onclick="backspace()">⌫</div><div class="key" onclick="clearInput()">CLR</div></div></div>
+</div></div>
+<div id="statusModal" class="status-modal"><div class="status-box"><div class="status-header">SELECT STATUS <span id="modalGpsTime"></span></div><div class="gps-info" id="modalGpsInfo"><span>📍 Location ready</span></div><div class="status-option data-received" data-status="Data Received">📦 Data Received (+7 days)</div><div class="status-option picked-up" data-status="Picked Up">📋 Picked Up (-1 day)</div><div class="status-option depart-post-office" data-status="Depart Post Office">🚚 Depart Post Office (-2 days)</div><div class="status-option arrival-scan" data-status="Arrival Scan">🛬 Arrival Scan (-0.5 days)</div><div class="status-option local-scan" data-status="Local Scan">🏠 Local Scan (-1.5 days)</div><div class="status-option out-for-delivery" data-status="Out For Delivery">📤 Out For Delivery (-2 days)</div><div class="status-option delivered" data-status="Delivered">✅ Delivered (0 days)</div><div class="status-close" id="closeStatusBtn">⬅️ BACK</div></div></div>
+
+<script>
+// === CONFIG - REPLACE THIS URL ===
+var GS_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+// ================================
+
+// Global variables
+var inp = document.getElementById('barcodeInput');
+var hist = document.getElementById('scanHistoryContainer');
+var enter = document.getElementById('enterBtn');
+var esc = document.getElementById('escBtn');
+var statusModal = document.getElementById('statusModal');
+var closeStatus = document.getElementById('closeStatusBtn');
+var connLed = document.getElementById('connectionLed');
+var connText = document.getElementById('connectionText');
+var gpsLed = document.getElementById('gpsLed');
+var gpsText = document.getElementById('gpsText');
+var gpsLoc = document.getElementById('gpsLocation');
+var counter = 1;
+var pend = '';
+var lat = '';
+var lng = '';
+var siteUrl = window.location.href.split('?')[0].split('#')[0];
+
+// Keyboard functions - FIXED
+function addChar(c) {
+    inp.innerHTML = inp.innerHTML + c;
+}
+
+function backspace() {
+    inp.innerHTML = inp.innerHTML.slice(0, -1);
+}
+
+function clearInput() {
+    inp.innerHTML = '';
+}
+
+function addSpace() {
+    inp.innerHTML = inp.innerHTML + ' ';
+}
+
+// Scanner function - FIXED
+function openScanner() {
+    // Try ZXing intent
+    var intentUrl = 'intent://scan?SCAN_FORMATS=CODE_39,CODE_128,QR_CODE&SCAN_MODE=QR_CODE_MODE&SAVE_HISTORY=false&RESULT=' + 
+                    encodeURIComponent(siteUrl + '?scanned={CODE}') + 
+                    '#Intent;scheme=zxing;package=com.google.zxing.client.android;end';
+    window.location.href = intentUrl;
+}
+
+// Handle result from scanner
+(function(){
+    var p = new URLSearchParams(window.location.search);
+    var s = p.get('scanned') || p.get('text') || p.get('code');
+    
+    if(s){
+        inp.innerHTML = s;
+        pend = s;
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setTimeout(function(){statusModal.style.display='flex'}, 500);
+    }
+})();
+
+// GPS functions
+function getGPS() {
+    if(!navigator.geolocation) {
+        gpsLed.className = 'gps-led gps-red';
+        gpsText.innerHTML = 'GPS not supported';
+        return;
+    }
+    
+    gpsText.innerHTML = 'Getting GPS...';
+    navigator.geolocation.getCurrentPosition(
+        function(p) {
+            lat = p.coords.latitude.toFixed(4);
+            lng = p.coords.longitude.toFixed(4);
+            gpsLed.className = 'gps-led gps-green';
+            gpsText.innerHTML = 'GPS: Active';
+            gpsLoc.innerHTML = lat+', '+lng;
+            
             var d = new Date();
-            var h = d.getHours();
-            var m = d.getMinutes();
-            var s = d.getSeconds();
-            if (h < 10) h = '0' + h;
-            if (m < 10) m = '0' + m;
-            if (s < 10) s = '0' + s;
-            timeDiv.innerHTML = h + ':' + m + ':' + s;
+            var t = (d.getMonth()+1)+'/'+d.getDate()+' '+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+            document.getElementById('modalGpsTime').innerHTML = t;
+            document.getElementById('modalGpsInfo').innerHTML = '📍 '+lat+', '+lng;
+        },
+        function() {
+            gpsLed.className = 'gps-led gps-red';
+            gpsText.innerHTML = 'GPS: Error';
+            lat = '0.0000';
+            lng = '0.0000';
+        },
+        {timeout: 10000, enableHighAccuracy: true}
+    );
+}
+
+// Time update
+function updateTime() {
+    var d = new Date();
+    document.getElementById('currentTime').innerHTML = (d.getMonth()+1)+'/'+d.getDate()+' '+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+}
+updateTime();
+setInterval(updateTime, 60000);
+
+// ETA calculation
+function getETA(s) {
+    var d = new Date();
+    if(s == 'Data Received') d.setDate(d.getDate()+7);
+    else if(s == 'Picked Up') d.setDate(d.getDate()-1);
+    else if(s == 'Depart Post Office') d.setDate(d.getDate()-2);
+    else if(s == 'Arrival Scan') d.setTime(d.getTime()-12*60*60*1000);
+    else if(s == 'Local Scan') d.setTime(d.getTime()-36*60*60*1000);
+    else if(s == 'Out For Delivery') d.setDate(d.getDate()-2);
+    return (d.getMonth()+1)+'/'+d.getDate()+' '+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+}
+
+// Send data to Google Sheets
+function send(b, s, i) {
+    i.innerHTML = '⏳';
+    i.className = 'sync-indicator sync-pending';
+    connLed.className = 'connection-led led-yellow';
+    connText.innerHTML = 'SENDING...';
+    
+    var d = new Date();
+    var ds = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    var ts = d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes()+':'+(d.getSeconds()<10?'0':'')+d.getSeconds();
+    var loc = (lat&&lng) ? lat+', '+lng : 'Unknown';
+    var eta = getETA(s);
+    var cb = 'cb'+Date.now();
+    
+    window[cb] = function(r) {
+        try {
+            i.innerHTML = r && r.result=='success' ? '✅' : '❌';
+            i.className = r && r.result=='success' ? 'sync-indicator sync-success' : 'sync-indicator sync-failed';
+            connLed.className = r && r.result=='success' ? 'connection-led led-green' : 'connection-led led-red';
+            connText.innerHTML = r && r.result=='success' ? 'SENT ✅' : 'ERROR';
+        } catch(e) {
+            i.innerHTML = '❌';
+            i.className = 'sync-indicator sync-failed';
+            connLed.className = 'connection-led led-red';
+            connText.innerHTML = 'ERROR';
         }
-        setInterval(updateTime, 1000);
-        updateTime();
-        
-        // Grid input handling
-        for (var i = 0; i < inputs.length; i++) {
-            inputs[i].oninput = function(index) {
-                return function() {
-                    this.value = this.value.toUpperCase().substring(0,1);
-                    if (this.value && index < 5) {
-                        inputs[index + 1].focus();
-                    }
-                    checkGrid();
-                };
-            }(i);
-            
-            inputs[i].onkeydown = function(index) {
-                return function(e) {
-                    if (e.key === 'Backspace' && !this.value && index > 0) {
-                        inputs[index - 1].focus();
-                        inputs[index - 1].value = '';
-                        checkGrid();
-                    }
-                };
-            }(i);
+        delete window[cb];
+        document.body.removeChild(scr);
+    };
+    
+    var scr = document.createElement('script');
+    scr.src = GS_URL+'?action=add&label='+encodeURIComponent(b)+'&status='+encodeURIComponent(s)+'&date='+encodeURIComponent(ds)+'&time='+encodeURIComponent(ts)+'&location='+encodeURIComponent(loc)+'&eta='+encodeURIComponent(eta)+'&callback='+cb;
+    
+    scr.onerror = function() {
+        i.innerHTML = '❌';
+        i.className = 'sync-indicator sync-failed';
+        connLed.className = 'connection-led led-red';
+        connText.innerHTML = 'ERROR';
+        delete window[cb];
+        document.body.removeChild(scr);
+    };
+    
+    document.body.appendChild(scr);
+}
+
+// Add scan to history
+function addScan(b, s) {
+    if(!b) return;
+    
+    if(hist.children.length == 1 && hist.children[0].innerHTML.indexOf('No scans yet') != -1) {
+        hist.innerHTML = '';
+    }
+    
+    var d = document.createElement('div');
+    d.className = 'scan-entry';
+    
+    var idx = document.createElement('span');
+    idx.className = 'entry-index';
+    idx.innerHTML = counter + ' |';
+    
+    var val = document.createElement('span');
+    val.className = 'entry-value';
+    val.innerHTML = b;
+    
+    var st = document.createElement('span');
+    st.className = 'status-badge status-'+s.replace(/ /g,'-');
+    st.innerHTML = s.toUpperCase();
+    
+    var eta = document.createElement('span');
+    eta.className = 'eta-badge';
+    eta.innerHTML = 'ETA: '+getETA(s);
+    
+    var gps = document.createElement('span');
+    gps.innerHTML = '📍';
+    
+    var sync = document.createElement('span');
+    sync.className = 'sync-indicator sync-pending';
+    sync.innerHTML = '⏳';
+    
+    d.appendChild(idx);
+    d.appendChild(val);
+    d.appendChild(st);
+    d.appendChild(gps);
+    d.appendChild(eta);
+    d.appendChild(sync);
+    
+    hist.insertBefore(d, hist.firstChild);
+    send(b, s, sync);
+    counter++;
+    
+    if(hist.children.length > 8) {
+        hist.removeChild(hist.lastChild);
+    }
+}
+
+// Event listeners - FIXED
+enter.onclick = function() {
+    var t = inp.innerHTML || '';
+    if(t.trim() != '') {
+        pend = t;
+        statusModal.style.display = 'flex';
+    } else {
+        alert('Please enter a barcode');
+    }
+};
+
+esc.onclick = function() {
+    hist.innerHTML = '<div style="color:#888;font-style:italic;padding:8px;text-align:center;">No scans yet</div>';
+    counter = 1;
+    inp.innerHTML = '';
+};
+
+// Status modal options
+var opts = document.querySelectorAll('.status-option');
+for(var i = 0; i < opts.length; i++) {
+    opts[i].onclick = function() {
+        var s = this.getAttribute('data-status');
+        if(pend != '') {
+            addScan(pend, s);
+            inp.innerHTML = '';
+            pend = '';
+            statusModal.style.display = 'none';
         }
-        
-        function checkGrid() {
-            var allFilled = true;
-            for (var i = 0; i < inputs.length; i++) {
-                if (!inputs[i].value) {
-                    allFilled = false;
-                    break;
-                }
-            }
-            statusSelect.disabled = !allFilled;
-        }
-        
-        function clearGrid() {
-            for (var i = 0; i < inputs.length; i++) {
-                inputs[i].value = '';
-            }
-            inputs[0].focus();
-            statusSelect.disabled = true;
-        }
-        
-        // Scanner
-        function startScanner() {
-            if (!scanner) {
-                try {
-                    scanner = new Html5Qrcode("scanner");
-                } catch(e) {
-                    showMessage('Scanner failed: ' + e.message);
-                    return;
-                }
-            }
-            
-            scannerDiv.style.display = 'block';
-            
-            var config = {
-                fps: 10,
-                qrbox: 200
-            };
-            
-            scanner.start(
-                { facingMode: "environment" },
-                config,
-                function(text) {
-                    showMessage('Scanned: ' + text, 'success');
-                    
-                    // Fill grid
-                    for (var i = 0; i < 6; i++) {
-                        if (inputs[i]) {
-                            inputs[i].value = (text[i] || '').toUpperCase();
-                        }
-                    }
-                    
-                    stopScanner();
-                    checkGrid();
-                },
-                function(error) {
-                    // Ignore errors
-                }
-            ).then(function() {
-                isScanning = true;
-            }).catch(function(err) {
-                showMessage('Camera error: ' + err.message);
-                scannerDiv.style.display = 'none';
-            });
-        }
-        
-        function stopScanner() {
-            if (scanner && isScanning) {
-                scanner.stop().then(function() {
-                    isScanning = false;
-                    scannerDiv.style.display = 'none';
-                }).catch(function() {});
-            } else {
-                scannerDiv.style.display = 'none';
-            }
-        }
-        
-        function showMessage(msg, type) {
-            messageBox.innerHTML = msg;
-            messageBox.className = 'message' + (type === 'success' ? ' success' : '');
-            messageBox.style.display = 'block';
-            setTimeout(function() {
-                messageBox.style.display = 'none';
-            }, 2000);
-        }
-        
-        // Send to XANO
-        function sendToXano(barcode, status, callback) {
-            showMessage('Sending...', 'success');
-            
-            var now = new Date();
-            var data = {
-                created_at: now.getTime(),
-                epochs: now.getTime(),
-                label_id: barcode,
-                text: status,
-                barcode_type: 'QR_CODE',
-                status: status,
-                date: now.toISOString().split('T')[0],
-                time: now.toTimeString().split(' ')[0],
-                location: 'Default',
-                eta: 'N/A',
-                timestamp: now.getTime()
-            };
-            
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans', true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        showMessage('Saved!', 'success');
-                        if (callback) callback(true);
-                    } else {
-                        showMessage('Failed: ' + xhr.status);
-                        if (callback) callback(false);
-                    }
-                }
-            };
-            
-            xhr.onerror = function() {
-                showMessage('Network error');
-                if (callback) callback(false);
-            };
-            
-            xhr.send(JSON.stringify(data));
-        }
-        
-        function addToList(barcode, status) {
-            var b = barcode;
-            while (b.length < 6) b = '0' + b;
-            b = b.substring(0, 6);
-            
-            items.unshift({
-                id: itemCount++,
-                code: b,
-                status: status
-            });
-            
-            if (items.length > 20) items.pop();
-            
-            var html = '';
-            for (var i = 0; i < items.length; i++) {
-                html += '<div class="list-item">' +
-                        '<div>' + items[i].id + '</div>' +
-                        '<div>' + items[i].code + '</div>' +
-                        '<div>' + items[i].status + '</div>' +
-                        '</div>';
-            }
-            listDiv.innerHTML = html;
-        }
-        
-        // Event listeners
-        scanBtn.onclick = function(e) {
-            e.preventDefault();
-            startScanner();
-        };
-        
-        statusSelect.onchange = function() {
-            var barcode = '';
-            for (var i = 0; i < inputs.length; i++) {
-                barcode += inputs[i].value;
-            }
-            
-            var status = statusSelect.value;
-            
-            if (barcode.length === 6 && status) {
-                sendToXano(barcode, status, function(success) {
-                    if (success) {
-                        addToList(barcode, status);
-                        clearGrid();
-                        statusSelect.value = '';
-                    }
-                });
-            }
-        };
-        
-        // Focus first input
-        inputs[0].focus();
-        
-        console.log('Ready');
-    </script>
+    };
+}
+
+closeStatus.onclick = function() {
+    statusModal.style.display = 'none';
+    pend = '';
+};
+
+window.onclick = function(e) {
+    if(e.target == statusModal) {
+        statusModal.style.display = 'none';
+        pend = '';
+    }
+};
+
+// Keyboard mode switching - FIXED
+var modeBtns = document.querySelectorAll('.mode-btn');
+var qwerty = document.getElementById('keypad-qwerty');
+var num = document.getElementById('keypad-numeric');
+var sym = document.getElementById('keypad-sym');
+
+function setMode(m) {
+    for(var i = 0; i < modeBtns.length; i++) {
+        modeBtns[i].className = modeBtns[i].getAttribute('data-mode') == m ? 'mode-btn active' : 'mode-btn';
+    }
+    qwerty.className = m == 'qwerty' ? 'keypad active' : 'keypad';
+    num.className = m == 'numeric' ? 'keypad active' : 'keypad';
+    sym.className = m == 'sym' ? 'keypad active' : 'keypad';
+}
+
+for(var i = 0; i < modeBtns.length; i++) {
+    modeBtns[i].onclick = function() {
+        setMode(this.getAttribute('data-mode'));
+    };
+}
+
+// Initialize
+setTimeout(getGPS, 500);
+connText.innerHTML = 'READY';
+</script>
 </body>
 </html>
