@@ -895,7 +895,7 @@
   });
 
   // ============================================
-  // SEND TO XANO (matching table structure)
+  // SEND TO XANO - FIXED VERSION
   // ============================================
   async function sendBatchToXano(status) {
     if (scannedBarcodes.length === 0) return;
@@ -915,17 +915,22 @@
       const errors = [];
       
       for (const barcode of scannedBarcodes) {
+        // Xano expects specific field names - match exactly what the schema expects
         const record = {
-          created_at: epochTime,
           label_id: barcode,
-          barcode_type: 'CODE128',
           status: status,
+          location: location,
+          // Add a default ETA value (24 hours from now as example)
+          eta: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          // Include all required fields from your schema
+          created_at: epochTime,
+          barcode_type: 'CODE128',
           date: dateStr,
           time: epochTime,
-          location: location,
-          eta: '',
           timestamp: epochTime
         };
+
+        console.log('Sending record:', record);
 
         try {
           const response = await fetch(XANO_URL, {
@@ -937,12 +942,19 @@
             body: JSON.stringify(record)
           });
 
+          const responseText = await response.text();
+          console.log('Response status:', response.status);
+          console.log('Response body:', responseText);
+
           if (response.ok) {
-            const data = await response.json();
-            results.push(data);
+            try {
+              const data = JSON.parse(responseText);
+              results.push(data);
+            } catch {
+              results.push({ success: true, barcode });
+            }
           } else {
-            const errorText = await response.text();
-            errors.push(`Failed for ${barcode}: ${response.status} - ${errorText}`);
+            errors.push(`Failed for ${barcode}: ${response.status} - ${responseText}`);
           }
         } catch (err) {
           errors.push(`Network error for ${barcode}: ${err.message}`);
