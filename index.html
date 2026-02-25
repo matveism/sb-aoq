@@ -1,993 +1,1331 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>mobile scanner · live sheets</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
-  <style>
-    * {
-      box-sizing: border-box;
-      user-select: none;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport"
+      content="width=360, height=640, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<!-- QuaggaJS for scanning -->
+<script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
 
-    body {
-      margin: 0;
-      background: lightblue;
-      font-family: Arial, sans-serif;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    .app-scroll {
-      flex: 1 1 auto;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 4px;
-    }
+  body {
+    width: 360px;
+    height: 640px;
+    overflow: hidden;
+    background: #ffffff;
+    font-family: Arial, sans-serif;
+  }
 
-    .header {
-      height: 48px;
-      background: #e6e6e9;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 14px;
-      border-bottom: 1px solid #c9c9cc;
-      flex-shrink: 0;
-    }
+  /* HEADER (blue) */
+  .header {
+    width: 360px;
+    height: 32px;
+    background: #0b6fd8;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    position: relative;
+    z-index: 20;
+  }
 
-    .left-text {
-      font-family: "Courier New", monospace;
-      font-weight: 700;
-      font-size: 20px;
-    }
+  .title { font-size: 14px; font-weight: bold; }
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    
-    .gps-icon {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      background: #d2d2d8;
-      padding: 4px 12px;
-      border-radius: 30px;
-      font-family: "Courier New", monospace;
-      font-size: 14px;
-      border: 1px solid #aaaab0;
-    }
-    
-    #timeDisplay {
-      font-family: "Courier New", monospace;
-      font-size: 18px;
-      background: #d2d2d8;
-      padding: 4px 12px;
-      border-radius: 30px;
-      border: 1px solid #aaaab0;
-    }
+  .icons { display: flex; align-items: center; }
 
-    .container {
-      padding: 18px;
-    }
+  .icon {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #fff;
+    border-radius: 2px;
+    margin-left: 6px;
+  }
 
-    .label-title {
-      font-family: "Courier New", monospace;
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
+  .dots {
+    width: 4px;
+    height: 4px;
+    background: #fff;
+    border-radius: 50%;
+    margin-left: 8px;
+    box-shadow: 0 6px 0 #fff, 0 -6px 0 #fff;
+  }
 
-    .scan-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+  /* EVERYTHING UNDER HEADER */
+  .under-area {
+    width: 360px;
+    background: #A7C6E2;
+    padding-bottom: 6px;
+    font-family: Arial, sans-serif;
+    position: relative;
+    z-index: 10;
+    height: calc(640px - 32px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
 
-    .scan-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: lightgreen;
-      border: 1px solid #b8b8bb;
-      padding: 8px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-family: "Courier New", monospace;
-      font-weight: 700;
-      font-size: 14px;
-    }
+  /* SCAN BUTTON */
+  .scan-button-container {
+    width: 360px;
+    padding: 4px 8px 2px 8px;
+    background: #A7C6E2;
+  }
+  
+  .scan-btn {
+    width: 100%;
+    height: 28px;
+    background: #6B8E4C;
+    border: 1px solid #4A6B2F;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    line-height: 28px;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .scan-btn:active {
+    background: #5A7A3C;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+  }
 
-    .barcode-input {
-      flex: 1;
-      padding: 10px;
-      font-size: 18px;
-      font-family: "Courier New", monospace;
-      border: 1px solid #b8b8bb;
-      border-radius: 6px;
-      background: lightgray;
-    }
+  /* Scan/key-in barcode strip */
+  .under-header {
+    width: 360px;
+    height: 26px;
+    color: #000;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+  }
 
-    .label-box {
-      margin: 24px 0 12px;
-      border: 2px solid #b8b8bb;
-      background: #ffffff;
-      border-radius: 8px;
-      padding: 12px 10px;
-    }
-    
-    .label-box-header {
-      display: flex;
-      justify-content: space-between;
-      font-family: "Courier New", monospace;
-      font-weight: 700;
-      font-size: 18px;
-      border-bottom: 1px solid #c9c9cc;
-      padding-bottom: 6px;
-    }
-    
-    .label-counter {
-      background: #e6e6e9;
-      padding: 0 12px;
-      border-radius: 20px;
-    }
-    
-    .scanned-items {
-      min-height: 80px;
-      max-height: 160px;
-      overflow-y: auto;
-      background: #f8f8fa;
-      border-radius: 4px;
-      margin: 10px 0 8px;
-      padding: 4px;
-      font-family: "Courier New", monospace;
-      border: 1px solid #d2d2d5;
-    }
-    
-    .scanned-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 0;
-      border-bottom: 1px dashed #c0c0c5;
-    }
-    
-    .item-index {
-      color: #3a3a44;
-      min-width: 32px;
-    }
-    
-    .item-barcode {
-      font-weight: 600;
-    }
-    
-    .empty-label {
-      color: #8e8e98;
-      text-align: center;
-      padding: 12px;
-    }
+  /* GRID */
+  .grid {
+    width: 360px;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+  }
 
-    .action-buttons {
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-      margin-top: 12px;
-    }
-    
-    .action-btn {
-      background: #dcdce0;
-      border: 1px solid #b8b8bb;
-      border-radius: 6px;
-      padding: 8px 24px;
-      font-family: "Courier New", monospace;
-      font-weight: 700;
-      font-size: 18px;
-      cursor: pointer;
-    }
-    
-    .esc-btn { background: #f0d0d0; }
-    .enter-btn { background: #d0f0d0; }
+  .row { display: flex; }
 
-    .status-block {
-      margin-top: 20px;
-      display: none;
-    }
+  .cell {
+    width: 18px;
+    height: 22px;
+    border: 1px solid #999;
+    background: #E2E8D3;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 22px;
+    color: #000;
+  }
 
-    .status-label {
-      font-family: "Courier New", monospace;
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
+  .orange { background: #F49A16; }
+  .gray { background: #A9A9A9; }
 
-    .status-select {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      font-family: "Courier New", monospace;
-      border: 1px solid #b8b8bb;
-      border-radius: 6px;
-      background: #ffffff;
-    }
+  /* LABEL ID CONTAINER */
+  .label-bar-container {
+    width: 360px;
+    background: #A7C6E2;
+    margin-top: 6px;
+  }
+  
+  .label-bar {
+    width: 360px;
+    height: 26px;
+    color: #000;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+  }
+  
+  .label-prefix {
+    color: #0b6fd8;
+    margin-right: 4px;
+  }
+  
+  /* Barcode display box */
+  .barcode-box {
+    width: 360px;
+    height: 40px;
+    background: transparent;
+    border: 2px solid #0b6fd8;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Courier New', monospace;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #000;
+  }
 
-    .signature-overlay {
-      position: fixed; top:0; left:0; width:100%; height:100%;
-      background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center;
-      z-index: 2000;
-    }
-    
-    .signature-container {
-      width:90%; max-width:400px; background:#fff; border-radius:16px; padding:20px;
-      border: 2px solid #b8b8bb;
-    }
-    
-    .signature-title { font-size:20px; font-weight:700; margin-bottom:6px; }
-    .signature-subtitle { color:#1e4d2b; font-weight:600; margin-bottom:12px; }
-    .signature-barcode { background:#eaeef2; padding:8px; border-radius:6px; font-family: monospace; }
-    .signature-canvas-container { background:#f0f4f8; border:2px solid #b8b8bb; border-radius:8px; height:150px; }
-    #signatureCanvas { width:100%; height:150px; background:#fff; cursor:crosshair; }
-    .signature-actions { display:flex; gap:8px; margin-top:16px; }
-    .signature-btn { flex:1; padding:10px; border:1px solid #b8b8bb; background:#dcdce0; border-radius:6px; font-weight:700; }
+  /* SELECT STATUS HEADER */
+  .select-status-header {
+    width: 360px;
+    height: 32px;
+    background: #0b6fd8;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    margin-top: 8px;
+    font-weight: bold;
+    font-size: 14px;
+  }
 
-    .overlay {
-      position: fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:1500;
-    }
-    
-    .barcode-frame {
-      width:300px; background:#000; border:4px solid #9bbc7b; border-radius:10px; overflow:hidden;
-      position: relative;
-    }
-    
-    .close-btn {
-      position: absolute; top:-40px; right:0; background:#fff; border:1px solid #b8b8bb; 
-      padding:6px 12px; border-radius:6px; cursor:pointer;
-    }
-    
-    video { width:100%; height:auto; }
+  /* STATUS DROPDOWN */
+  .status-container {
+    width: 360px;
+    padding: 8px;
+    background: #A7C6E2;
+  }
+  
+  .status-select {
+    width: 100%;
+    height: 40px;
+    background: #fff;
+    border: 2px solid #0b6fd8;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 0 8px;
+    color: #000;
+    cursor: pointer;
+  }
 
-    .location-preview {
-      font-family: monospace;
-      font-size: 12px;
-      margin-top: 8px;
-      padding: 4px;
-      background: #e6e6e9;
-      border-radius: 4px;
-    }
+  /* ETA DISPLAY */
+  .eta-display {
+    width: 360px;
+    padding: 4px 8px;
+    background: #A7C6E2;
+    font-size: 14px;
+    font-weight: bold;
+    color: #0b6fd8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .eta-value {
+    background: #E2E8D3;
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid #0b6fd8;
+    color: #000;
+  }
+  
+  /* LOCATION STATUS */
+  .location-status {
+    width: 360px;
+    padding: 4px 8px;
+    background: #A7C6E2;
+    font-size: 12px;
+    color: #0b6fd8;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .location-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #FFA500;
+    display: inline-block;
+  }
+  
+  .location-dot.active {
+    background: #28a745;
+  }
+  
+  .location-dot.error {
+    background: #dc3545;
+  }
 
-    /* ========== TOGGLEABLE KEYPAD (ANDROID STYLE) ========== */
-    .keypad-fixed {
-      flex-shrink: 0;
-      background: #d2d2d8;
-      border-top: 2px solid #aaaab0;
-      padding: 6px 4px 4px 4px;
-      width: 100%;
-      font-family: 'Courier New', monospace;
-      transition: 0.1s;
-    }
+  /* STATUS MESSAGE */
+  .status-message {
+    width: 360px;
+    padding: 8px;
+    background: #A7C6E2;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    min-height: 36px;
+  }
+  
+  .status-message.success {
+    color: #28a745;
+  }
+  
+  .status-message.error {
+    color: #dc3545;
+  }
+  
+  .status-message.saving {
+    color: #FFA500;
+  }
 
-    .keypad-row {
-      display: flex;
-      justify-content: center;
-      gap: 5px;
-      margin-bottom: 5px;
-    }
+  /* FOOTER BAR */
+  .footer {
+    width: 360px;
+    height: 28px;
+    background: #0b6fd8;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    font-size: 13px;
+    font-weight: bold;
+    position: fixed;
+    bottom: 0;
+    z-index: 20;
+  }
 
-    .key-btn {
-      background: #f0f0f6;
-      border: 1px solid #7a7a88;
-      border-radius: 6px;
-      font-family: 'Courier New', monospace;
-      font-weight: 700;
-      font-size: 22px;
-      padding: 8px 0;
-      text-align: center;
-      flex: 1 1 0px;
-      min-width: 36px;
-      max-width: 48px;
-      box-shadow: 0 2px 0 #6a6a78;
-      cursor: pointer;
-      color: #111;
-      line-height: 1;
-    }
-    .key-btn:active {
-      transform: translateY(2px);
-      box-shadow: none;
-      background: #d8d8e2;
-    }
+  .footer-icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-    /* wider keys for specials */
-    .key-btn.wide-esc {
-      flex: 1.2 1.2 0px;
-      max-width: 70px;
-      font-size: 18px;
-      background: #f0d0d0;
-    }
-    .key-btn.wide-123, .key-btn.mode-btn {
-      flex: 1.2 1.2 0px;
-      max-width: 70px;
-      font-size: 18px;
-      background: #d0d0f0;
-    }
-    .key-btn.mode-sym {
-      background: #c0c0e0;
-    }
-    .key-btn.enter-key {
-      background: #d0f0d0;
-      max-width: 70px;
-      font-size: 18px;
-    }
-    .key-btn.space {
-      flex: 3 3 0px;
-      max-width: 160px;
-      background: #e6e6f0;
-    }
-    .key-btn.sym-dark {
-      background: #c0c0d0;
-    }
+  .footer-icon {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #fff;
+    border-radius: 2px;
+  }
 
-    /* mode selector row (123 | SYM | space ... ) */
-    .mode-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 6px;
-      margin-bottom: 6px;
-      padding: 0 2px;
-    }
-    .mode-btn {
-      background: #b8b8d0;
-      border: 1px solid #7a7a88;
-      border-radius: 6px;
-      padding: 8px 12px;
-      font-weight: bold;
-      font-size: 18px;
-      font-family: 'Courier New', monospace;
-      cursor: pointer;
-      box-shadow: 0 2px 0 #5a5a68;
-      text-align: center;
-      flex: 1;
-    }
-    .mode-btn.active {
-      background: #9a9ac0;
-      transform: translateY(2px);
-      box-shadow: none;
-    }
-    .mode-btn:active {
-      transform: translateY(2px);
-      box-shadow: none;
-    }
+  /* KEYPADS WRAPPER */
+  .keypad-wrapper {
+    width: 360px;
+    margin-bottom: 28px;
+  }
 
-    /* hide keypad sections */
-    .keypad-section {
-      display: none;
-    }
-    .keypad-section.active {
-      display: block;
-    }
+  /* NUMERIC KEYPAD */
+  .keypad-num {
+    width: 360px;
+    display: flex;
+    justify-content: center;
+    margin-top: 0;
+  }
 
-    /* numeric specific */
-    .num-row {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 6px;
-    }
-    .num-row .key-btn {
-      max-width: 60px;
-      font-size: 24px;
-    }
-    .num-special {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 2px;
-    }
-    .num-special .key-btn {
-      max-width: 70px;
-      font-size: 20px;
-    }
+  .col {
+    display: flex;
+    flex-direction: column;
+  }
 
-    /* symbol specific */
-    .sym-main .keypad-row {
-      gap: 4px;
-    }
-    .sym-main .key-btn {
-      font-size: 20px;
-      max-width: 44px;
-    }
-  </style>
+  .center-col {
+    display: flex;
+    flex-direction: column;
+    margin: 0 2px;
+  }
+
+  .center-row {
+    display: flex;
+    justify-content: center;
+  }
+
+  .btn,
+  .grid-btn,
+  .q-btn {
+    background: #0b6fd8;
+    border: 2px solid #083f82;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn:active,
+  .grid-btn:active,
+  .q-btn:active {
+    background: #0952a8;
+    border-color: #052b55;
+  }
+
+  .btn,
+  .grid-btn {
+    width: 60px;
+    height: 34px;
+    margin: 3px 3px;
+    font-size: 16px;
+  }
+
+  .grid-btn { font-size: 18px; }
+
+  /* COMPACT QWERTY KEYPAD */
+  .keypad-qwerty {
+    width: 360px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 0;
+    padding: 0 5px;
+  }
+
+  .q-row {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .q-btn {
+    width: 28px;
+    height: 34px;
+    margin: 2px 1px;
+    font-size: 14px;
+  }
+
+  .q-btn.wide {
+    width: 42px;
+  }
+
+  .q-btn.space {
+    width: 90px;
+  }
+
+  .q-row.bottom-row .q-btn {
+    width: 60px;
+    margin: 2px;
+  }
+
+  .q-row.bottom-row .q-btn.space {
+    width: 120px;
+  }
+
+  /* SCANNER MODAL */
+  .scanner-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 360px;
+    height: 640px;
+    background: #000;
+    z-index: 9999;
+    flex-direction: column;
+  }
+  
+  .scanner-modal.active {
+    display: flex;
+  }
+  
+  .scanner-header {
+    width: 360px;
+    height: 32px;
+    background: #0b6fd8;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+  }
+  
+  .scanner-title {
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .scanner-close {
+    width: 24px;
+    height: 24px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .scanner-close:active {
+    background: rgba(255,255,255,0.4);
+  }
+  
+  .scanner-content {
+    flex: 1;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    position: relative;
+  }
+  
+  #scanner-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .scanner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  
+  .scanner-frame {
+    width: 280px;
+    height: 140px;
+    border: 2px solid #0b6fd8;
+    box-shadow: 0 0 0 1000px rgba(0,0,0,0.5);
+  }
+  
+  .scanner-footer {
+    width: 360px;
+    height: 60px;
+    background: #0b6fd8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 0 10px;
+  }
+  
+  .torch-btn {
+    background: #4A6B2F;
+    border: 1px solid #2A4A1F;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 15px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    min-width: 80px;
+    text-align: center;
+  }
+  
+  .torch-btn.active {
+    background: #FFD700;
+    color: #000;
+    border-color: #B8860B;
+  }
+  
+  .scanner-btn {
+    background: #8B0000;
+    border: 1px solid #5a0000;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 20px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    min-width: 100px;
+    text-align: center;
+  }
+  
+  .scanner-error {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    display: none;
+    z-index: 100;
+  }
+</style>
 </head>
+
 <body>
-
-<div class="header">
-  <div class="left-text">SCAN BARCODE</div>
-  <div class="header-right">
-    <div class="gps-icon" id="gpsIndicator">
-      <span>📍</span><span id="gpsStatus">acquiring</span>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="title">Scan Barcode</div>
+    <div class="icons">
+      <div class="icon"></div>
+      <div class="icon"></div>
+      <div class="icon"></div>
+      <div class="icon"></div>
+      <div class="dots"></div>
     </div>
-    <div id="timeDisplay">--:--:--</div>
   </div>
-</div>
 
-<!-- scrollable main content -->
-<div class="app-scroll">
-  <div class="container">
-    <div class="label-title">SCAN barcode ID</div>
-    <div class="scan-row">
-      <button class="scan-btn" onclick="openScanner()">📷 SCAN</button>
-      <input type="text" id="barcodeField" class="barcode-input" placeholder="scan or enter" autocomplete="off" inputmode="none">
+  <!-- EVERYTHING UNDER HEADER -->
+  <div class="under-area">
+    <!-- SCAN BUTTON -->
+    <div class="scan-button-container">
+      <div class="scan-btn" id="scanBtn">SCAN</div>
+    </div>
+    
+    <!-- Scan/key-in barcode -->
+    <div class="under-header">
+      Scan/key-in barcode
     </div>
 
-    <div class="label-box">
-      <div class="label-box-header">
-        <span># LABEL ID</span>
-        <span class="label-counter" id="itemCounter">0</span>
+    <!-- GRID (3 ROWS × 20 CELLS) -->
+    <div class="grid">
+      <!-- ROW 1 (ACTIVE INPUT ROW) -->
+      <div class="row" id="inputRow">
+        <div class="cell orange input-cell" data-index="0"></div>
+        <div class="cell input-cell" data-index="1"></div>
+        <div class="cell input-cell" data-index="2"></div>
+        <div class="cell input-cell" data-index="3"></div>
+        <div class="cell input-cell" data-index="4"></div>
+        <div class="cell input-cell" data-index="5"></div>
+        <div class="cell input-cell" data-index="6"></div>
+        <div class="cell input-cell" data-index="7"></div>
+        <div class="cell input-cell" data-index="8"></div>
+        <div class="cell input-cell" data-index="9"></div>
+        <div class="cell input-cell" data-index="10"></div>
+        <div class="cell input-cell" data-index="11"></div>
+        <div class="cell input-cell" data-index="12"></div>
+        <div class="cell input-cell" data-index="13"></div>
+        <div class="cell input-cell" data-index="14"></div>
+        <div class="cell input-cell" data-index="15"></div>
+        <div class="cell input-cell" data-index="16"></div>
+        <div class="cell input-cell" data-index="17"></div>
+        <div class="cell input-cell" data-index="18"></div>
+        <div class="cell input-cell" data-index="19"></div>
       </div>
-      <div class="scanned-items" id="scannedListContainer">
-        <div class="empty-label">— no scans —</div>
+
+      <!-- ROW 2 -->
+      <div class="row">
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
       </div>
-      <div class="action-buttons">
-        <button class="action-btn esc-btn" id="escBtn">ESC</button>
-        <button class="action-btn enter-btn" id="enterBtn">ENTER</button>
+
+      <!-- ROW 3 -->
+      <div class="row">
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div>
+        <div class="cell gray"></div><div class="cell gray"></div><div class="cell gray"></div>
+        <div class="cell gray"></div><div class="cell gray"></div><div class="cell gray"></div>
+        <div class="cell gray"></div><div class="cell gray"></div><div class="cell gray"></div>
+        <div class="cell gray"></div><div class="cell gray"></div>
       </div>
     </div>
 
-    <div class="status-block" id="batchStatusBlock">
-      <div class="status-label">CHOOSE STATUS FOR ALL SCANNED PACKAGES</div>
-      <select class="status-select" id="batchStatusSelect">
-        <option value="">Select status...</option>
-        <option>Label Created</option>
-        <option>UEXS Awaitng Item</option>
-        <option>UEXS picked up</option>
-        <option>UEXS Departed Post Office</option>
-        <option>UEXS Arrived at Origin Hub</option>
-        <option>UEXS Departed Origin Hub</option>
-        <option>UEXS In Transit</option>
-        <option>UEXS Arrived Reginoal Hub</option>
-        <option>UEXS Processed thru Hub</option>
-        <option>UEXS Departed Hub</option>
-        <option>UEXS Arrived Local Hub</option>
-        <option>UEXS Sorted</option>
-        <option>UEXS Loaded On Delivery Vehicle</option>
-        <option>UEXS Out For Delivery</option>
-        <option>UEXS DELIVERED</option>
+    <!-- LABEL ID CONTAINER -->
+    <div class="label-bar-container">
+      <div class="label-bar">
+        <span class="label-prefix">|#|</span> LABEL ID
+      </div>
+      <!-- Transparent box for barcode -->
+      <div class="barcode-box" id="barcodeDisplay"></div>
+    </div>
+
+    <!-- SELECT STATUS HEADER -->
+    <div class="select-status-header">
+      SELECT STATUS
+    </div>
+
+    <!-- STATUS DROPDOWN -->
+    <div class="status-container">
+      <select class="status-select" id="statusSelect">
+        <option value="">-- Select Status --</option>
+        <option value="Item Booked">Item Booked (+7 days)</option>
+        <option value="Item Bagged">Item Bagged (-21 hours)</option>
+        <option value="Item Dispatched">Item Dispatched (-21 hours)</option>
+        <option value="Item Received">Item Received (-21 hours)</option>
+        <option value="In-Transit">In-Transit (-21 hours)</option>
+        <option value="Item Received at Delivery Office">Item Received at Delivery Office (-21 hours)</option>
+        <option value="Out for Delivery">Out for Delivery (-21 hours)</option>
+        <option value="Delivered">Delivered (-42 hours)</option>
       </select>
-      <div id="locationPreview" class="location-preview"></div>
+    </div>
+
+    <!-- ETA DISPLAY -->
+    <div class="eta-display">
+      <span>Estimated Delivery:</span>
+      <span class="eta-value" id="etaDisplay">--</span>
+    </div>
+
+    <!-- GPS LOCATION STATUS -->
+    <div class="location-status" id="locationStatus">
+      <span class="location-dot" id="locationDot"></span>
+      <span id="locationText">Acquiring GPS location...</span>
+    </div>
+
+    <!-- STATUS MESSAGE -->
+    <div class="status-message" id="statusMessage">
+      Ready to scan
+    </div>
+
+    <!-- KEYPADS -->
+    <div class="keypad-wrapper">
+      <!-- NUMERIC KEYPAD -->
+      <div class="keypad-num" id="keypadNum">
+        <!-- LEFT COLUMN -->
+        <div class="col">
+          <div class="btn key-btn" data-action="left">←</div>
+          <div class="btn key-btn" data-action="right">→</div>
+          <div class="btn key-btn" data-action="esc">ESC</div>
+          <div class="btn key-btn" data-action="toQwerty">ABC SYM</div>
+        </div>
+
+        <!-- CENTER GRID -->
+        <div class="center-col">
+          <div class="center-row">
+            <div class="grid-btn key-btn" data-char="1">1</div>
+            <div class="grid-btn key-btn" data-char="2">2</div>
+            <div class="grid-btn key-btn" data-char="3">3</div>
+          </div>
+          <div class="center-row">
+            <div class="grid-btn key-btn" data-char="4">4</div>
+            <div class="grid-btn key-btn" data-char="5">5</div>
+            <div class="grid-btn key-btn" data-char="6">6</div>
+          </div>
+          <div class="center-row">
+            <div class="grid-btn key-btn" data-char="7">7</div>
+            <div class="grid-btn key-btn" data-char="8">8</div>
+            <div class="grid-btn key-btn" data-char="9">9</div>
+          </div>
+          <div class="center-row">
+            <div class="grid-btn key-btn" data-char="-">-</div>
+            <div class="grid-btn key-btn" data-char="0">0</div>
+            <div class="grid-btn key-btn" data-char=".">.</div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="col">
+          <div class="btn key-btn" data-action="up">↑</div>
+          <div class="btn key-btn" data-action="down">↓</div>
+          <div class="btn key-btn" data-action="backspace">⌫</div>
+          <div class="btn key-btn" data-action="enter">ENT↵</div>
+        </div>
+      </div>
+
+      <!-- COMPACT QWERTY KEYPAD -->
+      <div class="keypad-qwerty" id="keypadQwerty">
+        <!-- ROW 1 -->
+        <div class="q-row">
+          <div class="q-btn key-btn" data-char="Q">Q</div>
+          <div class="q-btn key-btn" data-char="W">W</div>
+          <div class="q-btn key-btn" data-char="E">E</div>
+          <div class="q-btn key-btn" data-char="R">R</div>
+          <div class="q-btn key-btn" data-char="T">T</div>
+          <div class="q-btn key-btn" data-char="Y">Y</div>
+          <div class="q-btn key-btn" data-char="U">U</div>
+          <div class="q-btn key-btn" data-char="I">I</div>
+          <div class="q-btn key-btn" data-char="O">O</div>
+          <div class="q-btn key-btn" data-char="P">P</div>
+        </div>
+
+        <!-- ROW 2 -->
+        <div class="q-row">
+          <div class="q-btn key-btn" data-char="A">A</div>
+          <div class="q-btn key-btn" data-char="S">S</div>
+          <div class="q-btn key-btn" data-char="D">D</div>
+          <div class="q-btn key-btn" data-char="F">F</div>
+          <div class="q-btn key-btn" data-char="G">G</div>
+          <div class="q-btn key-btn" data-char="H">H</div>
+          <div class="q-btn key-btn" data-char="J">J</div>
+          <div class="q-btn key-btn" data-char="K">K</div>
+          <div class="q-btn key-btn" data-char="L">L</div>
+        </div>
+
+        <!-- ROW 3 -->
+        <div class="q-row">
+          <div class="q-btn wide">⇧</div>
+          <div class="q-btn key-btn" data-char="Z">Z</div>
+          <div class="q-btn key-btn" data-char="X">X</div>
+          <div class="q-btn key-btn" data-char="C">C</div>
+          <div class="q-btn key-btn" data-char="V">V</div>
+          <div class="q-btn key-btn" data-char="B">B</div>
+          <div class="q-btn key-btn" data-char="N">N</div>
+          <div class="q-btn key-btn" data-char="M">M</div>
+          <div class="q-btn wide">⇧</div>
+        </div>
+
+        <!-- ROW 4 -->
+        <div class="q-row bottom-row">
+          <div class="q-btn wide key-btn" data-action="toNum">123</div>
+          <div class="q-btn space key-btn" data-char=" ">SPACE</div>
+          <div class="q-btn wide key-btn" data-action="backspace">⌫</div>
+          <div class="q-btn wide key-btn" data-action="enter">↵</div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ========== SINGLE TOGGLEABLE KEYPAD (ANDROID STYLE) ========== -->
-<div class="keypad-fixed">
-  <!-- mode switcher row: 123 | SYM | space (but space is actual key) we need ABC mode too, so better: ABC 123 SYM as mode toggles -->
-  <div class="mode-row">
-    <div class="mode-btn" id="modeABC" data-mode="abc">ABC</div>
-    <div class="mode-btn" id="mode123" data-mode="num">123</div>
-    <div class="mode-btn" id="modeSYM" data-mode="sym">SYM</div>
+  <!-- FOOTER BAR -->
+  <div class="footer">
+    <div class="footer-icons">
+      <div class="footer-icon"></div>
+      <div class="footer-icon"></div>
+      <div class="footer-icon"></div>
+    </div>
+    <div id="timeDisplay"></div>
   </div>
 
-  <!-- QWERTY section (default active) -->
-  <div id="qwerty-section" class="keypad-section active">
-    <div class="keypad-row">
-      <button class="key-btn" data-key="Q">Q</button><button class="key-btn" data-key="W">W</button><button class="key-btn" data-key="E">E</button><button class="key-btn" data-key="R">R</button><button class="key-btn" data-key="T">T</button><button class="key-btn" data-key="Y">Y</button><button class="key-btn" data-key="U">U</button><button class="key-btn" data-key="I">I</button><button class="key-btn" data-key="O">O</button><button class="key-btn" data-key="P">P</button>
+  <!-- SCANNER MODAL -->
+  <div class="scanner-modal" id="scannerModal">
+    <div class="scanner-header">
+      <div class="scanner-title">Scan Barcode</div>
+      <div class="scanner-close" id="closeScanner">✕</div>
     </div>
-    <div class="keypad-row">
-      <button class="key-btn" data-key="A">A</button><button class="key-btn" data-key="S">S</button><button class="key-btn" data-key="D">D</button><button class="key-btn" data-key="F">F</button><button class="key-btn" data-key="G">G</button><button class="key-btn" data-key="H">H</button><button class="key-btn" data-key="J">J</button><button class="key-btn" data-key="K">K</button><button class="key-btn" data-key="L">L</button>
+    
+    <div class="scanner-content">
+      <div id="scanner-container">
+        <div class="scanner-overlay">
+          <div class="scanner-frame"></div>
+        </div>
+        <div class="scanner-error" id="scannerError">
+          Camera error or permission denied
+        </div>
+      </div>
     </div>
-    <div class="keypad-row">
-      <button class="key-btn wide-esc" data-key="esc">ESC</button>
-      <button class="key-btn" data-key="Z">Z</button><button class="key-btn" data-key="X">X</button><button class="key-btn" data-key="C">C</button><button class="key-btn" data-key="V">V</button><button class="key-btn" data-key="B">B</button><button class="key-btn" data-key="N">N</button><button class="key-btn" data-key="M">M</button>
-    </div>
-    <!-- space and enter row -->
-    <div class="keypad-row">
-      <button class="key-btn space" data-key="space">␣ space</button>
-      <button class="key-btn enter-key" data-key="enter">ENT</button>
-    </div>
-  </div>
-
-  <!-- NUMERIC section -->
-  <div id="num-section" class="keypad-section">
-    <div class="num-row">
-      <button class="key-btn" data-key="1">1</button><button class="key-btn" data-key="2">2</button><button class="key-btn" data-key="3">3</button>
-    </div>
-    <div class="num-row">
-      <button class="key-btn" data-key="4">4</button><button class="key-btn" data-key="5">5</button><button class="key-btn" data-key="6">6</button>
-    </div>
-    <div class="num-row">
-      <button class="key-btn" data-key="7">7</button><button class="key-btn" data-key="8">8</button><button class="key-btn" data-key="9">9</button>
-    </div>
-    <div class="num-special">
-      <button class="key-btn sym-dark" data-key="abc" style="background:#c0c0d0;">ABC</button>
-      <button class="key-btn sym-dark" data-key="sym" style="background:#c0c0d0;">SYM</button>
-      <button class="key-btn" data-key="-">-</button>
-      <button class="key-btn" data-key="0">0</button>
-      <button class="key-btn" data-key=".">.</button>
-      <button class="key-btn enter-key" data-key="enter">ENT</button>
+    
+    <div class="scanner-footer">
+      <div class="torch-btn" id="torchBtn">🔦 OFF</div>
+      <div class="scanner-btn" id="cancelScan">CANCEL</div>
     </div>
   </div>
 
-  <!-- SYMBOL section -->
-  <div id="sym-section" class="keypad-section sym-main">
-    <div class="keypad-row">
-      <button class="key-btn" data-key="!">!</button><button class="key-btn" data-key="@">@</button><button class="key-btn" data-key="#">#</button><button class="key-btn" data-key="$">$</button><button class="key-btn" data-key="%">%</button><button class="key-btn" data-key="^">^</button><button class="key-btn" data-key="&">&</button><button class="key-btn" data-key="*">*</button><button class="key-btn" data-key="(">(</button><button class="key-btn" data-key=")">)</button>
-    </div>
-    <div class="keypad-row">
-      <button class="key-btn" data-key="-">-</button><button class="key-btn" data-key="_">_</button><button class="key-btn" data-key="+">+</button><button class="key-btn" data-key="=">=</button><button class="key-btn" data-key="{">{</button><button class="key-btn" data-key="}">}</button><button class="key-btn" data-key="[">[</button><button class="key-btn" data-key="]">]</button><button class="key-btn" data-key="\\">\</button><button class="key-btn" data-key="|">|</button>
-    </div>
-    <div class="keypad-row">
-      <button class="key-btn" data-key=";">;</button><button class="key-btn" data-key=":">:</button><button class="key-btn" data-key="'">'</button><button class="key-btn" data-key='"'>"</button><button class="key-btn" data-key=",">,</button><button class="key-btn" data-key="<"><</button><button class="key-btn" data-key=".">.</button><button class="key-btn" data-key=">">></button><button class="key-btn" data-key="/">/</button><button class="key-btn" data-key="?">?</button>
-    </div>
-    <div class="keypad-row">
-      <button class="key-btn space" data-key="space">␣ space</button>
-      <button class="key-btn enter-key" data-key="enter">ENT</button>
-    </div>
-    <div style="height:2px"></div>
-  </div>
-</div>
-
-<!-- overlays -->
-<div id="signaturePopup" class="signature-overlay">
-  <div class="signature-container">
-    <div class="signature-title">SIGNATURE REQUIRED</div>
-    <div class="signature-subtitle">Delivered – Customer Sign</div>
-    <div id="signatureBarcodeDisplay" class="signature-barcode"></div>
-    <div class="signature-canvas-container">
-      <canvas id="signatureCanvas" width="500" height="150"></canvas>
-    </div>
-    <div class="signature-actions">
-      <button id="clearSignatureBtn" class="signature-btn">CLEAR</button>
-      <button id="cancelSignatureBtn" class="signature-btn">CANCEL</button>
-      <button id="submitSignatureBtn" class="signature-btn">SUBMIT</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="scannerOverlay">
-  <div class="barcode-frame">
-    <button class="close-btn" onclick="closeScanner()">✕</button>
-    <video id="video" autoplay playsinline></video>
-  </div>
-</div>
-
-<script src="https://unpkg.com/@zxing/library@latest"></script>
 <script>
-(function() {
-  // ============================================
-  // XANO CONFIGURATION
-  // ============================================
-  const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans';
-  
-  // BEEP sound
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  function playScanSound() {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = 920;
-    gain.gain.value = 0.5;
-    osc.connect(gain).connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.15);
-  }
-
-  // TIME
+  // TIME UPDATE
   function updateTime() {
+    const el = document.getElementById("timeDisplay");
     const now = new Date();
-    let h = now.getHours().toString().padStart(2,'0');
-    let m = now.getMinutes().toString().padStart(2,'0');
-    let s = now.getSeconds().toString().padStart(2,'0');
-    document.getElementById('timeDisplay').innerText = `${h}:${m}:${s}`;
+    let month = now.getMonth() + 1;
+    let day = now.getDate();
+    let hours = now.getHours();
+    let minutes = now.getMinutes();
+    let ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    if (minutes < 10) minutes = "0" + minutes;
+    el.textContent = `${month}/${day} ${hours}:${minutes} ${ampm}`;
   }
-  updateTime(); setInterval(updateTime, 1000);
+  setInterval(updateTime, 1000);
+  updateTime();
 
-  // GPS + REVERSE GEOCODING
-  const gpsStatus = document.getElementById('gpsStatus');
-  let currentLat = '', currentLon = '';
-  let currentCity = '', currentState = '', currentZip = '';
+  // GRID / INPUT LOGIC
+  const cells = Array.from(document.querySelectorAll(".input-cell"));
+  let activeIndex = 0;
+  const maxIndex = cells.length - 1;
   
-  async function getLocationDetails(lat, lon) {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`
-      );
-      const data = await response.json();
-      return {
-        city: data.address.city || data.address.town || data.address.village || data.address.suburb || '',
-        state: data.address.state || '',
-        zip: data.address.postcode || ''
-      };
-    } catch (error) {
-      return { city: '', state: '', zip: '' };
+  // Display elements
+  const barcodeDisplay = document.getElementById("barcodeDisplay");
+  const statusSelect = document.getElementById("statusSelect");
+  const etaDisplay = document.getElementById("etaDisplay");
+  const locationText = document.getElementById("locationText");
+  const locationDot = document.getElementById("locationDot");
+  const statusMessage = document.getElementById("statusMessage");
+  
+  let currentBarcode = "";
+  let currentLocation = "GPS not available";
+  let locationAttempted = false;
+
+  // ETA calculation based on status
+  function calculateETA(status) {
+    const now = new Date();
+    let etaDate = new Date(now);
+    
+    switch(status) {
+      case "Item Booked":
+        // +7 days
+        etaDate.setDate(now.getDate() + 7);
+        break;
+      case "Item Bagged":
+      case "Item Dispatched":
+      case "Item Received":
+      case "In-Transit":
+      case "Item Received at Delivery Office":
+      case "Out for Delivery":
+        // -0.875 days = -21 hours
+        etaDate.setHours(now.getHours() - 21);
+        break;
+      case "Delivered":
+        // -1.75 days = -42 hours
+        etaDate.setHours(now.getHours() - 42);
+        break;
+      default:
+        return "Invalid status";
     }
+    
+    // Format as YYYY-MM-DD HH:MM
+    const year = etaDate.getFullYear();
+    const month = String(etaDate.getMonth() + 1).padStart(2, '0');
+    const day = String(etaDate.getDate()).padStart(2, '0');
+    const hours = String(etaDate.getHours()).padStart(2, '0');
+    const minutes = String(etaDate.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
   }
 
-  function updateGPS() {
-    if (!navigator.geolocation) { 
-      gpsStatus.innerText = 'no gps'; 
-      return; 
-    }
-    navigator.geolocation.getCurrentPosition(
-      async pos => {
-        currentLat = pos.coords.latitude.toFixed(5);
-        currentLon = pos.coords.longitude.toFixed(5);
-        
-        const location = await getLocationDetails(currentLat, currentLon);
-        currentCity = location.city;
-        currentState = location.state;
-        currentZip = location.zip;
-        
-        gpsStatus.innerText = `${currentLat}, ${currentLon}`;
-        document.getElementById('locationPreview').innerHTML = 
-          `📍 ${currentCity || '??'}, ${currentState || '??'} ${currentZip || '??'}`;
-      },
-      err => { 
-        gpsStatus.innerText = 'unavl';
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  }
-  updateGPS(); setInterval(updateGPS, 30000);
-
-  // GLOBAL DATA
-  let scannedBarcodes = [];
-  const barcodeField = document.getElementById('barcodeField');
-  const scannedContainer = document.getElementById('scannedListContainer');
-  const itemCounter = document.getElementById('itemCounter');
-  const batchStatusBlock = document.getElementById('batchStatusBlock');
-  const batchStatusSelect = document.getElementById('batchStatusSelect');
-  const escBtn = document.getElementById('escBtn');
-  const enterBtn = document.getElementById('enterBtn');
-
-  // Signature
-  const signaturePopup = document.getElementById('signaturePopup');
-  const signatureCanvas = document.getElementById('signatureCanvas');
-  const signatureBarcodeDisplay = document.getElementById('signatureBarcodeDisplay');
-  let currentBarcodeForSignature = '';
-  let currentSignatureText = '';
-
-  // ZXING
-  let codeReader = new ZXing.BrowserMultiFormatReader();
-  let currentStream = null;
-
-  // RENDER SCANNED LIST
-  function renderScannedList() {
-    const container = scannedContainer;
-    container.innerHTML = '';
-    if (scannedBarcodes.length === 0) {
-      container.innerHTML = '<div class="empty-label">— no scans —</div>';
-      itemCounter.innerText = '0';
-      return;
-    }
-    scannedBarcodes.forEach((bc, idx) => {
-      const div = document.createElement('div');
-      div.className = 'scanned-item';
-      div.innerHTML = `<span class="item-index">#${idx+1}</span><span class="item-barcode">${bc}</span>`;
-      container.appendChild(div);
-    });
-    itemCounter.innerText = scannedBarcodes.length;
-  }
-
-  // ADD BARCODE
-  function addBarcodeToList(barcode) {
-    if (!barcode || barcode.trim() === '') return;
-    barcode = barcode.trim();
-    scannedBarcodes.push(barcode);
-    playScanSound();
-    renderScannedList();
-    barcodeField.value = '';
-    barcodeField.focus();
-    batchStatusBlock.style.display = 'none';
-    batchStatusSelect.value = '';
-  }
-
-  // manual entry from keypad
-  function simulateKeyPress(key) {
-    const input = barcodeField;
-    if (key === 'space') {
-      input.value += ' ';
-    } else if (key === 'backspace') {
-      input.value = input.value.slice(0, -1);
-    } else if (key === 'enter') {
-      const val = input.value.trim();
-      if (val !== '') addBarcodeToList(val);
-    } else if (key === 'esc') {
-      input.value = '';
-    } else if (key === 'abc' || key === 'sym' || key === '123') {
-      return;
+  // Update ETA when status changes
+  statusSelect.addEventListener("change", function() {
+    if (this.value) {
+      etaDisplay.textContent = calculateETA(this.value);
     } else {
-      input.value += key;
-    }
-    input.focus();
-  }
-
-  // Keypad listener
-  document.querySelector('.keypad-fixed').addEventListener('click', (e) => {
-    const btn = e.target.closest('.key-btn');
-    if (!btn) return;
-    const key = btn.dataset.key;
-    if (key) simulateKeyPress(key);
-  });
-
-  // Mode switching
-  const modeABC = document.getElementById('modeABC');
-  const mode123 = document.getElementById('mode123');
-  const modeSYM = document.getElementById('modeSYM');
-  const qwertySec = document.getElementById('qwerty-section');
-  const numSec = document.getElementById('num-section');
-  const symSec = document.getElementById('sym-section');
-
-  function setActiveMode(mode) {
-    [modeABC, mode123, modeSYM].forEach(btn => btn.classList.remove('active'));
-    [qwertySec, numSec, symSec].forEach(sec => sec.classList.remove('active'));
-    
-    if (mode === 'abc') {
-      modeABC.classList.add('active');
-      qwertySec.classList.add('active');
-    } else if (mode === 'num') {
-      mode123.classList.add('active');
-      numSec.classList.add('active');
-    } else if (mode === 'sym') {
-      modeSYM.classList.add('active');
-      symSec.classList.add('active');
-    }
-  }
-
-  modeABC.addEventListener('click', () => setActiveMode('abc'));
-  mode123.addEventListener('click', () => setActiveMode('num'));
-  modeSYM.addEventListener('click', () => setActiveMode('sym'));
-
-  document.addEventListener('click', (e) => {
-    const target = e.target;
-    if (target.classList.contains('key-btn') && target.dataset.key === 'abc') {
-      setActiveMode('abc');
-    } else if (target.classList.contains('key-btn') && target.dataset.key === 'sym') {
-      setActiveMode('sym');
-    } else if (target.classList.contains('key-btn') && target.dataset.key === '123') {
-      setActiveMode('num');
+      etaDisplay.textContent = "--";
     }
   });
 
-  // hardware keyboard support
-  barcodeField.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      const val = barcodeField.value.trim();
-      if (val !== '') addBarcodeToList(val);
-    }
-  });
-
-  // SCANNER
-  window.openScanner = async function() {
-    document.getElementById('scannerOverlay').style.display = 'flex';
-    try {
-      const video = document.getElementById('video');
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      currentStream = stream;
-      video.srcObject = stream;
-      codeReader.decodeFromVideoDevice(null, 'video', (result, err) => {
-        if (result) {
-          addBarcodeToList(result.text);
-          closeScanner();
+  // Get GPS location on page load
+  function getLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        // Success
+        (position) => {
+          const lat = position.coords.latitude.toFixed(6);
+          const lng = position.coords.longitude.toFixed(6);
+          currentLocation = `${lat}, ${lng}`;
+          locationText.textContent = `GPS: ${currentLocation}`;
+          locationDot.classList.add("active");
+          locationDot.classList.remove("error");
+          locationAttempted = true;
+        },
+        // Error
+        (error) => {
+          console.error("GPS error:", error);
+          let errorMsg = "";
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMsg = "GPS permission denied";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMsg = "GPS position unavailable";
+              break;
+            case error.TIMEOUT:
+              errorMsg = "GPS timeout";
+              break;
+          }
+          currentLocation = errorMsg;
+          locationText.textContent = errorMsg;
+          locationDot.classList.add("error");
+          locationDot.classList.remove("active");
+          locationAttempted = true;
+        },
+        // Options
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
+      );
+    } else {
+      currentLocation = "GPS not supported";
+      locationText.textContent = "GPS not supported";
+      locationDot.classList.add("error");
+      locationDot.classList.remove("active");
+      locationAttempted = true;
+    }
+  }
+
+  // Call getLocation immediately
+  getLocation();
+
+  // Format date and time
+  function getFormattedDateTime() {
+    const now = new Date();
+    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    const timestamp = now.toISOString();
+    
+    return { date, time, timestamp };
+  }
+
+  // SAVE TO XANO DATABASE (automatic)
+  async function saveToDatabase(barcode, status) {
+    // Show saving message
+    statusMessage.textContent = "Saving to database...";
+    statusMessage.className = "status-message saving";
+    
+    // Prepare data according to your table structure
+    const { date, time, timestamp } = getFormattedDateTime();
+    const eta = calculateETA(status);
+    
+    const data = {
+      label_id: barcode,
+      barcode_type: "EAN-13", // You can detect this from scanner
+      status: status,
+      date: date,
+      time: time,
+      location: currentLocation,
+      eta: eta,
+      timestamp: timestamp
+    };
+    
+    console.log("Saving to XANO:", data); // For debugging
+    
+    try {
+      const response = await fetch("https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/qr_scans", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data)
       });
-    } catch (err) {
-      alert('Camera access denied');
-      closeScanner();
+      
+      if (response.ok) {
+        // Success
+        statusMessage.textContent = "✓ Saved successfully!";
+        statusMessage.className = "status-message success";
+        
+        // Clear barcode display after successful save
+        setTimeout(() => {
+          barcodeDisplay.textContent = "";
+          statusMessage.textContent = "Ready to scan";
+          statusMessage.className = "status-message";
+        }, 2000);
+        
+        return true;
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error saving to database:", error);
+      
+      // Show error
+      statusMessage.textContent = "✗ Save failed!";
+      statusMessage.className = "status-message error";
+      
+      setTimeout(() => {
+        statusMessage.textContent = "Ready to scan";
+        statusMessage.className = "status-message";
+      }, 2000);
+      
+      return false;
     }
-  };
-
-  window.closeScanner = function() {
-    document.getElementById('scannerOverlay').style.display = 'none';
-    if (currentStream) {
-      currentStream.getTracks().forEach(t => t.stop());
-      currentStream = null;
-    }
-    codeReader.reset();
-  };
-
-  // ESC
-  escBtn.addEventListener('click', function() {
-    if (scannedBarcodes.length > 0 && confirm('Clear all scanned barcodes?')) {
-      scannedBarcodes = [];
-      renderScannedList();
-      batchStatusBlock.style.display = 'none';
-      batchStatusSelect.value = '';
-    }
-  });
-
-  // ENTER (show status dropdown)
-  enterBtn.addEventListener('click', function() {
-    if (scannedBarcodes.length === 0) {
-      alert('No barcodes.');
-      return;
-    }
-    batchStatusBlock.style.display = 'block';
-  });
-
-  // SIGNATURE CANVAS
-  function setupCanvas() {
-    const ctx = signatureCanvas.getContext('2d');
-    ctx.clearRect(0,0,500,150);
-    ctx.strokeStyle = '#aaa'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(30,110); ctx.lineTo(470,110); ctx.stroke();
-    ctx.strokeStyle = '#00117c'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
   }
-  
-  let isDrawing = false, lastX, lastY;
-  
-  function startDraw(e) {
-    isDrawing = true;
-    const rect = signatureCanvas.getBoundingClientRect();
-    const scaleX = 500/rect.width, scaleY = 150/rect.height;
-    const x = (e.clientX - rect.left)*scaleX, y = (e.clientY - rect.top)*scaleY;
-    lastX = x; lastY = y;
+
+  function setActive(index) {
+    if (index < 0) index = 0;
+    if (index > maxIndex) index = maxIndex;
+    activeIndex = index;
+    cells.forEach(c => c.classList.remove("orange"));
+    cells[activeIndex].classList.add("orange");
   }
-  
-  function draw(e) {
-    if (!isDrawing) return;
-    e.preventDefault();
-    const rect = signatureCanvas.getBoundingClientRect();
-    const scaleX = 500/rect.width, scaleY = 150/rect.height;
-    const x = (e.clientX - rect.left)*scaleX, y = (e.clientY - rect.top)*scaleY;
-    const ctx = signatureCanvas.getContext('2d');
-    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
-    lastX = x; lastY = y;
+
+  function writeChar(ch) {
+    cells[activeIndex].textContent = ch;
+    if (activeIndex < maxIndex) {
+      setActive(activeIndex + 1);
+    }
   }
-  
-  signatureCanvas.addEventListener('mousedown', startDraw);
-  signatureCanvas.addEventListener('mousemove', draw);
-  signatureCanvas.addEventListener('mouseup', ()=>{isDrawing=false});
-  signatureCanvas.addEventListener('mouseout', ()=>{isDrawing=false});
-  signatureCanvas.addEventListener('touchstart', (e)=>{e.preventDefault(); const t=e.touches[0]; startDraw(t);});
-  signatureCanvas.addEventListener('touchmove', (e)=>{e.preventDefault(); const t=e.touches[0]; draw(t);});
-  signatureCanvas.addEventListener('touchend', ()=>{isDrawing=false});
 
-  document.getElementById('clearSignatureBtn').addEventListener('click', ()=>{
-    const ctx = signatureCanvas.getContext('2d');
-    ctx.clearRect(0,0,500,150);
-    setupCanvas();
-  });
-  
-  document.getElementById('cancelSignatureBtn').addEventListener('click', ()=>{
-    signaturePopup.style.display = 'none';
-    batchStatusSelect.value = '';
-  });
-  
-  document.getElementById('submitSignatureBtn').addEventListener('click', ()=>{
-    const ctx = signatureCanvas.getContext('2d');
-    const pixels = ctx.getImageData(0,0,500,150).data;
-    let empty = true;
-    for (let i=0; i<pixels.length; i+=4) if (pixels[i] < 250) { empty=false; break; }
-    if (empty) { alert('Please draw signature.'); return; }
-    
-    const name = prompt("Enter recipient name:", "");
-    if (!name) return;
-    
-    currentSignatureText = name;
-    signaturePopup.style.display = 'none';
-    
-    const selectedStatus = batchStatusSelect.options[batchStatusSelect.selectedIndex]?.text;
-    if (selectedStatus) sendBatchToXano(selectedStatus);
-  });
+  function writeBarcode(barcode) {
+    currentBarcode = barcode;
+    for (let i = 0; i < barcode.length && i <= maxIndex; i++) {
+      cells[i].textContent = barcode.charAt(i);
+    }
+    for (let i = barcode.length; i <= maxIndex; i++) {
+      cells[i].textContent = "";
+    }
+    setActive(0);
+  }
 
-  // STATUS CHANGE
-  batchStatusSelect.addEventListener('change', function() {
-    const selectedStatus = batchStatusSelect.options[batchStatusSelect.selectedIndex]?.text;
-    if (!selectedStatus || scannedBarcodes.length === 0) return;
+  function doBackspace() {
+    if (cells[activeIndex].textContent) {
+      cells[activeIndex].textContent = "";
+    } else if (activeIndex > 0) {
+      setActive(activeIndex - 1);
+      cells[activeIndex].textContent = "";
+    }
+  }
 
-    const hasE = scannedBarcodes.some(bc => bc.toUpperCase().startsWith('E'));
-    if (selectedStatus === 'UEXS DELIVERED' && hasE) {
-      const firstE = scannedBarcodes.find(bc => bc.toUpperCase().startsWith('E'));
-      if (firstE) {
-        currentBarcodeForSignature = firstE;
-        signatureBarcodeDisplay.innerText = firstE;
-        setupCanvas();
-        signaturePopup.style.display = 'flex';
+  function moveLeft() {
+    if (activeIndex > 0) setActive(activeIndex - 1);
+  }
+
+  function moveRight() {
+    if (activeIndex < maxIndex) setActive(activeIndex + 1);
+  }
+
+  function moveUp() {
+    if (activeIndex - 20 >= 0) setActive(activeIndex - 20);
+  }
+
+  function moveDown() {
+    if (activeIndex + 20 <= maxIndex) setActive(activeIndex + 20);
+  }
+
+  function doEnter() {
+    // Get barcode from first row cells
+    let barcode = "";
+    for (let i = 0; i <= maxIndex; i++) {
+      if (cells[i].textContent) {
+        barcode += cells[i].textContent;
+      } else {
+        break;
+      }
+    }
+    
+    if (barcode) {
+      // Display in barcode box
+      barcodeDisplay.textContent = barcode;
+      currentBarcode = barcode;
+      
+      // Check if status is selected
+      if (!statusSelect.value) {
+        statusMessage.textContent = "Please select a status first";
+        statusMessage.className = "status-message error";
         return;
       }
-    }
-    sendBatchToXano(selectedStatus);
-  });
-
-  // ============================================
-  // SEND TO XANO - FIXED VERSION
-  // ============================================
-  async function sendBatchToXano(status) {
-    if (scannedBarcodes.length === 0) return;
-    
-    const now = new Date();
-    const epochTime = Math.floor(now.getTime() / 1000); // epoch seconds
-    const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
-    const location = [currentCity, currentState, currentZip].filter(Boolean).join(', ') || 'Unknown location';
-    
-    const originalBtnText = enterBtn.innerText;
-    enterBtn.innerText = 'SENDING...';
-    enterBtn.disabled = true;
-
-    try {
-      // Send each record individually to Xano and collect results
-      const results = [];
-      const errors = [];
       
-      for (const barcode of scannedBarcodes) {
-        // Xano expects specific field names - match exactly what the schema expects
-        const record = {
-          label_id: barcode,
-          status: status,
-          location: location,
-          // Add a default ETA value (24 hours from now as example)
-          eta: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          // Include all required fields from your schema
-          created_at: epochTime,
-          barcode_type: 'CODE128',
-          date: dateStr,
-          time: epochTime,
-          timestamp: epochTime
-        };
-
-        console.log('Sending record:', record);
-
-        try {
-          const response = await fetch(XANO_URL, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify(record)
-          });
-
-          const responseText = await response.text();
-          console.log('Response status:', response.status);
-          console.log('Response body:', responseText);
-
-          if (response.ok) {
-            try {
-              const data = JSON.parse(responseText);
-              results.push(data);
-            } catch {
-              results.push({ success: true, barcode });
-            }
-          } else {
-            errors.push(`Failed for ${barcode}: ${response.status} - ${responseText}`);
-          }
-        } catch (err) {
-          errors.push(`Network error for ${barcode}: ${err.message}`);
-        }
-      }
-
-      if (errors.length === 0) {
-        alert(`✅ SUCCESS!\n${results.length} records sent to Xano`);
-        scannedBarcodes = [];
-        renderScannedList();
-        batchStatusBlock.style.display = 'none';
-        batchStatusSelect.value = '';
-        currentSignatureText = '';
-      } else {
-        alert(`⚠️ Partial success: ${results.length} sent, ${errors.length} failed\nCheck console for details`);
-        console.error('Errors:', errors);
-        console.log('Successful records:', results);
+      // Refresh location if not already acquired
+      if (!locationAttempted) {
+        getLocation();
       }
       
-    } catch (error) {
-      alert('❌ Error sending to Xano. Check console.');
-      console.error('Xano error:', error);
-    } finally {
-      enterBtn.innerText = originalBtnText;
-      enterBtn.disabled = false;
+      // Clear first row
+      for (let i = 0; i <= maxIndex; i++) {
+        cells[i].textContent = "";
+      }
+      setActive(0);
+      
+      // AUTOMATICALLY SAVE TO DATABASE
+      saveToDatabase(barcode, statusSelect.value);
     }
   }
 
-  // INIT
-  renderScannedList();
-  setupCanvas();
-  setActiveMode('abc');
-})();
+  function doEsc() {
+    cells.forEach(c => c.textContent = "");
+    barcodeDisplay.textContent = "";
+    setActive(0);
+    statusMessage.textContent = "Ready to scan";
+    statusMessage.className = "status-message";
+  }
+
+  // KEYPAD SWITCHING
+  const numpad = document.getElementById("keypadNum");
+  const qwerty = document.getElementById("keypadQwerty");
+
+  function showNumPad() {
+    numpad.style.display = "flex";
+    qwerty.style.display = "none";
+  }
+
+  function showQwertyPad() {
+    numpad.style.display = "none";
+    qwerty.style.display = "flex";
+  }
+
+  // SCANNER FUNCTIONALITY
+  const scannerModal = document.getElementById("scannerModal");
+  const scanBtn = document.getElementById("scanBtn");
+  const closeScanner = document.getElementById("closeScanner");
+  const cancelScan = document.getElementById("cancelScan");
+  const torchBtn = document.getElementById("torchBtn");
+  const scannerError = document.getElementById("scannerError");
+  const scannerContainer = document.getElementById("scanner-container");
+  
+  let scannerActive = false;
+  let torchActive = false;
+  let currentTrack = null;
+  
+  scanBtn.addEventListener("click", function() {
+    scannerModal.classList.add("active");
+    scannerError.style.display = "none";
+    torchActive = false;
+    torchBtn.textContent = "🔦 OFF";
+    torchBtn.classList.remove("active");
+    startScanner();
+  });
+  
+  torchBtn.addEventListener("click", function() {
+    if (!currentTrack) {
+      alert("Camera not ready");
+      return;
+    }
+    
+    torchActive = !torchActive;
+    
+    try {
+      currentTrack.applyConstraints({
+        advanced: [{
+          torch: torchActive
+        }]
+      }).catch(e => console.log("Torch not supported"));
+      
+      torchBtn.textContent = torchActive ? "🔦 ON" : "🔦 OFF";
+      torchBtn.classList.toggle("active", torchActive);
+      
+    } catch(e) {
+      console.error("Torch error:", e);
+      alert("Flashlight not available on this device");
+      torchActive = false;
+      torchBtn.textContent = "🔦 OFF";
+      torchBtn.classList.remove("active");
+    }
+  });
+  
+  function startScanner() {
+    if (scannerActive) return;
+    
+    try {
+      scannerActive = true;
+      
+      Quagga.init({
+        inputStream: {
+          name: "Live",
+          type: "LiveStream",
+          target: scannerContainer,
+          constraints: {
+            width: 360,
+            height: 480,
+            facingMode: "environment"
+          },
+        },
+        decoder: {
+          readers: [
+            "ean_reader",
+            "ean_8_reader",
+            "code_128_reader",
+            "code_39_reader",
+            "upc_reader",
+            "upc_e_reader"
+          ]
+        },
+        locate: true
+      }, function(err) {
+        if (err) {
+          console.error("Quagga init error:", err);
+          scannerError.style.display = "block";
+          scannerError.textContent = "Camera error: " + (err.message || "Unknown error");
+          scannerActive = false;
+          return;
+        }
+        
+        Quagga.start();
+        
+        setTimeout(() => {
+          try {
+            const videoTrack = Quagga.CameraAccess.getActiveTrack();
+            if (videoTrack) {
+              currentTrack = videoTrack;
+            }
+          } catch(e) {
+            console.log("Could not get camera track");
+          }
+        }, 1000);
+      });
+      
+      Quagga.onDetected(function(result) {
+        if (result && result.codeResult && result.codeResult.code) {
+          const barcode = result.codeResult.code;
+          
+          // Write barcode to grid and update display
+          writeBarcode(barcode);
+          barcodeDisplay.textContent = barcode;
+          currentBarcode = barcode;
+          
+          // Check if status is selected
+          if (!statusSelect.value) {
+            statusMessage.textContent = "Please select a status";
+            statusMessage.className = "status-message error";
+          } else {
+            // Refresh location
+            getLocation();
+            
+            // AUTOMATICALLY SAVE TO DATABASE
+            saveToDatabase(barcode, statusSelect.value);
+          }
+          
+          // Close scanner
+          stopScanner();
+          scannerModal.classList.remove("active");
+        }
+      });
+      
+    } catch(e) {
+      console.error("Scanner error:", e);
+      scannerError.style.display = "block";
+      scannerError.textContent = "Scanner initialization failed";
+      scannerActive = false;
+    }
+  }
+  
+  function stopScanner() {
+    if (torchActive && currentTrack) {
+      try {
+        currentTrack.applyConstraints({
+          advanced: [{
+            torch: false
+          }]
+        });
+      } catch(e) {}
+    }
+    
+    try {
+      Quagga.stop();
+    } catch(e) {
+      console.error("Stop error:", e);
+    }
+    
+    scannerActive = false;
+    torchActive = false;
+    currentTrack = null;
+  }
+  
+  function closeScannerModal() {
+    stopScanner();
+    scannerModal.classList.remove("active");
+  }
+  
+  closeScanner.addEventListener("click", closeScannerModal);
+  cancelScan.addEventListener("click", closeScannerModal);
+
+  // KEYPAD EVENT LISTENERS
+  document.querySelectorAll(".key-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const char = btn.dataset.char;
+      const action = btn.dataset.action;
+
+      if (char) {
+        writeChar(char);
+      } else if (action) {
+        switch(action) {
+          case "left": moveLeft(); break;
+          case "right": moveRight(); break;
+          case "up": moveUp(); break;
+          case "down": moveDown(); break;
+          case "backspace": doBackspace(); break;
+          case "enter": doEnter(); break;
+          case "esc": doEsc(); break;
+          case "toQwerty": showQwertyPad(); break;
+          case "toNum": showNumPad(); break;
+        }
+      }
+    });
+  });
+
+  // Initialize
+  setActive(0);
+  showNumPad();
 </script>
 </body>
 </html>
