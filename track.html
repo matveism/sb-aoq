@@ -114,48 +114,147 @@
   </div>
 </main>
 <script>
-const XANO_URL = "https://x8ki-letl-twmt.n7.xano.io/api:WGx5FQAG/track";
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRcCfqR0Yn3zjCBHYPT0gcPNcJjQ8QwgqsIyTbySG99R3l8VPsjotxwhasGL1yh6lLToq3G0p6AOZZR/pub?gid=0&single=true&output=csv";
+
+// Updated ETA_OFFSETS with new statuses from the image
 const ETA_OFFSETS = {
-  "data received": 7,
-  "picked up": -1,
-  "depart post office": -2,
-  "arrival scan": -0.5,
-  "local scan": -1.5,
-  "out for delivery": -2,
-  "delivered": 0,
+  "Item Booked": 7,
+  "Item Bagged": 6,
+  "Item Dispatched": 5,
+  "Item Received": 4,
+  "In-Transit": 3,
+  "Item Received at Delivery Office": 2,
+  "Out for Delivery": 1,
+  "Delivered": 0
 };
+
 let allScans = [];
 let showFullHistory = false;
+
+function parseCSV(csvText) {
+  const lines = csvText.split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+  
+  return lines.slice(1)
+    .filter(line => line.trim())
+    .map(line => {
+      // Handle quoted fields properly
+      const values = [];
+      let inQuote = false;
+      let currentValue = '';
+      
+      for (let char of line) {
+        if (char === '"') {
+          inQuote = !inQuote;
+        } else if (char === ',' && !inQuote) {
+          values.push(currentValue);
+          currentValue = '';
+        } else {
+          currentValue += char;
+        }
+      }
+      values.push(currentValue); // Add the last value
+      
+      const record = {};
+      
+      headers.forEach((header, index) => {
+        const value = (values[index] || '').trim().replace(/"/g, '');
+        const headerLower = header.toLowerCase().trim();
+        
+        if (headerLower === 'label_id') {
+          record.label_id = value;
+        } 
+        else if (headerLower === 'barcode_type') {
+          record.barcode_type = value;
+        }
+        else if (headerLower === 'status') {
+          record.status = value;
+        }
+        else if (headerLower === 'date') {
+          record.date = value;
+        }
+        else if (headerLower === 'time') {
+          record.time = value;
+        }
+        else if (headerLower === 'location') {
+          record.location = value;
+        }
+        else if (headerLower === 'eta') {
+          record.eta = value;
+        }
+      });
+      
+      // Create timestamp from date and time
+      if (record.date) {
+        let dateStr = record.date;
+        if (record.time && record.time !== "NULL" && record.time !== "") {
+          dateStr += ' ' + record.time;
+        }
+        record.timestamp = new Date(dateStr);
+      }
+      
+      return record;
+    });
+}
+
 function calculateETA(scans) {
   if (!scans.length) return null;
+  
+  // Sort by timestamp (oldest first for base date)
   const sorted = [...scans].sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0));
   const baseDate = new Date(sorted[0].timestamp);
   if (isNaN(baseDate)) return null;
-  let totalDays = 0;
-  for (const scan of sorted) {
-    const key = scan.status.toLowerCase();
-    if (key in ETA_OFFSETS) totalDays += ETA_OFFSETS[key];
+  
+  // Get latest status for ETA calculation
+  const latestScan = scans.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))[0];
+  const latestStatus = latestScan.status;
+  
+  // Find matching rule (case insensitive partial match)
+  let daysToAdd = 5; // Default to 5 days if no match
+  for (const [status, days] of Object.entries(ETA_OFFSETS)) {
+    if (latestStatus.toLowerCase().includes(status.toLowerCase())) {
+      daysToAdd = days;
+      break;
+    }
   }
-  return new Date(baseDate.getTime() + totalDays * 86400000);
+  
+  // If delivered, return null
+  if (latestStatus.toLowerCase().includes("delivered")) {
+    return null;
+  }
+  
+  return new Date(baseDate.getTime() + daysToAdd * 86400000);
 }
+
 async function handleTrack() {
   const input = document.getElementById("trackInput").value.trim();
   if (!input) return;
+  
   document.getElementById("loadingState").style.display = "block";
   document.getElementById("errorState").style.display = "none";
   document.getElementById("resultsArea").style.display = "none";
   document.getElementById("emptyState").style.display = "none";
   showFullHistory = false;
+  
   try {
-    const res = await fetch(XANO_URL);
-    if (!res.ok) throw new Error("Server error: " + res.status);
-    const data = await res.json();
-    const filtered = data.filter(s => s.label_id?.toLowerCase() === input.toLowerCase());
+    const response = await fetch(CSV_URL);
+    if (!response.ok) throw new Error("Failed to fetch tracking data");
+    
+    const csvText = await response.text();
+    const allRecords = parseCSV(csvText);
+    
+    // Filter records by label_id (tracking number) - case insensitive
+    const filtered = allRecords.filter(r => 
+      r.label_id && r.label_id.toLowerCase() === input.toLowerCase()
+    );
+    
     if (!filtered.length) {
       document.getElementById("errorState").textContent = 'No tracking data found for "' + input + '"';
       document.getElementById("errorState").style.display = "block";
       return;
     }
+    
+    // Sort by timestamp (newest first)
     filtered.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
     allScans = filtered;
     renderResults(input);
@@ -166,13 +265,15 @@ async function handleTrack() {
     document.getElementById("loadingState").style.display = "none";
   }
 }
+
 function renderResults(trackingNumber) {
   const latest = allScans[0];
   const eta = calculateETA(allScans);
   const isDelivered = latest.status.toLowerCase().includes("delivered");
+  
   // Status panel
   let etaHTML = "";
-  if (eta && !isNaN(eta)) {
+  if (eta && !isNaN(eta) && !isDelivered) {
     const weekday = eta.toLocaleDateString("en-US", { weekday: "long" });
     const day = eta.getDate();
     const month = eta.toLocaleDateString("en-US", { month: "long" });
@@ -194,7 +295,13 @@ function renderResults(trackingNumber) {
           </div>
         </div>
       </div>`;
+  } else if (isDelivered) {
+    etaHTML = `
+      <div class="eta-section">
+        <p class="status-value delivered" style="margin-bottom:0;">✓ Delivered</p>
+      </div>`;
   }
+  
   document.getElementById("statusPanel").innerHTML = `
     <div>
       <p class="tracking-label">Tracking Number:</p>
@@ -213,17 +320,21 @@ function renderResults(trackingNumber) {
         </div>
       </div>
     </div>`;
+  
   renderTimeline();
   document.getElementById("resultsArea").style.display = "grid";
 }
+
 function renderTimeline() {
   const events = showFullHistory ? allScans : allScans.slice(0, 2);
   let html = '<h3 class="timeline-title">Tracking History</h3><div>';
+  
   events.forEach((ev, i) => {
     const s = ev.status.toLowerCase();
     const isDelivered = s.includes("delivered");
     const isOFD = s.includes("out for delivery");
     const date = ev.timestamp ? new Date(ev.timestamp) : null;
+    
     let dotHTML;
     if (isDelivered) {
       dotHTML = `<div class="dot delivered"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>`;
@@ -232,8 +343,10 @@ function renderTimeline() {
     } else {
       dotHTML = `<div class="dot"></div>`;
     }
+    
     const connector = i < events.length - 1 ? '<div class="connector"></div>' : '';
     const dateStr = date ? date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ", " + date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }) : "";
+    
     html += `
       <div class="timeline-row">
         <div class="timeline-col">${dotHTML}${connector}</div>
@@ -244,16 +357,21 @@ function renderTimeline() {
         </div>
       </div>`;
   });
+  
   html += '</div>';
+  
   if (allScans.length > 2) {
     html += `<button class="show-history" onclick="toggleHistory()">${showFullHistory ? 'Hide Tracking History' : 'Show Full Tracking History (' + allScans.length + ' events)'}</button>`;
   }
+  
   document.getElementById("timelinePanel").innerHTML = html;
 }
+
 function toggleHistory() {
   showFullHistory = !showFullHistory;
   renderTimeline();
 }
+
 document.getElementById("trackInput").addEventListener("keydown", function(e) {
   if (e.key === "Enter") handleTrack();
 });
